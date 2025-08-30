@@ -26,8 +26,7 @@ PackageFile* input_to_output(Package* package, const InputFile* input)
 PackageFile* input_to_output(Package* package, const FileLevelSymbol* symbol)
 {
     auto* input_file = symbol->defining_file();
-    assert(input_file);
-    return input_to_output(package, input_file);
+    return input_file ? input_to_output(package, input_file) : nullptr;
 }
 
 bool check_symbol(FileLevelSymbol* symbol)
@@ -63,8 +62,11 @@ static bool set_package(FileLevelSymbol& symbol)
         }
 
         symbol.set_output_status(OutputStatus::Root);
-        symbol.set_package_file(input_to_output(&package, &symbol));
-        package_found = true;
+        auto* package_file = input_to_output(&package, &symbol);
+        if (package_file) {
+            symbol.set_package_file(package_file);
+            package_found = true;
+        }
     }
 
     if (!package_found && verbosity >= LogLevel::TRACE) {

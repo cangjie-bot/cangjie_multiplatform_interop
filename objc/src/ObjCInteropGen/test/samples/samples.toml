@@ -1,0 +1,16 @@
+[output-roots.default]
+path = "D:/cj-interop/objc/ObjCInteropGen/test/samples"
+
+[sources.all]
+paths = ["D:\\cj-interop\\objc\\ObjCInteropGen\\test\\samples\\NestedStruct.h"]
+
+[sources-mixins.default]
+sources = [".*"]
+arguments = [
+    "-fno-objc-arc",
+    "-fblocks"
+]
+
+[[packages]]
+filters = { include = ".*" }
+package-name = "mirrors"
