@@ -14,6 +14,16 @@
 
 #include "InputFile.h"
 
+#ifdef OBJCINTEROPGEN_NO_WARNINGS
+#// [[nodiscard]] is ignored in C++17 when being applied to constructors.  Older
+#// GCC issues warnings on that.
+#if __has_cpp_attribute(nodiscard) > 201603L
+#define OBJCINTEROPGEN_NODISCARD_CONSTRUCTOR [[nodiscard]]
+#else
+#define OBJCINTEROPGEN_NODISCARD_CONSTRUCTOR
+#endif
+#endif
+
 class NonTypeSymbol;
 class Package;
 class PackageFile;
@@ -104,7 +114,11 @@ inline KeywordEscaper escape_keyword(std::string_view name)
 template <typename Symbol, typename T> struct SymbolChildren {
     Symbol* self_ = nullptr;
 
+#ifdef OBJCINTEROPGEN_NO_WARNINGS
+    OBJCINTEROPGEN_NODISCARD_CONSTRUCTOR explicit SymbolChildren(Symbol* self) : self_(self)
+#else
     [[nodiscard]] explicit SymbolChildren(Symbol* self) : self_(self)
+#endif
     {
         assert(self);
     }
@@ -195,7 +209,11 @@ public:
     virtual void print(std::ostream& stream, SymbolPrintFormat format) const;
 
 protected:
+#ifdef OBJCINTEROPGEN_NO_WARNINGS
+    OBJCINTEROPGEN_NODISCARD_CONSTRUCTOR explicit Symbol(std::string name);
+#else
     [[nodiscard]] explicit Symbol(std::string name);
+#endif
 
     virtual ~Symbol() = default;
 };
@@ -593,7 +611,12 @@ class PrimitiveTypeInformation final {
     PrimitiveTypeCategory category_;
 
 public:
+#ifdef OBJCINTEROPGEN_NO_WARNINGS
+    OBJCINTEROPGEN_NODISCARD_CONSTRUCTOR PrimitiveTypeInformation(
+        const std::size_t size, const PrimitiveTypeCategory category)
+#else
     [[nodiscard]] PrimitiveTypeInformation(const std::size_t size, const PrimitiveTypeCategory category)
+#endif
         : size_(size), category_(category)
     {
     }
@@ -683,7 +706,11 @@ public:
         }
     };
 
+#ifdef OBJCINTEROPGEN_NO_WARNINGS
+    OBJCINTEROPGEN_NODISCARD_CONSTRUCTOR explicit TypeDeclarationSymbol(Kind kind, std::string name);
+#else
     [[nodiscard]] explicit TypeDeclarationSymbol(Kind kind, std::string name);
+#endif
 
     [[nodiscard]] bool is_ctype() const noexcept override
     {
@@ -1090,13 +1117,22 @@ private:
     };
 
 public:
+#ifdef OBJCINTEROPGEN_NO_WARNINGS
+    OBJCINTEROPGEN_NODISCARD_CONSTRUCTOR NonTypeSymbol(
+#else
     [[nodiscard]] NonTypeSymbol(
+#endif
         Private, std::string name, const Kind kind, TypeLikeSymbol* return_type, uint8_t modifiers = 0)
         : FileLevelSymbol(std::move(name)), kind_(kind), modifiers_(modifiers), return_type_(return_type)
     {
     }
 
+#ifdef OBJCINTEROPGEN_NO_WARNINGS
+    OBJCINTEROPGEN_NODISCARD_CONSTRUCTOR NonTypeSymbol(
+        Private, std::string name, std::string getter, std::string setter, uint8_t modifiers)
+#else
     [[nodiscard]] NonTypeSymbol(Private, std::string name, std::string getter, std::string setter, uint8_t modifiers)
+#endif
         : FileLevelSymbol(std::move(name)),
           kind_(Kind::Property),
           modifiers_(modifiers),
