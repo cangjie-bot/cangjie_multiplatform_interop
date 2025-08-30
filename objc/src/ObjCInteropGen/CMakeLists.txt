@@ -83,5 +83,3 @@ endif()
 # Link ObjCInteropGen to LLVM & Clang
 target_include_directories(ObjCInteropGen SYSTEM PRIVATE ${CLANG_INCLUDE_DIRS} ${LLVM_INCLUDE_DIRS} ../../third_party/tomlplusplus)
 target_link_libraries(ObjCInteropGen PRIVATE libclang clangAST)
-
-install(TARGETS ObjCInteropGen DESTINATION tools/bin)

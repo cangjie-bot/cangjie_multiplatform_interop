@@ -13,6 +13,7 @@ import logging
 import multiprocessing
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -103,6 +104,10 @@ def init_log(name):
     log.addHandler(filehandler)
     return log
 
+def command(*args, cwd=None, env=None):
+    """Execute a child program via 'subprocess.Popen' and log the output"""
+    log_output(subprocess.Popen(args, stdout=PIPE, cwd=cwd, env=env))
+
 def runtime_name(target):
     return target+"_cjnative"
 
@@ -111,11 +116,9 @@ def fetch_tomlplusplus(target_dir):
     tomlplusplus_dir = os.path.join(target_dir, 'tomlplusplus')
     if not os.path.exists(tomlplusplus_dir):
         LOG.info('Fetching tomlplusplus from GitHub...\n')
-        output = subprocess.Popen(
-            ["git", "clone", "--depth=1", "-b", "v3.4.0", "https://gitee.com/mirrors_marzer/tomlplusplus.git",
-             tomlplusplus_dir], stdout=PIPE,
+        command(
+            "git", "clone", "--depth=1", "-b", "v3.4.0", "https://gitee.com/marzer/tomlplusplus.git", tomlplusplus_dir
         )
-        log_output(output)
         LOG.info('Finished fetching tomlplusplus\n')
     else:
         LOG.info('tomlplusplus directory already exists, skipping fetch\n')
@@ -141,13 +144,7 @@ def build(args):
             cjpm_env["SYSROOT_OPTION"] = "--sysroot=" + args.target_sysroot
         # target_toolchain is not used for now
 
-        output = subprocess.Popen(
-            ["cjpm", "build", "--target-dir=" + INTEROPLIB_OUT, CJPM_CONFIG],
-            env=cjpm_env,
-            cwd=INTEROPLIB_DIR,
-            stdout=PIPE,
-        )
-        log_output(output)
+        command("cjpm", "build", "--target-dir=" + INTEROPLIB_OUT, CJPM_CONFIG, env=cjpm_env, cwd=INTEROPLIB_DIR)
 
         LOG.info('end build interoplib for ' + runtime + '\n')
     else:
@@ -156,19 +153,9 @@ def build(args):
         # Fetch tomlplusplus before building
         fetch_tomlplusplus(OBJC_INTEROP_THIRD_PARTY)
 
-        output = subprocess.Popen(
-            ["cmake", "-B", CMAKE_BUILD_DIR, '-DCMAKE_BUILD_TYPE=' + args.build_type.value],
-            cwd=OBJC_INTEROP_GEN_DIR,
-            stdout=PIPE,
-        )
-        log_output(output)
+        command("cmake", "-B", CMAKE_BUILD_DIR, '-DCMAKE_BUILD_TYPE=' + args.build_type.value, cwd=OBJC_INTEROP_GEN_DIR)
 
-        output = subprocess.Popen(
-            ["cmake", "--build", CMAKE_BUILD_DIR],
-            cwd=OBJC_INTEROP_GEN_DIR,
-            stdout=PIPE,
-        )
-        log_output(output)
+        command("cmake", "--build", CMAKE_BUILD_DIR, cwd=OBJC_INTEROP_GEN_DIR)
 
         LOG.info('end build objc-interop-gen\n')
 
@@ -181,13 +168,31 @@ def clean(args):
     LOG.info("end clean objc-interop-gen\n")
 
     LOG.info("begin clean interoplib...\n")
-    output = subprocess.Popen(
-        ["cjpm", "clean", "--target-dir=" + INTEROPLIB_OUT],
-        cwd=INTEROPLIB_DIR,
-        stdout=PIPE,
-    )
-    log_output(output)
+    command("cjpm", "clean", "--target-dir=" + INTEROPLIB_OUT, cwd=INTEROPLIB_DIR)
     LOG.info("end clean interoplib\n")
+
+def get_install_dir(install_path, *relative_path):
+    DEST = os.path.join(install_path, *relative_path)
+    if not os.path.exists(DEST):
+        os.makedirs(DEST)
+    return DEST
+
+def install_file(install_dir, file):
+    if os.path.isfile(file):
+        shutil.copy2(file, install_dir)
+
+def install_files(install_dir, *files):
+    for file in files:
+        install_file(install_dir, file)
+
+def find_match(lines, regexp):
+    """Searching the list of lines, find the first substring that matches the capture in the specified pattern"""
+    pattern = re.compile(regexp)
+    for line in lines:
+        matched = re.search(pattern, line)
+        if (matched):
+            return matched.group(1)
+    return None
 
 def install(args):
     """install objc-interop-gen or interoplib"""
@@ -198,46 +203,63 @@ def install(args):
         runtime = runtime_name(args.target)
         LOG.info("begin install interoplib for " + runtime + "\n")
 
-        DEST_DYLIB = os.path.join(install_path, "runtime", "lib", runtime)
-        DEST_A = os.path.join(install_path, "lib", runtime)
-        DEST_CJO = os.path.join(install_path, "modules", runtime)
-        if not os.path.exists(DEST_DYLIB):
-            os.makedirs(DEST_DYLIB)
-        if not os.path.exists(DEST_A):
-            os.makedirs(DEST_A)
-        if not os.path.exists(DEST_CJO):
-            os.makedirs(DEST_CJO)
-        if os.path.isfile(OUT_INTEROPLIB_COMMON_DYLIB):
-            shutil.copy2(OUT_INTEROPLIB_COMMON_DYLIB, DEST_DYLIB)
-        if os.path.isfile(OUT_INTEROPLIB_OBJC_DYLIB):
-            shutil.copy2(OUT_INTEROPLIB_OBJC_DYLIB, DEST_DYLIB)
-        if os.path.isfile(OUT_OBJC_LANG_DYLIB):
-            shutil.copy2(OUT_OBJC_LANG_DYLIB, DEST_DYLIB)
-        if os.path.isfile(OUT_INTEROPLIB_COMMON_A):
-            shutil.copy2(OUT_INTEROPLIB_COMMON_A, DEST_A)
-        if os.path.isfile(OUT_INTEROPLIB_OBJC_A):
-            shutil.copy2(OUT_INTEROPLIB_OBJC_A, DEST_A)
-        if os.path.isfile(OUT_OBJC_LANG_A):
-            shutil.copy2(OUT_OBJC_LANG_A, DEST_A)
-        if os.path.isfile(OUT_INTEROPLIB_COMMON_CJO):
-            shutil.copy2(OUT_INTEROPLIB_COMMON_CJO, DEST_CJO)
-        if os.path.isfile(OUT_INTEROPLIB_OBJC_CJO):
-            shutil.copy2(OUT_INTEROPLIB_OBJC_CJO, DEST_CJO)
-        if os.path.isfile(OUT_OBJC_LANG_CJO):
-            shutil.copy2(OUT_OBJC_LANG_CJO, DEST_CJO)
+        install_files(
+            get_install_dir(install_path, "runtime", "lib", runtime),
+            OUT_INTEROPLIB_COMMON_DYLIB,
+            OUT_INTEROPLIB_OBJC_DYLIB,
+            OUT_OBJC_LANG_DYLIB
+        )
+        install_files(get_install_dir(install_path, "lib", runtime),
+            OUT_INTEROPLIB_COMMON_A,
+            OUT_INTEROPLIB_OBJC_A,
+            OUT_OBJC_LANG_A
+        )
+        install_files(
+            get_install_dir(install_path, "modules", runtime),
+            OUT_INTEROPLIB_COMMON_CJO,
+            OUT_INTEROPLIB_OBJC_CJO,
+            OUT_OBJC_LANG_CJO
+        )
 
         LOG.info("end install interoplib for " + runtime + "\n")
     else:
         LOG.info("begin install objc-interop-gen...")
 
-        output = subprocess.Popen(
-            ["cmake", "--install", CMAKE_BUILD_DIR, "--prefix", install_path],
-            cwd=OBJC_INTEROP_GEN_DIR,
-            stdout=PIPE,
-        )
-        log_output(output)
-        if output.returncode != 0:
-            LOG.fatal("install failed")
+        install_dir = get_install_dir(install_path, "tools", "bin");
+        install_file(install_dir, os.path.join(CMAKE_BUILD_DIR, "ObjCInteropGen"))
+        if IS_DARWIN:
+            INSTALLED_OBJC_INTEROP_GEN = os.path.join(install_dir, "ObjCInteropGen")
+            load_commands = subprocess.run(
+                ["otool", "-l", INSTALLED_OBJC_INTEROP_GEN],
+                capture_output=True
+            ).stdout.decode().splitlines()
+            rpath = find_match(load_commands, r"path (.*) \(offset \d*\)")
+            if rpath:
+                command(
+                    "install_name_tool",
+                    "-rpath",
+                    rpath,
+                    "@loader_path/../../third_party/llvm/lib",
+                    INSTALLED_OBJC_INTEROP_GEN
+                )
+            libclang_dylib = find_match(load_commands, r"name (.*/libclang.dylib) \(offset \d*\)")
+            if libclang_dylib:
+                command(
+                    "install_name_tool",
+                    "-change",
+                    libclang_dylib,
+                    "@rpath/libclang.dylib",
+                    INSTALLED_OBJC_INTEROP_GEN
+                )
+            libLLVM_dylib = find_match(load_commands, r"name (.*/libLLVM.dylib) \(offset \d*\)")
+            if libLLVM_dylib:
+                command(
+                    "install_name_tool",
+                    "-change",
+                    libLLVM_dylib,
+                    "@rpath/libLLVM.dylib",
+                    INSTALLED_OBJC_INTEROP_GEN
+                )
 
         LOG.info("end install objc-interop-gen")
 
