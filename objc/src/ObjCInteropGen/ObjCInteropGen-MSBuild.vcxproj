@@ -164,6 +164,8 @@
     <ClCompile>
       <AdditionalIncludeDirectories>../../third_party/tomlplusplus;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(BuildType)'=='Release'">NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OBJCINTEROPGEN_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <CppAdditionalWarning />
     <Link Condition="'$(OS)'=='Linux'or'$(OS)'=='MacOS'">

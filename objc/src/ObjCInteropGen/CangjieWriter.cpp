@@ -135,10 +135,20 @@ PackageFile* current_package_file = nullptr;
 std::set<std::string> imports;
 
 class PackageFileScope final {
+#if !defined OBJCINTEROPGEN_NO_WARNINGS || !defined NDEBUG
     PackageFile* file_;
+#endif
 
 public:
+#ifdef OBJCINTEROPGEN_NO_WARNINGS
+#ifdef NDEBUG
+    OBJCINTEROPGEN_NODISCARD_CONSTRUCTOR explicit PackageFileScope(PackageFile* file)
+#else
+    OBJCINTEROPGEN_NODISCARD_CONSTRUCTOR explicit PackageFileScope(PackageFile* file) : file_(file)
+#endif
+#else
     [[nodiscard]] explicit PackageFileScope(PackageFile* file) : file_(file)
+#endif
     {
         assert(!current_package_file);
         assert(file);
@@ -176,7 +186,11 @@ std::string symbol_to_import_name(const FileLevelSymbol& symbol)
 
 class ImportCollectVisitor final : public SingleDeclarationSymbolVisitor {
 public:
+#ifdef OBJCINTEROPGEN_NO_WARNINGS
+    OBJCINTEROPGEN_NODISCARD_CONSTRUCTOR explicit ImportCollectVisitor() : SingleDeclarationSymbolVisitor(false)
+#else
     [[nodiscard]] explicit ImportCollectVisitor() : SingleDeclarationSymbolVisitor(false)
+#endif
     {
     }
 

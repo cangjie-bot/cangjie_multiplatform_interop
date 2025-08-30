@@ -85,7 +85,11 @@ bool mark_roots()
 class SymbolReferenceCollector final : public SingleDeclarationSymbolVisitor {
 
 public:
+#ifdef OBJCINTEROPGEN_NO_WARNINGS
+    OBJCINTEROPGEN_NODISCARD_CONSTRUCTOR explicit SymbolReferenceCollector() : SingleDeclarationSymbolVisitor(true)
+#else
     [[nodiscard]] explicit SymbolReferenceCollector() : SingleDeclarationSymbolVisitor(true)
+#endif
     {
     }
 

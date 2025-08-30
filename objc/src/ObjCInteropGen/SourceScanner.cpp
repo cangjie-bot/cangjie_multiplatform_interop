@@ -11,10 +11,17 @@
 #include <filesystem>
 #include <iostream>
 
+#if defined OBJCINTEROPGEN_NO_WARNINGS && defined _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4805) // '|': unsafe mix of type 'unsigned int' and type 'bool' in operation
+#endif
 #include <clang-c/Index.h>
 #include <clang/AST/DeclBase.h>
 #include <clang/AST/DeclObjC.h>
 #include <clang/Basic/Version.h>
+#if defined OBJCINTEROPGEN_NO_WARNINGS && defined _MSC_VER
+#pragma warning(pop)
+#endif
 
 #include "InputFile.h"
 #include "Logging.h"
@@ -146,6 +153,10 @@ class SourceScanner final : public ClangVisitor {
 
     Symbol* push_current(NamedTypeSymbol* symbol, const bool is_objc)
     {
+#if defined OBJCINTEROPGEN_NO_WARNINGS && !defined NDEBUG
+        using Kind = NamedTypeSymbol::Kind;
+
+#endif
         assert(symbol);
         assert(is_objc == (symbol->is(Kind::Interface) || symbol->is(Kind::Protocol) || symbol->is(Kind::Category)));
 
@@ -710,7 +721,11 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
             const auto num_arg_types = clang_getNumArgTypes(type);
             assert(num_arg_types >= 0);
             for (int i = 0; i < num_arg_types; ++i) {
+#ifdef OBJCINTEROPGEN_NO_WARNINGS
+                parameters->add_item(type_like_symbol(clang_getArgType(type, static_cast<unsigned>(i))));
+#else
                 parameters->add_item(type_like_symbol(clang_getArgType(type, i)));
+#endif
             }
             auto* return_type = type_like_symbol(clang_getResultType(type));
             return func(new FuncTypeSymbol(parameters, return_type));
@@ -1187,8 +1202,15 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
                 assert(current_top_is_type());
                 assert(level() == 1);
                 auto* type_decl = current_type_declaration();
+#ifdef OBJCINTEROPGEN_NO_WARNINGS
+#ifndef NDEBUG
+                const auto kind = type_decl->kind();
+                assert((is_interface && kind == Kind::Interface) || (is_protocol && kind == Kind::Protocol));
+#endif
+#else
                 [[maybe_unused]] const auto kind = type_decl->kind();
                 assert((is_interface && kind == Kind::Interface) || (is_protocol && kind == Kind::Protocol));
+#endif
                 const auto referenced = clang_getCursorReferenced(cursor);
                 assert(is_valid(referenced));
                 const auto referenced_type = as_string(clang_getCursorSpelling(referenced));
