@@ -13,6 +13,7 @@ import logging
 import multiprocessing
 import os
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -55,16 +56,6 @@ OUT_OBJC_LANG_CJO   = os.path.join(OBJC_OUT_PREFIX, "objc.lang.cjo")
 LOG_DIR = os.path.join(BUILD_DIR, 'logs')
 LOG_FILE = os.path.join(LOG_DIR, 'ObjCInteropGen.log')
 
-clang_path = shutil.which('clang')
-clang_pp_path = shutil.which('clang++')
-if not clang_path:
-  LOG.error('clang is required to build cangjie compiler')
-if not clang_pp_path:
-  LOG.error('clang++ is required to build cangjie compiler')
-
-os.environ['CC'] = clang_path
-os.environ['CXX'] = clang_pp_path
-
 def log_output(output):
     """log command output"""
     while True:
@@ -103,6 +94,18 @@ def init_log(name):
     log.addHandler(filehandler)
     return log
 
+def fatal(message):
+    """Log the message as CRITICAL and raise Exception with the same message"""
+    LOG.critical(message)
+    raise Exception(message)
+
+def command(*args, cwd=None, env=None):
+    """Execute a child program via 'subprocess.Popen' and log the output"""
+    output = subprocess.Popen(args, stdout=PIPE, cwd=cwd, env=env)
+    log_output(output)
+    if output.returncode:
+        fatal('"' + ' '.join(args) + '" returned ' + output.returncode)
+
 def runtime_name(target):
     return target+"_cjnative"
 
@@ -111,11 +114,9 @@ def fetch_tomlplusplus(target_dir):
     tomlplusplus_dir = os.path.join(target_dir, 'tomlplusplus')
     if not os.path.exists(tomlplusplus_dir):
         LOG.info('Fetching tomlplusplus from GitHub...\n')
-        output = subprocess.Popen(
-            ["git", "clone", "--depth=1", "-b", "v3.4.0", "https://gitee.com/mirrors_marzer/tomlplusplus.git",
-             tomlplusplus_dir], stdout=PIPE,
+        command(
+            "git", "clone", "--depth=1", "-b", "v3.4.0", "https://gitee.com/marzer/tomlplusplus.git", tomlplusplus_dir
         )
-        log_output(output)
         LOG.info('Finished fetching tomlplusplus\n')
     else:
         LOG.info('tomlplusplus directory already exists, skipping fetch\n')
@@ -141,13 +142,7 @@ def build(args):
             cjpm_env["SYSROOT_OPTION"] = "--sysroot=" + args.target_sysroot
         # target_toolchain is not used for now
 
-        output = subprocess.Popen(
-            ["cjpm", "build", "--target-dir=" + INTEROPLIB_OUT, CJPM_CONFIG],
-            env=cjpm_env,
-            cwd=INTEROPLIB_DIR,
-            stdout=PIPE,
-        )
-        log_output(output)
+        command("cjpm", "build", "--target-dir=" + INTEROPLIB_OUT, CJPM_CONFIG, cwd=INTEROPLIB_DIR, env=cjpm_env)
 
         LOG.info('end build interoplib for ' + runtime + '\n')
     else:
@@ -156,19 +151,9 @@ def build(args):
         # Fetch tomlplusplus before building
         fetch_tomlplusplus(OBJC_INTEROP_THIRD_PARTY)
 
-        output = subprocess.Popen(
-            ["cmake", "-B", CMAKE_BUILD_DIR, '-DCMAKE_BUILD_TYPE=' + args.build_type.value],
-            cwd=OBJC_INTEROP_GEN_DIR,
-            stdout=PIPE,
-        )
-        log_output(output)
+        command("cmake", "-B", CMAKE_BUILD_DIR, '-DCMAKE_BUILD_TYPE=' + args.build_type.value, cwd=OBJC_INTEROP_GEN_DIR)
 
-        output = subprocess.Popen(
-            ["cmake", "--build", CMAKE_BUILD_DIR],
-            cwd=OBJC_INTEROP_GEN_DIR,
-            stdout=PIPE,
-        )
-        log_output(output)
+        command("cmake", "--build", CMAKE_BUILD_DIR, cwd=OBJC_INTEROP_GEN_DIR)
 
         LOG.info('end build objc-interop-gen\n')
 
@@ -181,13 +166,54 @@ def clean(args):
     LOG.info("end clean objc-interop-gen\n")
 
     LOG.info("begin clean interoplib...\n")
-    output = subprocess.Popen(
-        ["cjpm", "clean", "--target-dir=" + INTEROPLIB_OUT],
-        cwd=INTEROPLIB_DIR,
-        stdout=PIPE,
-    )
-    log_output(output)
+    command("cjpm", "clean", "--target-dir=" + INTEROPLIB_OUT, cwd=INTEROPLIB_DIR)
     LOG.info("end clean interoplib\n")
+
+def prepare_dir(base_path, *relative_path):
+    """
+    Insure that the directory specified by the arguments exists (create it if it
+    does not) and return its path.
+    """
+    path = os.path.join(base_path, *relative_path)
+    if not os.path.exists(path):
+        os.makedirs(path)
+    return path
+
+def install_file(install_dir, file):
+    if os.path.isfile(file):
+        shutil.copy2(file, install_dir)
+    else:
+        fatal("Cannot find \"%s\" for installing to \"%s\"", file, install_dir)
+
+def install_files(install_dir, *files):
+    for file in files:
+        install_file(install_dir, file)
+
+def find_match(lines, regexp):
+    """Searching the list of lines, find the first substring that matches the capture in the specified pattern"""
+    pattern = re.compile(regexp)
+    for line in lines:
+        matched = re.search(pattern, line)
+        if matched:
+            return matched.group(1)
+    return None
+
+def change_binary_dependency(binary, otool_output, library):
+    """
+    Change the dependent library install name to the @rpath-based one.  If the
+    binary does not contain an install name for this library, raise an exception.
+
+    Arguments:
+    binary - the name of the binary file where to change the dependency
+    otool_output - the output of the `otool -l <binary>` command, splitted into
+                   lines
+    library - the file name (without a path) of the library
+    """
+    path = find_match(otool_output, r"name (.*/" + library + r") \(offset \d*\)")
+    if path:
+        command("install_name_tool", "-change", path, "@rpath/" + library, binary)
+    else:
+        fatal("Expected dependency on \"" + library + "\" in \"" + binary + "\" not found")
 
 def install(args):
     """install objc-interop-gen or interoplib"""
@@ -198,46 +224,54 @@ def install(args):
         runtime = runtime_name(args.target)
         LOG.info("begin install interoplib for " + runtime + "\n")
 
-        DEST_DYLIB = os.path.join(install_path, "runtime", "lib", runtime)
-        DEST_A = os.path.join(install_path, "lib", runtime)
-        DEST_CJO = os.path.join(install_path, "modules", runtime)
-        if not os.path.exists(DEST_DYLIB):
-            os.makedirs(DEST_DYLIB)
-        if not os.path.exists(DEST_A):
-            os.makedirs(DEST_A)
-        if not os.path.exists(DEST_CJO):
-            os.makedirs(DEST_CJO)
-        if os.path.isfile(OUT_INTEROPLIB_COMMON_DYLIB):
-            shutil.copy2(OUT_INTEROPLIB_COMMON_DYLIB, DEST_DYLIB)
-        if os.path.isfile(OUT_INTEROPLIB_OBJC_DYLIB):
-            shutil.copy2(OUT_INTEROPLIB_OBJC_DYLIB, DEST_DYLIB)
-        if os.path.isfile(OUT_OBJC_LANG_DYLIB):
-            shutil.copy2(OUT_OBJC_LANG_DYLIB, DEST_DYLIB)
-        if os.path.isfile(OUT_INTEROPLIB_COMMON_A):
-            shutil.copy2(OUT_INTEROPLIB_COMMON_A, DEST_A)
-        if os.path.isfile(OUT_INTEROPLIB_OBJC_A):
-            shutil.copy2(OUT_INTEROPLIB_OBJC_A, DEST_A)
-        if os.path.isfile(OUT_OBJC_LANG_A):
-            shutil.copy2(OUT_OBJC_LANG_A, DEST_A)
-        if os.path.isfile(OUT_INTEROPLIB_COMMON_CJO):
-            shutil.copy2(OUT_INTEROPLIB_COMMON_CJO, DEST_CJO)
-        if os.path.isfile(OUT_INTEROPLIB_OBJC_CJO):
-            shutil.copy2(OUT_INTEROPLIB_OBJC_CJO, DEST_CJO)
-        if os.path.isfile(OUT_OBJC_LANG_CJO):
-            shutil.copy2(OUT_OBJC_LANG_CJO, DEST_CJO)
+        install_files(
+            prepare_dir(install_path, "runtime", "lib", runtime),
+            OUT_INTEROPLIB_COMMON_DYLIB,
+            OUT_INTEROPLIB_OBJC_DYLIB,
+            OUT_OBJC_LANG_DYLIB
+        )
+        install_files(prepare_dir(install_path, "lib", runtime),
+            OUT_INTEROPLIB_COMMON_A,
+            OUT_INTEROPLIB_OBJC_A,
+            OUT_OBJC_LANG_A
+        )
+        install_files(
+            prepare_dir(install_path, "modules", runtime),
+            OUT_INTEROPLIB_COMMON_CJO,
+            OUT_INTEROPLIB_OBJC_CJO,
+            OUT_OBJC_LANG_CJO
+        )
 
         LOG.info("end install interoplib for " + runtime + "\n")
     else:
         LOG.info("begin install objc-interop-gen...")
 
-        output = subprocess.Popen(
-            ["cmake", "--install", CMAKE_BUILD_DIR, "--prefix", install_path],
-            cwd=OBJC_INTEROP_GEN_DIR,
-            stdout=PIPE,
-        )
-        log_output(output)
-        if output.returncode != 0:
-            LOG.fatal("install failed")
+        install_dir = prepare_dir(install_path, "tools", "bin");
+        install_file(install_dir, os.path.join(CMAKE_BUILD_DIR, "ObjCInteropGen"))
+        if IS_DARWIN:
+            INSTALLED_OBJC_INTEROP_GEN = os.path.join(install_dir, "ObjCInteropGen")
+            otool_output = subprocess.run(
+                ["otool", "-l", INSTALLED_OBJC_INTEROP_GEN],
+                capture_output=True
+            ).stdout.decode().splitlines()
+            rpath = find_match(otool_output, r"path (.*) \(offset \d*\)")
+            if rpath:
+                command(
+                    "install_name_tool",
+                    "-rpath",
+                    rpath,
+                    "@loader_path/../../third_party/llvm/lib",
+                    INSTALLED_OBJC_INTEROP_GEN
+                )
+            else:
+                command(
+                    "install_name_tool",
+                    "-add_rpath",
+                    "@loader_path/../../third_party/llvm/lib",
+                    INSTALLED_OBJC_INTEROP_GEN
+                )
+            change_binary_dependency(INSTALLED_OBJC_INTEROP_GEN, otool_output, "libclang.dylib")
+            change_binary_dependency(INSTALLED_OBJC_INTEROP_GEN, otool_output, "libLLVM.dylib")
 
         LOG.info("end install objc-interop-gen")
 
@@ -261,6 +295,16 @@ class BuildType(Enum):
 
 def main():
     """build entry"""
+    clang_path = shutil.which('clang')
+    clang_pp_path = shutil.which('clang++')
+    if not clang_path:
+      LOG.error('clang is required to build cangjie compiler')
+    if not clang_pp_path:
+      LOG.error('clang++ is required to build cangjie compiler')
+
+    os.environ['CC'] = clang_path
+    os.environ['CXX'] = clang_pp_path
+
     parser = argparse.ArgumentParser(description='build Objective-C binding generator or interoplib')
     subparsers = parser.add_subparsers(help='sub command help')
     parser_build = subparsers.add_parser('build', help='build Objective-C binding generator or interoplib')
