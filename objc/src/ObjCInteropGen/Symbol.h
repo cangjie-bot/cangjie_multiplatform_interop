@@ -579,6 +579,7 @@ constexpr uint8_t ModifierAccessMask = ModifierPrivate | ModifierProtected | Mod
 constexpr uint8_t ModifierStatic = 1 << 3;
 constexpr uint8_t ModifierReadonly = 1 << 4;
 constexpr uint8_t ModifierNullable = 1 << 5;
+constexpr uint8_t ModifierOverride = 1 << 6;
 
 class TypeDeclarationSymbol : public NamedTypeSymbol {
     std::vector<std::unique_ptr<TypeParameterSymbol>> parameters_;
@@ -1074,6 +1075,11 @@ public:
     [[nodiscard]] bool is_nullable() const noexcept
     {
         return modifiers_ & ModifierNullable;
+    }
+
+    [[nodiscard]] bool is_override() const noexcept
+    {
+        return modifiers_ & ModifierOverride;
     }
 
     [[nodiscard]] const std::string& getter() const noexcept
