@@ -12,4 +12,11 @@
 #include <clang/AST/DeclObjC.h>
 #pragma warning(pop)
 
+#if defined OBJCINTEROPGEN_NO_WARNINGS && defined __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-literal-operator"
+#endif
 #include "toml.hpp"
+#if defined OBJCINTEROPGEN_NO_WARNINGS && defined __clang__
+#pragma clang diagnostic pop
+#endif

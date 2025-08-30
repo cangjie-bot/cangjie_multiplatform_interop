@@ -164,6 +164,8 @@
     <ClCompile>
       <AdditionalIncludeDirectories>../../third_party/tomlplusplus;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions Condition="'$(BuildType)'=='Release'">NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>OBJCINTEROPGEN_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <CppAdditionalWarning />
     <Link Condition="'$(OS)'=='Linux'or'$(OS)'=='MacOS'">
@@ -190,6 +192,7 @@
     <ClCompile Include="Mappings.cpp" />
     <ClCompile Include="MappingsConfig.cpp" />
     <ClCompile Include="MarkPackage.cpp" />
+    <ClCompile Include="Mode.cpp" />
     <ClCompile Include="Package.cpp" />
     <ClCompile Include="PackageFilters.cpp" />
     <ClCompile Include="PackageOutputs.cpp" />
@@ -212,6 +215,7 @@
     <ClInclude Include="Logging.h" />
     <ClInclude Include="Mappings.h" />
     <ClInclude Include="MarkPackage.h" />
+    <ClInclude Include="Mode.h" />
     <ClInclude Include="Package.h" />
     <ClInclude Include="PackageConfig.h" />
     <ClInclude Include="pch.h" />

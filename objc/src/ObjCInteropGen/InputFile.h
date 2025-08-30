@@ -77,7 +77,11 @@ class InputFile final {
     void add_symbol(FileLevelSymbol* symbol);
 
 public:
+#ifdef OBJCINTEROPGEN_NO_WARNINGS
+    OBJCINTEROPGEN_NODISCARD_CONSTRUCTOR InputFile(InputDirectory* directory, std::filesystem::path path);
+#else
     [[nodiscard]] InputFile(InputDirectory* directory, std::filesystem::path path);
+#endif
 
     [[nodiscard]] InputDirectory* directory() const
     {
@@ -121,7 +125,11 @@ class InputDirectory final {
     friend class InputFile;
 
 public:
+#ifdef OBJCINTEROPGEN_NO_WARNINGS
+    OBJCINTEROPGEN_NODISCARD_CONSTRUCTOR explicit InputDirectory(std::filesystem::path path) : path_(std::move(path))
+#else
     [[nodiscard]] explicit InputDirectory(std::filesystem::path path) : path_(std::move(path))
+#endif
     {
     }
 

@@ -122,10 +122,21 @@ std::string_view current_package_name;
 std::set<std::string> imports;
 
 class PackageFileScope final {
+#if !defined OBJCINTEROPGEN_NO_WARNINGS || !defined NDEBUG
     const std::string_view package_name_;
+#endif
 
 public:
+#ifdef OBJCINTEROPGEN_NO_WARNINGS
+#ifdef NDEBUG
+    OBJCINTEROPGEN_NODISCARD_CONSTRUCTOR explicit PackageFileScope(std::string_view package_name)
+#else
+    OBJCINTEROPGEN_NODISCARD_CONSTRUCTOR explicit PackageFileScope(std::string_view package_name) noexcept
+        : package_name_(package_name)
+#endif
+#else
     [[nodiscard]] explicit PackageFileScope(std::string_view package_name) noexcept : package_name_(package_name)
+#endif
     {
         assert(current_package_name.empty());
         assert(!package_name.empty());
@@ -164,7 +175,11 @@ static std::string symbol_to_import_name(const FileLevelSymbol& symbol)
 
 class ImportCollectVisitor final : public SingleDeclarationSymbolVisitor {
 public:
+#ifdef OBJCINTEROPGEN_NO_WARNINGS
+    OBJCINTEROPGEN_NODISCARD_CONSTRUCTOR explicit ImportCollectVisitor() : SingleDeclarationSymbolVisitor(false)
+#else
     [[nodiscard]] explicit ImportCollectVisitor() : SingleDeclarationSymbolVisitor(false)
+#endif
     {
     }
 

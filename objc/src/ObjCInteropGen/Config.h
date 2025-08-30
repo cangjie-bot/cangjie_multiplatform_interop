@@ -8,7 +8,27 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#ifdef OBJCINTEROPGEN_NO_WARNINGS
+#if defined __clang__
+#if __clang_major__ >= 16
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-literal-operator"
+#endif
+#elif defined __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#endif
+#endif
 #include "toml.hpp"
+#ifdef OBJCINTEROPGEN_NO_WARNINGS
+#if defined __clang__
+#if __clang_major__ >= 16
+#pragma clang diagnostic pop
+#endif
+#elif defined __GNUC__
+#pragma GCC diagnostic pop
+#endif
+#endif
 #include <string_view>
 
 extern toml::table config;

@@ -277,9 +277,17 @@ bool TypeDeclarationSymbol::any_of_members(Pred cond) const noexcept(noexcept(co
 
 void TypeDeclarationSymbol::add_parameter(std::string name)
 {
+#ifdef OBJCINTEROPGEN_NO_WARNINGS
+#ifndef NDEBUG
+    for (const auto& parameter : parameters_) {
+        assert(parameter->name() != name);
+    }
+#endif
+#else
     for ([[maybe_unused]] const auto& parameter : parameters_) {
         assert(parameter->name() != name);
     }
+#endif
 
     parameters_.push_back(std::make_unique<TypeParameterSymbol>(TypeParameterSymbol::Private(), std::move(name)));
 }

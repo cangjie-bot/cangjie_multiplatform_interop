@@ -102,7 +102,11 @@ bool mark_roots()
 class SymbolReferenceCollector final : public SingleDeclarationSymbolVisitor {
 
 public:
+#ifdef OBJCINTEROPGEN_NO_WARNINGS
+    OBJCINTEROPGEN_NODISCARD_CONSTRUCTOR explicit SymbolReferenceCollector(FileLevelSymbol& symbol)
+#else
     [[nodiscard]] explicit SymbolReferenceCollector(FileLevelSymbol& symbol)
+#endif
         : SingleDeclarationSymbolVisitor(true), symbol_(symbol)
     {
     }
