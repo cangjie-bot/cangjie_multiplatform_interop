@@ -8,7 +8,14 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#if defined OBJCINTEROPGEN_NO_WARNINGS && defined __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#endif
 #include "toml.hpp"
+#if defined OBJCINTEROPGEN_NO_WARNINGS && defined __GNUC__
+#pragma GCC diagnostic pop
+#endif
 #include <string_view>
 
 extern toml::table config;

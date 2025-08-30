@@ -11,7 +11,14 @@
 #include <iostream>
 
 #include "Package.h"
+#if defined OBJCINTEROPGEN_NO_WARNINGS && defined __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#endif
 #include "toml.hpp"
+#if defined OBJCINTEROPGEN_NO_WARNINGS && defined __GNUC__
+#pragma GCC diagnostic pop
+#endif
 
 template <typename T, typename Desc>
 std::string get_string_value(
