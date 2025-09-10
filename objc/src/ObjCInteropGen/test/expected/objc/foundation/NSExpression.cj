@@ -25,7 +25,7 @@ public open class NSExpression <: NSObject & NSSecureCoding & NSCopying {
     @ForeignName["expressionWithFormat:argumentArray:"] public static func expressionWithFormatArgumentArray(expressionFormat: NSString, arguments: NSArray/*<ObjectType>*/): NSExpression
     @ForeignName["expressionWithFormat:"] public static func expressionWithFormat(expressionFormat: NSString): NSExpression
     @ForeignName["expressionWithFormat:arguments:"] public static func expressionWithFormatArguments(expressionFormat: NSString, argList: va_list): NSExpression
-    @ForeignName["expressionForConstantValue:"] public static func expressionForConstantValue(obj: id): NSExpression
+    @ForeignName["expressionForConstantValue:"] public static func expressionForConstantValue(obj: ObjCId): NSExpression
     public static func expressionForEvaluatedObject(): NSExpression
     @ForeignName["expressionForVariable:"] public static func expressionForVariable(string: NSString): NSExpression
     @ForeignName["expressionForKeyPath:"] public static func expressionForKeyPath(keyPath: NSString): NSExpression
@@ -37,25 +37,25 @@ public open class NSExpression <: NSObject & NSSecureCoding & NSCopying {
     @ForeignName["expressionForSubquery:usingIteratorVariable:predicate:"] public static func expressionForSubqueryUsingIteratorVariablePredicate(expression: NSExpression, variable: NSString, predicate: NSPredicate): NSExpression
     @ForeignName["expressionForFunction:selectorName:arguments:"] public static func expressionForFunctionSelectorNameArguments(target: NSExpression, name: NSString, parameters: ?NSArray/*<ObjectType>*/): NSExpression
     public static func expressionForAnyKey(): NSExpression
-    @ForeignName["expressionForBlock:arguments:"] public static func expressionForBlockArguments(block: ObjCBlock<(id, NSArray/*<NSExpression>*/, NSMutableDictionary/*<KeyType, ObjectType>*/) -> id>, arguments: ?NSArray/*<NSExpression>*/): NSExpression
+    @ForeignName["expressionForBlock:arguments:"] public static func expressionForBlockArguments(block: ObjCBlock<(ObjCId, NSArray/*<NSExpression>*/, NSMutableDictionary/*<KeyType, ObjectType>*/) -> ObjCId>, arguments: ?NSArray/*<NSExpression>*/): NSExpression
     @ForeignName["expressionForConditional:trueExpression:falseExpression:"] public static func expressionForConditionalTrueExpressionFalseExpression(predicate: NSPredicate, trueExpression: NSExpression, falseExpression: NSExpression): NSExpression
     @ForeignName["initWithExpressionType:"] public init(`type`: Int32 /*NSExpressionType*/)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
     public open prop expressionType: Int32 /*NSExpressionType*/
-    public open prop constantValue: id
+    public open prop constantValue: ObjCId
     public open prop keyPath: NSString
     public open prop function: NSString
     public open prop variable: NSString
     public open prop operand: NSExpression
     public open prop arguments: ?NSArray/*<NSExpression>*/
-    public open prop collection: id
+    public open prop collection: ObjCId
     public open prop predicate: NSPredicate
     public open prop leftExpression: NSExpression
     public open prop rightExpression: NSExpression
     public open prop trueExpression: NSExpression
     public open prop falseExpression: NSExpression
-    public open prop expressionBlock: ObjCBlock<(id, NSArray/*<NSExpression>*/, NSMutableDictionary/*<KeyType, ObjectType>*/) -> id>
-    @ForeignName["expressionValueWithObject:context:"] public open func expressionValueWithObjectContext(object: id, context: ?NSMutableDictionary/*<KeyType, ObjectType>*/): id
+    public open prop expressionBlock: ObjCBlock<(ObjCId, NSArray/*<NSExpression>*/, NSMutableDictionary/*<KeyType, ObjectType>*/) -> ObjCId>
+    @ForeignName["expressionValueWithObject:context:"] public open func expressionValueWithObjectContext(object: ObjCId, context: ?NSMutableDictionary/*<KeyType, ObjectType>*/): ObjCId
     public open func allowEvaluation(): Unit
 }
 

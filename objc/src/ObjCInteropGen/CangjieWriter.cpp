@@ -256,7 +256,7 @@ static bool is_objc_compatible_objcpointer_pointee(const NamedTypeSymbol& pointe
     }
 }
 
-static bool is_objc_compatible_parameter_type(TypeLikeSymbol& type)
+static bool is_objc_compatible_parameter_type(TypeLikeSymbol& type) 
 {
     assert(normal_mode());
     auto* canonical_type = dynamic_cast<NamedTypeSymbol*>(&type.canonical_type());

@@ -36,10 +36,10 @@ public:
         //           NSArray<ElementT>
         //       is printed as
         //           NSArray/*<ElementT>*/
-        //     - Generic type arguments are erased to `id`.  That is,
+        //     - Generic type arguments are erased to `ObjCId`.  That is,
         //           - (ElementT) firstObject;
         //       is printed as
-        //           - (id /*ElementT*/) firstObject;
+        //           - (ObjCId /*ElementT*/) firstObject;
         emit_cangjie
     };
 

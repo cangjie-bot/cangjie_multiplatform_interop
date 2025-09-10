@@ -602,8 +602,8 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
         case CXType_ObjCObject: {
             auto baseCXType = clang_Type_getObjCObjectBaseType(type);
             if (baseCXType.kind == CXType_ObjCId) {
-                // This is an `id` qualified with a list of protocols
-                auto* id_type = universe.type(NamedTypeSymbol::Kind::Protocol, "id" /* "ObjCId" */);
+                // This is an `ObjCId` qualified with a list of protocols
+                auto* id_type = universe.type(NamedTypeSymbol::Kind::Protocol, "ObjCId");
                 assert(id_type);
                 assert(dynamic_cast<TypeDeclarationSymbol*>(id_type));
                 auto num_protocols = clang_Type_getNumObjCProtocolRefs(type);
@@ -708,7 +708,7 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
                         return parameter;
                     }
 
-                    // In Cangjie code, use the narrowing protocol instead of `id`
+                    // In Cangjie code, use the narrowing protocol instead of `ObjCId`
                     return new NarrowedTypeParameterSymbol(*parameter, std::string(narrowing_protocol_name));
                 }
             }
@@ -754,7 +754,7 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
 
     switch (type.kind) {
         case CXType_ObjCId:
-            return universe.type(NamedTypeSymbol::Kind::Protocol, "id" /* "ObjCId" */);
+            return universe.type(NamedTypeSymbol::Kind::Protocol, "ObjCId");
         case CXType_ObjCClass:
             return universe.type(NamedTypeSymbol::Kind::Interface, "Class" /* "ObjCClass" */);
         case CXType_ObjCSel:
