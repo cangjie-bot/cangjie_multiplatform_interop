@@ -3,6 +3,7 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 public abstract sealed class NSISO8601DateFormatOptions {
     public static const NSISO8601DateFormatWithYear: NSUInteger = 1

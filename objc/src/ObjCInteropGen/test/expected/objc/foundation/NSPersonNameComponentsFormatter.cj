@@ -2,8 +2,8 @@
 
 package objc.foundation
 
-import objc.lang.ObjCPointer
 import interoplib.objc.*
+import objc.lang.*
 
 public abstract sealed class NSPersonNameComponentsFormatterStyle {
     public static const NSPersonNameComponentsFormatterStyleDefault: NSInteger = 0
@@ -26,6 +26,6 @@ public open class NSPersonNameComponentsFormatter <: NSFormatter {
     @ForeignName["stringFromPersonNameComponents:"] public open func stringFromPersonNameComponents(components: NSPersonNameComponents): NSString
     @ForeignName["annotatedStringFromPersonNameComponents:"] public open func annotatedStringFromPersonNameComponents(components: NSPersonNameComponents): NSAttributedString
     @ForeignName["personNameComponentsFromString:"] public open func personNameComponentsFromString(string: NSString): ?NSPersonNameComponents
-    @ForeignName["getObjectValue:forString:errorDescription:"] public open func getObjectValueForStringErrorDescription(obj: ObjCPointer<id>, string: NSString, error: ObjCPointer<NSString>): Bool
+    @ForeignName["getObjectValue:forString:errorDescription:"] public open func getObjectValueForStringErrorDescription(obj: ObjCPointer<ObjCId>, string: NSString, error: ObjCPointer<NSString>): Bool
 }
 

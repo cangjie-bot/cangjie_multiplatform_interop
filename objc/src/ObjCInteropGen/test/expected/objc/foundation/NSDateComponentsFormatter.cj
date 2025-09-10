@@ -2,8 +2,8 @@
 
 package objc.foundation
 
-import objc.lang.ObjCPointer
 import interoplib.objc.*
+import objc.lang.*
 
 public abstract sealed class NSDateComponentsFormatterUnitsStyle {
     public static const NSDateComponentsFormatterUnitsStylePositional: NSInteger = 0
@@ -26,7 +26,7 @@ public abstract sealed class NSDateComponentsFormatterZeroFormattingBehavior {
 
 @ObjCMirror
 public open class NSDateComponentsFormatter <: NSFormatter {
-    @ForeignName["stringForObjectValue:"] public open func stringForObjectValue(obj: id): ?NSString
+    @ForeignName["stringForObjectValue:"] public open func stringForObjectValue(obj: ObjCId): ?NSString
     @ForeignName["stringFromDateComponents:"] public open func stringFromDateComponents(components: NSDateComponents): ?NSString
     @ForeignName["stringFromDate:toDate:"] public open func stringFromDateToDate(startDate: NSDate, endDate: NSDate): ?NSString
     @ForeignName["stringFromTimeInterval:"] public open func stringFromTimeInterval(ti: NSTimeInterval): ?NSString
@@ -42,6 +42,6 @@ public open class NSDateComponentsFormatter <: NSFormatter {
     public open mut prop includesApproximationPhrase: Bool
     public open mut prop includesTimeRemainingPhrase: Bool
     public open mut prop formattingContext: Int32 /*NSFormattingContext*/
-    @ForeignName["getObjectValue:forString:errorDescription:"] public open func getObjectValueForStringErrorDescription(obj: ObjCPointer<id>, string: NSString, error: ObjCPointer<NSString>): Bool
+    @ForeignName["getObjectValue:forString:errorDescription:"] public open func getObjectValueForStringErrorDescription(obj: ObjCPointer<ObjCId>, string: NSString, error: ObjCPointer<NSString>): Bool
 }
 

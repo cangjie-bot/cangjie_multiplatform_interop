@@ -9,7 +9,7 @@ package objc.foundation
 public struct Class /*ObjCClass*/ {
 }
 
-public open interface id /*ObjCId*/ {
+public open interface ObjCId {
 }
 
 public open class SEL /*ObjCSelector*/ {

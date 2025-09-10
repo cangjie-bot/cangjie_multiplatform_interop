@@ -3,6 +3,7 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 public type NSMapTableOptions = NSUInteger
 
@@ -11,19 +12,19 @@ public open class NSMapTable/*<KeyType, ObjectType>*/ <: NSObject & NSCopying & 
     @ForeignName["initWithKeyOptions:valueOptions:capacity:"] public init(keyOptions: Int32 /*NSPointerFunctionsOptions*/, valueOptions: Int32 /*NSPointerFunctionsOptions*/, initialCapacity: NSUInteger)
     @ForeignName["initWithKeyPointerFunctions:valuePointerFunctions:capacity:"] public init(keyFunctions: NSPointerFunctions, valueFunctions: NSPointerFunctions, initialCapacity: NSUInteger)
     @ForeignName["mapTableWithKeyOptions:valueOptions:"] public static func mapTableWithKeyOptionsValueOptions(keyOptions: Int32 /*NSPointerFunctionsOptions*/, valueOptions: Int32 /*NSPointerFunctionsOptions*/): NSMapTable/*<KeyType, ObjectType>*/
-    public static func mapTableWithStrongToStrongObjects(): id
-    public static func mapTableWithWeakToStrongObjects(): id
-    public static func mapTableWithStrongToWeakObjects(): id
-    public static func mapTableWithWeakToWeakObjects(): id
+    public static func mapTableWithStrongToStrongObjects(): ObjCId
+    public static func mapTableWithWeakToStrongObjects(): ObjCId
+    public static func mapTableWithStrongToWeakObjects(): ObjCId
+    public static func mapTableWithWeakToWeakObjects(): ObjCId
     public static func strongToStrongObjectsMapTable(): NSMapTable/*<KeyType, ObjectType>*/
     public static func weakToStrongObjectsMapTable(): NSMapTable/*<KeyType, ObjectType>*/
     public static func strongToWeakObjectsMapTable(): NSMapTable/*<KeyType, ObjectType>*/
     public static func weakToWeakObjectsMapTable(): NSMapTable/*<KeyType, ObjectType>*/
     public open prop keyPointerFunctions: NSPointerFunctions
     public open prop valuePointerFunctions: NSPointerFunctions
-    @ForeignName["objectForKey:"] public open func objectForKey(aKey: id /*KeyType*/): id /*ObjectType*/
-    @ForeignName["removeObjectForKey:"] public open func removeObjectForKey(aKey: id /*KeyType*/): Unit
-    @ForeignName["setObject:forKey:"] public open func setObjectForKey(anObject: id /*ObjectType*/, aKey: id /*KeyType*/): Unit
+    @ForeignName["objectForKey:"] public open func objectForKey(aKey: ObjCId /*KeyType*/): ObjCId /*ObjectType*/
+    @ForeignName["removeObjectForKey:"] public open func removeObjectForKey(aKey: ObjCId /*KeyType*/): Unit
+    @ForeignName["setObject:forKey:"] public open func setObjectForKey(anObject: ObjCId /*ObjectType*/, aKey: ObjCId /*KeyType*/): Unit
     public open prop count: NSUInteger
     public open func keyEnumerator(): NSEnumerator/*<KeyType>*/
     public open func objectEnumerator(): ?NSEnumerator/*<ObjectType>*/

@@ -3,6 +3,7 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 public abstract sealed class NSRelativeDateTimeFormatterStyle {
     public static const NSRelativeDateTimeFormatterStyleNumeric: NSInteger = 0
@@ -26,6 +27,6 @@ public open class NSRelativeDateTimeFormatter <: NSFormatter {
     @ForeignName["localizedStringFromDateComponents:"] public open func localizedStringFromDateComponents(dateComponents: NSDateComponents): NSString
     @ForeignName["localizedStringFromTimeInterval:"] public open func localizedStringFromTimeInterval(timeInterval: NSTimeInterval): NSString
     @ForeignName["localizedStringForDate:relativeToDate:"] public open func localizedStringForDateRelativeToDate(date: NSDate, referenceDate: NSDate): NSString
-    @ForeignName["stringForObjectValue:"] public open func stringForObjectValue(obj: id): ?NSString
+    @ForeignName["stringForObjectValue:"] public open func stringForObjectValue(obj: ObjCId): ?NSString
 }
 

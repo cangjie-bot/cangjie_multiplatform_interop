@@ -3,13 +3,14 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 public type NSLocaleKey = NSString
 
 @ObjCMirror
 public open class NSLocale <: NSObject & NSCopying & NSSecureCoding {
-    @ForeignName["objectForKey:"] public open func objectForKey(key: NSLocaleKey): id
-    @ForeignName["displayNameForKey:value:"] public open func displayNameForKeyValue(key: NSLocaleKey, value: id): ?NSString
+    @ForeignName["objectForKey:"] public open func objectForKey(key: NSLocaleKey): ObjCId
+    @ForeignName["displayNameForKey:value:"] public open func displayNameForKeyValue(key: NSLocaleKey, value: ObjCId): ?NSString
     @ForeignName["initWithLocaleIdentifier:"] public init(string: NSString)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
     public open prop localeIdentifier: NSString

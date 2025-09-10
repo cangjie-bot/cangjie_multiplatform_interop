@@ -3,6 +3,7 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 @ObjCMirror
 public open class NSValue <: NSObject & NSCopying & NSSecureCoding {
@@ -12,8 +13,8 @@ public open class NSValue <: NSObject & NSCopying & NSSecureCoding {
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
     @ForeignName["valueWithBytes:objCType:"] public static func valueWithBytesObjCType(value: CPointer<Unit>, `type`: CPointer<Int8>): NSValue
     @ForeignName["value:withObjCType:"] public static func valueWithObjCType(value: CPointer<Unit>, `type`: CPointer<Int8>): NSValue
-    @ForeignName["valueWithNonretainedObject:"] public static func valueWithNonretainedObject(anObject: id): NSValue
-    public open prop nonretainedObjectValue: id
+    @ForeignName["valueWithNonretainedObject:"] public static func valueWithNonretainedObject(anObject: ObjCId): NSValue
+    public open prop nonretainedObjectValue: ObjCId
     @ForeignName["valueWithPointer:"] public static func valueWithPointer(pointer: CPointer<Unit>): NSValue
     public open prop pointerValue: CPointer<Unit>
     @ForeignName["isEqualToValue:"] public open func isEqualToValue(value: NSValue): Bool
@@ -58,7 +59,7 @@ public open class NSNumber <: NSValue {
     public open prop stringValue: NSString
     @ForeignName["compare:"] public open func compare(otherNumber: NSNumber): Int32 /*NSComparisonResult*/
     @ForeignName["isEqualToNumber:"] public open func isEqualToNumber(number: NSNumber): Bool
-    @ForeignName["descriptionWithLocale:"] public open func descriptionWithLocale(locale: id): NSString
+    @ForeignName["descriptionWithLocale:"] public open func descriptionWithLocale(locale: ObjCId): NSString
     @ForeignName["numberWithChar:"] public static func numberWithChar(value: Int8): NSNumber
     @ForeignName["numberWithUnsignedChar:"] public static func numberWithUnsignedChar(value: UInt8): NSNumber
     @ForeignName["numberWithShort:"] public static func numberWithShort(value: Int16): NSNumber

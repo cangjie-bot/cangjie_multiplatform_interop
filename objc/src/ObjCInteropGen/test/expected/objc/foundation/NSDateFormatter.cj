@@ -2,13 +2,13 @@
 
 package objc.foundation
 
-import objc.lang.ObjCPointer
 import interoplib.objc.*
+import objc.lang.*
 
 @ObjCMirror
 public open class NSDateFormatter <: NSFormatter {
     public open mut prop formattingContext: Int32 /*NSFormattingContext*/
-    @ForeignName["getObjectValue:forString:range:error:"] public open func getObjectValueForStringRangeError(obj: ObjCPointer<id>, string: NSString, rangep: CPointer<NSRange>, error: ObjCPointer<NSError>): Bool
+    @ForeignName["getObjectValue:forString:range:error:"] public open func getObjectValueForStringRangeError(obj: ObjCPointer<ObjCId>, string: NSString, rangep: CPointer<NSRange>, error: ObjCPointer<NSError>): Bool
     @ForeignName["stringFromDate:"] public open func stringFromDate(date: NSDate): NSString
     @ForeignName["dateFromString:"] public open func dateFromString(string: NSString): ?NSDate
     @ForeignName["localizedStringFromDate:dateStyle:timeStyle:"] public static func localizedStringFromDateDateStyleTimeStyle(date: NSDate, dstyle: Int32 /*NSDateFormatterStyle*/, tstyle: Int32 /*NSDateFormatterStyle*/): NSString

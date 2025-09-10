@@ -3,6 +3,7 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 @ObjCMirror
 public open class NSOperation <: NSObject {
@@ -43,10 +44,10 @@ public open class NSBlockOperation <: NSOperation {
 
 @ObjCMirror
 public open class NSInvocationOperation <: NSOperation {
-    @ForeignName["initWithTarget:selector:object:"] public init(target: id, sel: SEL, arg: id)
+    @ForeignName["initWithTarget:selector:object:"] public init(target: ObjCId, sel: SEL, arg: ObjCId)
     @ForeignName["initWithInvocation:"] public init(inv: NSInvocation)
     public open prop invocation: NSInvocation
-    public open prop result: id
+    public open prop result: ObjCId
 }
 
 @ObjCMirror
