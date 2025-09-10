@@ -8,18 +8,18 @@ import interoplib.objc.*
 public open class NSTimer <: NSObject {
     @ForeignName["timerWithTimeInterval:invocation:repeats:"] public static func timerWithTimeIntervalInvocationRepeats(ti: NSTimeInterval, invocation: NSInvocation, yesOrNo: Bool): NSTimer
     @ForeignName["scheduledTimerWithTimeInterval:invocation:repeats:"] public static func scheduledTimerWithTimeIntervalInvocationRepeats(ti: NSTimeInterval, invocation: NSInvocation, yesOrNo: Bool): NSTimer
-    @ForeignName["timerWithTimeInterval:target:selector:userInfo:repeats:"] public static func timerWithTimeIntervalTargetSelectorUserInfoRepeats(ti: NSTimeInterval, aTarget: id, aSelector: SEL, userInfo: id, yesOrNo: Bool): NSTimer
-    @ForeignName["scheduledTimerWithTimeInterval:target:selector:userInfo:repeats:"] public static func scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(ti: NSTimeInterval, aTarget: id, aSelector: SEL, userInfo: id, yesOrNo: Bool): NSTimer
+    @ForeignName["timerWithTimeInterval:target:selector:userInfo:repeats:"] public static func timerWithTimeIntervalTargetSelectorUserInfoRepeats(ti: NSTimeInterval, aTarget: ObjCId, aSelector: SEL, userInfo: ObjCId, yesOrNo: Bool): NSTimer
+    @ForeignName["scheduledTimerWithTimeInterval:target:selector:userInfo:repeats:"] public static func scheduledTimerWithTimeIntervalTargetSelectorUserInfoRepeats(ti: NSTimeInterval, aTarget: ObjCId, aSelector: SEL, userInfo: ObjCId, yesOrNo: Bool): NSTimer
     @ForeignName["timerWithTimeInterval:repeats:block:"] public static func timerWithTimeIntervalRepeatsBlock(interval: NSTimeInterval, repeats: Bool, block: ObjCBlock<(NSTimer) -> Unit>): NSTimer
     @ForeignName["scheduledTimerWithTimeInterval:repeats:block:"] public static func scheduledTimerWithTimeIntervalRepeatsBlock(interval: NSTimeInterval, repeats: Bool, block: ObjCBlock<(NSTimer) -> Unit>): NSTimer
     @ForeignName["initWithFireDate:interval:repeats:block:"] public init(date: NSDate, interval: NSTimeInterval, repeats: Bool, block: ObjCBlock<(NSTimer) -> Unit>)
-    @ForeignName["initWithFireDate:interval:target:selector:userInfo:repeats:"] public init(date: NSDate, ti: NSTimeInterval, t: id, s: SEL, ui: id, rep: Bool)
+    @ForeignName["initWithFireDate:interval:target:selector:userInfo:repeats:"] public init(date: NSDate, ti: NSTimeInterval, t: ObjCId, s: SEL, ui: ObjCId, rep: Bool)
     public open func fire(): Unit
     public open mut prop fireDate: NSDate
     public open prop timeInterval: NSTimeInterval
     public open mut prop tolerance: NSTimeInterval
     public open func invalidate(): Unit
     public open prop isValid: Bool
-    public open prop userInfo: id
+    public open prop userInfo: ObjCId
 }
 

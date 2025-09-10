@@ -437,7 +437,7 @@ TypeParameterSymbol::TypeParameterSymbol(Private, std::string name) : TypeLikeSy
 void TypeParameterSymbol::print(std::ostream& stream, SymbolPrintFormat format) const
 {
     if (format.emit_cangjie()) {
-        stream << "id /*" << name() << "*/";
+        stream << "ObjCId /*" << name() << "*/";
     } else {
         stream << name();
     }
@@ -724,6 +724,6 @@ void add_builtin_types()
     add_cangjie_struct("ObjCFunc").add_parameter("T");
     add_cangjie_struct("ObjCBlock").add_parameter("T");
     add_cangjie_class("Class" /* "ObjCClass" */);
-    add_cangjie_interface("id" /* "ObjCId" */);
+    add_cangjie_interface("ObjCId");
     add_cangjie_class("SEL" /* "ObjCSelector" */);
 }
