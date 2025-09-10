@@ -19,7 +19,7 @@ public open class NSFileVersion <: NSObject {
     @ForeignName["otherVersionsOfItemAtURL:"] public static func otherVersionsOfItemAtURL(url: NSURL): ?NSArray/*<NSFileVersion>*/
     @ForeignName["unresolvedConflictVersionsOfItemAtURL:"] public static func unresolvedConflictVersionsOfItemAtURL(url: NSURL): ?NSArray/*<NSFileVersion>*/
     @ForeignName["getNonlocalVersionsOfItemAtURL:completionHandler:"] public static func getNonlocalVersionsOfItemAtURLCompletionHandler(url: NSURL, completionHandler: ObjCBlock<(NSArray/*<NSFileVersion>*/, NSError) -> Unit>): Unit
-    @ForeignName["versionOfItemAtURL:forPersistentIdentifier:"] public static func versionOfItemAtURLForPersistentIdentifier(url: NSURL, persistentIdentifier: id): ?NSFileVersion
+    @ForeignName["versionOfItemAtURL:forPersistentIdentifier:"] public static func versionOfItemAtURLForPersistentIdentifier(url: NSURL, persistentIdentifier: ObjCId): ?NSFileVersion
     @ForeignName["addVersionOfItemAtURL:withContentsOfURL:options:error:"] public static func addVersionOfItemAtURLWithContentsOfURLOptionsError(url: NSURL, contentsURL: NSURL, options: Int32 /*NSFileVersionAddingOptions*/, outError: ObjCPointer<NSError>): ?NSFileVersion
     @ForeignName["temporaryDirectoryURLForNewVersionOfItemAtURL:"] public static func temporaryDirectoryURLForNewVersionOfItemAtURL(url: NSURL): NSURL
     public open prop URL: NSURL

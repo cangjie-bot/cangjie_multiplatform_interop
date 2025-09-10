@@ -13,7 +13,7 @@ public abstract sealed class NSNumberFormatterBehavior {
 @ObjCMirror
 public open class NSNumberFormatter <: NSFormatter {
     public open mut prop formattingContext: Int32 /*NSFormattingContext*/
-    @ForeignName["getObjectValue:forString:range:error:"] public open func getObjectValueForStringRangeError(obj: ObjCPointer<id>, string: NSString, rangep: CPointer<NSRange>, error: ObjCPointer<NSError>): Bool
+    @ForeignName["getObjectValue:forString:range:error:"] public open func getObjectValueForStringRangeError(obj: ObjCPointer<ObjCId>, string: NSString, rangep: CPointer<NSRange>, error: ObjCPointer<NSError>): Bool
     @ForeignName["stringFromNumber:"] public open func stringFromNumber(number: NSNumber): ?NSString
     @ForeignName["numberFromString:"] public open func numberFromString(string: NSString): ?NSNumber
     @ForeignName["localizedStringFromNumber:numberStyle:"] public static func localizedStringFromNumberNumberStyle(num: NSNumber, nstyle: Int32 /*NSNumberFormatterStyle*/): NSString
@@ -24,9 +24,9 @@ public open class NSNumberFormatter <: NSFormatter {
     public open mut prop generatesDecimalNumbers: Bool
     public open mut prop formatterBehavior: Int32 /*NSNumberFormatterBehavior*/
     public open mut prop negativeFormat: NSString
-    public open mut prop textAttributesForNegativeValues: ?NSDictionary/*<NSString, id>*/
+    public open mut prop textAttributesForNegativeValues: ?NSDictionary/*<NSString, ObjCId>*/
     public open mut prop positiveFormat: NSString
-    public open mut prop textAttributesForPositiveValues: ?NSDictionary/*<NSString, id>*/
+    public open mut prop textAttributesForPositiveValues: ?NSDictionary/*<NSString, ObjCId>*/
     public open mut prop allowsFloats: Bool
     public open mut prop decimalSeparator: NSString
     public open mut prop alwaysShowsDecimalSeparator: Bool
@@ -34,15 +34,15 @@ public open class NSNumberFormatter <: NSFormatter {
     public open mut prop usesGroupingSeparator: Bool
     public open mut prop groupingSeparator: NSString
     public open mut prop zeroSymbol: ?NSString
-    public open mut prop textAttributesForZero: ?NSDictionary/*<NSString, id>*/
+    public open mut prop textAttributesForZero: ?NSDictionary/*<NSString, ObjCId>*/
     public open mut prop nilSymbol: NSString
-    public open mut prop textAttributesForNil: ?NSDictionary/*<NSString, id>*/
+    public open mut prop textAttributesForNil: ?NSDictionary/*<NSString, ObjCId>*/
     public open mut prop notANumberSymbol: NSString
-    public open mut prop textAttributesForNotANumber: ?NSDictionary/*<NSString, id>*/
+    public open mut prop textAttributesForNotANumber: ?NSDictionary/*<NSString, ObjCId>*/
     public open mut prop positiveInfinitySymbol: NSString
-    public open mut prop textAttributesForPositiveInfinity: ?NSDictionary/*<NSString, id>*/
+    public open mut prop textAttributesForPositiveInfinity: ?NSDictionary/*<NSString, ObjCId>*/
     public open mut prop negativeInfinitySymbol: NSString
-    public open mut prop textAttributesForNegativeInfinity: ?NSDictionary/*<NSString, id>*/
+    public open mut prop textAttributesForNegativeInfinity: ?NSDictionary/*<NSString, ObjCId>*/
     public open mut prop positivePrefix: NSString
     public open mut prop positiveSuffix: NSString
     public open mut prop negativePrefix: NSString

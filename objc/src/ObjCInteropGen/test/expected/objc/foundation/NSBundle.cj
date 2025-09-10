@@ -55,9 +55,9 @@ public open class NSBundle <: NSObject {
     @ForeignName["localizedStringForKey:value:table:"] public open func localizedStringForKeyValueTable(key: NSString, value: ?NSString, tableName: ?NSString): NSString
     @ForeignName["localizedAttributedStringForKey:value:table:"] public open func localizedAttributedStringForKeyValueTable(key: NSString, value: ?NSString, tableName: ?NSString): NSAttributedString
     public open prop bundleIdentifier: ?NSString
-    public open prop infoDictionary: ?NSDictionary/*<NSString, id>*/
-    public open prop localizedInfoDictionary: ?NSDictionary/*<NSString, id>*/
-    @ForeignName["objectForInfoDictionaryKey:"] public open func objectForInfoDictionaryKey(key: NSString): id
+    public open prop infoDictionary: ?NSDictionary/*<NSString, ObjCId>*/
+    public open prop localizedInfoDictionary: ?NSDictionary/*<NSString, ObjCId>*/
+    @ForeignName["objectForInfoDictionaryKey:"] public open func objectForInfoDictionaryKey(key: NSString): ObjCId
     @ForeignName["classNamed:"] public open func classNamed(className: NSString): Class
     public open prop principalClass: Class
     public open prop preferredLocalizations: NSArray/*<NSString>*/
