@@ -6,8 +6,8 @@ import interoplib.objc.*
 
 @ObjCMirror
 public interface NSMetadataQueryDelegate <: NSObjectProtocol {
-    @ForeignName["metadataQuery:replacementObjectForResultObject:"] func metadataQueryReplacementObjectForResultObject(query: NSMetadataQuery, result: NSMetadataItem): id
-    @ForeignName["metadataQuery:replacementValueForAttribute:value:"] func metadataQueryReplacementValueForAttributeValue(query: NSMetadataQuery, attrName: NSString, attrValue: id): id
+    @ForeignName["metadataQuery:replacementObjectForResultObject:"] func metadataQueryReplacementObjectForResultObject(query: NSMetadataQuery, result: NSMetadataItem): ObjCId
+    @ForeignName["metadataQuery:replacementValueForAttribute:value:"] func metadataQueryReplacementValueForAttributeValue(query: NSMetadataQuery, attrName: NSString, attrValue: ObjCId): ObjCId
 }
 
 @ObjCMirror
@@ -29,38 +29,38 @@ public open class NSMetadataQuery <: NSObject {
     public open func disableUpdates(): Unit
     public open func enableUpdates(): Unit
     public open prop resultCount: NSUInteger
-    @ForeignName["resultAtIndex:"] public open func resultAtIndex(idx: NSUInteger): id
-    @ForeignName["enumerateResultsUsingBlock:"] public open func enumerateResultsUsingBlock(block: ObjCBlock<(id, NSUInteger, CPointer<Bool>) -> Unit>): Unit
-    @ForeignName["enumerateResultsWithOptions:usingBlock:"] public open func enumerateResultsWithOptionsUsingBlock(opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(id, NSUInteger, CPointer<Bool>) -> Unit>): Unit
+    @ForeignName["resultAtIndex:"] public open func resultAtIndex(idx: NSUInteger): ObjCId
+    @ForeignName["enumerateResultsUsingBlock:"] public open func enumerateResultsUsingBlock(block: ObjCBlock<(ObjCId, NSUInteger, CPointer<Bool>) -> Unit>): Unit
+    @ForeignName["enumerateResultsWithOptions:usingBlock:"] public open func enumerateResultsWithOptionsUsingBlock(opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(ObjCId, NSUInteger, CPointer<Bool>) -> Unit>): Unit
     public open prop results: NSArray/*<ObjectType>*/
-    @ForeignName["indexOfResult:"] public open func indexOfResult(result: id): NSUInteger
+    @ForeignName["indexOfResult:"] public open func indexOfResult(result: ObjCId): NSUInteger
     public open prop valueLists: NSDictionary/*<NSString, NSArray<NSMetadataQueryAttributeValueTuple>>*/
     public open prop groupedResults: NSArray/*<NSMetadataQueryResultGroup>*/
-    @ForeignName["valueOfAttribute:forResultAtIndex:"] public open func valueOfAttributeForResultAtIndex(attrName: NSString, idx: NSUInteger): id
+    @ForeignName["valueOfAttribute:forResultAtIndex:"] public open func valueOfAttributeForResultAtIndex(attrName: NSString, idx: NSUInteger): ObjCId
 }
 
 @ObjCMirror
 public open class NSMetadataItem <: NSObject {
     @ForeignName["initWithURL:"] public init(url: NSURL)
-    @ForeignName["valueForAttribute:"] public open func valueForAttribute(key: NSString): id
-    @ForeignName["valuesForAttributes:"] public open func valuesForAttributes(keys: NSArray/*<NSString>*/): ?NSDictionary/*<NSString, id>*/
+    @ForeignName["valueForAttribute:"] public open func valueForAttribute(key: NSString): ObjCId
+    @ForeignName["valuesForAttributes:"] public open func valuesForAttributes(keys: NSArray/*<NSString>*/): ?NSDictionary/*<NSString, ObjCId>*/
     public open prop attributes: NSArray/*<NSString>*/
 }
 
 @ObjCMirror
 public open class NSMetadataQueryAttributeValueTuple <: NSObject {
     public open prop attribute: NSString
-    public open prop value: id
+    public open prop value: ObjCId
     public open prop count: NSUInteger
 }
 
 @ObjCMirror
 public open class NSMetadataQueryResultGroup <: NSObject {
     public open prop attribute: NSString
-    public open prop value: id
+    public open prop value: ObjCId
     public open prop subgroups: ?NSArray/*<NSMetadataQueryResultGroup>*/
     public open prop resultCount: NSUInteger
-    @ForeignName["resultAtIndex:"] public open func resultAtIndex(idx: NSUInteger): id
+    @ForeignName["resultAtIndex:"] public open func resultAtIndex(idx: NSUInteger): ObjCId
     public open prop results: NSArray/*<ObjectType>*/
 }
 

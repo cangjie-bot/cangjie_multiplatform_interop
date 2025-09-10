@@ -22,10 +22,10 @@ public abstract sealed class NSFormattingUnitStyle {
 
 @ObjCMirror
 public open class NSFormatter <: NSObject & NSCopying & NSCoding {
-    @ForeignName["stringForObjectValue:"] public open func stringForObjectValue(obj: id): ?NSString
-    @ForeignName["attributedStringForObjectValue:withDefaultAttributes:"] public open func attributedStringForObjectValueWithDefaultAttributes(obj: id, attrs: ?NSDictionary/*<NSAttributedStringKey, id>*/): ?NSAttributedString
-    @ForeignName["editingStringForObjectValue:"] public open func editingStringForObjectValue(obj: id): ?NSString
-    @ForeignName["getObjectValue:forString:errorDescription:"] public open func getObjectValueForStringErrorDescription(obj: ObjCPointer<id>, string: NSString, error: ObjCPointer<NSString>): Bool
+    @ForeignName["stringForObjectValue:"] public open func stringForObjectValue(obj: ObjCId): ?NSString
+    @ForeignName["attributedStringForObjectValue:withDefaultAttributes:"] public open func attributedStringForObjectValueWithDefaultAttributes(obj: ObjCId, attrs: ?NSDictionary/*<NSAttributedStringKey, ObjCId>*/): ?NSAttributedString
+    @ForeignName["editingStringForObjectValue:"] public open func editingStringForObjectValue(obj: ObjCId): ?NSString
+    @ForeignName["getObjectValue:forString:errorDescription:"] public open func getObjectValueForStringErrorDescription(obj: ObjCPointer<ObjCId>, string: NSString, error: ObjCPointer<NSString>): Bool
     @ForeignName["isPartialStringValid:newEditingString:errorDescription:"] public open func isPartialStringValidNewEditingStringErrorDescription(partialString: NSString, newString: ObjCPointer<NSString>, error: ObjCPointer<NSString>): Bool
     @ForeignName["isPartialStringValid:proposedSelectedRange:originalString:originalSelectedRange:errorDescription:"] public open func isPartialStringValidProposedSelectedRangeOriginalStringOriginalSelectedRangeErrorDescription(partialStringPtr: ObjCPointer<NSString>, proposedSelRangePtr: NSRangePointer, origString: NSString, origSelRange: NSRange, error: ObjCPointer<NSString>): Bool
 }

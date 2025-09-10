@@ -11,7 +11,7 @@ public open class NSScanner <: NSObject & NSCopying {
     public open mut prop scanLocation: NSUInteger
     public open mut prop charactersToBeSkipped: ?NSCharacterSet
     public open mut prop caseSensitive: Bool
-    public open mut prop locale: id
+    public open mut prop locale: ObjCId
     @ForeignName["initWithString:"] public init(string: NSString)
     @ForeignName["scanInt:"] public open func scanInt(result: CPointer<Int32>): Bool
     @ForeignName["scanInteger:"] public open func scanInteger(result: CPointer<NSInteger>): Bool
@@ -29,7 +29,7 @@ public open class NSScanner <: NSObject & NSCopying {
     @ForeignName["scanUpToCharactersFromSet:intoString:"] public open func scanUpToCharactersFromSetIntoString(set: NSCharacterSet, result: ObjCPointer<NSString>): Bool
     public open prop isAtEnd: Bool
     @ForeignName["scannerWithString:"] public static func scannerWithString(string: NSString): NSScanner
-    @ForeignName["localizedScannerWithString:"] public static func localizedScannerWithString(string: NSString): id
+    @ForeignName["localizedScannerWithString:"] public static func localizedScannerWithString(string: NSString): ObjCId
     @ForeignName["scanDecimal:"] public open func scanDecimal(dcm: CPointer<NSDecimal>): Bool
 }
 

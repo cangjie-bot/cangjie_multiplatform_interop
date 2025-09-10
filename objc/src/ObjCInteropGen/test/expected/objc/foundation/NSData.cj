@@ -81,7 +81,7 @@ public open class NSData <: NSObject & NSCopying & NSMutableCopying & NSSecureCo
     @ForeignName["decompressedDataUsingAlgorithm:error:"] public open func decompressedDataUsingAlgorithmError(algorithm: Int32 /*NSDataCompressionAlgorithm*/, error: ObjCPointer<NSError>): NSData
     @ForeignName["compressedDataUsingAlgorithm:error:"] public open func compressedDataUsingAlgorithmError(algorithm: Int32 /*NSDataCompressionAlgorithm*/, error: ObjCPointer<NSError>): NSData
     @ForeignName["getBytes:"] public open func getBytes(buffer: CPointer<Unit>): Unit
-    @ForeignName["dataWithContentsOfMappedFile:"] public static func dataWithContentsOfMappedFile(path: NSString): id
+    @ForeignName["dataWithContentsOfMappedFile:"] public static func dataWithContentsOfMappedFile(path: NSString): ObjCId
     // @ForeignName["initWithContentsOfMappedFile:"] public init(path: NSString)
     // @ForeignName["initWithBase64Encoding:"] public init(base64String: NSString)
     public open func base64Encoding(): NSString

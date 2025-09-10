@@ -10,19 +10,19 @@ public type NSErrorUserInfoKey = NSString
 
 @ObjCMirror
 public open class NSError <: NSObject & NSCopying & NSSecureCoding {
-    @ForeignName["initWithDomain:code:userInfo:"] public init(domain: NSErrorDomain, code: NSInteger, dict: ?NSDictionary/*<NSErrorUserInfoKey, id>*/)
-    @ForeignName["errorWithDomain:code:userInfo:"] public static func errorWithDomainCodeUserInfo(domain: NSErrorDomain, code: NSInteger, dict: ?NSDictionary/*<NSErrorUserInfoKey, id>*/): NSError
+    @ForeignName["initWithDomain:code:userInfo:"] public init(domain: NSErrorDomain, code: NSInteger, dict: ?NSDictionary/*<NSErrorUserInfoKey, ObjCId>*/)
+    @ForeignName["errorWithDomain:code:userInfo:"] public static func errorWithDomainCodeUserInfo(domain: NSErrorDomain, code: NSInteger, dict: ?NSDictionary/*<NSErrorUserInfoKey, ObjCId>*/): NSError
     public open prop domain: NSErrorDomain
     public open prop code: NSInteger
-    public open prop userInfo: NSDictionary/*<NSErrorUserInfoKey, id>*/
+    public open prop userInfo: NSDictionary/*<NSErrorUserInfoKey, ObjCId>*/
     public open prop localizedDescription: NSString
     public open prop localizedFailureReason: ?NSString
     public open prop localizedRecoverySuggestion: ?NSString
     public open prop localizedRecoveryOptions: ?NSArray/*<NSString>*/
-    public open prop recoveryAttempter: id
+    public open prop recoveryAttempter: ObjCId
     public open prop helpAnchor: ?NSString
     public open prop underlyingErrors: NSArray/*<NSError>*/
-    @ForeignName["setUserInfoValueProviderForDomain:provider:"] public static func setUserInfoValueProviderForDomainProvider(errorDomain: NSErrorDomain, provider: ObjCBlock<(NSError, NSErrorUserInfoKey) -> id>): Unit
-    @ForeignName["userInfoValueProviderForDomain:"] public static func userInfoValueProviderForDomain(err: NSError, userInfoKey: NSErrorUserInfoKey, errorDomain: NSErrorDomain): ObjCBlock<(NSError, NSErrorUserInfoKey) -> id>
+    @ForeignName["setUserInfoValueProviderForDomain:provider:"] public static func setUserInfoValueProviderForDomainProvider(errorDomain: NSErrorDomain, provider: ObjCBlock<(NSError, NSErrorUserInfoKey) -> ObjCId>): Unit
+    @ForeignName["userInfoValueProviderForDomain:"] public static func userInfoValueProviderForDomain(err: NSError, userInfoKey: NSErrorUserInfoKey, errorDomain: NSErrorDomain): ObjCBlock<(NSError, NSErrorUserInfoKey) -> ObjCId>
 }
 

@@ -23,7 +23,7 @@ public type NSUncaughtExceptionHandler = ObjCFunc<(NSException) -> Unit>
 @ObjCMirror
 public open class NSAssertionHandler <: NSObject {
     public static prop currentHandler: NSAssertionHandler
-    @ForeignName["handleFailureInMethod:object:file:lineNumber:description:"] public open func handleFailureInMethodObjectFileLineNumberDescription(selector: SEL, object: id, fileName: NSString, line: NSInteger, format: ?NSString): Unit
+    @ForeignName["handleFailureInMethod:object:file:lineNumber:description:"] public open func handleFailureInMethodObjectFileLineNumberDescription(selector: SEL, object: ObjCId, fileName: NSString, line: NSInteger, format: ?NSString): Unit
     @ForeignName["handleFailureInFunction:file:lineNumber:description:"] public open func handleFailureInFunctionFileLineNumberDescription(functionName: NSString, fileName: NSString, line: NSInteger, format: ?NSString): Unit
 }
 
