@@ -65,7 +65,7 @@ public open class NSData <: NSObject & NSCopying & NSMutableCopying & NSSecureCo
     @ForeignName["dataWithContentsOfFile:"] public static func dataWithContentsOfFile(path: NSString): NSData
     @ForeignName["dataWithContentsOfURL:"] public static func dataWithContentsOfURL(url: NSURL): NSData
     @ObjCInit @ForeignName["initWithBytes:length:"] public static func initWithBytesLength(bytes: CPointer<Unit>, length: NSUInteger): NSData
-    @ObjCInit @ForeignName["initWithBytesNoCopy:length:"] public static func initWithBytesNoCopyLength(bytes: CPointer<Unit>, length: NSUInteger): NSData
+    @ObjCInit @ForeignName["initWithBytesNoCopy:length:"] public static func initWithBytesNoCopyLength(bytes: CPointer<Unit>, length: NSUInteger): NSData 
     @ForeignName["initWithBytesNoCopy:length:freeWhenDone:"] public init(bytes: CPointer<Unit>, length: NSUInteger, b: Bool)
     @ForeignName["initWithBytesNoCopy:length:deallocator:"] public init(bytes: CPointer<Unit>, length: NSUInteger, deallocator: ObjCBlock<(CPointer<Unit>, NSUInteger) -> Unit>)
     @ForeignName["initWithContentsOfFile:options:error:"] public init(path: NSString, readOptionsMask: Int32 /*NSDataReadingOptions*/, errorPtr: ObjCPointer<NSError>)

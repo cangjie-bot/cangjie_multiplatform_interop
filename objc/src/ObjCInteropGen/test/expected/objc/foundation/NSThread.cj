@@ -8,7 +8,7 @@ import interoplib.objc.*
 public open class NSThread <: NSObject {
     public static prop currentThread: NSThread
     @ForeignName["detachNewThreadWithBlock:"] public static func detachNewThreadWithBlock(block: ObjCBlock<() -> Unit>): Unit
-    @ForeignName["detachNewThreadSelector:toTarget:withObject:"] public static func detachNewThreadSelectorToTargetWithObject(selector: SEL, target: id, argument: id): Unit
+    @ForeignName["detachNewThreadSelector:toTarget:withObject:"] public static func detachNewThreadSelectorToTargetWithObject(selector: SEL, target: ObjCId, argument: ObjCId): Unit
     public static func isMultiThreaded(): Bool
     public open prop threadDictionary: NSMutableDictionary/*<KeyType, ObjectType>*/
     @ForeignName["sleepUntilDate:"] public static func sleepUntilDate(date: NSDate): Unit
@@ -26,7 +26,7 @@ public open class NSThread <: NSObject {
     public static prop isMainThreadStatic: Bool
     public static prop mainThread: NSThread
     public init()
-    @ForeignName["initWithTarget:selector:object:"] public init(target: id, selector: SEL, argument: id)
+    @ForeignName["initWithTarget:selector:object:"] public init(target: ObjCId, selector: SEL, argument: ObjCId)
     @ForeignName["initWithBlock:"] public init(block: ObjCBlock<() -> Unit>)
     public open prop isExecuting: Bool
     public open prop isFinished: Bool

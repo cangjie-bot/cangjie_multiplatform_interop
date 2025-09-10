@@ -10,7 +10,7 @@ public open class NSOrderedSet/*<ObjectType>*/ <: NSObject & NSCopying & NSMutab
     public open prop count: NSUInteger
     @ForeignName["objectAtIndex:"] public open func objectAtIndex(idx: NSUInteger): id /*ObjectType*/
     @ForeignName["indexOfObject:"] public open func indexOfObject(object: id /*ObjectType*/): NSUInteger
-    public init()
+    public init() 
     @ForeignName["initWithObjects:count:"] public init(objects: ObjCPointer<id /*ObjectType*/>, cnt: NSUInteger)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
     @ForeignName["getObjects:range:"] public open func getObjectsRange(objects: ObjCPointer<id /*ObjectType*/>, range: NSRange): Unit

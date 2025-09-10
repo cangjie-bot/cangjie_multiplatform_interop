@@ -15,7 +15,7 @@ public open class NSUserDefaults <: NSObject {
     @ForeignName["setObject:forKey:"] public open func setObjectForKey(value: id, defaultName: NSString): Unit
     @ForeignName["removeObjectForKey:"] public open func removeObjectForKey(defaultName: NSString): Unit
     @ForeignName["stringForKey:"] public open func stringForKey(defaultName: NSString): ?NSString
-    @ForeignName["arrayForKey:"] public open func arrayForKey(defaultName: NSString): ?NSArray/*<ObjectType>*/
+    @ForeignName["arrayForKey:"] public open func arrayForKey(defaultName: NSString): ?NSArray/*<ObjectType>*/ 
     @ForeignName["dictionaryForKey:"] public open func dictionaryForKey(defaultName: NSString): ?NSDictionary/*<NSString, id>*/
     @ForeignName["dataForKey:"] public open func dataForKey(defaultName: NSString): ?NSData
     @ForeignName["stringArrayForKey:"] public open func stringArrayForKey(defaultName: NSString): ?NSArray/*<NSString>*/

@@ -7,12 +7,12 @@ import interoplib.objc.*
 @ObjCMirror
 public open class NSUbiquitousKeyValueStore <: NSObject {
     public static prop defaultStore: NSUbiquitousKeyValueStore
-    @ForeignName["objectForKey:"] public open func objectForKey(aKey: NSString): id
-    @ForeignName["setObject:forKey:"] public open func setObjectForKey(anObject: id, aKey: NSString): Unit
+    @ForeignName["objectForKey:"] public open func objectForKey(aKey: NSString): ObjCId
+    @ForeignName["setObject:forKey:"] public open func setObjectForKey(anObject: ObjCId, aKey: NSString): Unit
     @ForeignName["removeObjectForKey:"] public open func removeObjectForKey(aKey: NSString): Unit
     @ForeignName["stringForKey:"] public open func stringForKey(aKey: NSString): ?NSString
     @ForeignName["arrayForKey:"] public open func arrayForKey(aKey: NSString): ?NSArray/*<ObjectType>*/
-    @ForeignName["dictionaryForKey:"] public open func dictionaryForKey(aKey: NSString): ?NSDictionary/*<NSString, id>*/
+    @ForeignName["dictionaryForKey:"] public open func dictionaryForKey(aKey: NSString): ?NSDictionary/*<NSString, ObjCId>*/
     @ForeignName["dataForKey:"] public open func dataForKey(aKey: NSString): ?NSData
     @ForeignName["longLongForKey:"] public open func longLongForKey(aKey: NSString): Int64
     @ForeignName["doubleForKey:"] public open func doubleForKey(aKey: NSString): Float64
@@ -20,11 +20,11 @@ public open class NSUbiquitousKeyValueStore <: NSObject {
     @ForeignName["setString:forKey:"] public open func setStringForKey(aString: ?NSString, aKey: NSString): Unit
     @ForeignName["setData:forKey:"] public open func setDataForKey(aData: ?NSData, aKey: NSString): Unit
     @ForeignName["setArray:forKey:"] public open func setArrayForKey(anArray: ?NSArray/*<ObjectType>*/, aKey: NSString): Unit
-    @ForeignName["setDictionary:forKey:"] public open func setDictionaryForKey(aDictionary: ?NSDictionary/*<NSString, id>*/, aKey: NSString): Unit
+    @ForeignName["setDictionary:forKey:"] public open func setDictionaryForKey(aDictionary: ?NSDictionary/*<NSString, ObjCId>*/, aKey: NSString): Unit
     @ForeignName["setLongLong:forKey:"] public open func setLongLongForKey(value: Int64, aKey: NSString): Unit
     @ForeignName["setDouble:forKey:"] public open func setDoubleForKey(value: Float64, aKey: NSString): Unit
     @ForeignName["setBool:forKey:"] public open func setBoolForKey(value: Bool, aKey: NSString): Unit
-    public open prop dictionaryRepresentation: NSDictionary/*<NSString, id>*/
+    public open prop dictionaryRepresentation: NSDictionary/*<NSString, ObjCId>*/
     public open func synchronize(): Bool
 }
 
