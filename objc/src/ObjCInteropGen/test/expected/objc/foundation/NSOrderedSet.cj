@@ -15,7 +15,7 @@ public open class NSOrderedSet/*<ObjectType>*/ <: NSObject & NSCopying & NSMutab
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
     @ForeignName["getObjects:range:"] public open func getObjectsRange(objects: ObjCPointer<id /*ObjectType*/>, range: NSRange): Unit
     @ForeignName["objectsAtIndexes:"] public open func objectsAtIndexes(indexes: NSIndexSet): NSArray/*<ObjectType>*/
-    public open prop firstObject: id /*ObjectType*/
+    public open prop firstObject: id /*ObjectType*/ 
     public open prop lastObject: id /*ObjectType*/
     @ForeignName["isEqualToOrderedSet:"] public open func isEqualToOrderedSet(other: NSOrderedSet/*<ObjectType>*/): Bool
     @ForeignName["containsObject:"] public open func containsObject(object: id /*ObjectType*/): Bool

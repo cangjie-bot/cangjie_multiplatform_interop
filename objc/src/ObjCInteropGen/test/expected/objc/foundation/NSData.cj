@@ -75,7 +75,7 @@ public open class NSData <: NSObject & NSCopying & NSMutableCopying & NSSecureCo
     @ForeignName["initWithData:"] public init(data: NSData)
     @ForeignName["dataWithData:"] public static func dataWithData(data: NSData): NSData
     @ForeignName["initWithBase64EncodedString:options:"] public init(base64String: NSString, options: Int32 /*NSDataBase64DecodingOptions*/)
-    @ForeignName["base64EncodedStringWithOptions:"] public open func base64EncodedStringWithOptions(options: Int32 /*NSDataBase64EncodingOptions*/): NSString
+    @ForeignName["base64EncodedStringWithOptions:"] public open func base64EncodedStringWithOptions(options: Int32 /*NSDataBase64EncodingOptions*/): NSString 
     @ForeignName["initWithBase64EncodedData:options:"] public init(base64Data: NSData, options: Int32 /*NSDataBase64DecodingOptions*/)
     @ForeignName["base64EncodedDataWithOptions:"] public open func base64EncodedDataWithOptions(options: Int32 /*NSDataBase64EncodingOptions*/): NSData
     @ForeignName["decompressedDataUsingAlgorithm:error:"] public open func decompressedDataUsingAlgorithmError(algorithm: Int32 /*NSDataCompressionAlgorithm*/, error: ObjCPointer<NSError>): NSData

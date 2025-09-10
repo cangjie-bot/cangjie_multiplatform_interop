@@ -12,7 +12,7 @@ public open class NSUserDefaults <: NSObject {
     @ObjCInit @ForeignName["initWithSuiteName:"] public static func initWithSuiteName(suitename: ?NSString): NSUserDefaults
     @ObjCInit @ForeignName["initWithUser:"] public static func initWithUser(username: NSString): id
     @ForeignName["objectForKey:"] public open func objectForKey(defaultName: NSString): id
-    @ForeignName["setObject:forKey:"] public open func setObjectForKey(value: id, defaultName: NSString): Unit
+    @ForeignName["setObject:forKey:"] public open func setObjectForKey(value: id, defaultName: NSString): Unit 
     @ForeignName["removeObjectForKey:"] public open func removeObjectForKey(defaultName: NSString): Unit
     @ForeignName["stringForKey:"] public open func stringForKey(defaultName: NSString): ?NSString
     @ForeignName["arrayForKey:"] public open func arrayForKey(defaultName: NSString): ?NSArray/*<ObjectType>*/
