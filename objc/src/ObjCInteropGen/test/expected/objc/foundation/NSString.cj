@@ -41,7 +41,7 @@ public open class NSString <: NSObject & NSCopying & NSMutableCopying & NSSecure
     @ForeignName["compare:options:range:"] public open func compareOptionsRange(string: NSString, mask: Int32 /*NSStringCompareOptions*/, rangeOfReceiverToCompare: NSRange): Int32 /*NSComparisonResult*/
     @ForeignName["compare:options:range:locale:"] public open func compareOptionsRangeLocale(string: NSString, mask: Int32 /*NSStringCompareOptions*/, rangeOfReceiverToCompare: NSRange, locale: id): Int32 /*NSComparisonResult*/
     @ForeignName["caseInsensitiveCompare:"] public open func caseInsensitiveCompare(string: NSString): Int32 /*NSComparisonResult*/
-    @ForeignName["localizedCompare:"] public open func localizedCompare(string: NSString): Int32 /*NSComparisonResult*/
+    @ForeignName["localizedCompare:"] public open func localizedCompare(string: NSString): Int32 /*NSComparisonResult*/ 
     @ForeignName["localizedCaseInsensitiveCompare:"] public open func localizedCaseInsensitiveCompare(string: NSString): Int32 /*NSComparisonResult*/
     @ForeignName["localizedStandardCompare:"] public open func localizedStandardCompare(string: NSString): Int32 /*NSComparisonResult*/
     @ForeignName["isEqualToString:"] public open func isEqualToString(aString: NSString): Bool

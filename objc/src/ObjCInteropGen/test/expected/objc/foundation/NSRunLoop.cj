@@ -20,8 +20,8 @@ public open class NSRunLoop <: NSObject {
     @ForeignName["runMode:beforeDate:"] public open func runModeBeforeDate(mode: NSRunLoopMode, limitDate: NSDate): Bool
     @ForeignName["performInModes:block:"] public open func performInModesBlock(modes: NSArray/*<NSRunLoopMode>*/, block: ObjCBlock<() -> Unit>): Unit
     @ForeignName["performBlock:"] public open func performBlock(block: ObjCBlock<() -> Unit>): Unit
-    @ForeignName["performSelector:target:argument:order:modes:"] public open func performSelectorTargetArgumentOrderModes(aSelector: SEL, target: id, arg: id, order: NSUInteger, modes: NSArray/*<NSRunLoopMode>*/): Unit
-    @ForeignName["cancelPerformSelector:target:argument:"] public open func cancelPerformSelectorTargetArgument(aSelector: SEL, target: id, arg: id): Unit
-    @ForeignName["cancelPerformSelectorsWithTarget:"] public open func cancelPerformSelectorsWithTarget(target: id): Unit
+    @ForeignName["performSelector:target:argument:order:modes:"] public open func performSelectorTargetArgumentOrderModes(aSelector: SEL, target: ObjCId, arg: ObjCId, order: NSUInteger, modes: NSArray/*<NSRunLoopMode>*/): Unit
+    @ForeignName["cancelPerformSelector:target:argument:"] public open func cancelPerformSelectorTargetArgument(aSelector: SEL, target: ObjCId, arg: ObjCId): Unit
+    @ForeignName["cancelPerformSelectorsWithTarget:"] public open func cancelPerformSelectorsWithTarget(target: ObjCId): Unit
 }
 

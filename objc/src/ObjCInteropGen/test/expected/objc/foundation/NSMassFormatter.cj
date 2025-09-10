@@ -22,6 +22,6 @@ public open class NSMassFormatter <: NSFormatter {
     @ForeignName["stringFromKilograms:"] public open func stringFromKilograms(numberInKilograms: Float64): NSString
     @ForeignName["unitStringFromValue:unit:"] public open func unitStringFromValueUnit(value: Float64, unit: Int32 /*NSMassFormatterUnit*/): NSString
     @ForeignName["unitStringFromKilograms:usedUnit:"] public open func unitStringFromKilogramsUsedUnit(numberInKilograms: Float64, unitp: CPointer<Int32 /*NSMassFormatterUnit*/>): NSString
-    @ForeignName["getObjectValue:forString:errorDescription:"] public open func getObjectValueForStringErrorDescription(obj: ObjCPointer<id>, string: NSString, error: ObjCPointer<NSString>): Bool
+    @ForeignName["getObjectValue:forString:errorDescription:"] public open func getObjectValueForStringErrorDescription(obj: ObjCPointer<ObjCId>, string: NSString, error: ObjCPointer<NSString>): Bool
 }
 
