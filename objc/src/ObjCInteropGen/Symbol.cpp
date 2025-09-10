@@ -437,7 +437,7 @@ TypeParameterSymbol::TypeParameterSymbol(Private, std::string name) : TypeLikeSy
 void TypeParameterSymbol::print(std::ostream& stream, SymbolPrintFormat format) const
 {
     if (format.emit_cangjie()) {
-        stream << "id /*" << name() << "*/";
+        stream << "ObjCId /*" << name() << "*/";
     } else {
         stream << name();
     }
@@ -709,21 +709,10 @@ void add_builtin_types()
     add_cangjie_primitive("CString");
     add_cangjie_primitive("CPointer").add_parameter("T");
     add_cangjie_primitive("CFunc").add_parameter("T");
-
-    auto& objc_pointer = add_cangjie_struct("ObjCPointer");
-    objc_pointer.add_parameter("T");
-
-    // In the GENERATE_DEFINITIONS mode we can only use our own fake implementation
-    // of ObjCPointer, not the one from objc.lang.  Because in this mode we do not
-    // mark classes as @ObjCMirror, and FE forbids using ObjCPointer with
-    // non-@ObjCMirror classes.
-    if (!generate_definitions_mode()) {
-        objc_pointer.set_cangjie_package_name("objc.lang");
-    }
-
+    add_cangjie_struct("ObjCPointer").add_parameter("T");
     add_cangjie_struct("ObjCFunc").add_parameter("T");
     add_cangjie_struct("ObjCBlock").add_parameter("T");
     add_cangjie_class("Class" /* "ObjCClass" */);
-    add_cangjie_interface("id" /* "ObjCId" */);
+    add_cangjie_interface("ObjCId");
     add_cangjie_class("SEL" /* "ObjCSelector" */);
 }

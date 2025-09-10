@@ -3,6 +3,7 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 public abstract sealed class NSDateIntervalFormatterStyle {
     public static const NSDateIntervalFormatterNoStyle: NSUInteger = 0

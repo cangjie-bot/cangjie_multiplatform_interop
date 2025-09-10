@@ -2,8 +2,8 @@
 
 package objc.foundation
 
-import objc.lang.ObjCPointer
 import interoplib.objc.*
+import objc.lang.*
 
 public abstract sealed class NSFileWrapperReadingOptions {
     public static const NSFileWrapperReadingImmediate: NSUInteger = 1
@@ -28,7 +28,7 @@ public open class NSFileWrapper <: NSObject & NSSecureCoding {
     public open prop isSymbolicLink: Bool
     public open mut prop preferredFilename: ?NSString
     public open mut prop filename: ?NSString
-    public open mut prop fileAttributes: NSDictionary/*<NSString, id>*/
+    public open mut prop fileAttributes: NSDictionary/*<NSString, ObjCId>*/
     @ForeignName["matchesContentsOfURL:"] public open func matchesContentsOfURL(url: NSURL): Bool
     @ForeignName["readFromURL:options:error:"] public open func readFromURLOptionsError(url: NSURL, options: Int32 /*NSFileWrapperReadingOptions*/, outError: ObjCPointer<NSError>): Bool
     @ForeignName["writeToURL:options:originalContentsURL:error:"] public open func writeToURLOptionsOriginalContentsURLError(url: NSURL, options: Int32 /*NSFileWrapperWritingOptions*/, originalContentsURL: ?NSURL, outError: ObjCPointer<NSError>): Bool

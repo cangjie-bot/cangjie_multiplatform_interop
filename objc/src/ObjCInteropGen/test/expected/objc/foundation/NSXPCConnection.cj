@@ -3,6 +3,7 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 @ObjCMirror
 public interface NSXPCListenerDelegate <: NSObjectProtocol {
@@ -10,10 +11,10 @@ public interface NSXPCListenerDelegate <: NSObjectProtocol {
 }
 
 @ObjCMirror
-public interface NSXPCProxyCreating <: id {
-    func remoteObjectProxy(): id
-    @ForeignName["remoteObjectProxyWithErrorHandler:"] func remoteObjectProxyWithErrorHandler(handler: ObjCBlock<(NSError) -> Unit>): id
-    @ForeignName["synchronousRemoteObjectProxyWithErrorHandler:"] func synchronousRemoteObjectProxyWithErrorHandler(handler: ObjCBlock<(NSError) -> Unit>): id
+public interface NSXPCProxyCreating {
+    func remoteObjectProxy(): ObjCId
+    @ForeignName["remoteObjectProxyWithErrorHandler:"] func remoteObjectProxyWithErrorHandler(handler: ObjCBlock<(NSError) -> Unit>): ObjCId
+    @ForeignName["synchronousRemoteObjectProxyWithErrorHandler:"] func synchronousRemoteObjectProxyWithErrorHandler(handler: ObjCBlock<(NSError) -> Unit>): ObjCId
 }
 
 public abstract sealed class NSXPCConnectionOptions {
@@ -28,10 +29,10 @@ public open class NSXPCConnection <: NSObject & NSXPCProxyCreating {
     @ForeignName["initWithListenerEndpoint:"] public init(endpoint: NSXPCListenerEndpoint)
     public open prop endpoint: NSXPCListenerEndpoint
     public open mut prop exportedInterface: ?NSXPCInterface
-    public open mut prop exportedObject: id
+    public open mut prop exportedObject: ObjCId
     public open mut prop remoteObjectInterface: ?NSXPCInterface
-    @ForeignName["remoteObjectProxyWithErrorHandler:"] public open func remoteObjectProxyWithErrorHandler(handler: ObjCBlock<(NSError) -> Unit>): id
-    @ForeignName["synchronousRemoteObjectProxyWithErrorHandler:"] public open func synchronousRemoteObjectProxyWithErrorHandler(handler: ObjCBlock<(NSError) -> Unit>): id
+    @ForeignName["remoteObjectProxyWithErrorHandler:"] public open func remoteObjectProxyWithErrorHandler(handler: ObjCBlock<(NSError) -> Unit>): ObjCId
+    @ForeignName["synchronousRemoteObjectProxyWithErrorHandler:"] public open func synchronousRemoteObjectProxyWithErrorHandler(handler: ObjCBlock<(NSError) -> Unit>): ObjCId
     public open mut prop interruptionHandler: ObjCBlock<() -> Unit>
     public open mut prop invalidationHandler: ObjCBlock<() -> Unit>
     public open func `resume`(): Unit

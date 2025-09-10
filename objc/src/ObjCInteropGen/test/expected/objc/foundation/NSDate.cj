@@ -3,6 +3,7 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 public type NSTimeInterval = Float64
 
@@ -15,13 +16,13 @@ public open class NSDate <: NSObject & NSCopying & NSSecureCoding {
     @ForeignName["timeIntervalSinceDate:"] public open func timeIntervalSinceDate(anotherDate: NSDate): NSTimeInterval
     public open prop timeIntervalSinceNow: NSTimeInterval
     public open prop timeIntervalSince1970: NSTimeInterval
-    @ForeignName["addTimeInterval:"] public open func addTimeInterval(seconds: NSTimeInterval): id
+    @ForeignName["addTimeInterval:"] public open func addTimeInterval(seconds: NSTimeInterval): ObjCId
     @ForeignName["dateByAddingTimeInterval:"] public open func dateByAddingTimeInterval(ti: NSTimeInterval): NSDate
     @ForeignName["earlierDate:"] public open func earlierDate(anotherDate: NSDate): NSDate
     @ForeignName["laterDate:"] public open func laterDate(anotherDate: NSDate): NSDate
     @ForeignName["compare:"] public open func compare(other: NSDate): Int32 /*NSComparisonResult*/
     @ForeignName["isEqualToDate:"] public open func isEqualToDate(otherDate: NSDate): Bool
-    @ForeignName["descriptionWithLocale:"] public open func descriptionWithLocale(locale: id): NSString
+    @ForeignName["descriptionWithLocale:"] public open func descriptionWithLocale(locale: ObjCId): NSString
     public static prop timeIntervalSinceReferenceDateStatic: NSTimeInterval
     public static func date(): NSDate
     @ForeignName["dateWithTimeIntervalSinceNow:"] public static func dateWithTimeIntervalSinceNow(secs: NSTimeInterval): NSDate

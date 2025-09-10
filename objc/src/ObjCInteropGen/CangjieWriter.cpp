@@ -205,8 +205,6 @@ static bool is_objc_compatible_type(TypeLikeSymbol& type) noexcept
         }
         case NamedTypeSymbol::Kind::Struct:
             return canonical_type->is_ctype();
-        case NamedTypeSymbol::Kind::Protocol:
-            return false;
         default:
             return true;
     }
@@ -339,7 +337,7 @@ static void print_tricky_default_value(std::ostream& stream, std::string_view ty
 std::ostream& operator<<(std::ostream& stream, const DefaultValuePrinter& op)
 {
     if (dynamic_cast<const TypeParameterSymbol*>(&op.type)) {
-        print_tricky_default_value(stream, "id");
+        print_tricky_default_value(stream, "ObjCId");
         return stream;
     }
     const auto* named_type = dynamic_cast<const NamedTypeSymbol*>(&op.type);
@@ -729,13 +727,7 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
     }
     output << "public ";
     if (is_interface) {
-        // The current FE does not support interfaces at all.
-        if (normal_mode()) {
-            is_interface = false;
-            output << "open class /*interface*/";
-        } else {
-            output << "interface";
-        }
+        output << "interface";
     } else if (is_struct_or_union) {
         output << "struct";
     } else if (is_enum) {
@@ -759,51 +751,20 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
     }
     const auto base_count = type->base_count();
     if (base_count) {
-        auto hide_additional_bases = normal_mode();
         output << " <: ";
         auto* base = type->base(0);
         assert(base);
         output << emit_cangjie(base);
         collect_import(*base);
-        if (base_count > 1) {
-            if (hide_additional_bases) {
-                output << " //";
-            }
-            for (std::size_t i = 1; i < base_count; ++i) {
-                output << " & ";
-                auto* base = type->base(i);
-                assert(base);
-                output << emit_cangjie(base);
-                if (!hide_additional_bases) {
-                    collect_import(*base);
-                }
-            }
-            output << (hide_additional_bases ? "\n{\n" : " {\n");
-        } else {
-            output << " {\n";
+        for (std::size_t i = 1; i < base_count; ++i) {
+            output << " & ";
+            auto* base = type->base(i);
+            assert(base);
+            output << emit_cangjie(base);
+            collect_import(*base);
         }
-    } else {
-        // TODO: Can @ObjCMirror classes and interfaces implement `id` implicitly?
-        //  Discuss with FE developers.
-        auto hidden = normal_mode();
-        switch (type->kind()) {
-            case NamedTypeSymbol::Kind::Interface:
-            case NamedTypeSymbol::Kind::Protocol:
-                // All @ObjCMirror classes and interfaces implement `id` (`ObjcId`) (unless in
-                // normal mode, where interfaces are not supported yet)
-                if (hidden) {
-                    output << " /*";
-                }
-                output << " <: id";
-                if (hidden) {
-                    output << " */";
-                }
-                break;
-            default:
-                break;
-        }
-        output << " {\n";
     }
+    output << " {\n";
     output.indent();
     auto any_constructor_exists = false;
     auto default_constructor_exists = false;
@@ -1010,7 +971,8 @@ void write_cangjie()
                 file_output << "import " << import << std::endl;
             }
             if (!generate_definitions_mode()) {
-                file_output << "import interoplib.objc.*\n\n";
+                file_output << "import interoplib.objc.*\n"
+                               "import objc.lang.*\n\n";
             }
             file_output << output.str();
 

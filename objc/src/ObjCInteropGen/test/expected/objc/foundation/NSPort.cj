@@ -3,11 +3,12 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 public type NSSocketNativeHandle = Int32
 
 @ObjCMirror
-public open class NSPortMessage <: id {
+public open class NSPortMessage {
 }
 
 @ObjCMirror

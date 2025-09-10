@@ -2,8 +2,8 @@
 
 package objc.foundation
 
-import objc.lang.ObjCPointer
 import interoplib.objc.*
+import objc.lang.*
 
 public abstract sealed class NSGrammaticalGender {
     public static const NSGrammaticalGenderNotSet: NSInteger = 0

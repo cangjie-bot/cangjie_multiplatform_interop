@@ -2,8 +2,8 @@
 
 package objc.foundation
 
-import objc.lang.ObjCPointer
 import interoplib.objc.*
+import objc.lang.*
 
 public abstract sealed class NSLengthFormatterUnit {
     public static const NSLengthFormatterUnitMillimeter: NSInteger = 8
@@ -25,6 +25,6 @@ public open class NSLengthFormatter <: NSFormatter {
     @ForeignName["stringFromMeters:"] public open func stringFromMeters(numberInMeters: Float64): NSString
     @ForeignName["unitStringFromValue:unit:"] public open func unitStringFromValueUnit(value: Float64, unit: Int32 /*NSLengthFormatterUnit*/): NSString
     @ForeignName["unitStringFromMeters:usedUnit:"] public open func unitStringFromMetersUsedUnit(numberInMeters: Float64, unitp: CPointer<Int32 /*NSLengthFormatterUnit*/>): NSString
-    @ForeignName["getObjectValue:forString:errorDescription:"] public open func getObjectValueForStringErrorDescription(obj: ObjCPointer<id>, string: NSString, error: ObjCPointer<NSString>): Bool
+    @ForeignName["getObjectValue:forString:errorDescription:"] public open func getObjectValueForStringErrorDescription(obj: ObjCPointer<ObjCId>, string: NSString, error: ObjCPointer<NSString>): Bool
 }
 

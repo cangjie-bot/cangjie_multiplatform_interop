@@ -2,25 +2,25 @@
 
 package objc.foundation
 
-import objc.lang.ObjCPointer
 import interoplib.objc.*
+import objc.lang.*
 
 @ObjCMirror
 public struct NSFastEnumerationState {
     public var state: UInt64 = 0
-    public var itemsPtr: ObjCPointer<id> = ObjCPointer<id>(CPointer<Unit>())
+    public var itemsPtr: ObjCPointer<ObjCId> = ObjCPointer<ObjCId>(CPointer<Unit>())
     public var mutationsPtr: CPointer<UInt64> = CPointer<UInt64>()
     public var extra: VArray<UInt64, $5> = [0, 0, 0, 0, 0]
 }
 
 @ObjCMirror
-public interface NSFastEnumeration <: id {
-    @ForeignName["countByEnumeratingWithState:objects:count:"] func countByEnumeratingWithStateObjectsCount(state: ObjCPointer<NSFastEnumerationState>, buffer: ObjCPointer<id>, len: NSUInteger): NSUInteger
+public interface NSFastEnumeration {
+    @ForeignName["countByEnumeratingWithState:objects:count:"] func countByEnumeratingWithStateObjectsCount(state: ObjCPointer<NSFastEnumerationState>, buffer: ObjCPointer<ObjCId>, len: NSUInteger): NSUInteger
 }
 
 @ObjCMirror
 public open class NSEnumerator/*<ObjectType>*/ <: NSObject & NSFastEnumeration {
-    public open func nextObject(): id /*ObjectType*/
+    public open func nextObject(): ObjCId /*ObjectType*/
     public open prop allObjects: NSArray/*<ObjectType>*/
 }
 

@@ -2,8 +2,8 @@
 
 package objc.foundation
 
-import objc.lang.ObjCPointer
 import interoplib.objc.*
+import objc.lang.*
 
 public type NSAttributedStringKey = NSString
 
@@ -12,18 +12,18 @@ public type NSAttributedStringFormattingContextKey = NSString
 @ObjCMirror
 public open class NSAttributedString <: NSObject & NSCopying & NSMutableCopying & NSSecureCoding {
     public open prop string: NSString
-    @ForeignName["attributesAtIndex:effectiveRange:"] public open func attributesAtIndexEffectiveRange(location: NSUInteger, range: NSRangePointer): NSDictionary/*<NSAttributedStringKey, id>*/
+    @ForeignName["attributesAtIndex:effectiveRange:"] public open func attributesAtIndexEffectiveRange(location: NSUInteger, range: NSRangePointer): NSDictionary/*<NSAttributedStringKey, ObjCId>*/
     public open prop length: NSUInteger
-    @ForeignName["attribute:atIndex:effectiveRange:"] public open func attributeAtIndexEffectiveRange(attrName: NSAttributedStringKey, location: NSUInteger, range: NSRangePointer): id
+    @ForeignName["attribute:atIndex:effectiveRange:"] public open func attributeAtIndexEffectiveRange(attrName: NSAttributedStringKey, location: NSUInteger, range: NSRangePointer): ObjCId
     @ForeignName["attributedSubstringFromRange:"] public open func attributedSubstringFromRange(range: NSRange): NSAttributedString
-    @ForeignName["attributesAtIndex:longestEffectiveRange:inRange:"] public open func attributesAtIndexLongestEffectiveRangeInRange(location: NSUInteger, range: NSRangePointer, rangeLimit: NSRange): NSDictionary/*<NSAttributedStringKey, id>*/
-    @ForeignName["attribute:atIndex:longestEffectiveRange:inRange:"] public open func attributeAtIndexLongestEffectiveRangeInRange(attrName: NSAttributedStringKey, location: NSUInteger, range: NSRangePointer, rangeLimit: NSRange): id
+    @ForeignName["attributesAtIndex:longestEffectiveRange:inRange:"] public open func attributesAtIndexLongestEffectiveRangeInRange(location: NSUInteger, range: NSRangePointer, rangeLimit: NSRange): NSDictionary/*<NSAttributedStringKey, ObjCId>*/
+    @ForeignName["attribute:atIndex:longestEffectiveRange:inRange:"] public open func attributeAtIndexLongestEffectiveRangeInRange(attrName: NSAttributedStringKey, location: NSUInteger, range: NSRangePointer, rangeLimit: NSRange): ObjCId
     @ForeignName["isEqualToAttributedString:"] public open func isEqualToAttributedString(other: NSAttributedString): Bool
     @ForeignName["initWithString:"] public init(str: NSString)
-    @ForeignName["initWithString:attributes:"] public init(str: NSString, attrs: ?NSDictionary/*<NSAttributedStringKey, id>*/)
+    @ForeignName["initWithString:attributes:"] public init(str: NSString, attrs: ?NSDictionary/*<NSAttributedStringKey, ObjCId>*/)
     @ForeignName["initWithAttributedString:"] public init(attrStr: NSAttributedString)
-    @ForeignName["enumerateAttributesInRange:options:usingBlock:"] public open func enumerateAttributesInRangeOptionsUsingBlock(enumerationRange: NSRange, opts: Int32 /*NSAttributedStringEnumerationOptions*/, block: ObjCBlock<(NSDictionary/*<NSAttributedStringKey, id>*/, NSRange, CPointer<Bool>) -> Unit>): Unit
-    @ForeignName["enumerateAttribute:inRange:options:usingBlock:"] public open func enumerateAttributeInRangeOptionsUsingBlock(attrName: NSAttributedStringKey, enumerationRange: NSRange, opts: Int32 /*NSAttributedStringEnumerationOptions*/, block: ObjCBlock<(id, NSRange, CPointer<Bool>) -> Unit>): Unit
+    @ForeignName["enumerateAttributesInRange:options:usingBlock:"] public open func enumerateAttributesInRangeOptionsUsingBlock(enumerationRange: NSRange, opts: Int32 /*NSAttributedStringEnumerationOptions*/, block: ObjCBlock<(NSDictionary/*<NSAttributedStringKey, ObjCId>*/, NSRange, CPointer<Bool>) -> Unit>): Unit
+    @ForeignName["enumerateAttribute:inRange:options:usingBlock:"] public open func enumerateAttributeInRangeOptionsUsingBlock(attrName: NSAttributedStringKey, enumerationRange: NSRange, opts: Int32 /*NSAttributedStringEnumerationOptions*/, block: ObjCBlock<(ObjCId, NSRange, CPointer<Bool>) -> Unit>): Unit
     @ForeignName["initWithContentsOfMarkdownFileAtURL:options:baseURL:error:"] public init(markdownFile: NSURL, options: ?NSAttributedStringMarkdownParsingOptions, baseURL: ?NSURL, error: ObjCPointer<NSError>)
     @ForeignName["initWithMarkdown:options:baseURL:error:"] public init(markdown: NSData, options: ?NSAttributedStringMarkdownParsingOptions, baseURL: ?NSURL, error: ObjCPointer<NSError>)
     @ForeignName["initWithMarkdownString:options:baseURL:error:"] public init(markdownString: NSString, options: ?NSAttributedStringMarkdownParsingOptions, baseURL: ?NSURL, error: ObjCPointer<NSError>)
@@ -31,10 +31,10 @@ public open class NSAttributedString <: NSObject & NSCopying & NSMutableCopying 
     @ForeignName["initWithFormat:options:locale:arguments:"] public init(format: NSAttributedString, options: Int32 /*NSAttributedStringFormattingOptions*/, locale: ?NSLocale, arguments: va_list)
     @ForeignName["localizedAttributedStringWithFormat:"] public static func localizedAttributedStringWithFormat(format: NSAttributedString): NSAttributedString
     @ForeignName["localizedAttributedStringWithFormat:options:"] public static func localizedAttributedStringWithFormatOptions(format: NSAttributedString, options: Int32 /*NSAttributedStringFormattingOptions*/): NSAttributedString
-    @ForeignName["initWithFormat:options:locale:context:"] public init(format: NSAttributedString, options: Int32 /*NSAttributedStringFormattingOptions*/, locale: ?NSLocale, context: NSDictionary/*<NSAttributedStringFormattingContextKey, id>*/)
-    @ForeignName["initWithFormat:options:locale:context:arguments:"] public init(format: NSAttributedString, options: Int32 /*NSAttributedStringFormattingOptions*/, locale: ?NSLocale, context: NSDictionary/*<NSAttributedStringFormattingContextKey, id>*/, arguments: va_list)
-    @ForeignName["localizedAttributedStringWithFormat:context:"] public static func localizedAttributedStringWithFormatContext(format: NSAttributedString, context: NSDictionary/*<NSAttributedStringFormattingContextKey, id>*/): NSAttributedString
-    @ForeignName["localizedAttributedStringWithFormat:options:context:"] public static func localizedAttributedStringWithFormatOptionsContext(format: NSAttributedString, options: Int32 /*NSAttributedStringFormattingOptions*/, context: NSDictionary/*<NSAttributedStringFormattingContextKey, id>*/): NSAttributedString
+    @ForeignName["initWithFormat:options:locale:context:"] public init(format: NSAttributedString, options: Int32 /*NSAttributedStringFormattingOptions*/, locale: ?NSLocale, context: NSDictionary/*<NSAttributedStringFormattingContextKey, ObjCId>*/)
+    @ForeignName["initWithFormat:options:locale:context:arguments:"] public init(format: NSAttributedString, options: Int32 /*NSAttributedStringFormattingOptions*/, locale: ?NSLocale, context: NSDictionary/*<NSAttributedStringFormattingContextKey, ObjCId>*/, arguments: va_list)
+    @ForeignName["localizedAttributedStringWithFormat:context:"] public static func localizedAttributedStringWithFormatContext(format: NSAttributedString, context: NSDictionary/*<NSAttributedStringFormattingContextKey, ObjCId>*/): NSAttributedString
+    @ForeignName["localizedAttributedStringWithFormat:options:context:"] public static func localizedAttributedStringWithFormatOptionsContext(format: NSAttributedString, options: Int32 /*NSAttributedStringFormattingOptions*/, context: NSDictionary/*<NSAttributedStringFormattingContextKey, ObjCId>*/): NSAttributedString
     public open func attributedStringByInflectingString(): NSAttributedString
 }
 
@@ -46,10 +46,10 @@ public abstract sealed class NSAttributedStringEnumerationOptions {
 @ObjCMirror
 public open class NSMutableAttributedString <: NSAttributedString {
     @ForeignName["replaceCharactersInRange:withString:"] public open func replaceCharactersInRangeWithString(range: NSRange, str: NSString): Unit
-    @ForeignName["setAttributes:range:"] public open func setAttributesRange(attrs: ?NSDictionary/*<NSAttributedStringKey, id>*/, range: NSRange): Unit
+    @ForeignName["setAttributes:range:"] public open func setAttributesRange(attrs: ?NSDictionary/*<NSAttributedStringKey, ObjCId>*/, range: NSRange): Unit
     public open prop mutableString: NSMutableString
-    @ForeignName["addAttribute:value:range:"] public open func addAttributeValueRange(name: NSAttributedStringKey, value: id, range: NSRange): Unit
-    @ForeignName["addAttributes:range:"] public open func addAttributesRange(attrs: NSDictionary/*<NSAttributedStringKey, id>*/, range: NSRange): Unit
+    @ForeignName["addAttribute:value:range:"] public open func addAttributeValueRange(name: NSAttributedStringKey, value: ObjCId, range: NSRange): Unit
+    @ForeignName["addAttributes:range:"] public open func addAttributesRange(attrs: NSDictionary/*<NSAttributedStringKey, ObjCId>*/, range: NSRange): Unit
     @ForeignName["removeAttribute:range:"] public open func removeAttributeRange(name: NSAttributedStringKey, range: NSRange): Unit
     @ForeignName["replaceCharactersInRange:withAttributedString:"] public open func replaceCharactersInRangeWithAttributedString(range: NSRange, attrString: NSAttributedString): Unit
     @ForeignName["insertAttributedString:atIndex:"] public open func insertAttributedStringAtIndex(attrString: NSAttributedString, loc: NSUInteger): Unit

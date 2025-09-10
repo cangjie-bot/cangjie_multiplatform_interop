@@ -3,6 +3,7 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 @ObjCMirror
 public open class NSUserDefaults <: NSObject {
@@ -10,13 +11,13 @@ public open class NSUserDefaults <: NSObject {
     public static func resetStandardUserDefaults(): Unit
     public init()
     @ObjCInit @ForeignName["initWithSuiteName:"] public static func initWithSuiteName(suitename: ?NSString): NSUserDefaults
-    @ObjCInit @ForeignName["initWithUser:"] public static func initWithUser(username: NSString): id
-    @ForeignName["objectForKey:"] public open func objectForKey(defaultName: NSString): id
-    @ForeignName["setObject:forKey:"] public open func setObjectForKey(value: id, defaultName: NSString): Unit
+    @ObjCInit @ForeignName["initWithUser:"] public static func initWithUser(username: NSString): ObjCId
+    @ForeignName["objectForKey:"] public open func objectForKey(defaultName: NSString): ObjCId
+    @ForeignName["setObject:forKey:"] public open func setObjectForKey(value: ObjCId, defaultName: NSString): Unit
     @ForeignName["removeObjectForKey:"] public open func removeObjectForKey(defaultName: NSString): Unit
     @ForeignName["stringForKey:"] public open func stringForKey(defaultName: NSString): ?NSString
     @ForeignName["arrayForKey:"] public open func arrayForKey(defaultName: NSString): ?NSArray/*<ObjectType>*/
-    @ForeignName["dictionaryForKey:"] public open func dictionaryForKey(defaultName: NSString): ?NSDictionary/*<NSString, id>*/
+    @ForeignName["dictionaryForKey:"] public open func dictionaryForKey(defaultName: NSString): ?NSDictionary/*<NSString, ObjCId>*/
     @ForeignName["dataForKey:"] public open func dataForKey(defaultName: NSString): ?NSData
     @ForeignName["stringArrayForKey:"] public open func stringArrayForKey(defaultName: NSString): ?NSArray/*<NSString>*/
     @ForeignName["integerForKey:"] public open func integerForKey(defaultName: NSString): NSInteger
@@ -29,17 +30,17 @@ public open class NSUserDefaults <: NSObject {
     @ForeignName["setDouble:forKey:"] public open func setDoubleForKey(value: Float64, defaultName: NSString): Unit
     @ForeignName["setBool:forKey:"] public open func setBoolForKey(value: Bool, defaultName: NSString): Unit
     @ForeignName["setURL:forKey:"] public open func setURLForKey(url: ?NSURL, defaultName: NSString): Unit
-    @ForeignName["registerDefaults:"] public open func registerDefaults(registrationDictionary: NSDictionary/*<NSString, id>*/): Unit
+    @ForeignName["registerDefaults:"] public open func registerDefaults(registrationDictionary: NSDictionary/*<NSString, ObjCId>*/): Unit
     @ForeignName["addSuiteNamed:"] public open func addSuiteNamed(suiteName: NSString): Unit
     @ForeignName["removeSuiteNamed:"] public open func removeSuiteNamed(suiteName: NSString): Unit
-    public open func dictionaryRepresentation(): NSDictionary/*<NSString, id>*/
+    public open func dictionaryRepresentation(): NSDictionary/*<NSString, ObjCId>*/
     public open prop volatileDomainNames: NSArray/*<NSString>*/
-    @ForeignName["volatileDomainForName:"] public open func volatileDomainForName(domainName: NSString): NSDictionary/*<NSString, id>*/
-    @ForeignName["setVolatileDomain:forName:"] public open func setVolatileDomainForName(domain: NSDictionary/*<NSString, id>*/, domainName: NSString): Unit
+    @ForeignName["volatileDomainForName:"] public open func volatileDomainForName(domainName: NSString): NSDictionary/*<NSString, ObjCId>*/
+    @ForeignName["setVolatileDomain:forName:"] public open func setVolatileDomainForName(domain: NSDictionary/*<NSString, ObjCId>*/, domainName: NSString): Unit
     @ForeignName["removeVolatileDomainForName:"] public open func removeVolatileDomainForName(domainName: NSString): Unit
     public open func persistentDomainNames(): NSArray/*<ObjectType>*/
-    @ForeignName["persistentDomainForName:"] public open func persistentDomainForName(domainName: NSString): ?NSDictionary/*<NSString, id>*/
-    @ForeignName["setPersistentDomain:forName:"] public open func setPersistentDomainForName(domain: NSDictionary/*<NSString, id>*/, domainName: NSString): Unit
+    @ForeignName["persistentDomainForName:"] public open func persistentDomainForName(domainName: NSString): ?NSDictionary/*<NSString, ObjCId>*/
+    @ForeignName["setPersistentDomain:forName:"] public open func setPersistentDomainForName(domain: NSDictionary/*<NSString, ObjCId>*/, domainName: NSString): Unit
     @ForeignName["removePersistentDomainForName:"] public open func removePersistentDomainForName(domainName: NSString): Unit
     public open func synchronize(): Bool
     @ForeignName["objectIsForcedForKey:"] public open func objectIsForcedForKey(key: NSString): Bool

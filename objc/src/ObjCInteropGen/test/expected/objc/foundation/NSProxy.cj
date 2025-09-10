@@ -3,11 +3,12 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 @ObjCMirror
 public open class NSProxy <: NSObjectProtocol {
     protected var isa: ?Class
-    public static func alloc(): id
+    public static func alloc(): ObjCId
     @ForeignName["class"] public static func classStatic(): Class
     @ForeignName["forwardInvocation:"] public open func forwardInvocation(invocation: NSInvocation): Unit
     @ForeignName["methodSignatureForSelector:"] public open func methodSignatureForSelector(sel: SEL): ?NSMethodSignature

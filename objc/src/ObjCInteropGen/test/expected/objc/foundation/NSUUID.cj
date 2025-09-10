@@ -3,6 +3,7 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 @ObjCMirror
 public open class NSUUID <: NSObject & NSCopying & NSSecureCoding {

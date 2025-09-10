@@ -3,6 +3,7 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 public type NSInteger = Int64
 
@@ -18,7 +19,7 @@ public abstract sealed class NSComparisonResult {
     public static const NSOrderedDescending: NSInteger = 1
 }
 
-public type NSComparator = ObjCBlock<(id, id) -> Int32 /*NSComparisonResult*/>
+public type NSComparator = ObjCBlock<(ObjCId, ObjCId) -> Int32 /*NSComparisonResult*/>
 
 public abstract sealed class NSEnumerationOptions {
     public static const NSEnumerationConcurrent: NSUInteger = 1

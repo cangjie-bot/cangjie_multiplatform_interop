@@ -3,6 +3,7 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 public abstract sealed class tls_protocol_version_t {
     public static const tls_protocol_version_TLSv10: uint16_t = 769

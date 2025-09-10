@@ -3,6 +3,7 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 public type NSHashTableOptions = NSUInteger
 
@@ -11,18 +12,18 @@ public open class NSHashTable/*<ObjectType>*/ <: NSObject & NSCopying & NSSecure
     @ForeignName["initWithOptions:capacity:"] public init(options: Int32 /*NSPointerFunctionsOptions*/, initialCapacity: NSUInteger)
     @ForeignName["initWithPointerFunctions:capacity:"] public init(functions: NSPointerFunctions, initialCapacity: NSUInteger)
     @ForeignName["hashTableWithOptions:"] public static func hashTableWithOptions(options: Int32 /*NSPointerFunctionsOptions*/): NSHashTable/*<ObjectType>*/
-    public static func hashTableWithWeakObjects(): id
+    public static func hashTableWithWeakObjects(): ObjCId
     public static func weakObjectsHashTable(): NSHashTable/*<ObjectType>*/
     public open prop pointerFunctions: NSPointerFunctions
     public open prop count: NSUInteger
-    @ForeignName["member:"] public open func member(object: id /*ObjectType*/): id /*ObjectType*/
+    @ForeignName["member:"] public open func member(object: ObjCId /*ObjectType*/): ObjCId /*ObjectType*/
     public open func objectEnumerator(): NSEnumerator/*<ObjectType>*/
-    @ForeignName["addObject:"] public open func addObject(object: id /*ObjectType*/): Unit
-    @ForeignName["removeObject:"] public open func removeObject(object: id /*ObjectType*/): Unit
+    @ForeignName["addObject:"] public open func addObject(object: ObjCId /*ObjectType*/): Unit
+    @ForeignName["removeObject:"] public open func removeObject(object: ObjCId /*ObjectType*/): Unit
     public open func removeAllObjects(): Unit
     public open prop allObjects: NSArray/*<ObjectType>*/
-    public open prop anyObject: id /*ObjectType*/
-    @ForeignName["containsObject:"] public open func containsObject(anObject: id /*ObjectType*/): Bool
+    public open prop anyObject: ObjCId /*ObjectType*/
+    @ForeignName["containsObject:"] public open func containsObject(anObject: ObjCId /*ObjectType*/): Bool
     @ForeignName["intersectsHashTable:"] public open func intersectsHashTable(other: NSHashTable/*<ObjectType>*/): Bool
     @ForeignName["isEqualToHashTable:"] public open func isEqualToHashTable(other: NSHashTable/*<ObjectType>*/): Bool
     @ForeignName["isSubsetOfHashTable:"] public open func isSubsetOfHashTable(other: NSHashTable/*<ObjectType>*/): Bool
