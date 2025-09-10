@@ -23,10 +23,10 @@ public abstract sealed class NSJSONWritingOptions {
 
 @ObjCMirror
 public open class NSJSONSerialization <: NSObject {
-    @ForeignName["isValidJSONObject:"] public static func isValidJSONObject(obj: id): Bool
-    @ForeignName["dataWithJSONObject:options:error:"] public static func dataWithJSONObjectOptionsError(obj: id, opt: Int32 /*NSJSONWritingOptions*/, error: ObjCPointer<NSError>): ?NSData
-    @ForeignName["JSONObjectWithData:options:error:"] public static func JSONObjectWithDataOptionsError(data: NSData, opt: Int32 /*NSJSONReadingOptions*/, error: ObjCPointer<NSError>): id
-    @ForeignName["writeJSONObject:toStream:options:error:"] public static func writeJSONObjectToStreamOptionsError(obj: id, stream: NSOutputStream, opt: Int32 /*NSJSONWritingOptions*/, error: ObjCPointer<NSError>): NSInteger
-    @ForeignName["JSONObjectWithStream:options:error:"] public static func JSONObjectWithStreamOptionsError(stream: NSInputStream, opt: Int32 /*NSJSONReadingOptions*/, error: ObjCPointer<NSError>): id
+    @ForeignName["isValidJSONObject:"] public static func isValidJSONObject(obj: ObjCId): Bool
+    @ForeignName["dataWithJSONObject:options:error:"] public static func dataWithJSONObjectOptionsError(obj: ObjCId, opt: Int32 /*NSJSONWritingOptions*/, error: ObjCPointer<NSError>): ?NSData
+    @ForeignName["JSONObjectWithData:options:error:"] public static func JSONObjectWithDataOptionsError(data: NSData, opt: Int32 /*NSJSONReadingOptions*/, error: ObjCPointer<NSError>): ObjCId
+    @ForeignName["writeJSONObject:toStream:options:error:"] public static func writeJSONObjectToStreamOptionsError(obj: ObjCId, stream: NSOutputStream, opt: Int32 /*NSJSONWritingOptions*/, error: ObjCPointer<NSError>): NSInteger
+    @ForeignName["JSONObjectWithStream:options:error:"] public static func JSONObjectWithStreamOptionsError(stream: NSInputStream, opt: Int32 /*NSJSONReadingOptions*/, error: ObjCPointer<NSError>): ObjCId
 }
 

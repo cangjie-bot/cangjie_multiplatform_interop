@@ -7,9 +7,9 @@ import interoplib.objc.*
 
 @ObjCMirror
 public open class NSURLConnection <: NSObject {
-    @ForeignName["initWithRequest:delegate:startImmediately:"] public init(request: NSURLRequest, delegate: id, startImmediately: Bool)
-    @ForeignName["initWithRequest:delegate:"] public init(request: NSURLRequest, delegate: id)
-    @ForeignName["connectionWithRequest:delegate:"] public static func connectionWithRequestDelegate(request: NSURLRequest, delegate: id): ?NSURLConnection
+    @ForeignName["initWithRequest:delegate:startImmediately:"] public init(request: NSURLRequest, delegate: ObjCId, startImmediately: Bool)
+    @ForeignName["initWithRequest:delegate:"] public init(request: NSURLRequest, delegate: ObjCId)
+    @ForeignName["connectionWithRequest:delegate:"] public static func connectionWithRequestDelegate(request: NSURLRequest, delegate: ObjCId): ?NSURLConnection
     public open prop originalRequest: NSURLRequest
     public open prop currentRequest: NSURLRequest
     public open func start(): Unit
