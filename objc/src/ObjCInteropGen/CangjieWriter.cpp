@@ -470,7 +470,7 @@ static bool is_objc_compatible_parameters(NonTypeSymbol& method) noexcept
 template <class Symbol> void write_result_type(std::ostream& output, const Symbol& symbol, const TypeLikeSymbol& type)
 {
     output << ": ";
-    if (!normal_mode() && symbol.is_nullable()) {
+    if (symbol.is_nullable()) {
         output << '?';
     }
     output << emit_cangjie(type);
