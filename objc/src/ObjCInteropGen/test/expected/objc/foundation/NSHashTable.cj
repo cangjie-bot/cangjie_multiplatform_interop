@@ -13,15 +13,15 @@ public open class NSHashTable/*<ObjectType>*/ <: NSObject & NSCopying & NSSecure
     @ForeignName["hashTableWithOptions:"] public static func hashTableWithOptions(options: Int32 /*NSPointerFunctionsOptions*/): NSHashTable/*<ObjectType>*/
     public static func hashTableWithWeakObjects(): id
     public static func weakObjectsHashTable(): NSHashTable/*<ObjectType>*/
-    public prop pointerFunctions: NSPointerFunctions
-    public prop count: NSUInteger
+    public open prop pointerFunctions: NSPointerFunctions
+    public open prop count: NSUInteger
     @ForeignName["member:"] public open func member(object: id /*ObjectType*/): id /*ObjectType*/
     public open func objectEnumerator(): NSEnumerator/*<ObjectType>*/
     @ForeignName["addObject:"] public open func addObject(object: id /*ObjectType*/): Unit
     @ForeignName["removeObject:"] public open func removeObject(object: id /*ObjectType*/): Unit
     public open func removeAllObjects(): Unit
-    public prop allObjects: NSArray/*<ObjectType>*/
-    public prop anyObject: id /*ObjectType*/
+    public open prop allObjects: NSArray/*<ObjectType>*/
+    public open prop anyObject: id /*ObjectType*/
     @ForeignName["containsObject:"] public open func containsObject(anObject: id /*ObjectType*/): Bool
     @ForeignName["intersectsHashTable:"] public open func intersectsHashTable(other: NSHashTable/*<ObjectType>*/): Bool
     @ForeignName["isEqualToHashTable:"] public open func isEqualToHashTable(other: NSHashTable/*<ObjectType>*/): Bool
@@ -29,7 +29,7 @@ public open class NSHashTable/*<ObjectType>*/ <: NSObject & NSCopying & NSSecure
     @ForeignName["intersectHashTable:"] public open func intersectHashTable(other: NSHashTable/*<ObjectType>*/): Unit
     @ForeignName["unionHashTable:"] public open func unionHashTable(other: NSHashTable/*<ObjectType>*/): Unit
     @ForeignName["minusHashTable:"] public open func minusHashTable(other: NSHashTable/*<ObjectType>*/): Unit
-    public prop setRepresentation: NSSet/*<ObjectType>*/
+    public open prop setRepresentation: NSSet/*<ObjectType>*/
 }
 
 @C

@@ -6,15 +6,15 @@ import interoplib.objc.*
 
 @ObjCMirror
 public open class NSOrthography <: NSObject & NSCopying & NSSecureCoding {
-    public prop dominantScript: NSString
-    public prop languageMap: NSDictionary/*<NSString, NSArray<NSString>>*/
+    public open prop dominantScript: NSString
+    public open prop languageMap: NSDictionary/*<NSString, NSArray<NSString>>*/
     @ForeignName["initWithDominantScript:languageMap:"] public init(script: NSString, map: NSDictionary/*<NSString, NSArray<NSString>>*/)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
     @ForeignName["languagesForScript:"] public open func languagesForScript(script: NSString): ?NSArray/*<NSString>*/
     @ForeignName["dominantLanguageForScript:"] public open func dominantLanguageForScript(script: NSString): ?NSString
-    public prop dominantLanguage: NSString
-    public prop allScripts: NSArray/*<NSString>*/
-    public prop allLanguages: NSArray/*<NSString>*/
+    public open prop dominantLanguage: NSString
+    public open prop allScripts: NSArray/*<NSString>*/
+    public open prop allLanguages: NSArray/*<NSString>*/
     @ForeignName["defaultOrthographyForLanguage:"] public static func defaultOrthographyForLanguage(language: NSString): NSOrthography
     @ForeignName["orthographyWithDominantScript:languageMap:"] public static func orthographyWithDominantScriptLanguageMap(script: NSString, map: NSDictionary/*<NSString, NSArray<NSString>>*/): NSOrthography
 }

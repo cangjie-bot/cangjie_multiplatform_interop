@@ -33,7 +33,7 @@ public open class NSUserDefaults <: NSObject {
     @ForeignName["addSuiteNamed:"] public open func addSuiteNamed(suiteName: NSString): Unit
     @ForeignName["removeSuiteNamed:"] public open func removeSuiteNamed(suiteName: NSString): Unit
     public open func dictionaryRepresentation(): NSDictionary/*<NSString, id>*/
-    public prop volatileDomainNames: NSArray/*<NSString>*/
+    public open prop volatileDomainNames: NSArray/*<NSString>*/
     @ForeignName["volatileDomainForName:"] public open func volatileDomainForName(domainName: NSString): NSDictionary/*<NSString, id>*/
     @ForeignName["setVolatileDomain:forName:"] public open func setVolatileDomainForName(domain: NSDictionary/*<NSString, id>*/, domainName: NSString): Unit
     @ForeignName["removeVolatileDomainForName:"] public open func removeVolatileDomainForName(domainName: NSString): Unit

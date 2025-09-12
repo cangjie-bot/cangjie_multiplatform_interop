@@ -8,22 +8,22 @@ import interoplib.objc.*
 public open class NSOperation <: NSObject {
     public open func start(): Unit
     public open func `main`(): Unit
-    public prop isCancelled: Bool
+    public open prop isCancelled: Bool
     public open func cancel(): Unit
-    public prop isExecuting: Bool
-    public prop isFinished: Bool
-    public prop isConcurrent: Bool
-    public prop isAsynchronous: Bool
-    public prop isReady: Bool
+    public open prop isExecuting: Bool
+    public open prop isFinished: Bool
+    public open prop isConcurrent: Bool
+    public open prop isAsynchronous: Bool
+    public open prop isReady: Bool
     @ForeignName["addDependency:"] public open func addDependency(op: NSOperation): Unit
     @ForeignName["removeDependency:"] public open func removeDependency(op: NSOperation): Unit
-    public prop dependencies: NSArray/*<NSOperation>*/
-    public mut prop queuePriority: Int32 /*NSOperationQueuePriority*/
-    public mut prop completionBlock: ObjCBlock<() -> Unit>
+    public open prop dependencies: NSArray/*<NSOperation>*/
+    public open mut prop queuePriority: Int32 /*NSOperationQueuePriority*/
+    public open mut prop completionBlock: ObjCBlock<() -> Unit>
     public open func waitUntilFinished(): Unit
-    public mut prop threadPriority: Float64
-    public mut prop qualityOfService: Int32 /*NSQualityOfService*/
-    public mut prop name: ?NSString
+    public open mut prop threadPriority: Float64
+    public open mut prop qualityOfService: Int32 /*NSQualityOfService*/
+    public open mut prop name: ?NSString
 }
 
 public abstract sealed class NSOperationQueuePriority {
@@ -38,15 +38,15 @@ public abstract sealed class NSOperationQueuePriority {
 public open class NSBlockOperation <: NSOperation {
     @ForeignName["blockOperationWithBlock:"] public static func blockOperationWithBlock(block: ObjCBlock<() -> Unit>): NSBlockOperation
     @ForeignName["addExecutionBlock:"] public open func addExecutionBlock(block: ObjCBlock<() -> Unit>): Unit
-    public prop executionBlocks: NSArray/*<ObjCBlock<() -> Unit>>*/
+    public open prop executionBlocks: NSArray/*<ObjCBlock<() -> Unit>>*/
 }
 
 @ObjCMirror
 public open class NSInvocationOperation <: NSOperation {
     @ForeignName["initWithTarget:selector:object:"] public init(target: id, sel: SEL, arg: id)
     @ForeignName["initWithInvocation:"] public init(inv: NSInvocation)
-    public prop invocation: NSInvocation
-    public prop result: id
+    public open prop invocation: NSInvocation
+    public open prop result: id
 }
 
 @ObjCMirror
@@ -55,16 +55,16 @@ public open class NSOperationQueue <: NSObject & NSProgressReporting {
     @ForeignName["addOperations:waitUntilFinished:"] public open func addOperationsWaitUntilFinished(ops: NSArray/*<NSOperation>*/, wait: Bool): Unit
     @ForeignName["addOperationWithBlock:"] public open func addOperationWithBlock(block: ObjCBlock<() -> Unit>): Unit
     @ForeignName["addBarrierBlock:"] public open func addBarrierBlock(barrier: ObjCBlock<() -> Unit>): Unit
-    public mut prop maxConcurrentOperationCount: NSInteger
-    public mut prop isSuspended: Bool
-    public mut prop name: ?NSString
-    public mut prop qualityOfService: Int32 /*NSQualityOfService*/
-    public mut prop underlyingQueue: dispatch_queue_t
+    public open mut prop maxConcurrentOperationCount: NSInteger
+    public open mut prop isSuspended: Bool
+    public open mut prop name: ?NSString
+    public open mut prop qualityOfService: Int32 /*NSQualityOfService*/
+    public open mut prop underlyingQueue: dispatch_queue_t
     public open func cancelAllOperations(): Unit
     public open func waitUntilAllOperationsAreFinished(): Unit
     public static prop currentQueue: ?NSOperationQueue
     public static prop mainQueue: NSOperationQueue
-    public prop operations: NSArray/*<NSOperation>*/
-    public prop operationCount: NSUInteger
+    public open prop operations: NSArray/*<NSOperation>*/
+    public open prop operationCount: NSUInteger
 }
 

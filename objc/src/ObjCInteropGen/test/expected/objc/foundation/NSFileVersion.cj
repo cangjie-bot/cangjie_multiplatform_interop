@@ -21,17 +21,17 @@ public open class NSFileVersion <: NSObject {
     @ForeignName["versionOfItemAtURL:forPersistentIdentifier:"] public static func versionOfItemAtURLForPersistentIdentifier(url: NSURL, persistentIdentifier: id): ?NSFileVersion
     @ForeignName["addVersionOfItemAtURL:withContentsOfURL:options:error:"] public static func addVersionOfItemAtURLWithContentsOfURLOptionsError(url: NSURL, contentsURL: NSURL, options: Int32 /*NSFileVersionAddingOptions*/, outError: ObjCPointer<NSError>): ?NSFileVersion
     @ForeignName["temporaryDirectoryURLForNewVersionOfItemAtURL:"] public static func temporaryDirectoryURLForNewVersionOfItemAtURL(url: NSURL): NSURL
-    public prop URL: NSURL
-    public prop localizedName: ?NSString
-    public prop localizedNameOfSavingComputer: ?NSString
-    public prop originatorNameComponents: ?NSPersonNameComponents
-    public prop modificationDate: ?NSDate
-    public prop persistentIdentifier: NSCoding
-    public prop isConflict: Bool
-    public mut prop isResolved: Bool
-    public mut prop isDiscardable: Bool
-    public prop hasLocalContents: Bool
-    public prop hasThumbnail: Bool
+    public open prop URL: NSURL
+    public open prop localizedName: ?NSString
+    public open prop localizedNameOfSavingComputer: ?NSString
+    public open prop originatorNameComponents: ?NSPersonNameComponents
+    public open prop modificationDate: ?NSDate
+    public open prop persistentIdentifier: NSCoding
+    public open prop isConflict: Bool
+    public open mut prop isResolved: Bool
+    public open mut prop isDiscardable: Bool
+    public open prop hasLocalContents: Bool
+    public open prop hasThumbnail: Bool
     @ForeignName["replaceItemAtURL:options:error:"] public open func replaceItemAtURLOptionsError(url: NSURL, options: Int32 /*NSFileVersionReplacingOptions*/, error: ObjCPointer<NSError>): ?NSURL
     @ForeignName["removeAndReturnError:"] public open func removeAndReturnError(outError: ObjCPointer<NSError>): Bool
     @ForeignName["removeOtherVersionsOfItemAtURL:error:"] public static func removeOtherVersionsOfItemAtURLError(url: NSURL, outError: ObjCPointer<NSError>): Bool

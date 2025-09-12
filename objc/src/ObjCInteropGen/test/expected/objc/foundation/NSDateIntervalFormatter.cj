@@ -14,12 +14,12 @@ public abstract sealed class NSDateIntervalFormatterStyle {
 
 @ObjCMirror
 public open class NSDateIntervalFormatter <: NSFormatter {
-    public mut prop locale: NSLocale
-    public mut prop calendar: NSCalendar
-    public mut prop timeZone: NSTimeZone
-    public mut prop dateTemplate: NSString
-    public mut prop dateStyle: Int32 /*NSDateIntervalFormatterStyle*/
-    public mut prop timeStyle: Int32 /*NSDateIntervalFormatterStyle*/
+    public open mut prop locale: NSLocale
+    public open mut prop calendar: NSCalendar
+    public open mut prop timeZone: NSTimeZone
+    public open mut prop dateTemplate: NSString
+    public open mut prop dateStyle: Int32 /*NSDateIntervalFormatterStyle*/
+    public open mut prop timeStyle: Int32 /*NSDateIntervalFormatterStyle*/
     @ForeignName["stringFromDate:toDate:"] public open func stringFromDateToDate(fromDate: NSDate, toDate: NSDate): NSString
     @ForeignName["stringFromDateInterval:"] public open func stringFromDateInterval(dateInterval: NSDateInterval): ?NSString
 }

@@ -15,11 +15,11 @@ public open class NSTimer <: NSObject {
     @ForeignName["initWithFireDate:interval:repeats:block:"] public init(date: NSDate, interval: NSTimeInterval, repeats: Bool, block: ObjCBlock<(NSTimer) -> Unit>)
     @ForeignName["initWithFireDate:interval:target:selector:userInfo:repeats:"] public init(date: NSDate, ti: NSTimeInterval, t: id, s: SEL, ui: id, rep: Bool)
     public open func fire(): Unit
-    public mut prop fireDate: NSDate
-    public prop timeInterval: NSTimeInterval
-    public mut prop tolerance: NSTimeInterval
+    public open mut prop fireDate: NSDate
+    public open prop timeInterval: NSTimeInterval
+    public open mut prop tolerance: NSTimeInterval
     public open func invalidate(): Unit
-    public prop isValid: Bool
-    public prop userInfo: id
+    public open prop isValid: Bool
+    public open prop userInfo: id
 }
 

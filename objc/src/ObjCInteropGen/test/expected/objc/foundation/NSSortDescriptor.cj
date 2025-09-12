@@ -11,14 +11,14 @@ public open class NSSortDescriptor <: NSObject & NSSecureCoding & NSCopying {
     @ForeignName["initWithKey:ascending:"] public init(key: ?NSString, ascending: Bool)
     @ForeignName["initWithKey:ascending:selector:"] public init(key: ?NSString, ascending: Bool, selector: SEL)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
-    public prop key: ?NSString
-    public prop ascending: Bool
-    public prop selector: SEL
+    public open prop key: ?NSString
+    public open prop ascending: Bool
+    public open prop selector: SEL
     public open func allowEvaluation(): Unit
     @ForeignName["sortDescriptorWithKey:ascending:comparator:"] public static func sortDescriptorWithKeyAscendingComparator(key: ?NSString, ascending: Bool, cmptr: NSComparator): NSSortDescriptor
     @ForeignName["initWithKey:ascending:comparator:"] public init(key: ?NSString, ascending: Bool, cmptr: NSComparator)
-    public prop comparator: NSComparator
+    public open prop comparator: NSComparator
     @ForeignName["compareObject:toObject:"] public open func compareObjectToObject(object1: id, object2: id): Int32 /*NSComparisonResult*/
-    public prop reversedSortDescriptor: id
+    public open prop reversedSortDescriptor: id
 }
 

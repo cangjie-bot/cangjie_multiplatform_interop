@@ -13,10 +13,10 @@ public abstract sealed class NSCollectionChangeType {
 public open class NSOrderedCollectionChange/*<ObjectType>*/ <: NSObject {
     @ForeignName["changeWithObject:type:index:"] public static func changeWithObjectTypeIndex(anObject: id /*ObjectType*/, `type`: Int32 /*NSCollectionChangeType*/, index: NSUInteger): NSOrderedCollectionChange/*<ObjectType>*/
     @ForeignName["changeWithObject:type:index:associatedIndex:"] public static func changeWithObjectTypeIndexAssociatedIndex(anObject: id /*ObjectType*/, `type`: Int32 /*NSCollectionChangeType*/, index: NSUInteger, associatedIndex: NSUInteger): NSOrderedCollectionChange/*<ObjectType>*/
-    public prop object: id /*ObjectType*/
-    public prop changeType: Int32 /*NSCollectionChangeType*/
-    public prop index: NSUInteger
-    public prop associatedIndex: NSUInteger
+    public open prop object: id /*ObjectType*/
+    public open prop changeType: Int32 /*NSCollectionChangeType*/
+    public open prop index: NSUInteger
+    public open prop associatedIndex: NSUInteger
     public init()
     @ForeignName["initWithObject:type:index:"] public init(anObject: id /*ObjectType*/, `type`: Int32 /*NSCollectionChangeType*/, index: NSUInteger)
     @ForeignName["initWithObject:type:index:associatedIndex:"] public init(anObject: id /*ObjectType*/, `type`: Int32 /*NSCollectionChangeType*/, index: NSUInteger, associatedIndex: NSUInteger)

@@ -17,28 +17,28 @@ public type NSUserActivityPersistentIdentifier = NSString
 public open class NSUserActivity <: NSObject {
     @ForeignName["initWithActivityType:"] public init(activityType: NSString)
     public init()
-    public prop activityType: NSString
-    public mut prop title: ?NSString
-    public mut prop userInfo: ?NSDictionary/*<KeyType, ObjectType>*/
+    public open prop activityType: NSString
+    public open mut prop title: ?NSString
+    public open mut prop userInfo: ?NSDictionary/*<KeyType, ObjectType>*/
     @ForeignName["addUserInfoEntriesFromDictionary:"] public open func addUserInfoEntriesFromDictionary(otherDictionary: NSDictionary/*<KeyType, ObjectType>*/): Unit
-    public mut prop requiredUserInfoKeys: ?NSSet/*<NSString>*/
-    public mut prop needsSave: Bool
-    public mut prop webpageURL: ?NSURL
-    public mut prop referrerURL: ?NSURL
-    public mut prop expirationDate: ?NSDate
-    public mut prop keywords: NSSet/*<NSString>*/
-    public mut prop supportsContinuationStreams: Bool
-    public mut prop delegate: ?NSUserActivityDelegate
-    public mut prop targetContentIdentifier: ?NSString
+    public open mut prop requiredUserInfoKeys: ?NSSet/*<NSString>*/
+    public open mut prop needsSave: Bool
+    public open mut prop webpageURL: ?NSURL
+    public open mut prop referrerURL: ?NSURL
+    public open mut prop expirationDate: ?NSDate
+    public open mut prop keywords: NSSet/*<NSString>*/
+    public open mut prop supportsContinuationStreams: Bool
+    public open mut prop delegate: ?NSUserActivityDelegate
+    public open mut prop targetContentIdentifier: ?NSString
     public open func becomeCurrent(): Unit
     public open func resignCurrent(): Unit
     public open func invalidate(): Unit
     @ForeignName["getContinuationStreamsWithCompletionHandler:"] public open func getContinuationStreamsWithCompletionHandler(completionHandler: ObjCBlock<(NSInputStream, NSOutputStream, NSError) -> Unit>): Unit
-    public mut prop isEligibleForHandoff: Bool
-    public mut prop isEligibleForSearch: Bool
-    public mut prop isEligibleForPublicIndexing: Bool
-    public mut prop isEligibleForPrediction: Bool
-    public mut prop persistentIdentifier: NSUserActivityPersistentIdentifier
+    public open mut prop isEligibleForHandoff: Bool
+    public open mut prop isEligibleForSearch: Bool
+    public open mut prop isEligibleForPublicIndexing: Bool
+    public open mut prop isEligibleForPrediction: Bool
+    public open mut prop persistentIdentifier: NSUserActivityPersistentIdentifier
     @ForeignName["deleteSavedUserActivitiesWithPersistentIdentifiers:completionHandler:"] public static func deleteSavedUserActivitiesWithPersistentIdentifiersCompletionHandler(persistentIdentifiers: NSArray/*<NSUserActivityPersistentIdentifier>*/, handler: ObjCBlock<() -> Unit>): Unit
     @ForeignName["deleteAllSavedUserActivitiesWithCompletionHandler:"] public static func deleteAllSavedUserActivitiesWithCompletionHandler(handler: ObjCBlock<() -> Unit>): Unit
 }

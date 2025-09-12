@@ -14,19 +14,19 @@ public open class NSHTTPCookie <: NSObject {
     @ForeignName["cookieWithProperties:"] public static func cookieWithProperties(properties: NSDictionary/*<NSHTTPCookiePropertyKey, id>*/): ?NSHTTPCookie
     @ForeignName["requestHeaderFieldsWithCookies:"] public static func requestHeaderFieldsWithCookies(cookies: NSArray/*<NSHTTPCookie>*/): NSDictionary/*<NSString, NSString>*/
     @ForeignName["cookiesWithResponseHeaderFields:forURL:"] public static func cookiesWithResponseHeaderFieldsForURL(headerFields: NSDictionary/*<NSString, NSString>*/, URL: NSURL): NSArray/*<NSHTTPCookie>*/
-    public prop properties: ?NSDictionary/*<NSHTTPCookiePropertyKey, id>*/
-    public prop versionInstance: NSUInteger
-    public prop name: NSString
-    public prop value: NSString
-    public prop expiresDate: ?NSDate
-    public prop isSessionOnly: Bool
-    public prop domain: NSString
-    public prop path: NSString
-    public prop isSecure: Bool
-    public prop isHTTPOnly: Bool
-    public prop comment: ?NSString
-    public prop commentURL: ?NSURL
-    public prop portList: ?NSArray/*<NSNumber>*/
-    public prop sameSitePolicy: NSHTTPCookieStringPolicy
+    public open prop properties: ?NSDictionary/*<NSHTTPCookiePropertyKey, id>*/
+    public open prop versionInstance: NSUInteger
+    public open prop name: NSString
+    public open prop value: NSString
+    public open prop expiresDate: ?NSDate
+    public open prop isSessionOnly: Bool
+    public open prop domain: NSString
+    public open prop path: NSString
+    public open prop isSecure: Bool
+    public open prop isHTTPOnly: Bool
+    public open prop comment: ?NSString
+    public open prop commentURL: ?NSURL
+    public open prop portList: ?NSArray/*<NSNumber>*/
+    public open prop sameSitePolicy: NSHTTPCookieStringPolicy
 }
 

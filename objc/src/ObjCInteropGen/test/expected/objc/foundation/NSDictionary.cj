@@ -6,16 +6,16 @@ import interoplib.objc.*
 
 @ObjCMirror
 public open class NSDictionary/*<KeyType, ObjectType>*/ <: NSObject & NSCopying & NSMutableCopying & NSSecureCoding & NSFastEnumeration {
-    public prop count: NSUInteger
+    public open prop count: NSUInteger
     @ForeignName["objectForKey:"] public open func objectForKey(aKey: id /*KeyType*/): id /*ObjectType*/
     public open func keyEnumerator(): NSEnumerator/*<KeyType>*/
     public init()
     @ForeignName["initWithObjects:forKeys:count:"] public init(objects: ObjCPointer<id /*ObjectType*/>, keys: ObjCPointer<NSCopying /*KeyType<NSCopying>*/>, cnt: NSUInteger)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
-    public prop allKeys: NSArray/*<KeyType>*/
+    public open prop allKeys: NSArray/*<KeyType>*/
     @ForeignName["allKeysForObject:"] public open func allKeysForObject(anObject: id /*ObjectType*/): NSArray/*<KeyType>*/
-    public prop allValues: NSArray/*<ObjectType>*/
-    public prop descriptionInStringsFileFormat: NSString
+    public open prop allValues: NSArray/*<ObjectType>*/
+    public open prop descriptionInStringsFileFormat: NSString
     @ForeignName["descriptionWithLocale:"] public open func descriptionWithLocale(locale: id): NSString
     @ForeignName["descriptionWithLocale:indent:"] public open func descriptionWithLocaleIndent(locale: id, level: NSUInteger): NSString
     @ForeignName["isEqualToDictionary:"] public open func isEqualToDictionary(otherDictionary: NSDictionary/*<KeyType, ObjectType>*/): Bool

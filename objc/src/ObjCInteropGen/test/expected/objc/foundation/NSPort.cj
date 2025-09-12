@@ -24,12 +24,12 @@ public interface NSMachPortDelegate <: NSPortDelegate {
 public open class NSPort <: NSObject & NSCopying & NSCoding {
     public static func port(): NSPort
     public open func invalidate(): Unit
-    public prop isValid: Bool
+    public open prop isValid: Bool
     @ForeignName["setDelegate:"] public open func setDelegate(anObject: ?NSPortDelegate): Unit
     public open func delegate(): ?NSPortDelegate
     @ForeignName["scheduleInRunLoop:forMode:"] public open func scheduleInRunLoopForMode(runLoop: NSRunLoop, mode: NSRunLoopMode): Unit
     @ForeignName["removeFromRunLoop:forMode:"] public open func removeFromRunLoopForMode(runLoop: NSRunLoop, mode: NSRunLoopMode): Unit
-    public prop reservedSpaceLength: NSUInteger
+    public open prop reservedSpaceLength: NSUInteger
     @ForeignName["sendBeforeDate:components:from:reserved:"] public open func sendBeforeDateComponentsFromReserved(limitDate: NSDate, components: ?NSMutableArray/*<ObjectType>*/, receivePort: ?NSPort, headerSpaceReserved: NSUInteger): Bool
     @ForeignName["sendBeforeDate:msgid:components:from:reserved:"] public open func sendBeforeDateMsgidComponentsFromReserved(limitDate: NSDate, msgID: NSUInteger, components: ?NSMutableArray/*<ObjectType>*/, receivePort: ?NSPort, headerSpaceReserved: NSUInteger): Bool
 }
@@ -42,7 +42,7 @@ public open class NSMachPort <: NSPort {
     public open func delegate(): ?NSPortDelegate
     @ForeignName["portWithMachPort:options:"] public static func portWithMachPortOptions(machPort: uint32_t, f: Int32 /*NSMachPortOptions*/): NSPort
     @ForeignName["initWithMachPort:options:"] public init(machPort: uint32_t, f: Int32 /*NSMachPortOptions*/)
-    public prop machPort: uint32_t
+    public open prop machPort: uint32_t
     @ForeignName["scheduleInRunLoop:forMode:"] public open func scheduleInRunLoopForMode(runLoop: NSRunLoop, mode: NSRunLoopMode): Unit
     @ForeignName["removeFromRunLoop:forMode:"] public open func removeFromRunLoopForMode(runLoop: NSRunLoop, mode: NSRunLoopMode): Unit
 }

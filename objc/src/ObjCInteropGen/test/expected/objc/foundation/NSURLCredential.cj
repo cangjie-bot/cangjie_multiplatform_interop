@@ -13,16 +13,16 @@ public abstract sealed class NSURLCredentialPersistence {
 
 @ObjCMirror
 public open class NSURLCredential <: NSObject & NSSecureCoding & NSCopying {
-    public prop persistence: Int32 /*NSURLCredentialPersistence*/
+    public open prop persistence: Int32 /*NSURLCredentialPersistence*/
     @ForeignName["initWithUser:password:persistence:"] public init(user: NSString, password: NSString, persistence: Int32 /*NSURLCredentialPersistence*/)
     @ForeignName["credentialWithUser:password:persistence:"] public static func credentialWithUserPasswordPersistence(user: NSString, password: NSString, persistence: Int32 /*NSURLCredentialPersistence*/): NSURLCredential
-    public prop user: ?NSString
-    public prop password: ?NSString
-    public prop hasPassword: Bool
+    public open prop user: ?NSString
+    public open prop password: ?NSString
+    public open prop hasPassword: Bool
     @ForeignName["initWithIdentity:certificates:persistence:"] public init(identity: SecIdentityRef, certArray: ?NSArray/*<ObjectType>*/, persistence: Int32 /*NSURLCredentialPersistence*/)
     @ForeignName["credentialWithIdentity:certificates:persistence:"] public static func credentialWithIdentityCertificatesPersistence(identity: SecIdentityRef, certArray: ?NSArray/*<ObjectType>*/, persistence: Int32 /*NSURLCredentialPersistence*/): NSURLCredential
-    public prop identity: SecIdentityRef
-    public prop certificates: NSArray/*<ObjectType>*/
+    public open prop identity: SecIdentityRef
+    public open prop certificates: NSArray/*<ObjectType>*/
     @ForeignName["initWithTrust:"] public init(trust: SecTrustRef)
     @ForeignName["credentialForTrust:"] public static func credentialForTrust(trust: SecTrustRef): NSURLCredential
 }

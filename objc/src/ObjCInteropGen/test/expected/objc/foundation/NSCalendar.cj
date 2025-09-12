@@ -59,31 +59,31 @@ public open class NSCalendar <: NSObject & NSCopying & NSSecureCoding {
     @ForeignName["calendarWithIdentifier:"] public static func calendarWithIdentifier(calendarIdentifierConstant: NSCalendarIdentifier): ?NSCalendar
     public init()
     @ForeignName["initWithCalendarIdentifier:"] public init(ident: NSCalendarIdentifier)
-    public prop calendarIdentifier: NSCalendarIdentifier
-    public mut prop locale: ?NSLocale
-    public mut prop timeZone: NSTimeZone
-    public mut prop firstWeekday: NSUInteger
-    public mut prop minimumDaysInFirstWeek: NSUInteger
-    public prop eraSymbols: NSArray/*<NSString>*/
-    public prop longEraSymbols: NSArray/*<NSString>*/
-    public prop monthSymbols: NSArray/*<NSString>*/
-    public prop shortMonthSymbols: NSArray/*<NSString>*/
-    public prop veryShortMonthSymbols: NSArray/*<NSString>*/
-    public prop standaloneMonthSymbols: NSArray/*<NSString>*/
-    public prop shortStandaloneMonthSymbols: NSArray/*<NSString>*/
-    public prop veryShortStandaloneMonthSymbols: NSArray/*<NSString>*/
-    public prop weekdaySymbols: NSArray/*<NSString>*/
-    public prop shortWeekdaySymbols: NSArray/*<NSString>*/
-    public prop veryShortWeekdaySymbols: NSArray/*<NSString>*/
-    public prop standaloneWeekdaySymbols: NSArray/*<NSString>*/
-    public prop shortStandaloneWeekdaySymbols: NSArray/*<NSString>*/
-    public prop veryShortStandaloneWeekdaySymbols: NSArray/*<NSString>*/
-    public prop quarterSymbols: NSArray/*<NSString>*/
-    public prop shortQuarterSymbols: NSArray/*<NSString>*/
-    public prop standaloneQuarterSymbols: NSArray/*<NSString>*/
-    public prop shortStandaloneQuarterSymbols: NSArray/*<NSString>*/
-    public prop AMSymbol: NSString
-    public prop PMSymbol: NSString
+    public open prop calendarIdentifier: NSCalendarIdentifier
+    public open mut prop locale: ?NSLocale
+    public open mut prop timeZone: NSTimeZone
+    public open mut prop firstWeekday: NSUInteger
+    public open mut prop minimumDaysInFirstWeek: NSUInteger
+    public open prop eraSymbols: NSArray/*<NSString>*/
+    public open prop longEraSymbols: NSArray/*<NSString>*/
+    public open prop monthSymbols: NSArray/*<NSString>*/
+    public open prop shortMonthSymbols: NSArray/*<NSString>*/
+    public open prop veryShortMonthSymbols: NSArray/*<NSString>*/
+    public open prop standaloneMonthSymbols: NSArray/*<NSString>*/
+    public open prop shortStandaloneMonthSymbols: NSArray/*<NSString>*/
+    public open prop veryShortStandaloneMonthSymbols: NSArray/*<NSString>*/
+    public open prop weekdaySymbols: NSArray/*<NSString>*/
+    public open prop shortWeekdaySymbols: NSArray/*<NSString>*/
+    public open prop veryShortWeekdaySymbols: NSArray/*<NSString>*/
+    public open prop standaloneWeekdaySymbols: NSArray/*<NSString>*/
+    public open prop shortStandaloneWeekdaySymbols: NSArray/*<NSString>*/
+    public open prop veryShortStandaloneWeekdaySymbols: NSArray/*<NSString>*/
+    public open prop quarterSymbols: NSArray/*<NSString>*/
+    public open prop shortQuarterSymbols: NSArray/*<NSString>*/
+    public open prop standaloneQuarterSymbols: NSArray/*<NSString>*/
+    public open prop shortStandaloneQuarterSymbols: NSArray/*<NSString>*/
+    public open prop AMSymbol: NSString
+    public open prop PMSymbol: NSString
     @ForeignName["minimumRangeOfUnit:"] public open func minimumRangeOfUnit(unit: Int32 /*NSCalendarUnit*/): NSRange
     @ForeignName["maximumRangeOfUnit:"] public open func maximumRangeOfUnit(unit: Int32 /*NSCalendarUnit*/): NSRange
     @ForeignName["rangeOfUnit:inUnit:forDate:"] public open func rangeOfUnitInUnitForDate(smaller: Int32 /*NSCalendarUnit*/, larger: Int32 /*NSCalendarUnit*/, date: NSDate): NSRange
@@ -123,29 +123,29 @@ public open class NSCalendar <: NSObject & NSCopying & NSSecureCoding {
 
 @ObjCMirror
 public open class NSDateComponents <: NSObject & NSCopying & NSSecureCoding {
-    public mut prop calendar: ?NSCalendar
-    public mut prop timeZone: ?NSTimeZone
-    public mut prop era: NSInteger
-    public mut prop year: NSInteger
-    public mut prop month: NSInteger
-    public mut prop day: NSInteger
-    public mut prop hour: NSInteger
-    public mut prop minute: NSInteger
-    public mut prop second: NSInteger
-    public mut prop nanosecond: NSInteger
-    public mut prop weekday: NSInteger
-    public mut prop weekdayOrdinal: NSInteger
-    public mut prop quarter: NSInteger
-    public mut prop weekOfMonth: NSInteger
-    public mut prop weekOfYear: NSInteger
-    public mut prop yearForWeekOfYear: NSInteger
-    public mut prop isLeapMonth: Bool
-    public prop date: ?NSDate
+    public open mut prop calendar: ?NSCalendar
+    public open mut prop timeZone: ?NSTimeZone
+    public open mut prop era: NSInteger
+    public open mut prop year: NSInteger
+    public open mut prop month: NSInteger
+    public open mut prop day: NSInteger
+    public open mut prop hour: NSInteger
+    public open mut prop minute: NSInteger
+    public open mut prop second: NSInteger
+    public open mut prop nanosecond: NSInteger
+    public open mut prop weekday: NSInteger
+    public open mut prop weekdayOrdinal: NSInteger
+    public open mut prop quarter: NSInteger
+    public open mut prop weekOfMonth: NSInteger
+    public open mut prop weekOfYear: NSInteger
+    public open mut prop yearForWeekOfYear: NSInteger
+    public open mut prop isLeapMonth: Bool
+    public open prop date: ?NSDate
     public open func week(): NSInteger
     @ForeignName["setWeek:"] public open func setWeek(v: NSInteger): Unit
     @ForeignName["setValue:forComponent:"] public open func setValueForComponent(value: NSInteger, unit: Int32 /*NSCalendarUnit*/): Unit
     @ForeignName["valueForComponent:"] public open func valueForComponent(unit: Int32 /*NSCalendarUnit*/): NSInteger
-    public prop isValidDate: Bool
+    public open prop isValidDate: Bool
     @ForeignName["isValidDateInCalendar:"] public open func isValidDateInCalendar(calendar: NSCalendar): Bool
 }
 

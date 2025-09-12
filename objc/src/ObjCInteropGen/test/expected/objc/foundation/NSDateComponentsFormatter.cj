@@ -30,17 +30,17 @@ public open class NSDateComponentsFormatter <: NSFormatter {
     @ForeignName["stringFromDate:toDate:"] public open func stringFromDateToDate(startDate: NSDate, endDate: NSDate): ?NSString
     @ForeignName["stringFromTimeInterval:"] public open func stringFromTimeInterval(ti: NSTimeInterval): ?NSString
     @ForeignName["localizedStringFromDateComponents:unitsStyle:"] public static func localizedStringFromDateComponentsUnitsStyle(components: NSDateComponents, unitsStyle: Int32 /*NSDateComponentsFormatterUnitsStyle*/): ?NSString
-    public mut prop unitsStyle: Int32 /*NSDateComponentsFormatterUnitsStyle*/
-    public mut prop allowedUnits: Int32 /*NSCalendarUnit*/
-    public mut prop zeroFormattingBehavior: Int32 /*NSDateComponentsFormatterZeroFormattingBehavior*/
-    public mut prop calendar: ?NSCalendar
-    public mut prop referenceDate: ?NSDate
-    public mut prop allowsFractionalUnits: Bool
-    public mut prop maximumUnitCount: NSInteger
-    public mut prop collapsesLargestUnit: Bool
-    public mut prop includesApproximationPhrase: Bool
-    public mut prop includesTimeRemainingPhrase: Bool
-    public mut prop formattingContext: Int32 /*NSFormattingContext*/
+    public open mut prop unitsStyle: Int32 /*NSDateComponentsFormatterUnitsStyle*/
+    public open mut prop allowedUnits: Int32 /*NSCalendarUnit*/
+    public open mut prop zeroFormattingBehavior: Int32 /*NSDateComponentsFormatterZeroFormattingBehavior*/
+    public open mut prop calendar: ?NSCalendar
+    public open mut prop referenceDate: ?NSDate
+    public open mut prop allowsFractionalUnits: Bool
+    public open mut prop maximumUnitCount: NSInteger
+    public open mut prop collapsesLargestUnit: Bool
+    public open mut prop includesApproximationPhrase: Bool
+    public open mut prop includesTimeRemainingPhrase: Bool
+    public open mut prop formattingContext: Int32 /*NSFormattingContext*/
     @ForeignName["getObjectValue:forString:errorDescription:"] public open func getObjectValueForStringErrorDescription(obj: ObjCPointer<id>, string: NSString, error: ObjCPointer<NSString>): Bool
 }
 

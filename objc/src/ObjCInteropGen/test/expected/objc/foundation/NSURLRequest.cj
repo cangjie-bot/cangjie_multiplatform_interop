@@ -37,24 +37,24 @@ public open class NSURLRequest <: NSObject & NSSecureCoding & NSCopying & NSMuta
     @ForeignName["requestWithURL:cachePolicy:timeoutInterval:"] public static func requestWithURLCachePolicyTimeoutInterval(URL: NSURL, cachePolicy: Int32 /*NSURLRequestCachePolicy*/, timeoutInterval: NSTimeInterval): NSURLRequest
     @ForeignName["initWithURL:"] public init(URL: NSURL)
     @ForeignName["initWithURL:cachePolicy:timeoutInterval:"] public init(URL: NSURL, cachePolicy: Int32 /*NSURLRequestCachePolicy*/, timeoutInterval: NSTimeInterval)
-    public prop URL: ?NSURL
-    public prop cachePolicy: Int32 /*NSURLRequestCachePolicy*/
-    public prop timeoutInterval: NSTimeInterval
-    public prop mainDocumentURL: ?NSURL
-    public prop networkServiceType: Int32 /*NSURLRequestNetworkServiceType*/
-    public prop allowsCellularAccess: Bool
-    public prop allowsExpensiveNetworkAccess: Bool
-    public prop allowsConstrainedNetworkAccess: Bool
-    public prop assumesHTTP3Capable: Bool
-    public prop attribution: Int32 /*NSURLRequestAttribution*/
-    public prop requiresDNSSECValidation: Bool
-    public prop HTTPMethod: ?NSString
-    public prop allHTTPHeaderFields: ?NSDictionary/*<NSString, NSString>*/
+    public open prop URL: ?NSURL
+    public open prop cachePolicy: Int32 /*NSURLRequestCachePolicy*/
+    public open prop timeoutInterval: NSTimeInterval
+    public open prop mainDocumentURL: ?NSURL
+    public open prop networkServiceType: Int32 /*NSURLRequestNetworkServiceType*/
+    public open prop allowsCellularAccess: Bool
+    public open prop allowsExpensiveNetworkAccess: Bool
+    public open prop allowsConstrainedNetworkAccess: Bool
+    public open prop assumesHTTP3Capable: Bool
+    public open prop attribution: Int32 /*NSURLRequestAttribution*/
+    public open prop requiresDNSSECValidation: Bool
+    public open prop HTTPMethod: ?NSString
+    public open prop allHTTPHeaderFields: ?NSDictionary/*<NSString, NSString>*/
     @ForeignName["valueForHTTPHeaderField:"] public open func valueForHTTPHeaderField(field: NSString): ?NSString
-    public prop HTTPBody: ?NSData
-    public prop HTTPBodyStream: ?NSInputStream
-    public prop HTTPShouldHandleCookies: Bool
-    public prop HTTPShouldUsePipelining: Bool
+    public open prop HTTPBody: ?NSData
+    public open prop HTTPBodyStream: ?NSInputStream
+    public open prop HTTPShouldHandleCookies: Bool
+    public open prop HTTPShouldUsePipelining: Bool
 }
 
 @ObjCMirror

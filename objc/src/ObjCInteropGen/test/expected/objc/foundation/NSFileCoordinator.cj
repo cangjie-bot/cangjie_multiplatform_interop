@@ -6,9 +6,9 @@ import interoplib.objc.*
 
 @ObjCMirror
 public interface NSFilePresenter <: NSObjectProtocol {
-    public prop presentedItemURL: ?NSURL
-    public prop presentedItemOperationQueue: NSOperationQueue
-    public prop primaryPresentedItemURL: ?NSURL
+    prop presentedItemURL: ?NSURL
+    prop presentedItemOperationQueue: NSOperationQueue
+    prop primaryPresentedItemURL: ?NSURL
     @ForeignName["relinquishPresentedItemToReader:"] func relinquishPresentedItemToReader(reader: ObjCBlock<(ObjCBlock<() -> Unit>) -> Unit>): Unit
     @ForeignName["relinquishPresentedItemToWriter:"] func relinquishPresentedItemToWriter(writer: ObjCBlock<(ObjCBlock<() -> Unit>) -> Unit>): Unit
     @ForeignName["savePresentedItemChangesWithCompletionHandler:"] func savePresentedItemChangesWithCompletionHandler(completionHandler: ObjCBlock<(NSError) -> Unit>): Unit
@@ -17,7 +17,7 @@ public interface NSFilePresenter <: NSObjectProtocol {
     @ForeignName["presentedItemDidMoveToURL:"] func presentedItemDidMoveToURL(newURL: NSURL): Unit
     func presentedItemDidChange(): Unit
     @ForeignName["presentedItemDidChangeUbiquityAttributes:"] func presentedItemDidChangeUbiquityAttributes(attributes: NSSet/*<NSURLResourceKey>*/): Unit
-    public prop observedPresentedItemUbiquityAttributes: NSSet/*<NSURLResourceKey>*/
+    prop observedPresentedItemUbiquityAttributes: NSSet/*<NSURLResourceKey>*/
     @ForeignName["presentedItemDidGainVersion:"] func presentedItemDidGainVersion(version: NSFileVersion): Unit
     @ForeignName["presentedItemDidLoseVersion:"] func presentedItemDidLoseVersion(version: NSFileVersion): Unit
     @ForeignName["presentedItemDidResolveConflictVersion:"] func presentedItemDidResolveConflictVersion(version: NSFileVersion): Unit
@@ -49,7 +49,7 @@ public abstract sealed class NSFileCoordinatorWritingOptions {
 public open class NSFileAccessIntent <: NSObject {
     @ForeignName["readingIntentWithURL:options:"] public static func readingIntentWithURLOptions(url: NSURL, options: Int32 /*NSFileCoordinatorReadingOptions*/): NSFileAccessIntent
     @ForeignName["writingIntentWithURL:options:"] public static func writingIntentWithURLOptions(url: NSURL, options: Int32 /*NSFileCoordinatorWritingOptions*/): NSFileAccessIntent
-    public prop URL: NSURL
+    public open prop URL: NSURL
 }
 
 @ObjCMirror
@@ -58,7 +58,7 @@ public open class NSFileCoordinator <: NSObject {
     @ForeignName["removeFilePresenter:"] public static func removeFilePresenter(filePresenter: NSFilePresenter): Unit
     public static prop filePresenters: NSArray/*<NSFilePresenter>*/
     @ForeignName["initWithFilePresenter:"] public init(filePresenterOrNil: ?NSFilePresenter)
-    public mut prop purposeIdentifier: NSString
+    public open mut prop purposeIdentifier: NSString
     @ForeignName["coordinateAccessWithIntents:queue:byAccessor:"] public open func coordinateAccessWithIntentsQueueByAccessor(intents: NSArray/*<NSFileAccessIntent>*/, queue: NSOperationQueue, accessor: ObjCBlock<(NSError) -> Unit>): Unit
     @ForeignName["coordinateReadingItemAtURL:options:error:byAccessor:"] public open func coordinateReadingItemAtURLOptionsErrorByAccessor(url: NSURL, options: Int32 /*NSFileCoordinatorReadingOptions*/, outError: ObjCPointer<NSError>, reader: ObjCBlock<(NSURL) -> Unit>): Unit
     @ForeignName["coordinateWritingItemAtURL:options:error:byAccessor:"] public open func coordinateWritingItemAtURLOptionsErrorByAccessor(url: NSURL, options: Int32 /*NSFileCoordinatorWritingOptions*/, outError: ObjCPointer<NSError>, writer: ObjCBlock<(NSURL) -> Unit>): Unit

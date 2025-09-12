@@ -6,8 +6,8 @@ import interoplib.objc.*
 
 @ObjCMirror
 public open class NSTimeZone <: NSObject & NSCopying & NSSecureCoding {
-    public prop name: NSString
-    public prop data: NSData
+    public open prop name: NSString
+    public open prop data: NSData
     @ForeignName["secondsFromGMTForDate:"] public open func secondsFromGMTForDate(aDate: NSDate): NSInteger
     @ForeignName["abbreviationForDate:"] public open func abbreviationForDate(aDate: NSDate): ?NSString
     @ForeignName["isDaylightSavingTimeForDate:"] public open func isDaylightSavingTimeForDate(aDate: NSDate): Bool
@@ -20,11 +20,11 @@ public open class NSTimeZone <: NSObject & NSCopying & NSSecureCoding {
     public static prop knownTimeZoneNames: NSArray/*<NSString>*/
     public static mut prop abbreviationDictionary: NSDictionary/*<NSString, NSString>*/
     public static prop timeZoneDataVersion: NSString
-    public prop secondsFromGMT: NSInteger
-    public prop abbreviation: ?NSString
-    public prop isDaylightSavingTime: Bool
-    public prop daylightSavingTimeOffset: NSTimeInterval
-    public prop nextDaylightSavingTimeTransition: ?NSDate
+    public open prop secondsFromGMT: NSInteger
+    public open prop abbreviation: ?NSString
+    public open prop isDaylightSavingTime: Bool
+    public open prop daylightSavingTimeOffset: NSTimeInterval
+    public open prop nextDaylightSavingTimeTransition: ?NSDate
     @ForeignName["isEqualToTimeZone:"] public open func isEqualToTimeZone(aTimeZone: NSTimeZone): Bool
     @ForeignName["localizedName:locale:"] public open func localizedNameLocale(style: Int32 /*NSTimeZoneNameStyle*/, locale: ?NSLocale): ?NSString
     @ForeignName["timeZoneWithName:"] public static func timeZoneWithName(tzName: NSString): NSTimeZone

@@ -16,27 +16,27 @@ public open class NSBundle <: NSObject {
     public static prop allBundles: NSArray/*<NSBundle>*/
     public static prop allFrameworks: NSArray/*<NSBundle>*/
     @ForeignName["load"] public open func loadInstance(): Bool
-    public prop isLoaded: Bool
+    public open prop isLoaded: Bool
     public open func unload(): Bool
     @ForeignName["preflightAndReturnError:"] public open func preflightAndReturnError(error: ObjCPointer<NSError>): Bool
     @ForeignName["loadAndReturnError:"] public open func loadAndReturnError(error: ObjCPointer<NSError>): Bool
-    public prop bundleURL: NSURL
-    public prop resourceURL: ?NSURL
-    public prop executableURL: ?NSURL
+    public open prop bundleURL: NSURL
+    public open prop resourceURL: ?NSURL
+    public open prop executableURL: ?NSURL
     @ForeignName["URLForAuxiliaryExecutable:"] public open func URLForAuxiliaryExecutable(executableName: NSString): ?NSURL
-    public prop privateFrameworksURL: ?NSURL
-    public prop sharedFrameworksURL: ?NSURL
-    public prop sharedSupportURL: ?NSURL
-    public prop builtInPlugInsURL: ?NSURL
-    public prop appStoreReceiptURL: ?NSURL
-    public prop bundlePath: NSString
-    public prop resourcePath: ?NSString
-    public prop executablePath: ?NSString
+    public open prop privateFrameworksURL: ?NSURL
+    public open prop sharedFrameworksURL: ?NSURL
+    public open prop sharedSupportURL: ?NSURL
+    public open prop builtInPlugInsURL: ?NSURL
+    public open prop appStoreReceiptURL: ?NSURL
+    public open prop bundlePath: NSString
+    public open prop resourcePath: ?NSString
+    public open prop executablePath: ?NSString
     @ForeignName["pathForAuxiliaryExecutable:"] public open func pathForAuxiliaryExecutable(executableName: NSString): ?NSString
-    public prop privateFrameworksPath: ?NSString
-    public prop sharedFrameworksPath: ?NSString
-    public prop sharedSupportPath: ?NSString
-    public prop builtInPlugInsPath: ?NSString
+    public open prop privateFrameworksPath: ?NSString
+    public open prop sharedFrameworksPath: ?NSString
+    public open prop sharedSupportPath: ?NSString
+    public open prop builtInPlugInsPath: ?NSString
     @ForeignName["URLForResource:withExtension:subdirectory:inBundleWithURL:"] public static func URLForResourceWithExtensionSubdirectoryInBundleWithURL(name: ?NSString, ext: ?NSString, subpath: ?NSString, bundleURL: NSURL): ?NSURL
     @ForeignName["URLsForResourcesWithExtension:subdirectory:inBundleWithURL:"] public static func URLsForResourcesWithExtensionSubdirectoryInBundleWithURL(ext: ?NSString, subpath: ?NSString, bundleURL: NSURL): ?NSArray/*<NSURL>*/
     @ForeignName["URLForResource:withExtension:"] public open func URLForResourceWithExtension(name: ?NSString, ext: ?NSString): ?NSURL
@@ -53,18 +53,18 @@ public open class NSBundle <: NSObject {
     @ForeignName["pathsForResourcesOfType:inDirectory:forLocalization:"] public open func pathsForResourcesOfTypeInDirectoryForLocalization(ext: ?NSString, subpath: ?NSString, localizationName: ?NSString): NSArray/*<NSString>*/
     @ForeignName["localizedStringForKey:value:table:"] public open func localizedStringForKeyValueTable(key: NSString, value: ?NSString, tableName: ?NSString): NSString
     @ForeignName["localizedAttributedStringForKey:value:table:"] public open func localizedAttributedStringForKeyValueTable(key: NSString, value: ?NSString, tableName: ?NSString): NSAttributedString
-    public prop bundleIdentifier: ?NSString
-    public prop infoDictionary: ?NSDictionary/*<NSString, id>*/
-    public prop localizedInfoDictionary: ?NSDictionary/*<NSString, id>*/
+    public open prop bundleIdentifier: ?NSString
+    public open prop infoDictionary: ?NSDictionary/*<NSString, id>*/
+    public open prop localizedInfoDictionary: ?NSDictionary/*<NSString, id>*/
     @ForeignName["objectForInfoDictionaryKey:"] public open func objectForInfoDictionaryKey(key: NSString): id
     @ForeignName["classNamed:"] public open func classNamed(className: NSString): Class
-    public prop principalClass: Class
-    public prop preferredLocalizations: NSArray/*<NSString>*/
-    public prop localizations: NSArray/*<NSString>*/
-    public prop developmentLocalization: ?NSString
+    public open prop principalClass: Class
+    public open prop preferredLocalizations: NSArray/*<NSString>*/
+    public open prop localizations: NSArray/*<NSString>*/
+    public open prop developmentLocalization: ?NSString
     @ForeignName["preferredLocalizationsFromArray:"] public static func preferredLocalizationsFromArray(localizationsArray: NSArray/*<NSString>*/): NSArray/*<NSString>*/
     @ForeignName["preferredLocalizationsFromArray:forPreferences:"] public static func preferredLocalizationsFromArrayForPreferences(localizationsArray: NSArray/*<NSString>*/, preferencesArray: ?NSArray/*<NSString>*/): NSArray/*<NSString>*/
-    public prop executableArchitectures: ?NSArray/*<NSNumber>*/
+    public open prop executableArchitectures: ?NSArray/*<NSNumber>*/
     @ForeignName["setPreservationPriority:forTags:"] public open func setPreservationPriorityForTags(priority: Float64, tags: NSSet/*<NSString>*/): Unit
     @ForeignName["preservationPriorityForTag:"] public open func preservationPriorityForTag(tag: NSString): Float64
 }
@@ -74,9 +74,9 @@ public open class NSBundleResourceRequest <: NSObject & NSProgressReporting {
     public init()
     @ForeignName["initWithTags:"] public init(tags: NSSet/*<NSString>*/)
     @ForeignName["initWithTags:bundle:"] public init(tags: NSSet/*<NSString>*/, bundle: NSBundle)
-    public mut prop loadingPriority: Float64
-    public prop tags: NSSet/*<NSString>*/
-    public prop bundle: NSBundle
+    public open mut prop loadingPriority: Float64
+    public open prop tags: NSSet/*<NSString>*/
+    public open prop bundle: NSBundle
     @ForeignName["beginAccessingResourcesWithCompletionHandler:"] public open func beginAccessingResourcesWithCompletionHandler(completionHandler: ObjCBlock<(NSError) -> Unit>): Unit
     @ForeignName["conditionallyBeginAccessingResourcesWithCompletionHandler:"] public open func conditionallyBeginAccessingResourcesWithCompletionHandler(completionHandler: ObjCBlock<(Bool) -> Unit>): Unit
     public open func endAccessingResources(): Unit

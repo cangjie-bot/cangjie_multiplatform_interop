@@ -41,20 +41,20 @@ public open class NSExpression <: NSObject & NSSecureCoding & NSCopying {
     @ForeignName["expressionForConditional:trueExpression:falseExpression:"] public static func expressionForConditionalTrueExpressionFalseExpression(predicate: NSPredicate, trueExpression: NSExpression, falseExpression: NSExpression): NSExpression
     @ForeignName["initWithExpressionType:"] public init(`type`: Int32 /*NSExpressionType*/)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
-    public prop expressionType: Int32 /*NSExpressionType*/
-    public prop constantValue: id
-    public prop keyPath: NSString
-    public prop function: NSString
-    public prop variable: NSString
-    public prop operand: NSExpression
-    public prop arguments: ?NSArray/*<NSExpression>*/
-    public prop collection: id
-    public prop predicate: NSPredicate
-    public prop leftExpression: NSExpression
-    public prop rightExpression: NSExpression
-    public prop trueExpression: NSExpression
-    public prop falseExpression: NSExpression
-    public prop expressionBlock: ObjCBlock<(id, NSArray/*<NSExpression>*/, NSMutableDictionary/*<KeyType, ObjectType>*/) -> id>
+    public open prop expressionType: Int32 /*NSExpressionType*/
+    public open prop constantValue: id
+    public open prop keyPath: NSString
+    public open prop function: NSString
+    public open prop variable: NSString
+    public open prop operand: NSExpression
+    public open prop arguments: ?NSArray/*<NSExpression>*/
+    public open prop collection: id
+    public open prop predicate: NSPredicate
+    public open prop leftExpression: NSExpression
+    public open prop rightExpression: NSExpression
+    public open prop trueExpression: NSExpression
+    public open prop falseExpression: NSExpression
+    public open prop expressionBlock: ObjCBlock<(id, NSArray/*<NSExpression>*/, NSMutableDictionary/*<KeyType, ObjectType>*/) -> id>
     @ForeignName["expressionValueWithObject:context:"] public open func expressionValueWithObjectContext(object: id, context: ?NSMutableDictionary/*<KeyType, ObjectType>*/): id
     public open func allowEvaluation(): Unit
 }

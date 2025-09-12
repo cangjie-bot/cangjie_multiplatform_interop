@@ -7,19 +7,19 @@ import interoplib.objc.*
 @ObjCMirror
 public open class NSValue <: NSObject & NSCopying & NSSecureCoding {
     @ForeignName["getValue:size:"] public open func getValueSize(value: CPointer<Unit>, size: NSUInteger): Unit
-    public prop objCType: CPointer<Int8>
+    public open prop objCType: CPointer<Int8>
     @ForeignName["initWithBytes:objCType:"] public init(value: CPointer<Unit>, `type`: CPointer<Int8>)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
     @ForeignName["valueWithBytes:objCType:"] public static func valueWithBytesObjCType(value: CPointer<Unit>, `type`: CPointer<Int8>): NSValue
     @ForeignName["value:withObjCType:"] public static func valueWithObjCType(value: CPointer<Unit>, `type`: CPointer<Int8>): NSValue
     @ForeignName["valueWithNonretainedObject:"] public static func valueWithNonretainedObject(anObject: id): NSValue
-    public prop nonretainedObjectValue: id
+    public open prop nonretainedObjectValue: id
     @ForeignName["valueWithPointer:"] public static func valueWithPointer(pointer: CPointer<Unit>): NSValue
-    public prop pointerValue: CPointer<Unit>
+    public open prop pointerValue: CPointer<Unit>
     @ForeignName["isEqualToValue:"] public open func isEqualToValue(value: NSValue): Bool
     @ForeignName["getValue:"] public open func getValue(value: CPointer<Unit>): Unit
     @ForeignName["valueWithRange:"] public static func valueWithRange(range: NSRange): NSValue
-    public prop rangeValue: NSRange
+    public open prop rangeValue: NSRange
 }
 
 @ObjCMirror
@@ -40,22 +40,22 @@ public open class NSNumber <: NSValue {
     @ForeignName["initWithBool:"] public init(value: Bool)
     @ForeignName["initWithInteger:"] public init(value: NSInteger)
     @ForeignName["initWithUnsignedInteger:"] public init(value: NSUInteger)
-    public prop charValue: Int8
-    public prop unsignedCharValue: UInt8
-    public prop shortValue: Int16
-    public prop unsignedShortValue: UInt16
-    public prop intValue: Int32
-    public prop unsignedIntValue: UInt32
-    public prop longValue: Int64
-    public prop unsignedLongValue: UInt64
-    public prop longLongValue: Int64
-    public prop unsignedLongLongValue: UInt64
-    public prop floatValue: Float32
-    public prop doubleValue: Float64
-    public prop boolValue: Bool
-    public prop integerValue: NSInteger
-    public prop unsignedIntegerValue: NSUInteger
-    public prop stringValue: NSString
+    public open prop charValue: Int8
+    public open prop unsignedCharValue: UInt8
+    public open prop shortValue: Int16
+    public open prop unsignedShortValue: UInt16
+    public open prop intValue: Int32
+    public open prop unsignedIntValue: UInt32
+    public open prop longValue: Int64
+    public open prop unsignedLongValue: UInt64
+    public open prop longLongValue: Int64
+    public open prop unsignedLongLongValue: UInt64
+    public open prop floatValue: Float32
+    public open prop doubleValue: Float64
+    public open prop boolValue: Bool
+    public open prop integerValue: NSInteger
+    public open prop unsignedIntegerValue: NSUInteger
+    public open prop stringValue: NSString
     @ForeignName["compare:"] public open func compare(otherNumber: NSNumber): Int32 /*NSComparisonResult*/
     @ForeignName["isEqualToNumber:"] public open func isEqualToNumber(number: NSNumber): Bool
     @ForeignName["descriptionWithLocale:"] public open func descriptionWithLocale(locale: id): NSString
@@ -74,6 +74,6 @@ public open class NSNumber <: NSValue {
     @ForeignName["numberWithBool:"] public static func numberWithBool(value: Bool): NSNumber
     @ForeignName["numberWithInteger:"] public static func numberWithInteger(value: NSInteger): NSNumber
     @ForeignName["numberWithUnsignedInteger:"] public static func numberWithUnsignedInteger(value: NSUInteger): NSNumber
-    public prop decimalValue: NSDecimal
+    public open prop decimalValue: NSDecimal
 }
 

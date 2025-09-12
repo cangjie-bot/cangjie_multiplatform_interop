@@ -51,14 +51,14 @@ public open class NSNetService <: NSObject {
     @ForeignName["initWithDomain:type:name:"] public init(domain: NSString, `type`: NSString, name: NSString)
     @ForeignName["scheduleInRunLoop:forMode:"] public open func scheduleInRunLoopForMode(aRunLoop: NSRunLoop, mode: NSRunLoopMode): Unit
     @ForeignName["removeFromRunLoop:forMode:"] public open func removeFromRunLoopForMode(aRunLoop: NSRunLoop, mode: NSRunLoopMode): Unit
-    public mut prop delegate: ?NSNetServiceDelegate
-    public mut prop includesPeerToPeer: Bool
-    public prop name: NSString
-    public prop `type`: NSString
-    public prop domain: NSString
-    public prop hostName: ?NSString
-    public prop addresses: ?NSArray/*<NSData>*/
-    public prop port: NSInteger
+    public open mut prop delegate: ?NSNetServiceDelegate
+    public open mut prop includesPeerToPeer: Bool
+    public open prop name: NSString
+    public open prop `type`: NSString
+    public open prop domain: NSString
+    public open prop hostName: ?NSString
+    public open prop addresses: ?NSArray/*<NSData>*/
+    public open prop port: NSInteger
     public open func publish(): Unit
     @ForeignName["publishWithOptions:"] public open func publishWithOptions(options: Int32 /*NSNetServiceOptions*/): Unit
     public open func resolve(): Unit
@@ -76,8 +76,8 @@ public open class NSNetService <: NSObject {
 @ObjCMirror
 public open class NSNetServiceBrowser <: NSObject {
     public init()
-    public mut prop delegate: ?NSNetServiceBrowserDelegate
-    public mut prop includesPeerToPeer: Bool
+    public open mut prop delegate: ?NSNetServiceBrowserDelegate
+    public open mut prop includesPeerToPeer: Bool
     @ForeignName["scheduleInRunLoop:forMode:"] public open func scheduleInRunLoopForMode(aRunLoop: NSRunLoop, mode: NSRunLoopMode): Unit
     @ForeignName["removeFromRunLoop:forMode:"] public open func removeFromRunLoopForMode(aRunLoop: NSRunLoop, mode: NSRunLoopMode): Unit
     public open func searchForBrowsableDomains(): Unit

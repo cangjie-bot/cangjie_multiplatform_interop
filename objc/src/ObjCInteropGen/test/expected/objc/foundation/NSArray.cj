@@ -6,7 +6,7 @@ import interoplib.objc.*
 
 @ObjCMirror
 public open class NSArray/*<ObjectType>*/ <: NSObject & NSCopying & NSMutableCopying & NSSecureCoding & NSFastEnumeration {
-    public prop count: NSUInteger
+    public open prop count: NSUInteger
     @ForeignName["objectAtIndex:"] public open func objectAtIndex(index: NSUInteger): id /*ObjectType*/
     public init()
     @ForeignName["initWithObjects:count:"] public init(objects: ObjCPointer<id /*ObjectType*/>, cnt: NSUInteger)
@@ -24,11 +24,11 @@ public open class NSArray/*<ObjectType>*/ <: NSObject & NSCopying & NSMutableCop
     @ForeignName["indexOfObjectIdenticalTo:"] public open func indexOfObjectIdenticalTo(anObject: id /*ObjectType*/): NSUInteger
     @ForeignName["indexOfObjectIdenticalTo:inRange:"] public open func indexOfObjectIdenticalToInRange(anObject: id /*ObjectType*/, range: NSRange): NSUInteger
     @ForeignName["isEqualToArray:"] public open func isEqualToArray(otherArray: NSArray/*<ObjectType>*/): Bool
-    public prop firstObject: id /*ObjectType*/
-    public prop lastObject: id /*ObjectType*/
+    public open prop firstObject: id /*ObjectType*/
+    public open prop lastObject: id /*ObjectType*/
     public open func objectEnumerator(): NSEnumerator/*<ObjectType>*/
     public open func reverseObjectEnumerator(): NSEnumerator/*<ObjectType>*/
-    public prop sortedArrayHint: NSData
+    public open prop sortedArrayHint: NSData
     @ForeignName["sortedArrayUsingFunction:context:"] public open func sortedArrayUsingFunctionContext(comparator: ObjCFunc<(id /*ObjectType*/, id /*ObjectType*/, CPointer<Unit>) -> NSInteger>, context: CPointer<Unit>): NSArray/*<ObjectType>*/
     @ForeignName["sortedArrayUsingFunction:context:hint:"] public open func sortedArrayUsingFunctionContextHint(comparator: ObjCFunc<(id /*ObjectType*/, id /*ObjectType*/, CPointer<Unit>) -> NSInteger>, context: CPointer<Unit>, hint: ?NSData): NSArray/*<ObjectType>*/
     @ForeignName["sortedArrayUsingSelector:"] public open func sortedArrayUsingSelector(comparator: SEL): NSArray/*<ObjectType>*/

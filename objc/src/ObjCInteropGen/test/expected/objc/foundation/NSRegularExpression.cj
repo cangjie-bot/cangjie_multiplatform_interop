@@ -22,9 +22,9 @@ public open class NSRegularExpression <: NSObject & NSCopying & NSSecureCoding {
     protected var _checkout: int32_t
     @ForeignName["regularExpressionWithPattern:options:error:"] public static func regularExpressionWithPatternOptionsError(pattern: NSString, options: Int32 /*NSRegularExpressionOptions*/, error: ObjCPointer<NSError>): ?NSRegularExpression
     @ForeignName["initWithPattern:options:error:"] public init(pattern: NSString, options: Int32 /*NSRegularExpressionOptions*/, error: ObjCPointer<NSError>)
-    public prop pattern: NSString
-    public prop options: Int32 /*NSRegularExpressionOptions*/
-    public prop numberOfCaptureGroups: NSUInteger
+    public open prop pattern: NSString
+    public open prop options: Int32 /*NSRegularExpressionOptions*/
+    public open prop numberOfCaptureGroups: NSUInteger
     @ForeignName["escapedPatternForString:"] public static func escapedPatternForString(string: NSString): NSString
     @ForeignName["enumerateMatchesInString:options:range:usingBlock:"] public open func enumerateMatchesInStringOptionsRangeUsingBlock(string: NSString, options: Int32 /*NSMatchingOptions*/, range: NSRange, block: ObjCBlock<(NSTextCheckingResult, Int32 /*NSMatchingFlags*/, CPointer<Bool>) -> Unit>): Unit
     @ForeignName["matchesInString:options:range:"] public open func matchesInStringOptionsRange(string: NSString, options: Int32 /*NSMatchingOptions*/, range: NSRange): NSArray/*<NSTextCheckingResult>*/
@@ -58,6 +58,6 @@ public open class NSDataDetector <: NSRegularExpression {
     protected var _types: NSTextCheckingTypes
     @ForeignName["dataDetectorWithTypes:error:"] public static func dataDetectorWithTypesError(checkingTypes: NSTextCheckingTypes, error: ObjCPointer<NSError>): ?NSDataDetector
     @ForeignName["initWithTypes:error:"] public init(checkingTypes: NSTextCheckingTypes, error: ObjCPointer<NSError>)
-    public prop checkingTypes: NSTextCheckingTypes
+    public open prop checkingTypes: NSTextCheckingTypes
 }
 

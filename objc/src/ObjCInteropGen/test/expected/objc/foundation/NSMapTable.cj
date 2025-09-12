@@ -19,12 +19,12 @@ public open class NSMapTable/*<KeyType, ObjectType>*/ <: NSObject & NSCopying & 
     public static func weakToStrongObjectsMapTable(): NSMapTable/*<KeyType, ObjectType>*/
     public static func strongToWeakObjectsMapTable(): NSMapTable/*<KeyType, ObjectType>*/
     public static func weakToWeakObjectsMapTable(): NSMapTable/*<KeyType, ObjectType>*/
-    public prop keyPointerFunctions: NSPointerFunctions
-    public prop valuePointerFunctions: NSPointerFunctions
+    public open prop keyPointerFunctions: NSPointerFunctions
+    public open prop valuePointerFunctions: NSPointerFunctions
     @ForeignName["objectForKey:"] public open func objectForKey(aKey: id /*KeyType*/): id /*ObjectType*/
     @ForeignName["removeObjectForKey:"] public open func removeObjectForKey(aKey: id /*KeyType*/): Unit
     @ForeignName["setObject:forKey:"] public open func setObjectForKey(anObject: id /*ObjectType*/, aKey: id /*KeyType*/): Unit
-    public prop count: NSUInteger
+    public open prop count: NSUInteger
     public open func keyEnumerator(): NSEnumerator/*<KeyType>*/
     public open func objectEnumerator(): ?NSEnumerator/*<ObjectType>*/
     public open func removeAllObjects(): Unit

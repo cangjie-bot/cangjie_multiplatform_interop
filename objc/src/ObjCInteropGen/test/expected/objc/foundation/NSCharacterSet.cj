@@ -27,8 +27,8 @@ public open class NSCharacterSet <: NSObject & NSCopying & NSMutableCopying & NS
     @ForeignName["characterSetWithContentsOfFile:"] public static func characterSetWithContentsOfFile(fName: NSString): ?NSCharacterSet
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
     @ForeignName["characterIsMember:"] public open func characterIsMember(aCharacter: unichar): Bool
-    public prop bitmapRepresentation: NSData
-    public prop invertedSet: NSCharacterSet
+    public open prop bitmapRepresentation: NSData
+    public open prop invertedSet: NSCharacterSet
     @ForeignName["longCharacterIsMember:"] public open func longCharacterIsMember(theLongChar: UTF32Char): Bool
     @ForeignName["isSupersetOfSet:"] public open func isSupersetOfSet(theOtherSet: NSCharacterSet): Bool
     @ForeignName["hasMemberInPlane:"] public open func hasMemberInPlane(thePlane: uint8_t): Bool

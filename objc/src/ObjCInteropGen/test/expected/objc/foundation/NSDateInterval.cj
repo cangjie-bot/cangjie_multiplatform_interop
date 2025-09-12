@@ -6,9 +6,9 @@ import interoplib.objc.*
 
 @ObjCMirror
 public open class NSDateInterval <: NSObject & NSCopying & NSSecureCoding {
-    public prop startDate: NSDate
-    public prop endDate: NSDate
-    public prop duration: NSTimeInterval
+    public open prop startDate: NSDate
+    public open prop endDate: NSDate
+    public open prop duration: NSTimeInterval
     public init()
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
     @ForeignName["initWithStartDate:duration:"] public init(startDate: NSDate, duration: NSTimeInterval)

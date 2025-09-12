@@ -26,24 +26,24 @@ public type NSTextCheckingKey = NSString
 
 @ObjCMirror
 public open class NSTextCheckingResult <: NSObject & NSCopying & NSSecureCoding {
-    public prop resultType: Int32 /*NSTextCheckingType*/
-    public prop range: NSRange
-    public prop orthography: ?NSOrthography
-    public prop grammarDetails: ?NSArray/*<NSDictionary<NSString, id>>*/
-    public prop date: ?NSDate
-    public prop timeZone: ?NSTimeZone
-    public prop duration: NSTimeInterval
-    public prop components: ?NSDictionary/*<NSTextCheckingKey, NSString>*/
-    public prop URL: ?NSURL
-    public prop replacementString: ?NSString
-    public prop alternativeStrings: ?NSArray/*<NSString>*/
-    public prop regularExpression: ?NSRegularExpression
-    public prop phoneNumber: ?NSString
-    public prop numberOfRanges: NSUInteger
+    public open prop resultType: Int32 /*NSTextCheckingType*/
+    public open prop range: NSRange
+    public open prop orthography: ?NSOrthography
+    public open prop grammarDetails: ?NSArray/*<NSDictionary<NSString, id>>*/
+    public open prop date: ?NSDate
+    public open prop timeZone: ?NSTimeZone
+    public open prop duration: NSTimeInterval
+    public open prop components: ?NSDictionary/*<NSTextCheckingKey, NSString>*/
+    public open prop URL: ?NSURL
+    public open prop replacementString: ?NSString
+    public open prop alternativeStrings: ?NSArray/*<NSString>*/
+    public open prop regularExpression: ?NSRegularExpression
+    public open prop phoneNumber: ?NSString
+    public open prop numberOfRanges: NSUInteger
     @ForeignName["rangeAtIndex:"] public open func rangeAtIndex(idx: NSUInteger): NSRange
     @ForeignName["rangeWithName:"] public open func rangeWithName(name: NSString): NSRange
     @ForeignName["resultByAdjustingRangesWithOffset:"] public open func resultByAdjustingRangesWithOffset(offset: NSInteger): NSTextCheckingResult
-    public prop addressComponents: ?NSDictionary/*<NSTextCheckingKey, NSString>*/
+    public open prop addressComponents: ?NSDictionary/*<NSTextCheckingKey, NSString>*/
     @ForeignName["orthographyCheckingResultWithRange:orthography:"] public static func orthographyCheckingResultWithRangeOrthography(range: NSRange, orthography: NSOrthography): NSTextCheckingResult
     @ForeignName["spellCheckingResultWithRange:"] public static func spellCheckingResultWithRange(range: NSRange): NSTextCheckingResult
     @ForeignName["grammarCheckingResultWithRange:details:"] public static func grammarCheckingResultWithRangeDetails(range: NSRange, details: NSArray/*<NSDictionary<NSString, id>>*/): NSTextCheckingResult

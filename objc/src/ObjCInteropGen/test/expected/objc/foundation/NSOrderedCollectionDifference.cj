@@ -15,9 +15,9 @@ public open class NSOrderedCollectionDifference/*<ObjectType>*/ <: NSObject & NS
     @ForeignName["initWithChanges:"] public init(changes: NSArray/*<NSOrderedCollectionChange<ObjectType>>*/)
     @ForeignName["initWithInsertIndexes:insertedObjects:removeIndexes:removedObjects:additionalChanges:"] public init(inserts: NSIndexSet, insertedObjects: ?NSArray/*<ObjectType>*/, removes: NSIndexSet, removedObjects: ?NSArray/*<ObjectType>*/, changes: NSArray/*<NSOrderedCollectionChange<ObjectType>>*/)
     @ForeignName["initWithInsertIndexes:insertedObjects:removeIndexes:removedObjects:"] public init(inserts: NSIndexSet, insertedObjects: ?NSArray/*<ObjectType>*/, removes: NSIndexSet, removedObjects: ?NSArray/*<ObjectType>*/)
-    public prop insertions: NSArray/*<NSOrderedCollectionChange<ObjectType>>*/
-    public prop removals: NSArray/*<NSOrderedCollectionChange<ObjectType>>*/
-    public prop hasChanges: Bool
+    public open prop insertions: NSArray/*<NSOrderedCollectionChange<ObjectType>>*/
+    public open prop removals: NSArray/*<NSOrderedCollectionChange<ObjectType>>*/
+    public open prop hasChanges: Bool
     @ForeignName["differenceByTransformingChangesWithBlock:"] public open func differenceByTransformingChangesWithBlock(block: ObjCBlock<(NSOrderedCollectionChange/*<ObjectType>*/) -> NSOrderedCollectionChange/*<id>*/>): NSOrderedCollectionDifference/*<id>*/
     public open func inverseDifference(): NSOrderedCollectionDifference/*<ObjectType>*/
 }

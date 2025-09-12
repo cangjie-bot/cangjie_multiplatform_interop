@@ -23,25 +23,25 @@ public abstract sealed class NSXPCConnectionOptions {
 @ObjCMirror
 public open class NSXPCConnection <: NSObject & NSXPCProxyCreating {
     @ForeignName["initWithServiceName:"] public init(serviceName: NSString)
-    public prop serviceName: ?NSString
+    public open prop serviceName: ?NSString
     @ForeignName["initWithMachServiceName:options:"] public init(name: NSString, options: Int32 /*NSXPCConnectionOptions*/)
     @ForeignName["initWithListenerEndpoint:"] public init(endpoint: NSXPCListenerEndpoint)
-    public prop endpoint: NSXPCListenerEndpoint
-    public mut prop exportedInterface: ?NSXPCInterface
-    public mut prop exportedObject: id
-    public mut prop remoteObjectInterface: ?NSXPCInterface
+    public open prop endpoint: NSXPCListenerEndpoint
+    public open mut prop exportedInterface: ?NSXPCInterface
+    public open mut prop exportedObject: id
+    public open mut prop remoteObjectInterface: ?NSXPCInterface
     @ForeignName["remoteObjectProxyWithErrorHandler:"] public open func remoteObjectProxyWithErrorHandler(handler: ObjCBlock<(NSError) -> Unit>): id
     @ForeignName["synchronousRemoteObjectProxyWithErrorHandler:"] public open func synchronousRemoteObjectProxyWithErrorHandler(handler: ObjCBlock<(NSError) -> Unit>): id
-    public mut prop interruptionHandler: ObjCBlock<() -> Unit>
-    public mut prop invalidationHandler: ObjCBlock<() -> Unit>
+    public open mut prop interruptionHandler: ObjCBlock<() -> Unit>
+    public open mut prop invalidationHandler: ObjCBlock<() -> Unit>
     public open func `resume`(): Unit
     public open func suspend(): Unit
     public open func activate(): Unit
     public open func invalidate(): Unit
-    public prop auditSessionIdentifier: au_asid_t
-    public prop processIdentifier: pid_t
-    public prop effectiveUserIdentifier: uid_t
-    public prop effectiveGroupIdentifier: gid_t
+    public open prop auditSessionIdentifier: au_asid_t
+    public open prop processIdentifier: pid_t
+    public open prop effectiveUserIdentifier: uid_t
+    public open prop effectiveGroupIdentifier: gid_t
     public static func currentConnection(): ?NSXPCConnection
     @ForeignName["scheduleSendBarrierBlock:"] public open func scheduleSendBarrierBlock(block: ObjCBlock<() -> Unit>): Unit
     @ForeignName["setCodeSigningRequirement:"] public open func setCodeSigningRequirement(requirement: NSString): Unit
@@ -52,8 +52,8 @@ public open class NSXPCListener <: NSObject {
     public static func serviceListener(): NSXPCListener
     public static func anonymousListener(): NSXPCListener
     @ForeignName["initWithMachServiceName:"] public init(name: NSString)
-    public mut prop delegate: ?NSXPCListenerDelegate
-    public prop endpoint: NSXPCListenerEndpoint
+    public open mut prop delegate: ?NSXPCListenerDelegate
+    public open prop endpoint: NSXPCListenerEndpoint
     public open func `resume`(): Unit
     public open func suspend(): Unit
     public open func activate(): Unit
@@ -64,7 +64,7 @@ public open class NSXPCListener <: NSObject {
 @ObjCMirror
 public open class NSXPCInterface <: NSObject {
     @ForeignName["interfaceWithProtocol:"] public static func interfaceWithProtocol(protocol: Protocol): NSXPCInterface
-    public mut prop protocol: Protocol
+    public open mut prop protocol: Protocol
     @ForeignName["setClasses:forSelector:argumentIndex:ofReply:"] public open func setClassesForSelectorArgumentIndexOfReply(classes: NSSet/*<Class>*/, sel: SEL, arg: NSUInteger, ofReply: Bool): Unit
     @ForeignName["classesForSelector:argumentIndex:ofReply:"] public open func classesForSelectorArgumentIndexOfReply(sel: SEL, arg: NSUInteger, ofReply: Bool): NSSet/*<Class>*/
     @ForeignName["setInterface:forSelector:argumentIndex:ofReply:"] public open func setInterfaceForSelectorArgumentIndexOfReply(ifc: NSXPCInterface, sel: SEL, arg: NSUInteger, ofReply: Bool): Unit
@@ -81,7 +81,7 @@ public open class NSXPCListenerEndpoint <: NSObject & NSSecureCoding {
 public open class NSXPCCoder <: NSCoder {
     @ForeignName["encodeXPCObject:forKey:"] public open func encodeXPCObjectForKey(xpcObject: xpc_object_t, key: NSString): Unit
     @ForeignName["decodeXPCObjectOfType:forKey:"] public open func decodeXPCObjectOfTypeForKey(`type`: xpc_type_t, key: NSString): xpc_object_t
-    public mut prop userInfo: ?NSObjectProtocol
-    public prop connection: ?NSXPCConnection
+    public open mut prop userInfo: ?NSObjectProtocol
+    public open prop connection: ?NSXPCConnection
 }
 

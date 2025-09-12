@@ -8,9 +8,9 @@ public type NSNotificationName = NSString
 
 @ObjCMirror
 public open class NSNotification <: NSObject & NSCopying & NSCoding {
-    public prop name: NSNotificationName
-    public prop object: id
-    public prop userInfo: ?NSDictionary/*<KeyType, ObjectType>*/
+    public open prop name: NSNotificationName
+    public open prop object: id
+    public open prop userInfo: ?NSDictionary/*<KeyType, ObjectType>*/
     @ForeignName["initWithName:object:userInfo:"] public init(name: NSNotificationName, object: id, userInfo: ?NSDictionary/*<KeyType, ObjectType>*/)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
     @ForeignName["notificationWithName:object:"] public static func notificationWithNameObject(aName: NSNotificationName, anObject: id): NSNotification

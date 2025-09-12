@@ -11,69 +11,69 @@ public abstract sealed class NSNumberFormatterBehavior {
 
 @ObjCMirror
 public open class NSNumberFormatter <: NSFormatter {
-    public mut prop formattingContext: Int32 /*NSFormattingContext*/
+    public open mut prop formattingContext: Int32 /*NSFormattingContext*/
     @ForeignName["getObjectValue:forString:range:error:"] public open func getObjectValueForStringRangeError(obj: ObjCPointer<id>, string: NSString, rangep: CPointer<NSRange>, error: ObjCPointer<NSError>): Bool
     @ForeignName["stringFromNumber:"] public open func stringFromNumber(number: NSNumber): ?NSString
     @ForeignName["numberFromString:"] public open func numberFromString(string: NSString): ?NSNumber
     @ForeignName["localizedStringFromNumber:numberStyle:"] public static func localizedStringFromNumberNumberStyle(num: NSNumber, nstyle: Int32 /*NSNumberFormatterStyle*/): NSString
     public static func defaultFormatterBehavior(): Int32 /*NSNumberFormatterBehavior*/
     @ForeignName["setDefaultFormatterBehavior:"] public static func setDefaultFormatterBehavior(behavior: Int32 /*NSNumberFormatterBehavior*/): Unit
-    public mut prop numberStyle: Int32 /*NSNumberFormatterStyle*/
-    public mut prop locale: NSLocale
-    public mut prop generatesDecimalNumbers: Bool
-    public mut prop formatterBehavior: Int32 /*NSNumberFormatterBehavior*/
-    public mut prop negativeFormat: NSString
-    public mut prop textAttributesForNegativeValues: ?NSDictionary/*<NSString, id>*/
-    public mut prop positiveFormat: NSString
-    public mut prop textAttributesForPositiveValues: ?NSDictionary/*<NSString, id>*/
-    public mut prop allowsFloats: Bool
-    public mut prop decimalSeparator: NSString
-    public mut prop alwaysShowsDecimalSeparator: Bool
-    public mut prop currencyDecimalSeparator: NSString
-    public mut prop usesGroupingSeparator: Bool
-    public mut prop groupingSeparator: NSString
-    public mut prop zeroSymbol: ?NSString
-    public mut prop textAttributesForZero: ?NSDictionary/*<NSString, id>*/
-    public mut prop nilSymbol: NSString
-    public mut prop textAttributesForNil: ?NSDictionary/*<NSString, id>*/
-    public mut prop notANumberSymbol: NSString
-    public mut prop textAttributesForNotANumber: ?NSDictionary/*<NSString, id>*/
-    public mut prop positiveInfinitySymbol: NSString
-    public mut prop textAttributesForPositiveInfinity: ?NSDictionary/*<NSString, id>*/
-    public mut prop negativeInfinitySymbol: NSString
-    public mut prop textAttributesForNegativeInfinity: ?NSDictionary/*<NSString, id>*/
-    public mut prop positivePrefix: NSString
-    public mut prop positiveSuffix: NSString
-    public mut prop negativePrefix: NSString
-    public mut prop negativeSuffix: NSString
-    public mut prop currencyCode: NSString
-    public mut prop currencySymbol: NSString
-    public mut prop internationalCurrencySymbol: NSString
-    public mut prop percentSymbol: NSString
-    public mut prop perMillSymbol: NSString
-    public mut prop minusSign: NSString
-    public mut prop plusSign: NSString
-    public mut prop exponentSymbol: NSString
-    public mut prop groupingSize: NSUInteger
-    public mut prop secondaryGroupingSize: NSUInteger
-    public mut prop multiplier: ?NSNumber
-    public mut prop formatWidth: NSUInteger
-    public mut prop paddingCharacter: NSString
-    public mut prop paddingPosition: Int32 /*NSNumberFormatterPadPosition*/
-    public mut prop roundingMode: Int32 /*NSNumberFormatterRoundingMode*/
-    public mut prop roundingIncrement: NSNumber
-    public mut prop minimumIntegerDigits: NSUInteger
-    public mut prop maximumIntegerDigits: NSUInteger
-    public mut prop minimumFractionDigits: NSUInteger
-    public mut prop maximumFractionDigits: NSUInteger
-    public mut prop minimum: ?NSNumber
-    public mut prop maximum: ?NSNumber
-    public mut prop currencyGroupingSeparator: NSString
-    public mut prop isLenient: Bool
-    public mut prop usesSignificantDigits: Bool
-    public mut prop minimumSignificantDigits: NSUInteger
-    public mut prop maximumSignificantDigits: NSUInteger
-    public mut prop isPartialStringValidationEnabled: Bool
+    public open mut prop numberStyle: Int32 /*NSNumberFormatterStyle*/
+    public open mut prop locale: NSLocale
+    public open mut prop generatesDecimalNumbers: Bool
+    public open mut prop formatterBehavior: Int32 /*NSNumberFormatterBehavior*/
+    public open mut prop negativeFormat: NSString
+    public open mut prop textAttributesForNegativeValues: ?NSDictionary/*<NSString, id>*/
+    public open mut prop positiveFormat: NSString
+    public open mut prop textAttributesForPositiveValues: ?NSDictionary/*<NSString, id>*/
+    public open mut prop allowsFloats: Bool
+    public open mut prop decimalSeparator: NSString
+    public open mut prop alwaysShowsDecimalSeparator: Bool
+    public open mut prop currencyDecimalSeparator: NSString
+    public open mut prop usesGroupingSeparator: Bool
+    public open mut prop groupingSeparator: NSString
+    public open mut prop zeroSymbol: ?NSString
+    public open mut prop textAttributesForZero: ?NSDictionary/*<NSString, id>*/
+    public open mut prop nilSymbol: NSString
+    public open mut prop textAttributesForNil: ?NSDictionary/*<NSString, id>*/
+    public open mut prop notANumberSymbol: NSString
+    public open mut prop textAttributesForNotANumber: ?NSDictionary/*<NSString, id>*/
+    public open mut prop positiveInfinitySymbol: NSString
+    public open mut prop textAttributesForPositiveInfinity: ?NSDictionary/*<NSString, id>*/
+    public open mut prop negativeInfinitySymbol: NSString
+    public open mut prop textAttributesForNegativeInfinity: ?NSDictionary/*<NSString, id>*/
+    public open mut prop positivePrefix: NSString
+    public open mut prop positiveSuffix: NSString
+    public open mut prop negativePrefix: NSString
+    public open mut prop negativeSuffix: NSString
+    public open mut prop currencyCode: NSString
+    public open mut prop currencySymbol: NSString
+    public open mut prop internationalCurrencySymbol: NSString
+    public open mut prop percentSymbol: NSString
+    public open mut prop perMillSymbol: NSString
+    public open mut prop minusSign: NSString
+    public open mut prop plusSign: NSString
+    public open mut prop exponentSymbol: NSString
+    public open mut prop groupingSize: NSUInteger
+    public open mut prop secondaryGroupingSize: NSUInteger
+    public open mut prop multiplier: ?NSNumber
+    public open mut prop formatWidth: NSUInteger
+    public open mut prop paddingCharacter: NSString
+    public open mut prop paddingPosition: Int32 /*NSNumberFormatterPadPosition*/
+    public open mut prop roundingMode: Int32 /*NSNumberFormatterRoundingMode*/
+    public open mut prop roundingIncrement: NSNumber
+    public open mut prop minimumIntegerDigits: NSUInteger
+    public open mut prop maximumIntegerDigits: NSUInteger
+    public open mut prop minimumFractionDigits: NSUInteger
+    public open mut prop maximumFractionDigits: NSUInteger
+    public open mut prop minimum: ?NSNumber
+    public open mut prop maximum: ?NSNumber
+    public open mut prop currencyGroupingSeparator: NSString
+    public open mut prop isLenient: Bool
+    public open mut prop usesSignificantDigits: Bool
+    public open mut prop minimumSignificantDigits: NSUInteger
+    public open mut prop maximumSignificantDigits: NSUInteger
+    public open mut prop isPartialStringValidationEnabled: Bool
 }
 
 public abstract sealed class NSNumberFormatterStyle {

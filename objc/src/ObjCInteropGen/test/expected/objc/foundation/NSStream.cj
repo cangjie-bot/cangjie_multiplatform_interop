@@ -35,13 +35,13 @@ public abstract sealed class NSStreamEvent {
 public open class NSStream <: NSObject {
     public open func open(): Unit
     public open func close(): Unit
-    public mut prop delegate: ?NSStreamDelegate
+    public open mut prop delegate: ?NSStreamDelegate
     @ForeignName["propertyForKey:"] public open func propertyForKey(key: NSStreamPropertyKey): id
     @ForeignName["setProperty:forKey:"] public open func setPropertyForKey(property: id, key: NSStreamPropertyKey): Bool
     @ForeignName["scheduleInRunLoop:forMode:"] public open func scheduleInRunLoopForMode(aRunLoop: NSRunLoop, mode: NSRunLoopMode): Unit
     @ForeignName["removeFromRunLoop:forMode:"] public open func removeFromRunLoopForMode(aRunLoop: NSRunLoop, mode: NSRunLoopMode): Unit
-    public prop streamStatus: Int32 /*NSStreamStatus*/
-    public prop streamError: ?NSError
+    public open prop streamStatus: Int32 /*NSStreamStatus*/
+    public open prop streamError: ?NSError
     @ForeignName["getStreamsToHostWithName:port:inputStream:outputStream:"] public static func getStreamsToHostWithNamePortInputStreamOutputStream(hostname: NSString, port: NSInteger, inputStream: ObjCPointer<NSInputStream>, outputStream: ObjCPointer<NSOutputStream>): Unit
     @ForeignName["getBoundStreamsWithBufferSize:inputStream:outputStream:"] public static func getBoundStreamsWithBufferSizeInputStreamOutputStream(bufferSize: NSUInteger, inputStream: ObjCPointer<NSInputStream>, outputStream: ObjCPointer<NSOutputStream>): Unit
 }
@@ -50,7 +50,7 @@ public open class NSStream <: NSObject {
 public open class NSInputStream <: NSStream {
     @ForeignName["read:maxLength:"] public open func readMaxLength(buffer: CPointer<uint8_t>, len: NSUInteger): NSInteger
     @ForeignName["getBuffer:length:"] public open func getBufferLength(buffer: CPointer<CPointer<uint8_t>>, len: CPointer<NSUInteger>): Bool
-    public prop hasBytesAvailable: Bool
+    public open prop hasBytesAvailable: Bool
     @ForeignName["initWithData:"] public init(data: NSData)
     @ForeignName["initWithURL:"] public init(url: NSURL)
     @ForeignName["initWithFileAtPath:"] public init(path: NSString)
@@ -62,7 +62,7 @@ public open class NSInputStream <: NSStream {
 @ObjCMirror
 public open class NSOutputStream <: NSStream {
     @ForeignName["write:maxLength:"] public open func writeMaxLength(buffer: CPointer<uint8_t>, len: NSUInteger): NSInteger
-    public prop hasSpaceAvailable: Bool
+    public open prop hasSpaceAvailable: Bool
     @ForeignName["initToMemory"] public init()
     @ForeignName["initToBuffer:capacity:"] public init(buffer: CPointer<uint8_t>, capacity: NSUInteger)
     @ForeignName["initWithURL:append:"] public init(url: NSURL, shouldAppend: Bool)

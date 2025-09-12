@@ -10,9 +10,9 @@ public type NSAttributedStringFormattingContextKey = NSString
 
 @ObjCMirror
 public open class NSAttributedString <: NSObject & NSCopying & NSMutableCopying & NSSecureCoding {
-    public prop string: NSString
+    public open prop string: NSString
     @ForeignName["attributesAtIndex:effectiveRange:"] public open func attributesAtIndexEffectiveRange(location: NSUInteger, range: NSRangePointer): NSDictionary/*<NSAttributedStringKey, id>*/
-    public prop length: NSUInteger
+    public open prop length: NSUInteger
     @ForeignName["attribute:atIndex:effectiveRange:"] public open func attributeAtIndexEffectiveRange(attrName: NSAttributedStringKey, location: NSUInteger, range: NSRangePointer): id
     @ForeignName["attributedSubstringFromRange:"] public open func attributedSubstringFromRange(range: NSRange): NSAttributedString
     @ForeignName["attributesAtIndex:longestEffectiveRange:inRange:"] public open func attributesAtIndexLongestEffectiveRangeInRange(location: NSUInteger, range: NSRangePointer, rangeLimit: NSRange): NSDictionary/*<NSAttributedStringKey, id>*/
@@ -46,7 +46,7 @@ public abstract sealed class NSAttributedStringEnumerationOptions {
 public open class NSMutableAttributedString <: NSAttributedString {
     @ForeignName["replaceCharactersInRange:withString:"] public open func replaceCharactersInRangeWithString(range: NSRange, str: NSString): Unit
     @ForeignName["setAttributes:range:"] public open func setAttributesRange(attrs: ?NSDictionary/*<NSAttributedStringKey, id>*/, range: NSRange): Unit
-    public prop mutableString: NSMutableString
+    public open prop mutableString: NSMutableString
     @ForeignName["addAttribute:value:range:"] public open func addAttributeValueRange(name: NSAttributedStringKey, value: id, range: NSRange): Unit
     @ForeignName["addAttributes:range:"] public open func addAttributesRange(attrs: NSDictionary/*<NSAttributedStringKey, id>*/, range: NSRange): Unit
     @ForeignName["removeAttribute:range:"] public open func removeAttributeRange(name: NSAttributedStringKey, range: NSRange): Unit
@@ -84,10 +84,10 @@ public abstract sealed class NSAttributedStringMarkdownInterpretedSyntax {
 
 @ObjCMirror
 public open class NSAttributedStringMarkdownSourcePosition <: NSObject & NSCopying & NSSecureCoding {
-    public prop startLine: NSInteger
-    public prop startColumn: NSInteger
-    public prop endLine: NSInteger
-    public prop endColumn: NSInteger
+    public open prop startLine: NSInteger
+    public open prop startColumn: NSInteger
+    public open prop endLine: NSInteger
+    public open prop endColumn: NSInteger
     @ForeignName["initWithStartLine:startColumn:endLine:endColumn:"] public init(startLine: NSInteger, startColumn: NSInteger, endLine: NSInteger, endColumn: NSInteger)
     @ForeignName["rangeInString:"] public open func rangeInString(string: NSString): NSRange
 }
@@ -95,11 +95,11 @@ public open class NSAttributedStringMarkdownSourcePosition <: NSObject & NSCopyi
 @ObjCMirror
 public open class NSAttributedStringMarkdownParsingOptions <: NSObject & NSCopying {
     public init()
-    public mut prop allowsExtendedAttributes: Bool
-    public mut prop interpretedSyntax: Int32 /*NSAttributedStringMarkdownInterpretedSyntax*/
-    public mut prop failurePolicy: Int32 /*NSAttributedStringMarkdownParsingFailurePolicy*/
-    public mut prop languageCode: ?NSString
-    public mut prop appliesSourcePositionAttributes: Bool
+    public open mut prop allowsExtendedAttributes: Bool
+    public open mut prop interpretedSyntax: Int32 /*NSAttributedStringMarkdownInterpretedSyntax*/
+    public open mut prop failurePolicy: Int32 /*NSAttributedStringMarkdownParsingFailurePolicy*/
+    public open mut prop languageCode: ?NSString
+    public open mut prop appliesSourcePositionAttributes: Bool
 }
 
 public abstract sealed class NSAttributedStringFormattingOptions {
@@ -130,8 +130,8 @@ public abstract sealed class NSPresentationIntentTableColumnAlignment {
 
 @ObjCMirror
 public open class NSPresentationIntent <: NSObject & NSCopying & NSSecureCoding {
-    public prop intentKind: Int32 /*NSPresentationIntentKind*/
-    public prop parentIntent: ?NSPresentationIntent
+    public open prop intentKind: Int32 /*NSPresentationIntentKind*/
+    public open prop parentIntent: ?NSPresentationIntent
     @ForeignName["paragraphIntentWithIdentity:nestedInsideIntent:"] public static func paragraphIntentWithIdentityNestedInsideIntent(identity: NSInteger, parent: ?NSPresentationIntent): NSPresentationIntent
     @ForeignName["headerIntentWithIdentity:level:nestedInsideIntent:"] public static func headerIntentWithIdentityLevelNestedInsideIntent(identity: NSInteger, level: NSInteger, parent: ?NSPresentationIntent): NSPresentationIntent
     @ForeignName["codeBlockIntentWithIdentity:languageHint:nestedInsideIntent:"] public static func codeBlockIntentWithIdentityLanguageHintNestedInsideIntent(identity: NSInteger, languageHint: ?NSString, parent: ?NSPresentationIntent): NSPresentationIntent
@@ -144,15 +144,15 @@ public open class NSPresentationIntent <: NSObject & NSCopying & NSSecureCoding 
     @ForeignName["tableHeaderRowIntentWithIdentity:nestedInsideIntent:"] public static func tableHeaderRowIntentWithIdentityNestedInsideIntent(identity: NSInteger, parent: ?NSPresentationIntent): NSPresentationIntent
     @ForeignName["tableRowIntentWithIdentity:row:nestedInsideIntent:"] public static func tableRowIntentWithIdentityRowNestedInsideIntent(identity: NSInteger, row: NSInteger, parent: ?NSPresentationIntent): NSPresentationIntent
     @ForeignName["tableCellIntentWithIdentity:column:nestedInsideIntent:"] public static func tableCellIntentWithIdentityColumnNestedInsideIntent(identity: NSInteger, column: NSInteger, parent: ?NSPresentationIntent): NSPresentationIntent
-    public prop identity: NSInteger
-    public prop ordinal: NSInteger
-    public prop columnAlignments: ?NSArray/*<NSNumber>*/
-    public prop columnCount: NSInteger
-    public prop headerLevel: NSInteger
-    public prop languageHint: ?NSString
-    public prop column: NSInteger
-    public prop row: NSInteger
-    public prop indentationLevel: NSInteger
+    public open prop identity: NSInteger
+    public open prop ordinal: NSInteger
+    public open prop columnAlignments: ?NSArray/*<NSNumber>*/
+    public open prop columnCount: NSInteger
+    public open prop headerLevel: NSInteger
+    public open prop languageHint: ?NSString
+    public open prop column: NSInteger
+    public open prop row: NSInteger
+    public open prop indentationLevel: NSInteger
     @ForeignName["isEquivalentToPresentationIntent:"] public open func isEquivalentToPresentationIntent(other: NSPresentationIntent): Bool
 }
 

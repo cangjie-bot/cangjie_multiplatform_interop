@@ -12,15 +12,15 @@ public open class NSUnitConverter <: NSObject {
 
 @ObjCMirror
 public open class NSUnitConverterLinear <: NSUnitConverter & NSSecureCoding {
-    public prop coefficient: Float64
-    public prop constant: Float64
+    public open prop coefficient: Float64
+    public open prop constant: Float64
     @ForeignName["initWithCoefficient:"] public init(coefficient: Float64)
     @ForeignName["initWithCoefficient:constant:"] public init(coefficient: Float64, constant: Float64)
 }
 
 @ObjCMirror
 public open class NSUnit <: NSObject & NSCopying & NSSecureCoding {
-    public prop symbol: NSString
+    public open prop symbol: NSString
     public init()
     public static func new(): NSUnit
     @ForeignName["initWithSymbol:"] public init(symbol: NSString)
@@ -29,7 +29,7 @@ public open class NSUnit <: NSObject & NSCopying & NSSecureCoding {
 @ObjCMirror
 public open class NSDimension <: NSUnit & NSSecureCoding {
     protected var _converter: ?NSUnitConverter
-    public prop converter: NSUnitConverter
+    public open prop converter: NSUnitConverter
     @ForeignName["initWithSymbol:converter:"] public init(symbol: NSString, converter: NSUnitConverter)
     public static func baseUnit(): NSDimension
 }

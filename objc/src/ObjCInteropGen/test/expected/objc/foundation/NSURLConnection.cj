@@ -9,8 +9,8 @@ public open class NSURLConnection <: NSObject {
     @ForeignName["initWithRequest:delegate:startImmediately:"] public init(request: NSURLRequest, delegate: id, startImmediately: Bool)
     @ForeignName["initWithRequest:delegate:"] public init(request: NSURLRequest, delegate: id)
     @ForeignName["connectionWithRequest:delegate:"] public static func connectionWithRequestDelegate(request: NSURLRequest, delegate: id): ?NSURLConnection
-    public prop originalRequest: NSURLRequest
-    public prop currentRequest: NSURLRequest
+    public open prop originalRequest: NSURLRequest
+    public open prop currentRequest: NSURLRequest
     public open func start(): Unit
     public open func cancel(): Unit
     @ForeignName["scheduleInRunLoop:forMode:"] public open func scheduleInRunLoopForMode(aRunLoop: NSRunLoop, mode: NSRunLoopMode): Unit

@@ -8,14 +8,14 @@ import interoplib.objc.*
 public open class NSURLProtectionSpace <: NSObject & NSSecureCoding & NSCopying {
     // @ForeignName["initWithHost:port:protocol:realm:authenticationMethod:"] public init(host: NSString, port: NSInteger, protocol: ?NSString, realm: ?NSString, authenticationMethod: ?NSString)
     // @ForeignName["initWithProxyHost:port:type:realm:authenticationMethod:"] public init(host: NSString, port: NSInteger, `type`: ?NSString, realm: ?NSString, authenticationMethod: ?NSString)
-    public prop realm: ?NSString
-    public prop receivesCredentialSecurely: Bool
-    public prop host: NSString
-    public prop port: NSInteger
-    public prop proxyType: ?NSString
-    public prop protocol: ?NSString
-    public prop authenticationMethod: NSString
-    public prop distinguishedNames: ?NSArray/*<NSData>*/
-    public prop serverTrust: SecTrustRef
+    public open prop realm: ?NSString
+    public open prop receivesCredentialSecurely: Bool
+    public open prop host: NSString
+    public open prop port: NSInteger
+    public open prop proxyType: ?NSString
+    public open prop protocol: ?NSString
+    public open prop authenticationMethod: NSString
+    public open prop distinguishedNames: ?NSArray/*<NSData>*/
+    public open prop serverTrust: SecTrustRef
 }
 

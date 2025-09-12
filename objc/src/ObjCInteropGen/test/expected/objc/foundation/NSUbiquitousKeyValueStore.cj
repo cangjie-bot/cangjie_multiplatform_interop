@@ -24,7 +24,7 @@ public open class NSUbiquitousKeyValueStore <: NSObject {
     @ForeignName["setLongLong:forKey:"] public open func setLongLongForKey(value: Int64, aKey: NSString): Unit
     @ForeignName["setDouble:forKey:"] public open func setDoubleForKey(value: Float64, aKey: NSString): Unit
     @ForeignName["setBool:forKey:"] public open func setBoolForKey(value: Bool, aKey: NSString): Unit
-    public prop dictionaryRepresentation: NSDictionary/*<NSString, id>*/
+    public open prop dictionaryRepresentation: NSDictionary/*<NSString, id>*/
     public open func synchronize(): Bool
 }
 

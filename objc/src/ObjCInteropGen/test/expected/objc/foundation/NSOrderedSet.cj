@@ -6,7 +6,7 @@ import interoplib.objc.*
 
 @ObjCMirror
 public open class NSOrderedSet/*<ObjectType>*/ <: NSObject & NSCopying & NSMutableCopying & NSSecureCoding & NSFastEnumeration {
-    public prop count: NSUInteger
+    public open prop count: NSUInteger
     @ForeignName["objectAtIndex:"] public open func objectAtIndex(idx: NSUInteger): id /*ObjectType*/
     @ForeignName["indexOfObject:"] public open func indexOfObject(object: id /*ObjectType*/): NSUInteger
     public init()
@@ -14,8 +14,8 @@ public open class NSOrderedSet/*<ObjectType>*/ <: NSObject & NSCopying & NSMutab
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
     @ForeignName["getObjects:range:"] public open func getObjectsRange(objects: ObjCPointer<id /*ObjectType*/>, range: NSRange): Unit
     @ForeignName["objectsAtIndexes:"] public open func objectsAtIndexes(indexes: NSIndexSet): NSArray/*<ObjectType>*/
-    public prop firstObject: id /*ObjectType*/
-    public prop lastObject: id /*ObjectType*/
+    public open prop firstObject: id /*ObjectType*/
+    public open prop lastObject: id /*ObjectType*/
     @ForeignName["isEqualToOrderedSet:"] public open func isEqualToOrderedSet(other: NSOrderedSet/*<ObjectType>*/): Bool
     @ForeignName["containsObject:"] public open func containsObject(object: id /*ObjectType*/): Bool
     @ForeignName["intersectsOrderedSet:"] public open func intersectsOrderedSet(other: NSOrderedSet/*<ObjectType>*/): Bool
@@ -25,9 +25,9 @@ public open class NSOrderedSet/*<ObjectType>*/ <: NSObject & NSCopying & NSMutab
     @ForeignName["objectAtIndexedSubscript:"] public open func objectAtIndexedSubscript(idx: NSUInteger): id /*ObjectType*/
     public open func objectEnumerator(): NSEnumerator/*<ObjectType>*/
     public open func reverseObjectEnumerator(): NSEnumerator/*<ObjectType>*/
-    public prop reversedOrderedSet: NSOrderedSet/*<ObjectType>*/
-    public prop array: NSArray/*<ObjectType>*/
-    public prop set: NSSet/*<ObjectType>*/
+    public open prop reversedOrderedSet: NSOrderedSet/*<ObjectType>*/
+    public open prop array: NSArray/*<ObjectType>*/
+    public open prop set: NSSet/*<ObjectType>*/
     @ForeignName["enumerateObjectsUsingBlock:"] public open func enumerateObjectsUsingBlock(block: ObjCBlock<(id /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Unit>): Unit
     @ForeignName["enumerateObjectsWithOptions:usingBlock:"] public open func enumerateObjectsWithOptionsUsingBlock(opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(id /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Unit>): Unit
     @ForeignName["enumerateObjectsAtIndexes:options:usingBlock:"] public open func enumerateObjectsAtIndexesOptionsUsingBlock(s: NSIndexSet, opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(id /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Unit>): Unit

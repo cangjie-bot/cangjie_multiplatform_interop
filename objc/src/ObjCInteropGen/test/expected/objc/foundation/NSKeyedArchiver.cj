@@ -30,9 +30,9 @@ public open class NSKeyedArchiver <: NSCoder {
     @ForeignName["initForWritingWithMutableData:"] public init(data: NSMutableData)
     @ForeignName["archivedDataWithRootObject:"] public static func archivedDataWithRootObject(rootObject: id): NSData
     @ForeignName["archiveRootObject:toFile:"] public static func archiveRootObjectToFile(rootObject: id, path: NSString): Bool
-    public mut prop delegate: ?NSKeyedArchiverDelegate
-    public mut prop outputFormat: Int32 /*NSPropertyListFormat*/
-    public prop encodedData: NSData
+    public open mut prop delegate: ?NSKeyedArchiverDelegate
+    public open mut prop outputFormat: Int32 /*NSPropertyListFormat*/
+    public open prop encodedData: NSData
     public open func finishEncoding(): Unit
     @ForeignName["setClassName:forClass:"] public static func setClassNameForClassStatic(codedName: ?NSString, cls: Class): Unit
     @ForeignName["setClassName:forClass:"] public open func setClassNameForClass(codedName: ?NSString, cls: Class): Unit
@@ -63,7 +63,7 @@ public open class NSKeyedUnarchiver <: NSCoder {
     @ForeignName["unarchiveObjectWithData:"] public static func unarchiveObjectWithData(data: NSData): id
     @ForeignName["unarchiveTopLevelObjectWithData:error:"] public static func unarchiveTopLevelObjectWithDataError(data: NSData, error: ObjCPointer<NSError>): id
     @ForeignName["unarchiveObjectWithFile:"] public static func unarchiveObjectWithFile(path: NSString): id
-    public mut prop delegate: ?NSKeyedUnarchiverDelegate
+    public open mut prop delegate: ?NSKeyedUnarchiverDelegate
     public open func finishDecoding(): Unit
     @ForeignName["setClass:forClassName:"] public static func setClassForClassNameStatic(cls: Class, codedName: NSString): Unit
     @ForeignName["setClass:forClassName:"] public open func setClassForClassName(cls: Class, codedName: NSString): Unit

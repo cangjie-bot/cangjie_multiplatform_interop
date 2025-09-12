@@ -6,11 +6,11 @@ import interoplib.objc.*
 
 @ObjCMirror
 public open class NSScanner <: NSObject & NSCopying {
-    public prop string: NSString
-    public mut prop scanLocation: NSUInteger
-    public mut prop charactersToBeSkipped: ?NSCharacterSet
-    public mut prop caseSensitive: Bool
-    public mut prop locale: id
+    public open prop string: NSString
+    public open mut prop scanLocation: NSUInteger
+    public open mut prop charactersToBeSkipped: ?NSCharacterSet
+    public open mut prop caseSensitive: Bool
+    public open mut prop locale: id
     @ForeignName["initWithString:"] public init(string: NSString)
     @ForeignName["scanInt:"] public open func scanInt(result: CPointer<Int32>): Bool
     @ForeignName["scanInteger:"] public open func scanInteger(result: CPointer<NSInteger>): Bool
@@ -26,7 +26,7 @@ public open class NSScanner <: NSObject & NSCopying {
     @ForeignName["scanCharactersFromSet:intoString:"] public open func scanCharactersFromSetIntoString(set: NSCharacterSet, result: ObjCPointer<NSString>): Bool
     @ForeignName["scanUpToString:intoString:"] public open func scanUpToStringIntoString(string: NSString, result: ObjCPointer<NSString>): Bool
     @ForeignName["scanUpToCharactersFromSet:intoString:"] public open func scanUpToCharactersFromSetIntoString(set: NSCharacterSet, result: ObjCPointer<NSString>): Bool
-    public prop isAtEnd: Bool
+    public open prop isAtEnd: Bool
     @ForeignName["scannerWithString:"] public static func scannerWithString(string: NSString): NSScanner
     @ForeignName["localizedScannerWithString:"] public static func localizedScannerWithString(string: NSString): id
     @ForeignName["scanDecimal:"] public open func scanDecimal(dcm: CPointer<NSDecimal>): Bool

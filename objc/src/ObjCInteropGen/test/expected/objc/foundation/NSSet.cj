@@ -6,13 +6,13 @@ import interoplib.objc.*
 
 @ObjCMirror
 public open class NSSet/*<ObjectType>*/ <: NSObject & NSCopying & NSMutableCopying & NSSecureCoding & NSFastEnumeration {
-    public prop count: NSUInteger
+    public open prop count: NSUInteger
     @ForeignName["member:"] public open func member(object: id /*ObjectType*/): id /*ObjectType*/
     public open func objectEnumerator(): NSEnumerator/*<ObjectType>*/
     public init()
     @ForeignName["initWithObjects:count:"] public init(objects: ObjCPointer<id /*ObjectType*/>, cnt: NSUInteger)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
-    public prop allObjects: NSArray/*<ObjectType>*/
+    public open prop allObjects: NSArray/*<ObjectType>*/
     public open func anyObject(): id /*ObjectType*/
     @ForeignName["containsObject:"] public open func containsObject(anObject: id /*ObjectType*/): Bool
     @ForeignName["descriptionWithLocale:"] public open func descriptionWithLocale(locale: id): NSString

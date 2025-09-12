@@ -17,11 +17,11 @@ public interface NSURLAuthenticationChallengeSender <: NSObjectProtocol {
 public open class NSURLAuthenticationChallenge <: NSObject & NSSecureCoding {
     @ForeignName["initWithProtectionSpace:proposedCredential:previousFailureCount:failureResponse:error:sender:"] public init(space: NSURLProtectionSpace, credential: ?NSURLCredential, previousFailureCount: NSInteger, response: ?NSURLResponse, error: ?NSError, sender: NSURLAuthenticationChallengeSender)
     @ForeignName["initWithAuthenticationChallenge:sender:"] public init(challenge: NSURLAuthenticationChallenge, sender: NSURLAuthenticationChallengeSender)
-    public prop protectionSpace: NSURLProtectionSpace
-    public prop proposedCredential: ?NSURLCredential
-    public prop previousFailureCount: NSInteger
-    public prop failureResponse: ?NSURLResponse
-    public prop error: ?NSError
-    public prop sender: ?NSURLAuthenticationChallengeSender
+    public open prop protectionSpace: NSURLProtectionSpace
+    public open prop proposedCredential: ?NSURLCredential
+    public open prop previousFailureCount: NSInteger
+    public open prop failureResponse: ?NSURLResponse
+    public open prop error: ?NSError
+    public open prop sender: ?NSURLAuthenticationChallengeSender
 }
 

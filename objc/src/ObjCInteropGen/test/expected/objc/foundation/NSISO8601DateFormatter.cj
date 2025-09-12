@@ -23,8 +23,8 @@ public abstract sealed class NSISO8601DateFormatOptions {
 
 @ObjCMirror
 public open class NSISO8601DateFormatter <: NSFormatter & NSSecureCoding {
-    public mut prop timeZone: NSTimeZone
-    public mut prop formatOptions: Int32 /*NSISO8601DateFormatOptions*/
+    public open mut prop timeZone: NSTimeZone
+    public open mut prop formatOptions: Int32 /*NSISO8601DateFormatOptions*/
     public init()
     @ForeignName["stringFromDate:"] public open func stringFromDate(date: NSDate): NSString
     @ForeignName["dateFromString:"] public open func dateFromString(string: NSString): ?NSDate

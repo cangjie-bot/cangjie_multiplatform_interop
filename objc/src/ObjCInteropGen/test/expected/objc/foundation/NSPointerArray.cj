@@ -10,16 +10,16 @@ public open class NSPointerArray <: NSObject & NSFastEnumeration & NSCopying & N
     @ForeignName["initWithPointerFunctions:"] public init(functions: NSPointerFunctions)
     @ForeignName["pointerArrayWithOptions:"] public static func pointerArrayWithOptions(options: Int32 /*NSPointerFunctionsOptions*/): NSPointerArray
     @ForeignName["pointerArrayWithPointerFunctions:"] public static func pointerArrayWithPointerFunctions(functions: NSPointerFunctions): NSPointerArray
-    public prop pointerFunctions: NSPointerFunctions
+    public open prop pointerFunctions: NSPointerFunctions
     @ForeignName["pointerAtIndex:"] public open func pointerAtIndex(index: NSUInteger): CPointer<Unit>
     @ForeignName["addPointer:"] public open func addPointer(pointer: CPointer<Unit>): Unit
     @ForeignName["removePointerAtIndex:"] public open func removePointerAtIndex(index: NSUInteger): Unit
     @ForeignName["insertPointer:atIndex:"] public open func insertPointerAtIndex(item: CPointer<Unit>, index: NSUInteger): Unit
     @ForeignName["replacePointerAtIndex:withPointer:"] public open func replacePointerAtIndexWithPointer(index: NSUInteger, item: CPointer<Unit>): Unit
     public open func compact(): Unit
-    public mut prop count: NSUInteger
+    public open mut prop count: NSUInteger
     public static func strongObjectsPointerArray(): NSPointerArray
     public static func weakObjectsPointerArray(): NSPointerArray
-    public prop allObjects: NSArray/*<ObjectType>*/
+    public open prop allObjects: NSArray/*<ObjectType>*/
 }
 

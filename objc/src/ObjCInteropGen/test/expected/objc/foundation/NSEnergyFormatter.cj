@@ -13,9 +13,9 @@ public abstract sealed class NSEnergyFormatterUnit {
 
 @ObjCMirror
 public open class NSEnergyFormatter <: NSFormatter {
-    public mut prop numberFormatter: NSNumberFormatter
-    public mut prop unitStyle: Int32 /*NSFormattingUnitStyle*/
-    public mut prop isForFoodEnergyUse: Bool
+    public open mut prop numberFormatter: NSNumberFormatter
+    public open mut prop unitStyle: Int32 /*NSFormattingUnitStyle*/
+    public open mut prop isForFoodEnergyUse: Bool
     @ForeignName["stringFromValue:unit:"] public open func stringFromValueUnit(value: Float64, unit: Int32 /*NSEnergyFormatterUnit*/): NSString
     @ForeignName["stringFromJoules:"] public open func stringFromJoules(numberInJoules: Float64): NSString
     @ForeignName["unitStringFromValue:unit:"] public open func unitStringFromValueUnit(value: Float64, unit: Int32 /*NSEnergyFormatterUnit*/): NSString

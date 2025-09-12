@@ -43,8 +43,8 @@ public abstract sealed class NSDataBase64DecodingOptions {
 
 @ObjCMirror
 public open class NSData <: NSObject & NSCopying & NSMutableCopying & NSSecureCoding {
-    public prop length: NSUInteger
-    public prop bytes: CPointer<Unit>
+    public open prop length: NSUInteger
+    public open prop bytes: CPointer<Unit>
     @ForeignName["getBytes:length:"] public open func getBytesLength(buffer: CPointer<Unit>, length: NSUInteger): Unit
     @ForeignName["getBytes:range:"] public open func getBytesRange(buffer: CPointer<Unit>, range: NSRange): Unit
     @ForeignName["isEqualToData:"] public open func isEqualToData(other: NSData): Bool
@@ -95,7 +95,7 @@ public abstract sealed class NSDataCompressionAlgorithm {
 
 @ObjCMirror
 public open class NSMutableData <: NSData {
-    public prop mutableBytes: CPointer<Unit>
+    public open prop mutableBytes: CPointer<Unit>
     @ForeignName["appendBytes:length:"] public open func appendBytesLength(bytes: CPointer<Unit>, length: NSUInteger): Unit
     @ForeignName["appendData:"] public open func appendData(other: NSData): Unit
     @ForeignName["increaseLengthBy:"] public open func increaseLengthBy(extraLength: NSUInteger): Unit

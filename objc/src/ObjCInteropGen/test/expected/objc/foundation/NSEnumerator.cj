@@ -20,6 +20,6 @@ public interface NSFastEnumeration <: id {
 @ObjCMirror
 public open class NSEnumerator/*<ObjectType>*/ <: NSObject & NSFastEnumeration {
     public open func nextObject(): id /*ObjectType*/
-    public prop allObjects: NSArray/*<ObjectType>*/
+    public open prop allObjects: NSArray/*<ObjectType>*/
 }
 

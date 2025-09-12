@@ -7,11 +7,11 @@ import interoplib.objc.*
 @ObjCMirror
 public open class NSMethodSignature <: NSObject {
     @ForeignName["signatureWithObjCTypes:"] public static func signatureWithObjCTypes(types: CPointer<Int8>): ?NSMethodSignature
-    public prop numberOfArguments: NSUInteger
+    public open prop numberOfArguments: NSUInteger
     @ForeignName["getArgumentTypeAtIndex:"] public open func getArgumentTypeAtIndex(idx: NSUInteger): CPointer<Int8>
-    public prop frameLength: NSUInteger
+    public open prop frameLength: NSUInteger
     public open func isOneway(): Bool
-    public prop methodReturnType: CPointer<Int8>
-    public prop methodReturnLength: NSUInteger
+    public open prop methodReturnType: CPointer<Int8>
+    public open prop methodReturnLength: NSUInteger
 }
 

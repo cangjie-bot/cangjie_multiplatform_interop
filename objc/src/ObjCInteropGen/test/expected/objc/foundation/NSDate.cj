@@ -8,13 +8,13 @@ public type NSTimeInterval = Float64
 
 @ObjCMirror
 public open class NSDate <: NSObject & NSCopying & NSSecureCoding {
-    public prop timeIntervalSinceReferenceDate: NSTimeInterval
+    public open prop timeIntervalSinceReferenceDate: NSTimeInterval
     public init()
     // @ForeignName["initWithTimeIntervalSinceReferenceDate:"] public init(ti: NSTimeInterval)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
     @ForeignName["timeIntervalSinceDate:"] public open func timeIntervalSinceDate(anotherDate: NSDate): NSTimeInterval
-    public prop timeIntervalSinceNow: NSTimeInterval
-    public prop timeIntervalSince1970: NSTimeInterval
+    public open prop timeIntervalSinceNow: NSTimeInterval
+    public open prop timeIntervalSince1970: NSTimeInterval
     @ForeignName["addTimeInterval:"] public open func addTimeInterval(seconds: NSTimeInterval): id
     @ForeignName["dateByAddingTimeInterval:"] public open func dateByAddingTimeInterval(ti: NSTimeInterval): NSDate
     @ForeignName["earlierDate:"] public open func earlierDate(anotherDate: NSDate): NSDate

@@ -6,12 +6,12 @@ import interoplib.objc.*
 
 @ObjCMirror
 public open class NSPersonNameComponents <: NSObject & NSCopying & NSSecureCoding {
-    public mut prop namePrefix: ?NSString
-    public mut prop givenName: ?NSString
-    public mut prop middleName: ?NSString
-    public mut prop familyName: ?NSString
-    public mut prop nameSuffix: ?NSString
-    public mut prop nickname: ?NSString
-    public mut prop phoneticRepresentation: ?NSPersonNameComponents
+    public open mut prop namePrefix: ?NSString
+    public open mut prop givenName: ?NSString
+    public open mut prop middleName: ?NSString
+    public open mut prop familyName: ?NSString
+    public open mut prop nameSuffix: ?NSString
+    public open mut prop nickname: ?NSString
+    public open mut prop phoneticRepresentation: ?NSPersonNameComponents
 }
 

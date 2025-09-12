@@ -8,11 +8,11 @@ import interoplib.objc.*
 public open class NSException <: NSObject & NSCopying & NSSecureCoding {
     @ForeignName["exceptionWithName:reason:userInfo:"] public static func exceptionWithNameReasonUserInfo(name: NSExceptionName, reason: ?NSString, userInfo: ?NSDictionary/*<KeyType, ObjectType>*/): NSException
     @ForeignName["initWithName:reason:userInfo:"] public init(aName: NSExceptionName, aReason: ?NSString, aUserInfo: ?NSDictionary/*<KeyType, ObjectType>*/)
-    public prop name: NSExceptionName
-    public prop reason: ?NSString
-    public prop userInfo: ?NSDictionary/*<KeyType, ObjectType>*/
-    public prop callStackReturnAddresses: NSArray/*<NSNumber>*/
-    public prop callStackSymbols: NSArray/*<NSString>*/
+    public open prop name: NSExceptionName
+    public open prop reason: ?NSString
+    public open prop userInfo: ?NSDictionary/*<KeyType, ObjectType>*/
+    public open prop callStackReturnAddresses: NSArray/*<NSNumber>*/
+    public open prop callStackSymbols: NSArray/*<NSString>*/
     public open func raise(): Unit
     @ForeignName["raise:format:"] public static func raiseFormat(name: NSExceptionName, format: NSString): Unit
     @ForeignName["raise:format:arguments:"] public static func raiseFormatArguments(name: NSExceptionName, format: NSString, argList: va_list): Unit

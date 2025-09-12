@@ -19,9 +19,9 @@ public interface NSURLProtocolClient <: NSObjectProtocol {
 @ObjCMirror
 public open class NSURLProtocol <: NSObject {
     @ForeignName["initWithRequest:cachedResponse:client:"] public init(request: NSURLRequest, cachedResponse: ?NSCachedURLResponse, client: ?NSURLProtocolClient)
-    public prop client: ?NSURLProtocolClient
-    public prop request: NSURLRequest
-    public prop cachedResponse: ?NSCachedURLResponse
+    public open prop client: ?NSURLProtocolClient
+    public open prop request: NSURLRequest
+    public open prop cachedResponse: ?NSCachedURLResponse
     @ForeignName["canInitWithRequest:"] public static func canInitWithRequest(request: NSURLRequest): Bool
     @ForeignName["canonicalRequestForRequest:"] public static func canonicalRequestForRequest(request: NSURLRequest): NSURLRequest
     @ForeignName["requestIsCacheEquivalent:toRequest:"] public static func requestIsCacheEquivalentToRequest(a: NSURLRequest, b: NSURLRequest): Bool
@@ -34,6 +34,6 @@ public open class NSURLProtocol <: NSObject {
     @ForeignName["unregisterClass:"] public static func unregisterClass(protocolClass: Class): Unit
     @ForeignName["canInitWithTask:"] public static func canInitWithTask(task: NSURLSessionTask): Bool
     @ForeignName["initWithTask:cachedResponse:client:"] public init(task: NSURLSessionTask, cachedResponse: ?NSCachedURLResponse, client: ?NSURLProtocolClient)
-    public prop task: ?NSURLSessionTask
+    public open prop task: ?NSURLSessionTask
 }
 

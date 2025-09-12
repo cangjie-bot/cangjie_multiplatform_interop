@@ -12,30 +12,30 @@ public interface NSMetadataQueryDelegate <: NSObjectProtocol {
 
 @ObjCMirror
 public open class NSMetadataQuery <: NSObject {
-    public mut prop delegate: ?NSMetadataQueryDelegate
-    public mut prop predicate: ?NSPredicate
-    public mut prop sortDescriptors: NSArray/*<NSSortDescriptor>*/
-    public mut prop valueListAttributes: NSArray/*<NSString>*/
-    public mut prop groupingAttributes: ?NSArray/*<NSString>*/
-    public mut prop notificationBatchingInterval: NSTimeInterval
-    public mut prop searchScopes: NSArray/*<ObjectType>*/
-    public mut prop searchItems: ?NSArray/*<ObjectType>*/
-    public mut prop operationQueue: ?NSOperationQueue
+    public open mut prop delegate: ?NSMetadataQueryDelegate
+    public open mut prop predicate: ?NSPredicate
+    public open mut prop sortDescriptors: NSArray/*<NSSortDescriptor>*/
+    public open mut prop valueListAttributes: NSArray/*<NSString>*/
+    public open mut prop groupingAttributes: ?NSArray/*<NSString>*/
+    public open mut prop notificationBatchingInterval: NSTimeInterval
+    public open mut prop searchScopes: NSArray/*<ObjectType>*/
+    public open mut prop searchItems: ?NSArray/*<ObjectType>*/
+    public open mut prop operationQueue: ?NSOperationQueue
     public open func startQuery(): Bool
     public open func stopQuery(): Unit
-    public prop isStarted: Bool
-    public prop isGathering: Bool
-    public prop isStopped: Bool
+    public open prop isStarted: Bool
+    public open prop isGathering: Bool
+    public open prop isStopped: Bool
     public open func disableUpdates(): Unit
     public open func enableUpdates(): Unit
-    public prop resultCount: NSUInteger
+    public open prop resultCount: NSUInteger
     @ForeignName["resultAtIndex:"] public open func resultAtIndex(idx: NSUInteger): id
     @ForeignName["enumerateResultsUsingBlock:"] public open func enumerateResultsUsingBlock(block: ObjCBlock<(id, NSUInteger, CPointer<Bool>) -> Unit>): Unit
     @ForeignName["enumerateResultsWithOptions:usingBlock:"] public open func enumerateResultsWithOptionsUsingBlock(opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(id, NSUInteger, CPointer<Bool>) -> Unit>): Unit
-    public prop results: NSArray/*<ObjectType>*/
+    public open prop results: NSArray/*<ObjectType>*/
     @ForeignName["indexOfResult:"] public open func indexOfResult(result: id): NSUInteger
-    public prop valueLists: NSDictionary/*<NSString, NSArray<NSMetadataQueryAttributeValueTuple>>*/
-    public prop groupedResults: NSArray/*<NSMetadataQueryResultGroup>*/
+    public open prop valueLists: NSDictionary/*<NSString, NSArray<NSMetadataQueryAttributeValueTuple>>*/
+    public open prop groupedResults: NSArray/*<NSMetadataQueryResultGroup>*/
     @ForeignName["valueOfAttribute:forResultAtIndex:"] public open func valueOfAttributeForResultAtIndex(attrName: NSString, idx: NSUInteger): id
 }
 
@@ -44,23 +44,23 @@ public open class NSMetadataItem <: NSObject {
     @ForeignName["initWithURL:"] public init(url: NSURL)
     @ForeignName["valueForAttribute:"] public open func valueForAttribute(key: NSString): id
     @ForeignName["valuesForAttributes:"] public open func valuesForAttributes(keys: NSArray/*<NSString>*/): ?NSDictionary/*<NSString, id>*/
-    public prop attributes: NSArray/*<NSString>*/
+    public open prop attributes: NSArray/*<NSString>*/
 }
 
 @ObjCMirror
 public open class NSMetadataQueryAttributeValueTuple <: NSObject {
-    public prop attribute: NSString
-    public prop value: id
-    public prop count: NSUInteger
+    public open prop attribute: NSString
+    public open prop value: id
+    public open prop count: NSUInteger
 }
 
 @ObjCMirror
 public open class NSMetadataQueryResultGroup <: NSObject {
-    public prop attribute: NSString
-    public prop value: id
-    public prop subgroups: ?NSArray/*<NSMetadataQueryResultGroup>*/
-    public prop resultCount: NSUInteger
+    public open prop attribute: NSString
+    public open prop value: id
+    public open prop subgroups: ?NSArray/*<NSMetadataQueryResultGroup>*/
+    public open prop resultCount: NSUInteger
     @ForeignName["resultAtIndex:"] public open func resultAtIndex(idx: NSUInteger): id
-    public prop results: NSArray/*<ObjectType>*/
+    public open prop results: NSArray/*<ObjectType>*/
 }
 

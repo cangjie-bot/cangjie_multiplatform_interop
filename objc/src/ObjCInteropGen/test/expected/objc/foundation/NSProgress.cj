@@ -21,37 +21,37 @@ public open class NSProgress <: NSObject {
     @ForeignName["performAsCurrentWithPendingUnitCount:usingBlock:"] public open func performAsCurrentWithPendingUnitCountUsingBlock(unitCount: int64_t, work: ObjCBlock<() -> Unit>): Unit
     public open func resignCurrent(): Unit
     @ForeignName["addChild:withPendingUnitCount:"] public open func addChildWithPendingUnitCount(child: NSProgress, inUnitCount: int64_t): Unit
-    public mut prop totalUnitCount: int64_t
-    public mut prop completedUnitCount: int64_t
-    public mut prop localizedDescription: NSString
-    public mut prop localizedAdditionalDescription: NSString
-    public mut prop isCancellable: Bool
-    public mut prop isPausable: Bool
-    public prop isCancelled: Bool
-    public prop isPaused: Bool
-    public mut prop cancellationHandler: ObjCBlock<() -> Unit>
-    public mut prop pausingHandler: ObjCBlock<() -> Unit>
-    public mut prop resumingHandler: ObjCBlock<() -> Unit>
+    public open mut prop totalUnitCount: int64_t
+    public open mut prop completedUnitCount: int64_t
+    public open mut prop localizedDescription: NSString
+    public open mut prop localizedAdditionalDescription: NSString
+    public open mut prop isCancellable: Bool
+    public open mut prop isPausable: Bool
+    public open prop isCancelled: Bool
+    public open prop isPaused: Bool
+    public open mut prop cancellationHandler: ObjCBlock<() -> Unit>
+    public open mut prop pausingHandler: ObjCBlock<() -> Unit>
+    public open mut prop resumingHandler: ObjCBlock<() -> Unit>
     @ForeignName["setUserInfoObject:forKey:"] public open func setUserInfoObjectForKey(objectOrNil: id, key: NSProgressUserInfoKey): Unit
-    public prop isIndeterminate: Bool
-    public prop fractionCompleted: Float64
-    public prop isFinished: Bool
+    public open prop isIndeterminate: Bool
+    public open prop fractionCompleted: Float64
+    public open prop isFinished: Bool
     public open func cancel(): Unit
     public open func pause(): Unit
     public open func `resume`(): Unit
-    public prop userInfo: NSDictionary/*<NSProgressUserInfoKey, id>*/
-    public mut prop kind: NSProgressKind
-    public mut prop estimatedTimeRemaining: ?NSNumber
-    public mut prop throughput: ?NSNumber
-    public mut prop fileOperationKind: NSProgressFileOperationKind
-    public mut prop fileURL: ?NSURL
-    public mut prop fileTotalCount: ?NSNumber
-    public mut prop fileCompletedCount: ?NSNumber
+    public open prop userInfo: NSDictionary/*<NSProgressUserInfoKey, id>*/
+    public open mut prop kind: NSProgressKind
+    public open mut prop estimatedTimeRemaining: ?NSNumber
+    public open mut prop throughput: ?NSNumber
+    public open mut prop fileOperationKind: NSProgressFileOperationKind
+    public open mut prop fileURL: ?NSURL
+    public open mut prop fileTotalCount: ?NSNumber
+    public open mut prop fileCompletedCount: ?NSNumber
     public open func publish(): Unit
     public open func unpublish(): Unit
     @ForeignName["addSubscriberForFileURL:withPublishingHandler:"] public static func addSubscriberForFileURLWithPublishingHandler(url: NSURL, publishingHandler: NSProgressPublishingHandler): id
     @ForeignName["removeSubscriber:"] public static func removeSubscriber(subscriber: id): Unit
-    public prop isOld: Bool
+    public open prop isOld: Bool
 }
 
 public type NSProgressUnpublishingHandler = ObjCBlock<() -> Unit>
@@ -60,6 +60,6 @@ public type NSProgressPublishingHandler = ObjCBlock<(NSProgress) -> NSProgressUn
 
 @ObjCMirror
 public interface NSProgressReporting <: NSObjectProtocol {
-    public prop progress: NSProgress
+    prop progress: NSProgress
 }
 

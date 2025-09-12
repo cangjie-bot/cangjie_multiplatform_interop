@@ -12,35 +12,35 @@ public open class NSLocale <: NSObject & NSCopying & NSSecureCoding {
     @ForeignName["displayNameForKey:value:"] public open func displayNameForKeyValue(key: NSLocaleKey, value: id): ?NSString
     @ForeignName["initWithLocaleIdentifier:"] public init(string: NSString)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
-    public prop localeIdentifier: NSString
+    public open prop localeIdentifier: NSString
     @ForeignName["localizedStringForLocaleIdentifier:"] public open func localizedStringForLocaleIdentifier(localeIdentifier: NSString): NSString
-    public prop languageCode: NSString
+    public open prop languageCode: NSString
     @ForeignName["localizedStringForLanguageCode:"] public open func localizedStringForLanguageCode(languageCode: NSString): ?NSString
-    public prop languageIdentifier: NSString
-    public prop countryCode: ?NSString
+    public open prop languageIdentifier: NSString
+    public open prop countryCode: ?NSString
     @ForeignName["localizedStringForCountryCode:"] public open func localizedStringForCountryCode(countryCode: NSString): ?NSString
-    public prop regionCode: ?NSString
-    public prop scriptCode: ?NSString
+    public open prop regionCode: ?NSString
+    public open prop scriptCode: ?NSString
     @ForeignName["localizedStringForScriptCode:"] public open func localizedStringForScriptCode(scriptCode: NSString): ?NSString
-    public prop variantCode: ?NSString
+    public open prop variantCode: ?NSString
     @ForeignName["localizedStringForVariantCode:"] public open func localizedStringForVariantCode(variantCode: NSString): ?NSString
-    public prop exemplarCharacterSet: NSCharacterSet
-    public prop calendarIdentifier: NSString
+    public open prop exemplarCharacterSet: NSCharacterSet
+    public open prop calendarIdentifier: NSString
     @ForeignName["localizedStringForCalendarIdentifier:"] public open func localizedStringForCalendarIdentifier(calendarIdentifier: NSString): ?NSString
-    public prop collationIdentifier: ?NSString
+    public open prop collationIdentifier: ?NSString
     @ForeignName["localizedStringForCollationIdentifier:"] public open func localizedStringForCollationIdentifier(collationIdentifier: NSString): ?NSString
-    public prop usesMetricSystem: Bool
-    public prop decimalSeparator: NSString
-    public prop groupingSeparator: NSString
-    public prop currencySymbol: NSString
-    public prop currencyCode: ?NSString
+    public open prop usesMetricSystem: Bool
+    public open prop decimalSeparator: NSString
+    public open prop groupingSeparator: NSString
+    public open prop currencySymbol: NSString
+    public open prop currencyCode: ?NSString
     @ForeignName["localizedStringForCurrencyCode:"] public open func localizedStringForCurrencyCode(currencyCode: NSString): ?NSString
-    public prop collatorIdentifier: NSString
+    public open prop collatorIdentifier: NSString
     @ForeignName["localizedStringForCollatorIdentifier:"] public open func localizedStringForCollatorIdentifier(collatorIdentifier: NSString): ?NSString
-    public prop quotationBeginDelimiter: NSString
-    public prop quotationEndDelimiter: NSString
-    public prop alternateQuotationBeginDelimiter: NSString
-    public prop alternateQuotationEndDelimiter: NSString
+    public open prop quotationBeginDelimiter: NSString
+    public open prop quotationEndDelimiter: NSString
+    public open prop alternateQuotationBeginDelimiter: NSString
+    public open prop alternateQuotationEndDelimiter: NSString
     public static prop autoupdatingCurrentLocale: NSLocale
     public static prop currentLocale: NSLocale
     public static prop systemLocale: NSLocale

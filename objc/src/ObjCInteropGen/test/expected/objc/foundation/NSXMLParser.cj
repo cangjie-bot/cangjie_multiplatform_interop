@@ -40,19 +40,19 @@ public open class NSXMLParser <: NSObject {
     @ForeignName["initWithContentsOfURL:"] public init(url: NSURL)
     @ForeignName["initWithData:"] public init(data: NSData)
     @ForeignName["initWithStream:"] public init(stream: NSInputStream)
-    public mut prop delegate: ?NSXMLParserDelegate
-    public mut prop shouldProcessNamespaces: Bool
-    public mut prop shouldReportNamespacePrefixes: Bool
-    public mut prop externalEntityResolvingPolicy: Int32 /*NSXMLParserExternalEntityResolvingPolicy*/
-    public mut prop allowedExternalEntityURLs: ?NSSet/*<NSURL>*/
+    public open mut prop delegate: ?NSXMLParserDelegate
+    public open mut prop shouldProcessNamespaces: Bool
+    public open mut prop shouldReportNamespacePrefixes: Bool
+    public open mut prop externalEntityResolvingPolicy: Int32 /*NSXMLParserExternalEntityResolvingPolicy*/
+    public open mut prop allowedExternalEntityURLs: ?NSSet/*<NSURL>*/
     public open func parse(): Bool
     public open func abortParsing(): Unit
-    public prop parserError: ?NSError
-    public mut prop shouldResolveExternalEntities: Bool
-    public prop publicID: ?NSString
-    public prop systemID: ?NSString
-    public prop lineNumber: NSInteger
-    public prop columnNumber: NSInteger
+    public open prop parserError: ?NSError
+    public open mut prop shouldResolveExternalEntities: Bool
+    public open prop publicID: ?NSString
+    public open prop systemID: ?NSString
+    public open prop lineNumber: NSInteger
+    public open prop columnNumber: NSInteger
 }
 
 public abstract sealed class NSXMLParserError {

@@ -14,10 +14,10 @@ public abstract sealed class NSURLCacheStoragePolicy {
 public open class NSCachedURLResponse <: NSObject & NSSecureCoding & NSCopying {
     @ForeignName["initWithResponse:data:"] public init(response: NSURLResponse, data: NSData)
     @ForeignName["initWithResponse:data:userInfo:storagePolicy:"] public init(response: NSURLResponse, data: NSData, userInfo: ?NSDictionary/*<KeyType, ObjectType>*/, storagePolicy: Int32 /*NSURLCacheStoragePolicy*/)
-    public prop response: NSURLResponse
-    public prop data: NSData
-    public prop userInfo: ?NSDictionary/*<KeyType, ObjectType>*/
-    public prop storagePolicy: Int32 /*NSURLCacheStoragePolicy*/
+    public open prop response: NSURLResponse
+    public open prop data: NSData
+    public open prop userInfo: ?NSDictionary/*<KeyType, ObjectType>*/
+    public open prop storagePolicy: Int32 /*NSURLCacheStoragePolicy*/
 }
 
 @ObjCMirror
@@ -30,10 +30,10 @@ public open class NSURLCache <: NSObject {
     @ForeignName["removeCachedResponseForRequest:"] public open func removeCachedResponseForRequest(request: NSURLRequest): Unit
     public open func removeAllCachedResponses(): Unit
     @ForeignName["removeCachedResponsesSinceDate:"] public open func removeCachedResponsesSinceDate(date: NSDate): Unit
-    public mut prop memoryCapacity: NSUInteger
-    public mut prop diskCapacity: NSUInteger
-    public prop currentMemoryUsage: NSUInteger
-    public prop currentDiskUsage: NSUInteger
+    public open mut prop memoryCapacity: NSUInteger
+    public open mut prop diskCapacity: NSUInteger
+    public open prop currentMemoryUsage: NSUInteger
+    public open prop currentDiskUsage: NSUInteger
     @ForeignName["storeCachedResponse:forDataTask:"] public open func storeCachedResponseForDataTask(cachedResponse: NSCachedURLResponse, dataTask: NSURLSessionDataTask): Unit
     @ForeignName["getCachedResponseForDataTask:completionHandler:"] public open func getCachedResponseForDataTaskCompletionHandler(dataTask: NSURLSessionDataTask, completionHandler: ObjCBlock<(NSCachedURLResponse) -> Unit>): Unit
     @ForeignName["removeCachedResponseForDataTask:"] public open func removeCachedResponseForDataTask(dataTask: NSURLSessionDataTask): Unit

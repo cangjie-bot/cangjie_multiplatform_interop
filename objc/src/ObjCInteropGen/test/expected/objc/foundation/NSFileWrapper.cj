@@ -22,22 +22,22 @@ public open class NSFileWrapper <: NSObject & NSSecureCoding {
     @ForeignName["initSymbolicLinkWithDestinationURL:"] public init(url: NSURL)
     // @ForeignName["initWithSerializedRepresentation:"] public init(serializeRepresentation: NSData)
     @ForeignName["initWithCoder:"] public init(inCoder: NSCoder)
-    public prop isDirectory: Bool
-    public prop isRegularFile: Bool
-    public prop isSymbolicLink: Bool
-    public mut prop preferredFilename: ?NSString
-    public mut prop filename: ?NSString
-    public mut prop fileAttributes: NSDictionary/*<NSString, id>*/
+    public open prop isDirectory: Bool
+    public open prop isRegularFile: Bool
+    public open prop isSymbolicLink: Bool
+    public open mut prop preferredFilename: ?NSString
+    public open mut prop filename: ?NSString
+    public open mut prop fileAttributes: NSDictionary/*<NSString, id>*/
     @ForeignName["matchesContentsOfURL:"] public open func matchesContentsOfURL(url: NSURL): Bool
     @ForeignName["readFromURL:options:error:"] public open func readFromURLOptionsError(url: NSURL, options: Int32 /*NSFileWrapperReadingOptions*/, outError: ObjCPointer<NSError>): Bool
     @ForeignName["writeToURL:options:originalContentsURL:error:"] public open func writeToURLOptionsOriginalContentsURLError(url: NSURL, options: Int32 /*NSFileWrapperWritingOptions*/, originalContentsURL: ?NSURL, outError: ObjCPointer<NSError>): Bool
-    public prop serializedRepresentation: ?NSData
+    public open prop serializedRepresentation: ?NSData
     @ForeignName["addFileWrapper:"] public open func addFileWrapper(child: NSFileWrapper): NSString
     @ForeignName["addRegularFileWithContents:preferredFilename:"] public open func addRegularFileWithContentsPreferredFilename(data: NSData, fileName: NSString): NSString
     @ForeignName["removeFileWrapper:"] public open func removeFileWrapper(child: NSFileWrapper): Unit
-    public prop fileWrappers: ?NSDictionary/*<NSString, NSFileWrapper>*/
+    public open prop fileWrappers: ?NSDictionary/*<NSString, NSFileWrapper>*/
     @ForeignName["keyForFileWrapper:"] public open func keyForFileWrapper(child: NSFileWrapper): ?NSString
-    public prop regularFileContents: ?NSData
-    public prop symbolicLinkDestinationURL: ?NSURL
+    public open prop regularFileContents: ?NSData
+    public open prop symbolicLinkDestinationURL: ?NSURL
 }
 

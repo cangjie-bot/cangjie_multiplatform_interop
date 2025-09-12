@@ -8,7 +8,7 @@ import interoplib.objc.*
 public open class NSURLCredentialStorage <: NSObject {
     public static prop sharedCredentialStorage: NSURLCredentialStorage
     @ForeignName["credentialsForProtectionSpace:"] public open func credentialsForProtectionSpace(space: NSURLProtectionSpace): ?NSDictionary/*<NSString, NSURLCredential>*/
-    public prop allCredentials: NSDictionary/*<NSURLProtectionSpace, NSDictionary<NSString, NSURLCredential>>*/
+    public open prop allCredentials: NSDictionary/*<NSURLProtectionSpace, NSDictionary<NSString, NSURLCredential>>*/
     @ForeignName["setCredential:forProtectionSpace:"] public open func setCredentialForProtectionSpace(credential: NSURLCredential, space: NSURLProtectionSpace): Unit
     @ForeignName["removeCredential:forProtectionSpace:"] public open func removeCredentialForProtectionSpace(credential: NSURLCredential, space: NSURLProtectionSpace): Unit
     @ForeignName["removeCredential:forProtectionSpace:options:"] public open func removeCredentialForProtectionSpaceOptions(credential: NSURLCredential, space: NSURLProtectionSpace, options: ?NSDictionary/*<NSString, id>*/): Unit

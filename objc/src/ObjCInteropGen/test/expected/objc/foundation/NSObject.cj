@@ -7,8 +7,8 @@ import interoplib.objc.*
 @ObjCMirror
 public interface NSObjectProtocol <: id {
     @ForeignName["isEqual:"] func isEqual(object: ?id): Bool
-    public prop hash: NSUInteger
-    public prop superclass: ?Class
+    prop hash: NSUInteger
+    prop superclass: ?Class
     func `class`(): ?Class
     func self(): NSObjectProtocol
     @ForeignName["performSelector:"] func performSelector(aSelector: ?SEL): ?id
@@ -19,8 +19,8 @@ public interface NSObjectProtocol <: id {
     @ForeignName["isMemberOfClass:"] func isMemberOfClass(aClass: ?Class): Bool
     @ForeignName["conformsToProtocol:"] func conformsToProtocol(aProtocol: ?Protocol): Bool
     @ForeignName["respondsToSelector:"] func respondsToSelector(aSelector: ?SEL): Bool
-    public prop description: ?NSString
-    public prop debugDescription: ?NSString
+    prop description: ?NSString
+    prop debugDescription: ?NSString
 }
 
 @C
@@ -59,10 +59,10 @@ public open class NSObject <: NSObjectProtocol {
     @ForeignName["debugDescription"] public static func debugDescriptionStatic(): ?NSString
     public static func version(): NSInteger
     @ForeignName["setVersion:"] public static func setVersion(aVersion: NSInteger): Unit
-    public prop classForCoder: Class
+    public open prop classForCoder: Class
     @ForeignName["replacementObjectForCoder:"] public open func replacementObjectForCoder(coder: NSCoder): id
     @ForeignName["awakeAfterUsingCoder:"] public open func awakeAfterUsingCoder(coder: NSCoder): id
-    public prop autoContentAccessingProxy: id
+    public open prop autoContentAccessingProxy: id
     @ForeignName["attemptRecoveryFromError:optionIndex:delegate:didRecoverSelector:contextInfo:"] public open func attemptRecoveryFromErrorOptionIndexDelegateDidRecoverSelectorContextInfo(error: NSError, recoveryOptionIndex: NSUInteger, delegate: id, didRecoverSelector: SEL, contextInfo: CPointer<Unit>): Unit
     @ForeignName["attemptRecoveryFromError:optionIndex:"] public open func attemptRecoveryFromErrorOptionIndex(error: NSError, recoveryOptionIndex: NSUInteger): Bool
     @ForeignName["performSelector:withObject:afterDelay:inModes:"] public open func performSelectorWithObjectAfterDelayInModes(aSelector: SEL, anArgument: id, delay: NSTimeInterval, modes: NSArray/*<NSRunLoopMode>*/): Unit
@@ -111,8 +111,8 @@ public open class NSObject <: NSObjectProtocol {
     @ForeignName["didChangeValueForKey:withSetMutation:usingObjects:"] public open func didChangeValueForKeyWithSetMutationUsingObjects(key: NSString, mutationKind: Int32 /*NSKeyValueSetMutationKind*/, objects: NSSet/*<ObjectType>*/): Unit
     @ForeignName["keyPathsForValuesAffectingValueForKey:"] public static func keyPathsForValuesAffectingValueForKey(key: NSString): NSSet/*<NSString>*/
     @ForeignName["automaticallyNotifiesObserversForKey:"] public static func automaticallyNotifiesObserversForKey(key: NSString): Bool
-    public mut prop observationInfo: CPointer<Unit>
-    public prop classForKeyedArchiver: Class
+    public open mut prop observationInfo: CPointer<Unit>
+    public open prop classForKeyedArchiver: Class
     @ForeignName["replacementObjectForKeyedArchiver:"] public open func replacementObjectForKeyedArchiver(archiver: NSKeyedArchiver): id
     public static func classFallbacksForKeyedArchiver(): NSArray/*<NSString>*/
     public static func classForKeyedUnarchiver(): Class
@@ -141,7 +141,7 @@ public interface NSCoding <: id {
 
 @ObjCMirror
 public interface NSSecureCoding <: NSCoding {
-    public static prop supportsSecureCoding: Bool
+    static prop supportsSecureCoding: Bool
 }
 
 @ObjCMirror

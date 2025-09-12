@@ -14,36 +14,36 @@ public struct NSOperatingSystemVersion {
 @ObjCMirror
 public open class NSProcessInfo <: NSObject {
     public static prop processInfo: NSProcessInfo
-    public prop environment: NSDictionary/*<NSString, NSString>*/
-    public prop arguments: NSArray/*<NSString>*/
-    public prop hostName: NSString
-    public mut prop processName: NSString
-    public prop processIdentifier: Int32
-    public prop globallyUniqueString: NSString
+    public open prop environment: NSDictionary/*<NSString, NSString>*/
+    public open prop arguments: NSArray/*<NSString>*/
+    public open prop hostName: NSString
+    public open mut prop processName: NSString
+    public open prop processIdentifier: Int32
+    public open prop globallyUniqueString: NSString
     public open func operatingSystem(): NSUInteger
     public open func operatingSystemName(): NSString
-    public prop operatingSystemVersionString: NSString
-    public prop operatingSystemVersion: NSOperatingSystemVersion
-    public prop processorCount: NSUInteger
-    public prop activeProcessorCount: NSUInteger
-    public prop physicalMemory: UInt64
+    public open prop operatingSystemVersionString: NSString
+    public open prop operatingSystemVersion: NSOperatingSystemVersion
+    public open prop processorCount: NSUInteger
+    public open prop activeProcessorCount: NSUInteger
+    public open prop physicalMemory: UInt64
     @ForeignName["isOperatingSystemAtLeastVersion:"] public open func isOperatingSystemAtLeastVersion(version: NSOperatingSystemVersion): Bool
-    public prop systemUptime: NSTimeInterval
+    public open prop systemUptime: NSTimeInterval
     public open func disableSuddenTermination(): Unit
     public open func enableSuddenTermination(): Unit
     @ForeignName["disableAutomaticTermination:"] public open func disableAutomaticTermination(reason: NSString): Unit
     @ForeignName["enableAutomaticTermination:"] public open func enableAutomaticTermination(reason: NSString): Unit
-    public mut prop automaticTerminationSupportEnabled: Bool
+    public open mut prop automaticTerminationSupportEnabled: Bool
     @ForeignName["beginActivityWithOptions:reason:"] public open func beginActivityWithOptionsReason(options: Int32 /*NSActivityOptions*/, reason: NSString): NSObjectProtocol
     @ForeignName["endActivity:"] public open func endActivity(activity: NSObjectProtocol): Unit
     @ForeignName["performActivityWithOptions:reason:usingBlock:"] public open func performActivityWithOptionsReasonUsingBlock(options: Int32 /*NSActivityOptions*/, reason: NSString, block: ObjCBlock<() -> Unit>): Unit
     @ForeignName["performExpiringActivityWithReason:usingBlock:"] public open func performExpiringActivityWithReasonUsingBlock(reason: NSString, block: ObjCBlock<(Bool) -> Unit>): Unit
-    public prop userName: NSString
-    public prop fullUserName: NSString
-    public prop thermalState: Int32 /*NSProcessInfoThermalState*/
-    public prop isLowPowerModeEnabled: Bool
-    public prop isMacCatalystApp: Bool
-    public prop isiOSAppOnMac: Bool
+    public open prop userName: NSString
+    public open prop fullUserName: NSString
+    public open prop thermalState: Int32 /*NSProcessInfoThermalState*/
+    public open prop isLowPowerModeEnabled: Bool
+    public open prop isMacCatalystApp: Bool
+    public open prop isiOSAppOnMac: Bool
 }
 
 public abstract sealed class NSActivityOptions {

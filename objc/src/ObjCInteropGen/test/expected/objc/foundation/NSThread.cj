@@ -10,27 +10,27 @@ public open class NSThread <: NSObject {
     @ForeignName["detachNewThreadWithBlock:"] public static func detachNewThreadWithBlock(block: ObjCBlock<() -> Unit>): Unit
     @ForeignName["detachNewThreadSelector:toTarget:withObject:"] public static func detachNewThreadSelectorToTargetWithObject(selector: SEL, target: id, argument: id): Unit
     public static func isMultiThreaded(): Bool
-    public prop threadDictionary: NSMutableDictionary/*<KeyType, ObjectType>*/
+    public open prop threadDictionary: NSMutableDictionary/*<KeyType, ObjectType>*/
     @ForeignName["sleepUntilDate:"] public static func sleepUntilDate(date: NSDate): Unit
     @ForeignName["sleepForTimeInterval:"] public static func sleepForTimeInterval(ti: NSTimeInterval): Unit
     public static func exit(): Unit
     @ForeignName["threadPriority"] public static func threadPriorityStatic(): Float64
     @ForeignName["setThreadPriority:"] public static func setThreadPriorityStatic(p: Float64): Bool
-    public mut prop threadPriority: Float64
-    public mut prop qualityOfService: Int32 /*NSQualityOfService*/
+    public open mut prop threadPriority: Float64
+    public open mut prop qualityOfService: Int32 /*NSQualityOfService*/
     public static prop callStackReturnAddresses: NSArray/*<NSNumber>*/
     public static prop callStackSymbols: NSArray/*<NSString>*/
-    public mut prop name: ?NSString
-    public mut prop stackSize: NSUInteger
-    public prop isMainThread: Bool
+    public open mut prop name: ?NSString
+    public open mut prop stackSize: NSUInteger
+    public open prop isMainThread: Bool
     public static prop isMainThreadStatic: Bool
     public static prop mainThread: NSThread
     public init()
     @ForeignName["initWithTarget:selector:object:"] public init(target: id, selector: SEL, argument: id)
     @ForeignName["initWithBlock:"] public init(block: ObjCBlock<() -> Unit>)
-    public prop isExecuting: Bool
-    public prop isFinished: Bool
-    public prop isCancelled: Bool
+    public open prop isExecuting: Bool
+    public open prop isFinished: Bool
+    public open prop isCancelled: Bool
     public open func cancel(): Unit
     public open func start(): Unit
     public open func `main`(): Unit

@@ -7,18 +7,18 @@ import interoplib.objc.*
 @ObjCMirror
 public open class NSURLResponse <: NSObject & NSSecureCoding & NSCopying {
     @ForeignName["initWithURL:MIMEType:expectedContentLength:textEncodingName:"] public init(URL: NSURL, MIMEType: ?NSString, length: NSInteger, name: ?NSString)
-    public prop URL: ?NSURL
-    public prop MIMEType: ?NSString
-    public prop expectedContentLength: Int64
-    public prop textEncodingName: ?NSString
-    public prop suggestedFilename: ?NSString
+    public open prop URL: ?NSURL
+    public open prop MIMEType: ?NSString
+    public open prop expectedContentLength: Int64
+    public open prop textEncodingName: ?NSString
+    public open prop suggestedFilename: ?NSString
 }
 
 @ObjCMirror
 public open class NSHTTPURLResponse <: NSURLResponse {
     @ForeignName["initWithURL:statusCode:HTTPVersion:headerFields:"] public init(url: NSURL, statusCode: NSInteger, HTTPVersion: ?NSString, headerFields: ?NSDictionary/*<NSString, NSString>*/)
-    public prop statusCode: NSInteger
-    public prop allHeaderFields: NSDictionary/*<KeyType, ObjectType>*/
+    public open prop statusCode: NSInteger
+    public open prop allHeaderFields: NSDictionary/*<KeyType, ObjectType>*/
     @ForeignName["valueForHTTPHeaderField:"] public open func valueForHTTPHeaderField(field: NSString): ?NSString
     @ForeignName["localizedStringForStatusCode:"] public static func localizedStringForStatusCode(statusCode: NSInteger): NSString
 }

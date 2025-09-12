@@ -7,11 +7,11 @@ import interoplib.objc.*
 @ObjCMirror
 public open class NSInvocation <: NSObject {
     @ForeignName["invocationWithMethodSignature:"] public static func invocationWithMethodSignature(sig: NSMethodSignature): NSInvocation
-    public prop methodSignature: NSMethodSignature
+    public open prop methodSignature: NSMethodSignature
     public open func retainArguments(): Unit
-    public prop argumentsRetained: Bool
-    public mut prop target: id
-    public mut prop selector: SEL
+    public open prop argumentsRetained: Bool
+    public open mut prop target: id
+    public open mut prop selector: SEL
     @ForeignName["getReturnValue:"] public open func getReturnValue(retLoc: CPointer<Unit>): Unit
     @ForeignName["setReturnValue:"] public open func setReturnValue(retLoc: CPointer<Unit>): Unit
     @ForeignName["getArgument:atIndex:"] public open func getArgumentAtIndex(argumentLocation: CPointer<Unit>, idx: NSInteger): Unit

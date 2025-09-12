@@ -14,6 +14,6 @@ public open class NSInflectionRule <: NSObject & NSCopying & NSSecureCoding {
 @ObjCMirror
 public open class NSInflectionRuleExplicit <: NSInflectionRule {
     @ForeignName["initWithMorphology:"] public init(morphology: NSMorphology)
-    public prop morphology: NSMorphology
+    public open prop morphology: NSMorphology
 }
 

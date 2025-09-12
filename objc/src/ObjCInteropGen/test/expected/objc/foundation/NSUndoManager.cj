@@ -8,35 +8,35 @@ import interoplib.objc.*
 public open class NSUndoManager <: NSObject {
     public open func beginUndoGrouping(): Unit
     public open func endUndoGrouping(): Unit
-    public prop groupingLevel: NSInteger
+    public open prop groupingLevel: NSInteger
     public open func disableUndoRegistration(): Unit
     public open func enableUndoRegistration(): Unit
-    public prop isUndoRegistrationEnabled: Bool
-    public mut prop groupsByEvent: Bool
-    public mut prop levelsOfUndo: NSUInteger
-    public mut prop runLoopModes: NSArray/*<NSRunLoopMode>*/
+    public open prop isUndoRegistrationEnabled: Bool
+    public open mut prop groupsByEvent: Bool
+    public open mut prop levelsOfUndo: NSUInteger
+    public open mut prop runLoopModes: NSArray/*<NSRunLoopMode>*/
     public open func undo(): Unit
     public open func redo(): Unit
     public open func undoNestedGroup(): Unit
-    public prop canUndo: Bool
-    public prop canRedo: Bool
-    public prop undoCount: NSUInteger
-    public prop redoCount: NSUInteger
-    public prop isUndoing: Bool
-    public prop isRedoing: Bool
+    public open prop canUndo: Bool
+    public open prop canRedo: Bool
+    public open prop undoCount: NSUInteger
+    public open prop redoCount: NSUInteger
+    public open prop isUndoing: Bool
+    public open prop isRedoing: Bool
     public open func removeAllActions(): Unit
     @ForeignName["removeAllActionsWithTarget:"] public open func removeAllActionsWithTarget(target: id): Unit
     @ForeignName["registerUndoWithTarget:selector:object:"] public open func registerUndoWithTargetSelectorObject(target: id, selector: SEL, object: id): Unit
     @ForeignName["prepareWithInvocationTarget:"] public open func prepareWithInvocationTarget(target: id): id
     @ForeignName["registerUndoWithTarget:handler:"] public open func registerUndoWithTargetHandler(target: id, undoHandler: ObjCBlock<(id) -> Unit>): Unit
     @ForeignName["setActionIsDiscardable:"] public open func setActionIsDiscardable(discardable: Bool): Unit
-    public prop undoActionIsDiscardable: Bool
-    public prop redoActionIsDiscardable: Bool
-    public prop undoActionName: NSString
-    public prop redoActionName: NSString
+    public open prop undoActionIsDiscardable: Bool
+    public open prop redoActionIsDiscardable: Bool
+    public open prop undoActionName: NSString
+    public open prop redoActionName: NSString
     @ForeignName["setActionName:"] public open func setActionName(actionName: NSString): Unit
-    public prop undoMenuItemTitle: NSString
-    public prop redoMenuItemTitle: NSString
+    public open prop undoMenuItemTitle: NSString
+    public open prop redoMenuItemTitle: NSString
     @ForeignName["undoMenuTitleForUndoActionName:"] public open func undoMenuTitleForUndoActionName(actionName: NSString): NSString
     @ForeignName["redoMenuTitleForUndoActionName:"] public open func redoMenuTitleForUndoActionName(actionName: NSString): NSString
 }

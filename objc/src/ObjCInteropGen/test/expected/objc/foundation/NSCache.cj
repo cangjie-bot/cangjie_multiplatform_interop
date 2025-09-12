@@ -11,15 +11,15 @@ public interface NSCacheDelegate <: NSObjectProtocol {
 
 @ObjCMirror
 public open class NSCache/*<KeyType, ObjectType>*/ <: NSObject {
-    public mut prop name: NSString
-    public mut prop delegate: ?NSCacheDelegate
+    public open mut prop name: NSString
+    public open mut prop delegate: ?NSCacheDelegate
     @ForeignName["objectForKey:"] public open func objectForKey(key: id /*KeyType*/): id /*ObjectType*/
     @ForeignName["setObject:forKey:"] public open func setObjectForKey(obj: id /*ObjectType*/, key: id /*KeyType*/): Unit
     @ForeignName["setObject:forKey:cost:"] public open func setObjectForKeyCost(obj: id /*ObjectType*/, key: id /*KeyType*/, g: NSUInteger): Unit
     @ForeignName["removeObjectForKey:"] public open func removeObjectForKey(key: id /*KeyType*/): Unit
     public open func removeAllObjects(): Unit
-    public mut prop totalCostLimit: NSUInteger
-    public mut prop countLimit: NSUInteger
-    public mut prop evictsObjectsWithDiscardedContent: Bool
+    public open mut prop totalCostLimit: NSUInteger
+    public open mut prop countLimit: NSUInteger
+    public open mut prop evictsObjectsWithDiscardedContent: Bool
 }
 

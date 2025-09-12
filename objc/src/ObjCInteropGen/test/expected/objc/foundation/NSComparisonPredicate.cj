@@ -40,11 +40,11 @@ public open class NSComparisonPredicate <: NSPredicate {
     @ForeignName["initWithLeftExpression:rightExpression:modifier:type:options:"] public init(lhs: NSExpression, rhs: NSExpression, modifier: Int32 /*NSComparisonPredicateModifier*/, `type`: Int32 /*NSPredicateOperatorType*/, options: Int32 /*NSComparisonPredicateOptions*/)
     @ForeignName["initWithLeftExpression:rightExpression:customSelector:"] public init(lhs: NSExpression, rhs: NSExpression, selector: SEL)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
-    public prop predicateOperatorType: Int32 /*NSPredicateOperatorType*/
-    public prop comparisonPredicateModifier: Int32 /*NSComparisonPredicateModifier*/
-    public prop leftExpression: NSExpression
-    public prop rightExpression: NSExpression
-    public prop customSelector: SEL
-    public prop options: Int32 /*NSComparisonPredicateOptions*/
+    public open prop predicateOperatorType: Int32 /*NSPredicateOperatorType*/
+    public open prop comparisonPredicateModifier: Int32 /*NSComparisonPredicateModifier*/
+    public open prop leftExpression: NSExpression
+    public open prop rightExpression: NSExpression
+    public open prop customSelector: SEL
+    public open prop options: Int32 /*NSComparisonPredicateOptions*/
 }
 

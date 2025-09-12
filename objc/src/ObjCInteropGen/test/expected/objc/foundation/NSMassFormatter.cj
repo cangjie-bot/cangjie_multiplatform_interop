@@ -14,9 +14,9 @@ public abstract sealed class NSMassFormatterUnit {
 
 @ObjCMirror
 public open class NSMassFormatter <: NSFormatter {
-    public mut prop numberFormatter: NSNumberFormatter
-    public mut prop unitStyle: Int32 /*NSFormattingUnitStyle*/
-    public mut prop isForPersonMassUse: Bool
+    public open mut prop numberFormatter: NSNumberFormatter
+    public open mut prop unitStyle: Int32 /*NSFormattingUnitStyle*/
+    public open mut prop isForPersonMassUse: Bool
     @ForeignName["stringFromValue:unit:"] public open func stringFromValueUnit(value: Float64, unit: Int32 /*NSMassFormatterUnit*/): NSString
     @ForeignName["stringFromKilograms:"] public open func stringFromKilograms(numberInKilograms: Float64): NSString
     @ForeignName["unitStringFromValue:unit:"] public open func unitStringFromValueUnit(value: Float64, unit: Int32 /*NSMassFormatterUnit*/): NSString

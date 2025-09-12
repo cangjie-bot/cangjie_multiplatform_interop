@@ -24,13 +24,13 @@ public abstract sealed class NSPointerFunctionsOptions {
 public open class NSPointerFunctions <: NSObject & NSCopying {
     @ForeignName["initWithOptions:"] public init(options: Int32 /*NSPointerFunctionsOptions*/)
     @ForeignName["pointerFunctionsWithOptions:"] public static func pointerFunctionsWithOptions(options: Int32 /*NSPointerFunctionsOptions*/): NSPointerFunctions
-    public mut prop hashFunction: CFunc<(CPointer<Unit>, CFunc<(CPointer<Unit>) -> NSUInteger>) -> NSUInteger>
-    public mut prop isEqualFunction: CFunc<(CPointer<Unit>, CPointer<Unit>, CFunc<(CPointer<Unit>) -> NSUInteger>) -> Bool>
-    public mut prop sizeFunction: CFunc<(CPointer<Unit>) -> NSUInteger>
-    public mut prop descriptionFunction: ObjCFunc<(CPointer<Unit>) -> NSString>
-    public mut prop relinquishFunction: CFunc<(CPointer<Unit>, CFunc<(CPointer<Unit>) -> NSUInteger>) -> Unit>
-    public mut prop acquireFunction: CFunc<(CPointer<Unit>, CFunc<(CPointer<Unit>) -> NSUInteger>, Bool) -> CPointer<Unit>>
-    public mut prop usesStrongWriteBarrier: Bool
-    public mut prop usesWeakReadAndWriteBarriers: Bool
+    public open mut prop hashFunction: CFunc<(CPointer<Unit>, CFunc<(CPointer<Unit>) -> NSUInteger>) -> NSUInteger>
+    public open mut prop isEqualFunction: CFunc<(CPointer<Unit>, CPointer<Unit>, CFunc<(CPointer<Unit>) -> NSUInteger>) -> Bool>
+    public open mut prop sizeFunction: CFunc<(CPointer<Unit>) -> NSUInteger>
+    public open mut prop descriptionFunction: ObjCFunc<(CPointer<Unit>) -> NSString>
+    public open mut prop relinquishFunction: CFunc<(CPointer<Unit>, CFunc<(CPointer<Unit>) -> NSUInteger>) -> Unit>
+    public open mut prop acquireFunction: CFunc<(CPointer<Unit>, CFunc<(CPointer<Unit>) -> NSUInteger>, Bool) -> CPointer<Unit>>
+    public open mut prop usesStrongWriteBarrier: Bool
+    public open mut prop usesWeakReadAndWriteBarriers: Bool
 }
 

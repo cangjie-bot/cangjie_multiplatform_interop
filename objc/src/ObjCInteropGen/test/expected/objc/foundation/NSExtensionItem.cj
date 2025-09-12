@@ -6,9 +6,9 @@ import interoplib.objc.*
 
 @ObjCMirror
 public open class NSExtensionItem <: NSObject & NSCopying & NSSecureCoding {
-    public mut prop attributedTitle: ?NSAttributedString
-    public mut prop attributedContentText: ?NSAttributedString
-    public mut prop attachments: ?NSArray/*<NSItemProvider>*/
-    public mut prop userInfo: ?NSDictionary/*<KeyType, ObjectType>*/
+    public open mut prop attributedTitle: ?NSAttributedString
+    public open mut prop attributedContentText: ?NSAttributedString
+    public open mut prop attachments: ?NSArray/*<NSItemProvider>*/
+    public open mut prop userInfo: ?NSDictionary/*<KeyType, ObjectType>*/
 }
 

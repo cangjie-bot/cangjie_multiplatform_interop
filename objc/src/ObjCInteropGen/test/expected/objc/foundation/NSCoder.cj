@@ -29,8 +29,8 @@ public open class NSCoder <: NSObject {
     @ForeignName["decodeValuesOfObjCTypes:"] public open func decodeValuesOfObjCTypes(types: CPointer<Int8>): Unit
     @ForeignName["decodeArrayOfObjCType:count:at:"] public open func decodeArrayOfObjCTypeCountAt(itemType: CPointer<Int8>, count: NSUInteger, array: CPointer<Unit>): Unit
     @ForeignName["decodeBytesWithReturnedLength:"] public open func decodeBytesWithReturnedLength(lengthp: CPointer<NSUInteger>): CPointer<Unit>
-    public prop systemVersion: UInt32
-    public prop allowsKeyedCoding: Bool
+    public open prop systemVersion: UInt32
+    public open prop allowsKeyedCoding: Bool
     @ForeignName["encodeObject:forKey:"] public open func encodeObjectForKey(object: id, key: NSString): Unit
     @ForeignName["encodeConditionalObject:forKey:"] public open func encodeConditionalObjectForKey(object: id, key: NSString): Unit
     @ForeignName["encodeBool:forKey:"] public open func encodeBoolForKey(value: Bool, key: NSString): Unit
@@ -52,7 +52,7 @@ public open class NSCoder <: NSObject {
     @ForeignName["decodeBytesForKey:returnedLength:"] public open func decodeBytesForKeyReturnedLength(key: NSString, lengthp: CPointer<NSUInteger>): CPointer<uint8_t>
     @ForeignName["encodeInteger:forKey:"] public open func encodeIntegerForKey(value: NSInteger, key: NSString): Unit
     @ForeignName["decodeIntegerForKey:"] public open func decodeIntegerForKey(key: NSString): NSInteger
-    public prop requiresSecureCoding: Bool
+    public open prop requiresSecureCoding: Bool
     @ForeignName["decodeObjectOfClass:forKey:"] public open func decodeObjectOfClassForKey(aClass: Class, key: NSString): id
     @ForeignName["decodeTopLevelObjectOfClass:forKey:error:"] public open func decodeTopLevelObjectOfClassForKeyError(aClass: Class, key: NSString, error: ObjCPointer<NSError>): id
     @ForeignName["decodeArrayOfObjectsOfClass:forKey:"] public open func decodeArrayOfObjectsOfClassForKey(cls: Class, key: NSString): ?NSArray/*<ObjectType>*/
@@ -62,10 +62,10 @@ public open class NSCoder <: NSObject {
     @ForeignName["decodeArrayOfObjectsOfClasses:forKey:"] public open func decodeArrayOfObjectsOfClassesForKey(classes: NSSet/*<Class>*/, key: NSString): ?NSArray/*<ObjectType>*/
     @ForeignName["decodeDictionaryWithKeysOfClasses:objectsOfClasses:forKey:"] public open func decodeDictionaryWithKeysOfClassesObjectsOfClassesForKey(keyClasses: NSSet/*<Class>*/, objectClasses: NSSet/*<Class>*/, key: NSString): ?NSDictionary/*<KeyType, ObjectType>*/
     @ForeignName["decodePropertyListForKey:"] public open func decodePropertyListForKey(key: NSString): id
-    public prop allowedClasses: ?NSSet/*<Class>*/
+    public open prop allowedClasses: ?NSSet/*<Class>*/
     @ForeignName["failWithError:"] public open func failWithError(error: NSError): Unit
-    public prop decodingFailurePolicy: Int32 /*NSDecodingFailurePolicy*/
-    public prop error: ?NSError
+    public open prop decodingFailurePolicy: Int32 /*NSDecodingFailurePolicy*/
+    public open prop error: ?NSError
     @ForeignName["decodeValueOfObjCType:at:"] public open func decodeValueOfObjCTypeAt(`type`: CPointer<Int8>, data: CPointer<Unit>): Unit
 }
 

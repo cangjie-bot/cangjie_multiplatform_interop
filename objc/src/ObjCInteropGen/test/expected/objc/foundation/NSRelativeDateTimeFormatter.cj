@@ -18,11 +18,11 @@ public abstract sealed class NSRelativeDateTimeFormatterUnitsStyle {
 
 @ObjCMirror
 public open class NSRelativeDateTimeFormatter <: NSFormatter {
-    public mut prop dateTimeStyle: Int32 /*NSRelativeDateTimeFormatterStyle*/
-    public mut prop unitsStyle: Int32 /*NSRelativeDateTimeFormatterUnitsStyle*/
-    public mut prop formattingContext: Int32 /*NSFormattingContext*/
-    public mut prop calendar: NSCalendar
-    public mut prop locale: NSLocale
+    public open mut prop dateTimeStyle: Int32 /*NSRelativeDateTimeFormatterStyle*/
+    public open mut prop unitsStyle: Int32 /*NSRelativeDateTimeFormatterUnitsStyle*/
+    public open mut prop formattingContext: Int32 /*NSFormattingContext*/
+    public open mut prop calendar: NSCalendar
+    public open mut prop locale: NSLocale
     @ForeignName["localizedStringFromDateComponents:"] public open func localizedStringFromDateComponents(dateComponents: NSDateComponents): NSString
     @ForeignName["localizedStringFromTimeInterval:"] public open func localizedStringFromTimeInterval(timeInterval: NSTimeInterval): NSString
     @ForeignName["localizedStringForDate:relativeToDate:"] public open func localizedStringForDateRelativeToDate(date: NSDate, referenceDate: NSDate): NSString

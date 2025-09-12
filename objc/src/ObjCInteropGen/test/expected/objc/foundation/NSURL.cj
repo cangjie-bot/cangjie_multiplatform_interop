@@ -33,30 +33,30 @@ public open class NSURL <: NSObject & NSSecureCoding & NSCopying {
     @ForeignName["URLWithDataRepresentation:relativeToURL:"] public static func URLWithDataRepresentationRelativeToURL(data: NSData, baseURL: ?NSURL): NSURL
     // @ForeignName["initAbsoluteURLWithDataRepresentation:relativeToURL:"] public init(data: NSData, baseURL: ?NSURL)
     @ForeignName["absoluteURLWithDataRepresentation:relativeToURL:"] public static func absoluteURLWithDataRepresentationRelativeToURL(data: NSData, baseURL: ?NSURL): NSURL
-    public prop dataRepresentation: NSData
-    public prop absoluteString: ?NSString
-    public prop relativeString: NSString
-    public prop baseURL: ?NSURL
-    public prop absoluteURL: ?NSURL
-    public prop scheme: ?NSString
-    public prop resourceSpecifier: ?NSString
-    public prop host: ?NSString
-    public prop port: ?NSNumber
-    public prop user: ?NSString
-    public prop password: ?NSString
-    public prop path: ?NSString
-    public prop fragment: ?NSString
-    public prop parameterString: ?NSString
-    public prop query: ?NSString
-    public prop relativePath: ?NSString
-    public prop hasDirectoryPath: Bool
+    public open prop dataRepresentation: NSData
+    public open prop absoluteString: ?NSString
+    public open prop relativeString: NSString
+    public open prop baseURL: ?NSURL
+    public open prop absoluteURL: ?NSURL
+    public open prop scheme: ?NSString
+    public open prop resourceSpecifier: ?NSString
+    public open prop host: ?NSString
+    public open prop port: ?NSNumber
+    public open prop user: ?NSString
+    public open prop password: ?NSString
+    public open prop path: ?NSString
+    public open prop fragment: ?NSString
+    public open prop parameterString: ?NSString
+    public open prop query: ?NSString
+    public open prop relativePath: ?NSString
+    public open prop hasDirectoryPath: Bool
     @ForeignName["getFileSystemRepresentation:maxLength:"] public open func getFileSystemRepresentationMaxLength(buffer: CPointer<Int8>, maxBufferLength: NSUInteger): Bool
-    public prop fileSystemRepresentation: CPointer<Int8>
-    public prop isFileURL: Bool
-    public prop standardizedURL: ?NSURL
+    public open prop fileSystemRepresentation: CPointer<Int8>
+    public open prop isFileURL: Bool
+    public open prop standardizedURL: ?NSURL
     public open func isFileReferenceURL(): Bool
     public open func fileReferenceURL(): ?NSURL
-    public prop filePathURL: ?NSURL
+    public open prop filePathURL: ?NSURL
     @ForeignName["getResourceValue:forKey:error:"] public open func getResourceValueForKeyError(value: ObjCPointer<id>, key: NSURLResourceKey, error: ObjCPointer<NSError>): Bool
     @ForeignName["resourceValuesForKeys:error:"] public open func resourceValuesForKeysError(keys: NSArray/*<NSURLResourceKey>*/, error: ObjCPointer<NSError>): ?NSDictionary/*<NSURLResourceKey, id>*/
     @ForeignName["setResourceValue:forKey:error:"] public open func setResourceValueForKeyError(value: id, key: NSURLResourceKey, error: ObjCPointer<NSError>): Bool
@@ -77,17 +77,17 @@ public open class NSURL <: NSObject & NSSecureCoding & NSCopying {
     @ForeignName["promisedItemResourceValuesForKeys:error:"] public open func promisedItemResourceValuesForKeysError(keys: NSArray/*<NSURLResourceKey>*/, error: ObjCPointer<NSError>): ?NSDictionary/*<NSURLResourceKey, id>*/
     @ForeignName["checkPromisedItemIsReachableAndReturnError:"] public open func checkPromisedItemIsReachableAndReturnError(error: ObjCPointer<NSError>): Bool
     @ForeignName["fileURLWithPathComponents:"] public static func fileURLWithPathComponents(components: NSArray/*<NSString>*/): ?NSURL
-    public prop pathComponents: ?NSArray/*<NSString>*/
-    public prop lastPathComponent: ?NSString
-    public prop pathExtension: ?NSString
+    public open prop pathComponents: ?NSArray/*<NSString>*/
+    public open prop lastPathComponent: ?NSString
+    public open prop pathExtension: ?NSString
     @ForeignName["URLByAppendingPathComponent:"] public open func URLByAppendingPathComponent(pathComponent: NSString): ?NSURL
     @ForeignName["URLByAppendingPathComponent:isDirectory:"] public open func URLByAppendingPathComponentIsDirectory(pathComponent: NSString, isDirectory: Bool): ?NSURL
-    public prop URLByDeletingLastPathComponent: ?NSURL
+    public open prop URLByDeletingLastPathComponent: ?NSURL
     @ForeignName["URLByAppendingPathExtension:"] public open func URLByAppendingPathExtension(pathExtension: NSString): ?NSURL
-    public prop URLByDeletingPathExtension: ?NSURL
+    public open prop URLByDeletingPathExtension: ?NSURL
     @ForeignName["checkResourceIsReachableAndReturnError:"] public open func checkResourceIsReachableAndReturnError(error: ObjCPointer<NSError>): Bool
-    public prop URLByStandardizingPath: ?NSURL
-    public prop URLByResolvingSymlinksInPath: ?NSURL
+    public open prop URLByStandardizingPath: ?NSURL
+    public open prop URLByResolvingSymlinksInPath: ?NSURL
 }
 
 public type NSURLFileResourceType = NSString
@@ -124,8 +124,8 @@ public type NSURLBookmarkFileCreationOptions = NSUInteger
 public open class NSURLQueryItem <: NSObject & NSSecureCoding & NSCopying {
     @ForeignName["initWithName:value:"] public init(name: NSString, value: ?NSString)
     @ForeignName["queryItemWithName:value:"] public static func queryItemWithNameValue(name: NSString, value: ?NSString): NSURLQueryItem
-    public prop name: NSString
-    public prop value: ?NSString
+    public open prop name: NSString
+    public open prop value: ?NSString
 }
 
 @ObjCMirror
@@ -137,34 +137,34 @@ public open class NSURLComponents <: NSObject & NSCopying {
     @ForeignName["componentsWithString:"] public static func componentsWithString(URLString: NSString): NSURLComponents
     @ForeignName["initWithString:encodingInvalidCharacters:"] public init(URLString: NSString, encodingInvalidCharacters: Bool)
     @ForeignName["componentsWithString:encodingInvalidCharacters:"] public static func componentsWithStringEncodingInvalidCharacters(URLString: NSString, encodingInvalidCharacters: Bool): NSURLComponents
-    public prop URL: ?NSURL
+    public open prop URL: ?NSURL
     @ForeignName["URLRelativeToURL:"] public open func URLRelativeToURL(baseURL: ?NSURL): ?NSURL
-    public prop string: ?NSString
-    public mut prop scheme: ?NSString
-    public mut prop user: ?NSString
-    public mut prop password: ?NSString
-    public mut prop host: ?NSString
-    public mut prop port: ?NSNumber
-    public mut prop path: ?NSString
-    public mut prop query: ?NSString
-    public mut prop fragment: ?NSString
-    public mut prop percentEncodedUser: ?NSString
-    public mut prop percentEncodedPassword: ?NSString
-    public mut prop percentEncodedHost: ?NSString
-    public mut prop percentEncodedPath: ?NSString
-    public mut prop percentEncodedQuery: ?NSString
-    public mut prop percentEncodedFragment: ?NSString
-    public mut prop encodedHost: ?NSString
-    public prop rangeOfScheme: NSRange
-    public prop rangeOfUser: NSRange
-    public prop rangeOfPassword: NSRange
-    public prop rangeOfHost: NSRange
-    public prop rangeOfPort: NSRange
-    public prop rangeOfPath: NSRange
-    public prop rangeOfQuery: NSRange
-    public prop rangeOfFragment: NSRange
-    public mut prop queryItems: ?NSArray/*<NSURLQueryItem>*/
-    public mut prop percentEncodedQueryItems: ?NSArray/*<NSURLQueryItem>*/
+    public open prop string: ?NSString
+    public open mut prop scheme: ?NSString
+    public open mut prop user: ?NSString
+    public open mut prop password: ?NSString
+    public open mut prop host: ?NSString
+    public open mut prop port: ?NSNumber
+    public open mut prop path: ?NSString
+    public open mut prop query: ?NSString
+    public open mut prop fragment: ?NSString
+    public open mut prop percentEncodedUser: ?NSString
+    public open mut prop percentEncodedPassword: ?NSString
+    public open mut prop percentEncodedHost: ?NSString
+    public open mut prop percentEncodedPath: ?NSString
+    public open mut prop percentEncodedQuery: ?NSString
+    public open mut prop percentEncodedFragment: ?NSString
+    public open mut prop encodedHost: ?NSString
+    public open prop rangeOfScheme: NSRange
+    public open prop rangeOfUser: NSRange
+    public open prop rangeOfPassword: NSRange
+    public open prop rangeOfHost: NSRange
+    public open prop rangeOfPort: NSRange
+    public open prop rangeOfPath: NSRange
+    public open prop rangeOfQuery: NSRange
+    public open prop rangeOfFragment: NSRange
+    public open mut prop queryItems: ?NSArray/*<NSURLQueryItem>*/
+    public open mut prop percentEncodedQueryItems: ?NSArray/*<NSURLQueryItem>*/
 }
 
 @ObjCMirror

@@ -598,7 +598,7 @@ static void write_method(IndentingStringStream& output, bool is_interface, NonTy
     }
     if (method.is_static()) {
         output << "static ";
-    } else if (normal_mode() || !is_interface) {
+    } else if (!is_interface) {
         output << "open ";
     }
     output << "func " << name;
@@ -737,9 +737,13 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
                 if (hidden) {
                     output.set_comment();
                 }
-                output << "public ";
+                if (!is_interface) {
+                    output << "public ";
+                }
                 if (is_static) {
                     output << "static ";
+                } else if (!is_interface) {
+                    output << "open ";
                 }
                 if (!member.is_readonly()) {
                     output << "mut ";

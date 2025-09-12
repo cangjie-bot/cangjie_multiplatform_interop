@@ -14,7 +14,7 @@ public open class NSPredicate <: NSObject & NSSecureCoding & NSCopying {
     @ForeignName["predicateFromMetadataQueryString:"] public static func predicateFromMetadataQueryString(queryString: NSString): ?NSPredicate
     @ForeignName["predicateWithValue:"] public static func predicateWithValue(value: Bool): NSPredicate
     @ForeignName["predicateWithBlock:"] public static func predicateWithBlock(block: ObjCBlock<(id, NSDictionary/*<NSString, id>*/) -> Bool>): NSPredicate
-    public prop predicateFormat: NSString
+    public open prop predicateFormat: NSString
     @ForeignName["predicateWithSubstitutionVariables:"] public open func predicateWithSubstitutionVariables(variables: NSDictionary/*<NSString, id>*/): NSPredicate
     @ForeignName["evaluateWithObject:"] public open func evaluateWithObject(object: id): Bool
     @ForeignName["evaluateWithObject:substitutionVariables:"] public open func evaluateWithObjectSubstitutionVariables(object: id, bindings: ?NSDictionary/*<NSString, id>*/): Bool

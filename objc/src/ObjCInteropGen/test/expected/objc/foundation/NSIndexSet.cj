@@ -15,9 +15,9 @@ public open class NSIndexSet <: NSObject & NSCopying & NSMutableCopying & NSSecu
     @ForeignName["initWithIndexSet:"] public init(indexSet: NSIndexSet)
     @ForeignName["initWithIndex:"] public init(value: NSUInteger)
     @ForeignName["isEqualToIndexSet:"] public open func isEqualToIndexSet(indexSet: NSIndexSet): Bool
-    public prop count: NSUInteger
-    public prop firstIndex: NSUInteger
-    public prop lastIndex: NSUInteger
+    public open prop count: NSUInteger
+    public open prop firstIndex: NSUInteger
+    public open prop lastIndex: NSUInteger
     @ForeignName["indexGreaterThanIndex:"] public open func indexGreaterThanIndex(value: NSUInteger): NSUInteger
     @ForeignName["indexLessThanIndex:"] public open func indexLessThanIndex(value: NSUInteger): NSUInteger
     @ForeignName["indexGreaterThanOrEqualToIndex:"] public open func indexGreaterThanOrEqualToIndex(value: NSUInteger): NSUInteger

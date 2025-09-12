@@ -6,7 +6,7 @@ import interoplib.objc.*
 
 @ObjCMirror
 public open class NSFileHandle <: NSObject & NSSecureCoding {
-    public prop availableData: NSData
+    public open prop availableData: NSData
     @ForeignName["initWithFileDescriptor:closeOnDealloc:"] public init(fd: Int32, closeopt: Bool)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
     @ForeignName["readDataToEndOfFileAndReturnError:"] public open func readDataToEndOfFileAndReturnError(error: ObjCPointer<NSError>): ?NSData
@@ -36,14 +36,14 @@ public open class NSFileHandle <: NSObject & NSSecureCoding {
     public open func acceptConnectionInBackgroundAndNotify(): Unit
     @ForeignName["waitForDataInBackgroundAndNotifyForModes:"] public open func waitForDataInBackgroundAndNotifyForModes(modes: ?NSArray/*<NSRunLoopMode>*/): Unit
     public open func waitForDataInBackgroundAndNotify(): Unit
-    public mut prop readabilityHandler: ObjCBlock<(NSFileHandle) -> Unit>
-    public mut prop writeabilityHandler: ObjCBlock<(NSFileHandle) -> Unit>
+    public open mut prop readabilityHandler: ObjCBlock<(NSFileHandle) -> Unit>
+    public open mut prop writeabilityHandler: ObjCBlock<(NSFileHandle) -> Unit>
     @ForeignName["initWithFileDescriptor:"] public init(fd: Int32)
-    public prop fileDescriptor: Int32
+    public open prop fileDescriptor: Int32
     public open func readDataToEndOfFile(): NSData
     @ForeignName["readDataOfLength:"] public open func readDataOfLength(length: NSUInteger): NSData
     @ForeignName["writeData:"] public open func writeData(data: NSData): Unit
-    public prop offsetInFile: UInt64
+    public open prop offsetInFile: UInt64
     public open func seekToEndOfFile(): UInt64
     @ForeignName["seekToFileOffset:"] public open func seekToFileOffset(offset: UInt64): Unit
     @ForeignName["truncateFileAtOffset:"] public open func truncateFileAtOffset(offset: UInt64): Unit
@@ -53,8 +53,8 @@ public open class NSFileHandle <: NSObject & NSSecureCoding {
 
 @ObjCMirror
 public open class NSPipe <: NSObject {
-    public prop fileHandleForReading: NSFileHandle
-    public prop fileHandleForWriting: NSFileHandle
+    public open prop fileHandleForReading: NSFileHandle
+    public open prop fileHandleForWriting: NSFileHandle
     public static func pipe(): NSPipe
 }
 

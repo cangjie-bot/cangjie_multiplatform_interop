@@ -6,7 +6,7 @@ import interoplib.objc.*
 
 @ObjCMirror
 public open class NSDateFormatter <: NSFormatter {
-    public mut prop formattingContext: Int32 /*NSFormattingContext*/
+    public open mut prop formattingContext: Int32 /*NSFormattingContext*/
     @ForeignName["getObjectValue:forString:range:error:"] public open func getObjectValueForStringRangeError(obj: ObjCPointer<id>, string: NSString, rangep: CPointer<NSRange>, error: ObjCPointer<NSError>): Bool
     @ForeignName["stringFromDate:"] public open func stringFromDate(date: NSDate): NSString
     @ForeignName["dateFromString:"] public open func dateFromString(string: NSString): ?NSDate
@@ -14,39 +14,39 @@ public open class NSDateFormatter <: NSFormatter {
     @ForeignName["dateFormatFromTemplate:options:locale:"] public static func dateFormatFromTemplateOptionsLocale(tmplate: NSString, opts: NSUInteger, locale: ?NSLocale): ?NSString
     public static mut prop defaultFormatterBehavior: Int32 /*NSDateFormatterBehavior*/
     @ForeignName["setLocalizedDateFormatFromTemplate:"] public open func setLocalizedDateFormatFromTemplate(dateFormatTemplate: NSString): Unit
-    public mut prop dateFormat: NSString
-    public mut prop dateStyle: Int32 /*NSDateFormatterStyle*/
-    public mut prop timeStyle: Int32 /*NSDateFormatterStyle*/
-    public mut prop locale: NSLocale
-    public mut prop generatesCalendarDates: Bool
-    public mut prop formatterBehavior: Int32 /*NSDateFormatterBehavior*/
-    public mut prop timeZone: NSTimeZone
-    public mut prop calendar: NSCalendar
-    public mut prop isLenient: Bool
-    public mut prop twoDigitStartDate: ?NSDate
-    public mut prop defaultDate: ?NSDate
-    public mut prop eraSymbols: NSArray/*<NSString>*/
-    public mut prop monthSymbols: NSArray/*<NSString>*/
-    public mut prop shortMonthSymbols: NSArray/*<NSString>*/
-    public mut prop weekdaySymbols: NSArray/*<NSString>*/
-    public mut prop shortWeekdaySymbols: NSArray/*<NSString>*/
-    public mut prop AMSymbol: NSString
-    public mut prop PMSymbol: NSString
-    public mut prop longEraSymbols: NSArray/*<NSString>*/
-    public mut prop veryShortMonthSymbols: NSArray/*<NSString>*/
-    public mut prop standaloneMonthSymbols: NSArray/*<NSString>*/
-    public mut prop shortStandaloneMonthSymbols: NSArray/*<NSString>*/
-    public mut prop veryShortStandaloneMonthSymbols: NSArray/*<NSString>*/
-    public mut prop veryShortWeekdaySymbols: NSArray/*<NSString>*/
-    public mut prop standaloneWeekdaySymbols: NSArray/*<NSString>*/
-    public mut prop shortStandaloneWeekdaySymbols: NSArray/*<NSString>*/
-    public mut prop veryShortStandaloneWeekdaySymbols: NSArray/*<NSString>*/
-    public mut prop quarterSymbols: NSArray/*<NSString>*/
-    public mut prop shortQuarterSymbols: NSArray/*<NSString>*/
-    public mut prop standaloneQuarterSymbols: NSArray/*<NSString>*/
-    public mut prop shortStandaloneQuarterSymbols: NSArray/*<NSString>*/
-    public mut prop gregorianStartDate: ?NSDate
-    public mut prop doesRelativeDateFormatting: Bool
+    public open mut prop dateFormat: NSString
+    public open mut prop dateStyle: Int32 /*NSDateFormatterStyle*/
+    public open mut prop timeStyle: Int32 /*NSDateFormatterStyle*/
+    public open mut prop locale: NSLocale
+    public open mut prop generatesCalendarDates: Bool
+    public open mut prop formatterBehavior: Int32 /*NSDateFormatterBehavior*/
+    public open mut prop timeZone: NSTimeZone
+    public open mut prop calendar: NSCalendar
+    public open mut prop isLenient: Bool
+    public open mut prop twoDigitStartDate: ?NSDate
+    public open mut prop defaultDate: ?NSDate
+    public open mut prop eraSymbols: NSArray/*<NSString>*/
+    public open mut prop monthSymbols: NSArray/*<NSString>*/
+    public open mut prop shortMonthSymbols: NSArray/*<NSString>*/
+    public open mut prop weekdaySymbols: NSArray/*<NSString>*/
+    public open mut prop shortWeekdaySymbols: NSArray/*<NSString>*/
+    public open mut prop AMSymbol: NSString
+    public open mut prop PMSymbol: NSString
+    public open mut prop longEraSymbols: NSArray/*<NSString>*/
+    public open mut prop veryShortMonthSymbols: NSArray/*<NSString>*/
+    public open mut prop standaloneMonthSymbols: NSArray/*<NSString>*/
+    public open mut prop shortStandaloneMonthSymbols: NSArray/*<NSString>*/
+    public open mut prop veryShortStandaloneMonthSymbols: NSArray/*<NSString>*/
+    public open mut prop veryShortWeekdaySymbols: NSArray/*<NSString>*/
+    public open mut prop standaloneWeekdaySymbols: NSArray/*<NSString>*/
+    public open mut prop shortStandaloneWeekdaySymbols: NSArray/*<NSString>*/
+    public open mut prop veryShortStandaloneWeekdaySymbols: NSArray/*<NSString>*/
+    public open mut prop quarterSymbols: NSArray/*<NSString>*/
+    public open mut prop shortQuarterSymbols: NSArray/*<NSString>*/
+    public open mut prop standaloneQuarterSymbols: NSArray/*<NSString>*/
+    public open mut prop shortStandaloneQuarterSymbols: NSArray/*<NSString>*/
+    public open mut prop gregorianStartDate: ?NSDate
+    public open mut prop doesRelativeDateFormatting: Bool
 }
 
 public abstract sealed class NSDateFormatterStyle {
