@@ -8,16 +8,16 @@ import interoplib.objc.*
 public open class NSURLConnection <: NSObject {
     @ForeignName["initWithRequest:delegate:startImmediately:"] public init(request: NSURLRequest, delegate: id, startImmediately: Bool)
     @ForeignName["initWithRequest:delegate:"] public init(request: NSURLRequest, delegate: id)
-    @ForeignName["connectionWithRequest:delegate:"] public static func connectionWithRequestDelegate(request: NSURLRequest, delegate: id): NSURLConnection
+    @ForeignName["connectionWithRequest:delegate:"] public static func connectionWithRequestDelegate(request: NSURLRequest, delegate: id): ?NSURLConnection
     public prop originalRequest: NSURLRequest
     public prop currentRequest: NSURLRequest
     public open func start(): Unit
     public open func cancel(): Unit
     @ForeignName["scheduleInRunLoop:forMode:"] public open func scheduleInRunLoopForMode(aRunLoop: NSRunLoop, mode: NSRunLoopMode): Unit
     @ForeignName["unscheduleFromRunLoop:forMode:"] public open func unscheduleFromRunLoopForMode(aRunLoop: NSRunLoop, mode: NSRunLoopMode): Unit
-    @ForeignName["setDelegateQueue:"] public open func setDelegateQueue(queue: NSOperationQueue): Unit
+    @ForeignName["setDelegateQueue:"] public open func setDelegateQueue(queue: ?NSOperationQueue): Unit
     @ForeignName["canHandleRequest:"] public static func canHandleRequest(request: NSURLRequest): Bool
-    @ForeignName["sendSynchronousRequest:returningResponse:error:"] public static func sendSynchronousRequestReturningResponseError(request: NSURLRequest, response: ObjCPointer<NSURLResponse>, error: ObjCPointer<NSError>): NSData
+    @ForeignName["sendSynchronousRequest:returningResponse:error:"] public static func sendSynchronousRequestReturningResponseError(request: NSURLRequest, response: ObjCPointer<NSURLResponse>, error: ObjCPointer<NSError>): ?NSData
     @ForeignName["sendAsynchronousRequest:queue:completionHandler:"] public static func sendAsynchronousRequestQueueCompletionHandler(request: NSURLRequest, queue: NSOperationQueue, handler: ObjCBlock<(NSURLResponse, NSData, NSError) -> Unit>): Unit
 }
 
@@ -33,12 +33,12 @@ public interface NSURLConnectionDelegate <: NSObjectProtocol {
 
 @ObjCMirror
 public interface NSURLConnectionDataDelegate <: NSURLConnectionDelegate {
-    @ForeignName["connection:willSendRequest:redirectResponse:"] func connectionWillSendRequestRedirectResponse(connection: NSURLConnection, request: NSURLRequest, response: NSURLResponse): NSURLRequest
+    @ForeignName["connection:willSendRequest:redirectResponse:"] func connectionWillSendRequestRedirectResponse(connection: NSURLConnection, request: NSURLRequest, response: ?NSURLResponse): ?NSURLRequest
     @ForeignName["connection:didReceiveResponse:"] func connectionDidReceiveResponse(connection: NSURLConnection, response: NSURLResponse): Unit
     @ForeignName["connection:didReceiveData:"] func connectionDidReceiveData(connection: NSURLConnection, data: NSData): Unit
-    @ForeignName["connection:needNewBodyStream:"] func connectionNeedNewBodyStream(connection: NSURLConnection, request: NSURLRequest): NSInputStream
+    @ForeignName["connection:needNewBodyStream:"] func connectionNeedNewBodyStream(connection: NSURLConnection, request: NSURLRequest): ?NSInputStream
     @ForeignName["connection:didSendBodyData:totalBytesWritten:totalBytesExpectedToWrite:"] func connectionDidSendBodyDataTotalBytesWrittenTotalBytesExpectedToWrite(connection: NSURLConnection, bytesWritten: NSInteger, totalBytesWritten: NSInteger, totalBytesExpectedToWrite: NSInteger): Unit
-    @ForeignName["connection:willCacheResponse:"] func connectionWillCacheResponse(connection: NSURLConnection, cachedResponse: NSCachedURLResponse): NSCachedURLResponse
+    @ForeignName["connection:willCacheResponse:"] func connectionWillCacheResponse(connection: NSURLConnection, cachedResponse: NSCachedURLResponse): ?NSCachedURLResponse
     @ForeignName["connectionDidFinishLoading:"] func connectionDidFinishLoading(connection: NSURLConnection): Unit
 }
 

@@ -6,10 +6,10 @@ import interoplib.objc.*
 
 @ObjCMirror
 public open class NSPortMessage <: NSObject {
-    @ForeignName["initWithSendPort:receivePort:components:"] public init(sendPort: NSPort, replyPort: NSPort, components: NSArray/*<ObjectType>*/)
-    public prop components: NSArray/*<ObjectType>*/
-    public prop receivePort: NSPort
-    public prop sendPort: NSPort
+    @ForeignName["initWithSendPort:receivePort:components:"] public init(sendPort: ?NSPort, replyPort: ?NSPort, components: ?NSArray/*<ObjectType>*/)
+    public prop components: ?NSArray/*<ObjectType>*/
+    public prop receivePort: ?NSPort
+    public prop sendPort: ?NSPort
     @ForeignName["sendBeforeDate:"] public open func sendBeforeDate(date: NSDate): Bool
     public mut prop msgid: uint32_t
 }

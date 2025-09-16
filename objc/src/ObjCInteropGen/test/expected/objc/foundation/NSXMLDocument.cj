@@ -13,43 +13,43 @@ public abstract sealed class NSXMLDocumentContentKind {
 
 @ObjCMirror
 public open class NSXMLDocument <: NSXMLNode {
-    protected var _encoding: NSString
-    protected var _version: NSString
-    protected var _docType: NSXMLDTD
-    protected var _children: NSArray/*<ObjectType>*/
+    protected var _encoding: ?NSString
+    protected var _version: ?NSString
+    protected var _docType: ?NSXMLDTD
+    protected var _children: ?NSArray/*<ObjectType>*/
     protected var _childrenHaveMutated: Bool
     protected var _standalone: Bool
     protected var padding: CPointer<int8_t>
-    protected var _rootElement: NSXMLElement
-    protected var _URI: NSString
-    protected var _extraIvars: id
+    protected var _rootElement: ?NSXMLElement
+    protected var _URI: ?NSString
+    protected var _extraIvars: ?id
     protected var _fidelityMask: NSUInteger
     protected var _contentKind: Int32 /*NSXMLDocumentContentKind*/
     public init()
     @ForeignName["initWithXMLString:options:error:"] public init(string: NSString, mask: Int32 /*NSXMLNodeOptions*/, error: ObjCPointer<NSError>)
     @ForeignName["initWithContentsOfURL:options:error:"] public init(url: NSURL, mask: Int32 /*NSXMLNodeOptions*/, error: ObjCPointer<NSError>)
     @ForeignName["initWithData:options:error:"] public init(data: NSData, mask: Int32 /*NSXMLNodeOptions*/, error: ObjCPointer<NSError>)
-    @ForeignName["initWithRootElement:"] public init(element: NSXMLElement)
+    @ForeignName["initWithRootElement:"] public init(element: ?NSXMLElement)
     @ForeignName["replacementClassForClass:"] public static func replacementClassForClass(cls: Class): Class
-    public mut prop characterEncoding: NSString
-    public mut prop versionInstance: NSString
+    public mut prop characterEncoding: ?NSString
+    public mut prop versionInstance: ?NSString
     public mut prop isStandalone: Bool
     public mut prop documentContentKind: Int32 /*NSXMLDocumentContentKind*/
-    public mut prop MIMEType: NSString
-    public mut prop DTD: NSXMLDTD
+    public mut prop MIMEType: ?NSString
+    public mut prop DTD: ?NSXMLDTD
     @ForeignName["setRootElement:"] public open func setRootElement(root: NSXMLElement): Unit
-    public open func rootElement(): NSXMLElement
+    public open func rootElement(): ?NSXMLElement
     @ForeignName["insertChild:atIndex:"] public open func insertChildAtIndex(child: NSXMLNode, index: NSUInteger): Unit
     @ForeignName["insertChildren:atIndex:"] public open func insertChildrenAtIndex(children: NSArray/*<NSXMLNode>*/, index: NSUInteger): Unit
     @ForeignName["removeChildAtIndex:"] public open func removeChildAtIndex(index: NSUInteger): Unit
-    @ForeignName["setChildren:"] public open func setChildren(children: NSArray/*<NSXMLNode>*/): Unit
+    @ForeignName["setChildren:"] public open func setChildren(children: ?NSArray/*<NSXMLNode>*/): Unit
     @ForeignName["addChild:"] public open func addChild(child: NSXMLNode): Unit
     @ForeignName["replaceChildAtIndex:withNode:"] public open func replaceChildAtIndexWithNode(index: NSUInteger, node: NSXMLNode): Unit
     public prop XMLData: NSData
     @ForeignName["XMLDataWithOptions:"] public open func XMLDataWithOptions(options: Int32 /*NSXMLNodeOptions*/): NSData
-    @ForeignName["objectByApplyingXSLT:arguments:error:"] public open func objectByApplyingXSLTArgumentsError(xslt: NSData, arguments: NSDictionary/*<NSString, NSString>*/, error: ObjCPointer<NSError>): id
-    @ForeignName["objectByApplyingXSLTString:arguments:error:"] public open func objectByApplyingXSLTStringArgumentsError(xslt: NSString, arguments: NSDictionary/*<NSString, NSString>*/, error: ObjCPointer<NSError>): id
-    @ForeignName["objectByApplyingXSLTAtURL:arguments:error:"] public open func objectByApplyingXSLTAtURLArgumentsError(xsltURL: NSURL, argument: NSDictionary/*<NSString, NSString>*/, error: ObjCPointer<NSError>): id
+    @ForeignName["objectByApplyingXSLT:arguments:error:"] public open func objectByApplyingXSLTArgumentsError(xslt: NSData, arguments: ?NSDictionary/*<NSString, NSString>*/, error: ObjCPointer<NSError>): id
+    @ForeignName["objectByApplyingXSLTString:arguments:error:"] public open func objectByApplyingXSLTStringArgumentsError(xslt: NSString, arguments: ?NSDictionary/*<NSString, NSString>*/, error: ObjCPointer<NSError>): id
+    @ForeignName["objectByApplyingXSLTAtURL:arguments:error:"] public open func objectByApplyingXSLTAtURLArgumentsError(xsltURL: NSURL, argument: ?NSDictionary/*<NSString, NSString>*/, error: ObjCPointer<NSError>): id
     @ForeignName["validateAndReturnError:"] public open func validateAndReturnError(error: ObjCPointer<NSError>): Bool
 }
 

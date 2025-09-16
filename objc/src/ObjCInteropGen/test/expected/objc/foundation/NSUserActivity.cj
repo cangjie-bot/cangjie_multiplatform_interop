@@ -18,18 +18,18 @@ public open class NSUserActivity <: NSObject {
     @ForeignName["initWithActivityType:"] public init(activityType: NSString)
     public init()
     public prop activityType: NSString
-    public mut prop title: NSString
-    public mut prop userInfo: NSDictionary/*<KeyType, ObjectType>*/
+    public mut prop title: ?NSString
+    public mut prop userInfo: ?NSDictionary/*<KeyType, ObjectType>*/
     @ForeignName["addUserInfoEntriesFromDictionary:"] public open func addUserInfoEntriesFromDictionary(otherDictionary: NSDictionary/*<KeyType, ObjectType>*/): Unit
-    public mut prop requiredUserInfoKeys: NSSet/*<NSString>*/
+    public mut prop requiredUserInfoKeys: ?NSSet/*<NSString>*/
     public mut prop needsSave: Bool
-    public mut prop webpageURL: NSURL
-    public mut prop referrerURL: NSURL
-    public mut prop expirationDate: NSDate
+    public mut prop webpageURL: ?NSURL
+    public mut prop referrerURL: ?NSURL
+    public mut prop expirationDate: ?NSDate
     public mut prop keywords: NSSet/*<NSString>*/
     public mut prop supportsContinuationStreams: Bool
-    public mut prop delegate: NSUserActivityDelegate
-    public mut prop targetContentIdentifier: NSString
+    public mut prop delegate: ?NSUserActivityDelegate
+    public mut prop targetContentIdentifier: ?NSString
     public open func becomeCurrent(): Unit
     public open func resignCurrent(): Unit
     public open func invalidate(): Unit

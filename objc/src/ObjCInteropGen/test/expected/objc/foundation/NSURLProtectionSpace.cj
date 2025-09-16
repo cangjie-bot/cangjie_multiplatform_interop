@@ -6,16 +6,16 @@ import interoplib.objc.*
 
 @ObjCMirror
 public open class NSURLProtectionSpace <: NSObject & NSSecureCoding & NSCopying {
-    // @ForeignName["initWithHost:port:protocol:realm:authenticationMethod:"] public init(host: NSString, port: NSInteger, protocol: NSString, realm: NSString, authenticationMethod: NSString)
-    // @ForeignName["initWithProxyHost:port:type:realm:authenticationMethod:"] public init(host: NSString, port: NSInteger, `type`: NSString, realm: NSString, authenticationMethod: NSString)
-    public prop realm: NSString
+    // @ForeignName["initWithHost:port:protocol:realm:authenticationMethod:"] public init(host: NSString, port: NSInteger, protocol: ?NSString, realm: ?NSString, authenticationMethod: ?NSString)
+    // @ForeignName["initWithProxyHost:port:type:realm:authenticationMethod:"] public init(host: NSString, port: NSInteger, `type`: ?NSString, realm: ?NSString, authenticationMethod: ?NSString)
+    public prop realm: ?NSString
     public prop receivesCredentialSecurely: Bool
     public prop host: NSString
     public prop port: NSInteger
-    public prop proxyType: NSString
-    public prop protocol: NSString
+    public prop proxyType: ?NSString
+    public prop protocol: ?NSString
     public prop authenticationMethod: NSString
-    public prop distinguishedNames: NSArray/*<NSData>*/
+    public prop distinguishedNames: ?NSArray/*<NSData>*/
     public prop serverTrust: SecTrustRef
 }
 

@@ -9,10 +9,10 @@ public open class NSTimeZone <: NSObject & NSCopying & NSSecureCoding {
     public prop name: NSString
     public prop data: NSData
     @ForeignName["secondsFromGMTForDate:"] public open func secondsFromGMTForDate(aDate: NSDate): NSInteger
-    @ForeignName["abbreviationForDate:"] public open func abbreviationForDate(aDate: NSDate): NSString
+    @ForeignName["abbreviationForDate:"] public open func abbreviationForDate(aDate: NSDate): ?NSString
     @ForeignName["isDaylightSavingTimeForDate:"] public open func isDaylightSavingTimeForDate(aDate: NSDate): Bool
     @ForeignName["daylightSavingTimeOffsetForDate:"] public open func daylightSavingTimeOffsetForDate(aDate: NSDate): NSTimeInterval
-    @ForeignName["nextDaylightSavingTimeTransitionAfterDate:"] public open func nextDaylightSavingTimeTransitionAfterDate(aDate: NSDate): NSDate
+    @ForeignName["nextDaylightSavingTimeTransitionAfterDate:"] public open func nextDaylightSavingTimeTransitionAfterDate(aDate: NSDate): ?NSDate
     public static prop systemTimeZone: NSTimeZone
     public static func resetSystemTimeZone(): Unit
     public static mut prop defaultTimeZone: NSTimeZone
@@ -21,16 +21,16 @@ public open class NSTimeZone <: NSObject & NSCopying & NSSecureCoding {
     public static mut prop abbreviationDictionary: NSDictionary/*<NSString, NSString>*/
     public static prop timeZoneDataVersion: NSString
     public prop secondsFromGMT: NSInteger
-    public prop abbreviation: NSString
+    public prop abbreviation: ?NSString
     public prop isDaylightSavingTime: Bool
     public prop daylightSavingTimeOffset: NSTimeInterval
-    public prop nextDaylightSavingTimeTransition: NSDate
+    public prop nextDaylightSavingTimeTransition: ?NSDate
     @ForeignName["isEqualToTimeZone:"] public open func isEqualToTimeZone(aTimeZone: NSTimeZone): Bool
-    @ForeignName["localizedName:locale:"] public open func localizedNameLocale(style: Int32 /*NSTimeZoneNameStyle*/, locale: NSLocale): NSString
+    @ForeignName["localizedName:locale:"] public open func localizedNameLocale(style: Int32 /*NSTimeZoneNameStyle*/, locale: ?NSLocale): ?NSString
     @ForeignName["timeZoneWithName:"] public static func timeZoneWithName(tzName: NSString): NSTimeZone
-    @ForeignName["timeZoneWithName:data:"] public static func timeZoneWithNameData(tzName: NSString, aData: NSData): NSTimeZone
+    @ForeignName["timeZoneWithName:data:"] public static func timeZoneWithNameData(tzName: NSString, aData: ?NSData): NSTimeZone
     @ForeignName["initWithName:"] public init(tzName: NSString)
-    @ForeignName["initWithName:data:"] public init(tzName: NSString, aData: NSData)
+    @ForeignName["initWithName:data:"] public init(tzName: NSString, aData: ?NSData)
     @ForeignName["timeZoneForSecondsFromGMT:"] public static func timeZoneForSecondsFromGMT(seconds: NSInteger): NSTimeZone
     @ForeignName["timeZoneWithAbbreviation:"] public static func timeZoneWithAbbreviation(abbreviation: NSString): NSTimeZone
 }

@@ -21,13 +21,13 @@ public open class NSPort <: NSObject & NSCopying & NSCoding {
     public static func port(): NSPort
     public open func invalidate(): Unit
     public prop isValid: Bool
-    @ForeignName["setDelegate:"] public open func setDelegate(anObject: NSPortDelegate): Unit
-    public open func delegate(): NSPortDelegate
+    @ForeignName["setDelegate:"] public open func setDelegate(anObject: ?NSPortDelegate): Unit
+    public open func delegate(): ?NSPortDelegate
     @ForeignName["scheduleInRunLoop:forMode:"] public open func scheduleInRunLoopForMode(runLoop: NSRunLoop, mode: NSRunLoopMode): Unit
     @ForeignName["removeFromRunLoop:forMode:"] public open func removeFromRunLoopForMode(runLoop: NSRunLoop, mode: NSRunLoopMode): Unit
     public prop reservedSpaceLength: NSUInteger
-    @ForeignName["sendBeforeDate:components:from:reserved:"] public open func sendBeforeDateComponentsFromReserved(limitDate: NSDate, components: NSMutableArray/*<ObjectType>*/, receivePort: NSPort, headerSpaceReserved: NSUInteger): Bool
-    @ForeignName["sendBeforeDate:msgid:components:from:reserved:"] public open func sendBeforeDateMsgidComponentsFromReserved(limitDate: NSDate, msgID: NSUInteger, components: NSMutableArray/*<ObjectType>*/, receivePort: NSPort, headerSpaceReserved: NSUInteger): Bool
+    @ForeignName["sendBeforeDate:components:from:reserved:"] public open func sendBeforeDateComponentsFromReserved(limitDate: NSDate, components: ?NSMutableArray/*<ObjectType>*/, receivePort: ?NSPort, headerSpaceReserved: NSUInteger): Bool
+    @ForeignName["sendBeforeDate:msgid:components:from:reserved:"] public open func sendBeforeDateMsgidComponentsFromReserved(limitDate: NSDate, msgID: NSUInteger, components: ?NSMutableArray/*<ObjectType>*/, receivePort: ?NSPort, headerSpaceReserved: NSUInteger): Bool
     @ForeignName["addConnection:toRunLoop:forMode:"] public open func addConnectionToRunLoopForMode(conn: NSConnection, runLoop: NSRunLoop, mode: NSRunLoopMode): Unit
     @ForeignName["removeConnection:fromRunLoop:forMode:"] public open func removeConnectionFromRunLoopForMode(conn: NSConnection, runLoop: NSRunLoop, mode: NSRunLoopMode): Unit
 }
@@ -36,8 +36,8 @@ public open class NSPort <: NSObject & NSCopying & NSCoding {
 public open class NSMachPort <: NSPort {
     @ForeignName["portWithMachPort:"] public static func portWithMachPort(machPort: uint32_t): NSPort
     @ForeignName["initWithMachPort:"] public init(machPort: uint32_t)
-    @ForeignName["setDelegate:"] public open func setDelegate(anObject: NSMachPortDelegate): Unit
-    public open func delegate(): NSMachPortDelegate
+    @ForeignName["setDelegate:"] public open func setDelegate(anObject: ?NSMachPortDelegate): Unit
+    public open func delegate(): ?NSPortDelegate
     @ForeignName["portWithMachPort:options:"] public static func portWithMachPortOptions(machPort: uint32_t, f: Int32 /*NSMachPortOptions*/): NSPort
     @ForeignName["initWithMachPort:options:"] public init(machPort: uint32_t, f: Int32 /*NSMachPortOptions*/)
     public prop machPort: uint32_t
@@ -61,7 +61,7 @@ public open class NSSocketPort <: NSPort {
     @ForeignName["initWithTCPPort:"] public init(port: UInt16)
     // @ForeignName["initWithProtocolFamily:socketType:protocol:address:"] public init(family: Int32, `type`: Int32, protocol: Int32, address: NSData)
     @ForeignName["initWithProtocolFamily:socketType:protocol:socket:"] public init(family: Int32, `type`: Int32, protocol: Int32, sock: NSSocketNativeHandle)
-    @ForeignName["initRemoteWithTCPPort:host:"] public init(port: UInt16, hostName: NSString)
+    @ForeignName["initRemoteWithTCPPort:host:"] public init(port: UInt16, hostName: ?NSString)
     // @ForeignName["initRemoteWithProtocolFamily:socketType:protocol:address:"] public init(family: Int32, `type`: Int32, protocol: Int32, address: NSData)
     public prop protocolFamily: Int32
     public prop socketType: Int32

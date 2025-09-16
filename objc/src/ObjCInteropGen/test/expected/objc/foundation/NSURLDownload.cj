@@ -7,7 +7,7 @@ import interoplib.objc.*
 @ObjCMirror
 public interface NSURLDownloadDelegate <: NSObjectProtocol {
     @ForeignName["downloadDidBegin:"] func downloadDidBegin(download: NSURLDownload): Unit
-    @ForeignName["download:willSendRequest:redirectResponse:"] func downloadWillSendRequestRedirectResponse(download: NSURLDownload, request: NSURLRequest, redirectResponse: NSURLResponse): NSURLRequest
+    @ForeignName["download:willSendRequest:redirectResponse:"] func downloadWillSendRequestRedirectResponse(download: NSURLDownload, request: NSURLRequest, redirectResponse: ?NSURLResponse): ?NSURLRequest
     @ForeignName["download:canAuthenticateAgainstProtectionSpace:"] func downloadCanAuthenticateAgainstProtectionSpace(connection: NSURLDownload, protectionSpace: NSURLProtectionSpace): Bool
     @ForeignName["download:didReceiveAuthenticationChallenge:"] func downloadDidReceiveAuthenticationChallenge(download: NSURLDownload, challenge: NSURLAuthenticationChallenge): Unit
     @ForeignName["download:didCancelAuthenticationChallenge:"] func downloadDidCancelAuthenticationChallenge(download: NSURLDownload, challenge: NSURLAuthenticationChallenge): Unit
@@ -25,12 +25,12 @@ public interface NSURLDownloadDelegate <: NSObjectProtocol {
 @ObjCMirror
 public open class NSURLDownload <: NSObject {
     @ForeignName["canResumeDownloadDecodedWithEncodingMIMEType:"] public static func canResumeDownloadDecodedWithEncodingMIMEType(MIMEType: NSString): Bool
-    @ForeignName["initWithRequest:delegate:"] public init(request: NSURLRequest, delegate: NSURLDownloadDelegate)
-    @ForeignName["initWithResumeData:delegate:path:"] public init(resumeData: NSData, delegate: NSURLDownloadDelegate, path: NSString)
+    @ForeignName["initWithRequest:delegate:"] public init(request: NSURLRequest, delegate: ?NSURLDownloadDelegate)
+    @ForeignName["initWithResumeData:delegate:path:"] public init(resumeData: NSData, delegate: ?NSURLDownloadDelegate, path: NSString)
     public open func cancel(): Unit
     @ForeignName["setDestination:allowOverwrite:"] public open func setDestinationAllowOverwrite(path: NSString, allowOverwrite: Bool): Unit
     public prop request: NSURLRequest
-    public prop resumeData: NSData
+    public prop resumeData: ?NSData
     public mut prop deletesFileUponFailure: Bool
 }
 

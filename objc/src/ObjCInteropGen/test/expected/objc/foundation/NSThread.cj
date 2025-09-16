@@ -20,7 +20,7 @@ public open class NSThread <: NSObject {
     public mut prop qualityOfService: Int32 /*NSQualityOfService*/
     public static prop callStackReturnAddresses: NSArray/*<NSNumber>*/
     public static prop callStackSymbols: NSArray/*<NSString>*/
-    public mut prop name: NSString
+    public mut prop name: ?NSString
     public mut prop stackSize: NSUInteger
     public prop isMainThread: Bool
     public static prop isMainThreadStatic: Bool

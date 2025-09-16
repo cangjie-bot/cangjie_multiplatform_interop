@@ -51,13 +51,13 @@ public open class NSNetService <: NSObject {
     @ForeignName["initWithDomain:type:name:"] public init(domain: NSString, `type`: NSString, name: NSString)
     @ForeignName["scheduleInRunLoop:forMode:"] public open func scheduleInRunLoopForMode(aRunLoop: NSRunLoop, mode: NSRunLoopMode): Unit
     @ForeignName["removeFromRunLoop:forMode:"] public open func removeFromRunLoopForMode(aRunLoop: NSRunLoop, mode: NSRunLoopMode): Unit
-    public mut prop delegate: NSNetServiceDelegate
+    public mut prop delegate: ?NSNetServiceDelegate
     public mut prop includesPeerToPeer: Bool
     public prop name: NSString
     public prop `type`: NSString
     public prop domain: NSString
-    public prop hostName: NSString
-    public prop addresses: NSArray/*<NSData>*/
+    public prop hostName: ?NSString
+    public prop addresses: ?NSArray/*<NSData>*/
     public prop port: NSInteger
     public open func publish(): Unit
     @ForeignName["publishWithOptions:"] public open func publishWithOptions(options: Int32 /*NSNetServiceOptions*/): Unit
@@ -67,8 +67,8 @@ public open class NSNetService <: NSObject {
     @ForeignName["dataFromTXTRecordDictionary:"] public static func dataFromTXTRecordDictionary(txtDictionary: NSDictionary/*<NSString, NSData>*/): NSData
     @ForeignName["resolveWithTimeout:"] public open func resolveWithTimeout(timeout: NSTimeInterval): Unit
     @ForeignName["getInputStream:outputStream:"] public open func getInputStreamOutputStream(inputStream: ObjCPointer<NSInputStream>, outputStream: ObjCPointer<NSOutputStream>): Bool
-    @ForeignName["setTXTRecordData:"] public open func setTXTRecordData(recordData: NSData): Bool
-    public open func TXTRecordData(): NSData
+    @ForeignName["setTXTRecordData:"] public open func setTXTRecordData(recordData: ?NSData): Bool
+    public open func TXTRecordData(): ?NSData
     public open func startMonitoring(): Unit
     public open func stopMonitoring(): Unit
 }
@@ -76,7 +76,7 @@ public open class NSNetService <: NSObject {
 @ObjCMirror
 public open class NSNetServiceBrowser <: NSObject {
     public init()
-    public mut prop delegate: NSNetServiceBrowserDelegate
+    public mut prop delegate: ?NSNetServiceBrowserDelegate
     public mut prop includesPeerToPeer: Bool
     @ForeignName["scheduleInRunLoop:forMode:"] public open func scheduleInRunLoopForMode(aRunLoop: NSRunLoop, mode: NSRunLoopMode): Unit
     @ForeignName["removeFromRunLoop:forMode:"] public open func removeFromRunLoopForMode(aRunLoop: NSRunLoop, mode: NSRunLoopMode): Unit

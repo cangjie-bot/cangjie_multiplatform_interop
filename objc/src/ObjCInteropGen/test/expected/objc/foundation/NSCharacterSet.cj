@@ -24,7 +24,7 @@ public open class NSCharacterSet <: NSObject & NSCopying & NSMutableCopying & NS
     @ForeignName["characterSetWithRange:"] public static func characterSetWithRange(aRange: NSRange): NSCharacterSet
     @ForeignName["characterSetWithCharactersInString:"] public static func characterSetWithCharactersInString(aString: NSString): NSCharacterSet
     @ForeignName["characterSetWithBitmapRepresentation:"] public static func characterSetWithBitmapRepresentation(data: NSData): NSCharacterSet
-    @ForeignName["characterSetWithContentsOfFile:"] public static func characterSetWithContentsOfFile(fName: NSString): NSCharacterSet
+    @ForeignName["characterSetWithContentsOfFile:"] public static func characterSetWithContentsOfFile(fName: NSString): ?NSCharacterSet
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
     @ForeignName["characterIsMember:"] public open func characterIsMember(aCharacter: unichar): Bool
     public prop bitmapRepresentation: NSData
@@ -52,6 +52,6 @@ public open class NSMutableCharacterSet <: NSCharacterSet & NSCopying & NSMutabl
     @ForeignName["characterSetWithRange:"] public static func characterSetWithRange(aRange: NSRange): NSMutableCharacterSet
     @ForeignName["characterSetWithCharactersInString:"] public static func characterSetWithCharactersInString(aString: NSString): NSMutableCharacterSet
     @ForeignName["characterSetWithBitmapRepresentation:"] public static func characterSetWithBitmapRepresentation(data: NSData): NSMutableCharacterSet
-    @ForeignName["characterSetWithContentsOfFile:"] public static func characterSetWithContentsOfFile(fName: NSString): NSMutableCharacterSet
+    @ForeignName["characterSetWithContentsOfFile:"] public static func characterSetWithContentsOfFile(fName: NSString): ?NSCharacterSet
 }
 

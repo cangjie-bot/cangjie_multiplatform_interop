@@ -12,15 +12,15 @@ public interface NSMetadataQueryDelegate <: NSObjectProtocol {
 
 @ObjCMirror
 public open class NSMetadataQuery <: NSObject {
-    public mut prop delegate: NSMetadataQueryDelegate
-    public mut prop predicate: NSPredicate
+    public mut prop delegate: ?NSMetadataQueryDelegate
+    public mut prop predicate: ?NSPredicate
     public mut prop sortDescriptors: NSArray/*<NSSortDescriptor>*/
     public mut prop valueListAttributes: NSArray/*<NSString>*/
-    public mut prop groupingAttributes: NSArray/*<NSString>*/
+    public mut prop groupingAttributes: ?NSArray/*<NSString>*/
     public mut prop notificationBatchingInterval: NSTimeInterval
     public mut prop searchScopes: NSArray/*<ObjectType>*/
-    public mut prop searchItems: NSArray/*<ObjectType>*/
-    public mut prop operationQueue: NSOperationQueue
+    public mut prop searchItems: ?NSArray/*<ObjectType>*/
+    public mut prop operationQueue: ?NSOperationQueue
     public open func startQuery(): Bool
     public open func stopQuery(): Unit
     public prop isStarted: Bool
@@ -43,7 +43,7 @@ public open class NSMetadataQuery <: NSObject {
 public open class NSMetadataItem <: NSObject {
     @ForeignName["initWithURL:"] public init(url: NSURL)
     @ForeignName["valueForAttribute:"] public open func valueForAttribute(key: NSString): id
-    @ForeignName["valuesForAttributes:"] public open func valuesForAttributes(keys: NSArray/*<NSString>*/): NSDictionary/*<NSString, id>*/
+    @ForeignName["valuesForAttributes:"] public open func valuesForAttributes(keys: NSArray/*<NSString>*/): ?NSDictionary/*<NSString, id>*/
     public prop attributes: NSArray/*<NSString>*/
 }
 
@@ -58,7 +58,7 @@ public open class NSMetadataQueryAttributeValueTuple <: NSObject {
 public open class NSMetadataQueryResultGroup <: NSObject {
     public prop attribute: NSString
     public prop value: id
-    public prop subgroups: NSArray/*<NSMetadataQueryResultGroup>*/
+    public prop subgroups: ?NSArray/*<NSMetadataQueryResultGroup>*/
     public prop resultCount: NSUInteger
     @ForeignName["resultAtIndex:"] public open func resultAtIndex(idx: NSUInteger): id
     public prop results: NSArray/*<ObjectType>*/

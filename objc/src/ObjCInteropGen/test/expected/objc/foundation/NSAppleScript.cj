@@ -8,7 +8,7 @@ import interoplib.objc.*
 public open class NSAppleScript <: NSObject & NSCopying {
     @ForeignName["initWithContentsOfURL:error:"] public init(url: NSURL, errorInfo: ObjCPointer<NSDictionary/*<NSString, id>*/>)
     @ForeignName["initWithSource:"] public init(source: NSString)
-    public prop source: NSString
+    public prop source: ?NSString
     public prop isCompiled: Bool
     @ForeignName["compileAndReturnError:"] public open func compileAndReturnError(errorInfo: ObjCPointer<NSDictionary/*<NSString, id>*/>): Bool
     @ForeignName["executeAndReturnError:"] public open func executeAndReturnError(errorInfo: ObjCPointer<NSDictionary/*<NSString, id>*/>): NSAppleEventDescriptor

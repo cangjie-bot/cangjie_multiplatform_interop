@@ -65,7 +65,7 @@ public open class NSOrderedSet/*<ObjectType>*/ <: NSObject & NSCopying & NSMutab
     @ForeignName["differenceFromOrderedSet:withOptions:usingEquivalenceTest:"] public open func differenceFromOrderedSetWithOptionsUsingEquivalenceTest(other: NSOrderedSet/*<ObjectType>*/, options: Int32 /*NSOrderedCollectionDifferenceCalculationOptions*/, block: ObjCBlock<(id /*ObjectType*/, id /*ObjectType*/) -> Bool>): NSOrderedCollectionDifference/*<ObjectType>*/
     @ForeignName["differenceFromOrderedSet:withOptions:"] public open func differenceFromOrderedSetWithOptions(other: NSOrderedSet/*<ObjectType>*/, options: Int32 /*NSOrderedCollectionDifferenceCalculationOptions*/): NSOrderedCollectionDifference/*<ObjectType>*/
     @ForeignName["differenceFromOrderedSet:"] public open func differenceFromOrderedSet(other: NSOrderedSet/*<ObjectType>*/): NSOrderedCollectionDifference/*<ObjectType>*/
-    @ForeignName["orderedSetByApplyingDifference:"] public open func orderedSetByApplyingDifference(difference: NSOrderedCollectionDifference/*<ObjectType>*/): NSOrderedSet/*<ObjectType>*/
+    @ForeignName["orderedSetByApplyingDifference:"] public open func orderedSetByApplyingDifference(difference: NSOrderedCollectionDifference/*<ObjectType>*/): ?NSOrderedSet/*<ObjectType>*/
     @ForeignName["valueForKey:"] public open func valueForKey(key: NSString): id
     @ForeignName["setValue:forKey:"] public open func setValueForKey(value: id, key: NSString): Unit
     @ForeignName["addObserver:forKeyPath:options:context:"] public open func addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: NSString, options: Int32 /*NSKeyValueObservingOptions*/, context: CPointer<Unit>): Unit

@@ -6,11 +6,11 @@ import interoplib.objc.*
 
 @ObjCMirror
 public open class NSException <: NSObject & NSCopying & NSSecureCoding {
-    @ForeignName["exceptionWithName:reason:userInfo:"] public static func exceptionWithNameReasonUserInfo(name: NSExceptionName, reason: NSString, userInfo: NSDictionary/*<KeyType, ObjectType>*/): NSException
-    @ForeignName["initWithName:reason:userInfo:"] public init(aName: NSExceptionName, aReason: NSString, aUserInfo: NSDictionary/*<KeyType, ObjectType>*/)
+    @ForeignName["exceptionWithName:reason:userInfo:"] public static func exceptionWithNameReasonUserInfo(name: NSExceptionName, reason: ?NSString, userInfo: ?NSDictionary/*<KeyType, ObjectType>*/): NSException
+    @ForeignName["initWithName:reason:userInfo:"] public init(aName: NSExceptionName, aReason: ?NSString, aUserInfo: ?NSDictionary/*<KeyType, ObjectType>*/)
     public prop name: NSExceptionName
-    public prop reason: NSString
-    public prop userInfo: NSDictionary/*<KeyType, ObjectType>*/
+    public prop reason: ?NSString
+    public prop userInfo: ?NSDictionary/*<KeyType, ObjectType>*/
     public prop callStackReturnAddresses: NSArray/*<NSNumber>*/
     public prop callStackSymbols: NSArray/*<NSString>*/
     public open func raise(): Unit
@@ -23,7 +23,7 @@ public type NSUncaughtExceptionHandler = ObjCFunc<(NSException) -> Unit>
 @ObjCMirror
 public open class NSAssertionHandler <: NSObject {
     public static prop currentHandler: NSAssertionHandler
-    @ForeignName["handleFailureInMethod:object:file:lineNumber:description:"] public open func handleFailureInMethodObjectFileLineNumberDescription(selector: SEL, object: id, fileName: NSString, line: NSInteger, format: NSString): Unit
-    @ForeignName["handleFailureInFunction:file:lineNumber:description:"] public open func handleFailureInFunctionFileLineNumberDescription(functionName: NSString, fileName: NSString, line: NSInteger, format: NSString): Unit
+    @ForeignName["handleFailureInMethod:object:file:lineNumber:description:"] public open func handleFailureInMethodObjectFileLineNumberDescription(selector: SEL, object: id, fileName: NSString, line: NSInteger, format: ?NSString): Unit
+    @ForeignName["handleFailureInFunction:file:lineNumber:description:"] public open func handleFailureInFunctionFileLineNumberDescription(functionName: NSString, fileName: NSString, line: NSInteger, format: ?NSString): Unit
 }
 

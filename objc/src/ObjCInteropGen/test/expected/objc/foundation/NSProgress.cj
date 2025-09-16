@@ -12,11 +12,11 @@ public type NSProgressFileOperationKind = NSString
 
 @ObjCMirror
 public open class NSProgress <: NSObject {
-    public static func currentProgress(): NSProgress
+    public static func currentProgress(): ?NSProgress
     @ForeignName["progressWithTotalUnitCount:"] public static func progressWithTotalUnitCount(unitCount: int64_t): NSProgress
     @ForeignName["discreteProgressWithTotalUnitCount:"] public static func discreteProgressWithTotalUnitCount(unitCount: int64_t): NSProgress
     @ForeignName["progressWithTotalUnitCount:parent:pendingUnitCount:"] public static func progressWithTotalUnitCountParentPendingUnitCount(unitCount: int64_t, parent: NSProgress, portionOfParentTotalUnitCount: int64_t): NSProgress
-    @ForeignName["initWithParent:userInfo:"] public init(parentProgressOrNil: NSProgress, userInfoOrNil: NSDictionary/*<NSProgressUserInfoKey, id>*/)
+    @ForeignName["initWithParent:userInfo:"] public init(parentProgressOrNil: ?NSProgress, userInfoOrNil: ?NSDictionary/*<NSProgressUserInfoKey, id>*/)
     @ForeignName["becomeCurrentWithPendingUnitCount:"] public open func becomeCurrentWithPendingUnitCount(unitCount: int64_t): Unit
     @ForeignName["performAsCurrentWithPendingUnitCount:usingBlock:"] public open func performAsCurrentWithPendingUnitCountUsingBlock(unitCount: int64_t, work: ObjCBlock<() -> Unit>): Unit
     public open func resignCurrent(): Unit
@@ -41,12 +41,12 @@ public open class NSProgress <: NSObject {
     public open func `resume`(): Unit
     public prop userInfo: NSDictionary/*<NSProgressUserInfoKey, id>*/
     public mut prop kind: NSProgressKind
-    public mut prop estimatedTimeRemaining: NSNumber
-    public mut prop throughput: NSNumber
+    public mut prop estimatedTimeRemaining: ?NSNumber
+    public mut prop throughput: ?NSNumber
     public mut prop fileOperationKind: NSProgressFileOperationKind
-    public mut prop fileURL: NSURL
-    public mut prop fileTotalCount: NSNumber
-    public mut prop fileCompletedCount: NSNumber
+    public mut prop fileURL: ?NSURL
+    public mut prop fileTotalCount: ?NSNumber
+    public mut prop fileCompletedCount: ?NSNumber
     public open func publish(): Unit
     public open func unpublish(): Unit
     @ForeignName["addSubscriberForFileURL:withPublishingHandler:"] public static func addSubscriberForFileURLWithPublishingHandler(url: NSURL, publishingHandler: NSProgressPublishingHandler): id

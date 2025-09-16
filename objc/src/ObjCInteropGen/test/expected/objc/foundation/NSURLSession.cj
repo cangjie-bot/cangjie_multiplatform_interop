@@ -6,7 +6,7 @@ import interoplib.objc.*
 
 @ObjCMirror
 public interface NSURLSessionDelegate <: NSObjectProtocol {
-    @ForeignName["URLSession:didBecomeInvalidWithError:"] func URLSessionDidBecomeInvalidWithError(session: NSURLSession, error: NSError): Unit
+    @ForeignName["URLSession:didBecomeInvalidWithError:"] func URLSessionDidBecomeInvalidWithError(session: NSURLSession, error: ?NSError): Unit
     @ForeignName["URLSession:didReceiveChallenge:completionHandler:"] func URLSessionDidReceiveChallengeCompletionHandler(session: NSURLSession, challenge: NSURLAuthenticationChallenge, completionHandler: ObjCBlock<(Int32 /*NSURLSessionAuthChallengeDisposition*/, NSURLCredential) -> Unit>): Unit
     @ForeignName["URLSessionDidFinishEventsForBackgroundURLSession:"] func URLSessionDidFinishEventsForBackgroundURLSession(session: NSURLSession): Unit
 }
@@ -23,18 +23,18 @@ public interface NSURLSessionTaskDelegate <: NSURLSessionDelegate {
     @ForeignName["URLSession:task:didSendBodyData:totalBytesSent:totalBytesExpectedToSend:"] func URLSessionTaskDidSendBodyDataTotalBytesSentTotalBytesExpectedToSend(session: NSURLSession, task: NSURLSessionTask, bytesSent: int64_t, totalBytesSent: int64_t, totalBytesExpectedToSend: int64_t): Unit
     @ForeignName["URLSession:task:didReceiveInformationalResponse:"] func URLSessionTaskDidReceiveInformationalResponse(session: NSURLSession, task: NSURLSessionTask, response: NSHTTPURLResponse): Unit
     @ForeignName["URLSession:task:didFinishCollectingMetrics:"] func URLSessionTaskDidFinishCollectingMetrics(session: NSURLSession, task: NSURLSessionTask, metrics: NSURLSessionTaskMetrics): Unit
-    @ForeignName["URLSession:task:didCompleteWithError:"] func URLSessionTaskDidCompleteWithError(session: NSURLSession, task: NSURLSessionTask, error: NSError): Unit
+    @ForeignName["URLSession:task:didCompleteWithError:"] func URLSessionTaskDidCompleteWithError(session: NSURLSession, task: NSURLSessionTask, error: ?NSError): Unit
 }
 
 @ObjCMirror
 public open class NSURLSession <: NSObject {
     public static prop sharedSession: NSURLSession
     @ForeignName["sessionWithConfiguration:"] public static func sessionWithConfiguration(configuration: NSURLSessionConfiguration): NSURLSession
-    @ForeignName["sessionWithConfiguration:delegate:delegateQueue:"] public static func sessionWithConfigurationDelegateDelegateQueue(configuration: NSURLSessionConfiguration, delegate: NSURLSessionDelegate, queue: NSOperationQueue): NSURLSession
+    @ForeignName["sessionWithConfiguration:delegate:delegateQueue:"] public static func sessionWithConfigurationDelegateDelegateQueue(configuration: NSURLSessionConfiguration, delegate: ?NSURLSessionDelegate, queue: ?NSOperationQueue): NSURLSession
     public prop delegateQueue: NSOperationQueue
-    public prop delegate: NSURLSessionDelegate
+    public prop delegate: ?NSURLSessionDelegate
     public prop configuration: NSURLSessionConfiguration
-    public mut prop sessionDescription: NSString
+    public mut prop sessionDescription: ?NSString
     public open func finishTasksAndInvalidate(): Unit
     public open func invalidateAndCancel(): Unit
     @ForeignName["resetWithCompletionHandler:"] public open func resetWithCompletionHandler(completionHandler: ObjCBlock<() -> Unit>): Unit
@@ -60,7 +60,7 @@ public open class NSURLSession <: NSObject {
     @ForeignName["dataTaskWithRequest:completionHandler:"] public open func dataTaskWithRequestCompletionHandler(request: NSURLRequest, completionHandler: ObjCBlock<(NSData, NSURLResponse, NSError) -> Unit>): NSURLSessionDataTask
     @ForeignName["dataTaskWithURL:completionHandler:"] public open func dataTaskWithURLCompletionHandler(url: NSURL, completionHandler: ObjCBlock<(NSData, NSURLResponse, NSError) -> Unit>): NSURLSessionDataTask
     @ForeignName["uploadTaskWithRequest:fromFile:completionHandler:"] public open func uploadTaskWithRequestFromFileCompletionHandler(request: NSURLRequest, fileURL: NSURL, completionHandler: ObjCBlock<(NSData, NSURLResponse, NSError) -> Unit>): NSURLSessionUploadTask
-    @ForeignName["uploadTaskWithRequest:fromData:completionHandler:"] public open func uploadTaskWithRequestFromDataCompletionHandler(request: NSURLRequest, bodyData: NSData, completionHandler: ObjCBlock<(NSData, NSURLResponse, NSError) -> Unit>): NSURLSessionUploadTask
+    @ForeignName["uploadTaskWithRequest:fromData:completionHandler:"] public open func uploadTaskWithRequestFromDataCompletionHandler(request: NSURLRequest, bodyData: ?NSData, completionHandler: ObjCBlock<(NSData, NSURLResponse, NSError) -> Unit>): NSURLSessionUploadTask
     @ForeignName["uploadTaskWithResumeData:completionHandler:"] public open func uploadTaskWithResumeDataCompletionHandler(resumeData: NSData, completionHandler: ObjCBlock<(NSData, NSURLResponse, NSError) -> Unit>): NSURLSessionUploadTask
     @ForeignName["downloadTaskWithRequest:completionHandler:"] public open func downloadTaskWithRequestCompletionHandler(request: NSURLRequest, completionHandler: ObjCBlock<(NSURL, NSURLResponse, NSError) -> Unit>): NSURLSessionDownloadTask
     @ForeignName["downloadTaskWithURL:completionHandler:"] public open func downloadTaskWithURLCompletionHandler(url: NSURL, completionHandler: ObjCBlock<(NSURL, NSURLResponse, NSError) -> Unit>): NSURLSessionDownloadTask
@@ -77,21 +77,21 @@ public abstract sealed class NSURLSessionTaskState {
 @ObjCMirror
 public open class NSURLSessionTask <: NSObject & NSCopying & NSProgressReporting {
     public prop taskIdentifier: NSUInteger
-    public prop originalRequest: NSURLRequest
-    public prop currentRequest: NSURLRequest
-    public prop response: NSURLResponse
-    public mut prop delegate: NSURLSessionTaskDelegate
-    public mut prop earliestBeginDate: NSDate
+    public prop originalRequest: ?NSURLRequest
+    public prop currentRequest: ?NSURLRequest
+    public prop response: ?NSURLResponse
+    public mut prop delegate: ?NSURLSessionTaskDelegate
+    public mut prop earliestBeginDate: ?NSDate
     public mut prop countOfBytesClientExpectsToSend: int64_t
     public mut prop countOfBytesClientExpectsToReceive: int64_t
     public prop countOfBytesSent: int64_t
     public prop countOfBytesReceived: int64_t
     public prop countOfBytesExpectedToSend: int64_t
     public prop countOfBytesExpectedToReceive: int64_t
-    public mut prop taskDescription: NSString
+    public mut prop taskDescription: ?NSString
     public open func cancel(): Unit
     public prop state: Int32 /*NSURLSessionTaskState*/
-    public prop error: NSError
+    public prop error: ?NSError
     public open func suspend(): Unit
     public open func `resume`(): Unit
     public mut prop priority: Float32
@@ -143,8 +143,8 @@ public open class NSURLSessionWebSocketMessage <: NSObject {
     @ForeignName["initWithData:"] public init(data: NSData)
     @ForeignName["initWithString:"] public init(string: NSString)
     public prop `type`: Int32 /*NSURLSessionWebSocketMessageType*/
-    public prop data: NSData
-    public prop string: NSString
+    public prop data: ?NSData
+    public prop string: ?NSString
 }
 
 public abstract sealed class NSURLSessionWebSocketCloseCode {
@@ -168,10 +168,10 @@ public open class NSURLSessionWebSocketTask <: NSURLSessionTask {
     @ForeignName["sendMessage:completionHandler:"] public open func sendMessageCompletionHandler(message: NSURLSessionWebSocketMessage, completionHandler: ObjCBlock<(NSError) -> Unit>): Unit
     @ForeignName["receiveMessageWithCompletionHandler:"] public open func receiveMessageWithCompletionHandler(completionHandler: ObjCBlock<(NSURLSessionWebSocketMessage, NSError) -> Unit>): Unit
     @ForeignName["sendPingWithPongReceiveHandler:"] public open func sendPingWithPongReceiveHandler(pongReceiveHandler: ObjCBlock<(NSError) -> Unit>): Unit
-    @ForeignName["cancelWithCloseCode:reason:"] public open func cancelWithCloseCodeReason(closeCode: Int32 /*NSURLSessionWebSocketCloseCode*/, reason: NSData): Unit
+    @ForeignName["cancelWithCloseCode:reason:"] public open func cancelWithCloseCodeReason(closeCode: Int32 /*NSURLSessionWebSocketCloseCode*/, reason: ?NSData): Unit
     public mut prop maximumMessageSize: NSInteger
     public prop closeCode: Int32 /*NSURLSessionWebSocketCloseCode*/
-    public prop closeReason: NSData
+    public prop closeReason: ?NSData
 }
 
 public abstract sealed class NSURLSessionMultipathServiceType {
@@ -186,7 +186,7 @@ public open class NSURLSessionConfiguration <: NSObject & NSCopying {
     public static prop defaultSessionConfiguration: NSURLSessionConfiguration
     public static prop ephemeralSessionConfiguration: NSURLSessionConfiguration
     @ForeignName["backgroundSessionConfigurationWithIdentifier:"] public static func backgroundSessionConfigurationWithIdentifier(identifier: NSString): NSURLSessionConfiguration
-    public prop identifier: NSString
+    public prop identifier: ?NSString
     public mut prop requestCachePolicy: Int32 /*NSURLRequestCachePolicy*/
     public mut prop timeoutIntervalForRequest: NSTimeInterval
     public mut prop timeoutIntervalForResource: NSTimeInterval
@@ -197,9 +197,9 @@ public open class NSURLSessionConfiguration <: NSObject & NSCopying {
     public mut prop requiresDNSSECValidation: Bool
     public mut prop waitsForConnectivity: Bool
     public mut prop isDiscretionary: Bool
-    public mut prop sharedContainerIdentifier: NSString
+    public mut prop sharedContainerIdentifier: ?NSString
     public mut prop sessionSendsLaunchEvents: Bool
-    public mut prop connectionProxyDictionary: NSDictionary/*<KeyType, ObjectType>*/
+    public mut prop connectionProxyDictionary: ?NSDictionary/*<KeyType, ObjectType>*/
     public mut prop TLSMinimumSupportedProtocol: Int32 /*SSLProtocol*/
     public mut prop TLSMaximumSupportedProtocol: Int32 /*SSLProtocol*/
     public mut prop TLSMinimumSupportedProtocolVersion: Int32 /*tls_protocol_version_t*/
@@ -207,13 +207,13 @@ public open class NSURLSessionConfiguration <: NSObject & NSCopying {
     public mut prop HTTPShouldUsePipelining: Bool
     public mut prop HTTPShouldSetCookies: Bool
     public mut prop HTTPCookieAcceptPolicy: Int32 /*NSHTTPCookieAcceptPolicy*/
-    public mut prop HTTPAdditionalHeaders: NSDictionary/*<KeyType, ObjectType>*/
+    public mut prop HTTPAdditionalHeaders: ?NSDictionary/*<KeyType, ObjectType>*/
     public mut prop HTTPMaximumConnectionsPerHost: NSInteger
-    public mut prop HTTPCookieStorage: NSHTTPCookieStorage
-    public mut prop URLCredentialStorage: NSURLCredentialStorage
-    public mut prop URLCache: NSURLCache
+    public mut prop HTTPCookieStorage: ?NSHTTPCookieStorage
+    public mut prop URLCredentialStorage: ?NSURLCredentialStorage
+    public mut prop URLCache: ?NSURLCache
     public mut prop shouldUseExtendedBackgroundIdleMode: Bool
-    public mut prop protocolClasses: NSArray/*<Class>*/
+    public mut prop protocolClasses: ?NSArray/*<Class>*/
     public mut prop multipathServiceType: Int32 /*NSURLSessionMultipathServiceType*/
     public mut prop usesClassicLoadingMode: Bool
     public init()
@@ -267,8 +267,8 @@ public interface NSURLSessionStreamDelegate <: NSURLSessionTaskDelegate {
 
 @ObjCMirror
 public interface NSURLSessionWebSocketDelegate <: NSURLSessionTaskDelegate {
-    @ForeignName["URLSession:webSocketTask:didOpenWithProtocol:"] func URLSessionWebSocketTaskDidOpenWithProtocol(session: NSURLSession, webSocketTask: NSURLSessionWebSocketTask, protocol: NSString): Unit
-    @ForeignName["URLSession:webSocketTask:didCloseWithCode:reason:"] func URLSessionWebSocketTaskDidCloseWithCodeReason(session: NSURLSession, webSocketTask: NSURLSessionWebSocketTask, closeCode: Int32 /*NSURLSessionWebSocketCloseCode*/, reason: NSData): Unit
+    @ForeignName["URLSession:webSocketTask:didOpenWithProtocol:"] func URLSessionWebSocketTaskDidOpenWithProtocol(session: NSURLSession, webSocketTask: NSURLSessionWebSocketTask, protocol: ?NSString): Unit
+    @ForeignName["URLSession:webSocketTask:didCloseWithCode:reason:"] func URLSessionWebSocketTaskDidCloseWithCodeReason(session: NSURLSession, webSocketTask: NSURLSessionWebSocketTask, closeCode: Int32 /*NSURLSessionWebSocketCloseCode*/, reason: ?NSData): Unit
 }
 
 public abstract sealed class NSURLSessionTaskMetricsResourceFetchType {
@@ -289,19 +289,19 @@ public abstract sealed class NSURLSessionTaskMetricsDomainResolutionProtocol {
 @ObjCMirror
 public open class NSURLSessionTaskTransactionMetrics <: NSObject {
     public prop request: NSURLRequest
-    public prop response: NSURLResponse
-    public prop fetchStartDate: NSDate
-    public prop domainLookupStartDate: NSDate
-    public prop domainLookupEndDate: NSDate
-    public prop connectStartDate: NSDate
-    public prop secureConnectionStartDate: NSDate
-    public prop secureConnectionEndDate: NSDate
-    public prop connectEndDate: NSDate
-    public prop requestStartDate: NSDate
-    public prop requestEndDate: NSDate
-    public prop responseStartDate: NSDate
-    public prop responseEndDate: NSDate
-    public prop networkProtocolName: NSString
+    public prop response: ?NSURLResponse
+    public prop fetchStartDate: ?NSDate
+    public prop domainLookupStartDate: ?NSDate
+    public prop domainLookupEndDate: ?NSDate
+    public prop connectStartDate: ?NSDate
+    public prop secureConnectionStartDate: ?NSDate
+    public prop secureConnectionEndDate: ?NSDate
+    public prop connectEndDate: ?NSDate
+    public prop requestStartDate: ?NSDate
+    public prop requestEndDate: ?NSDate
+    public prop responseStartDate: ?NSDate
+    public prop responseEndDate: ?NSDate
+    public prop networkProtocolName: ?NSString
     public prop isProxyConnection: Bool
     public prop isReusedConnection: Bool
     public prop resourceFetchType: Int32 /*NSURLSessionTaskMetricsResourceFetchType*/
@@ -311,12 +311,12 @@ public open class NSURLSessionTaskTransactionMetrics <: NSObject {
     public prop countOfResponseHeaderBytesReceived: int64_t
     public prop countOfResponseBodyBytesReceived: int64_t
     public prop countOfResponseBodyBytesAfterDecoding: int64_t
-    public prop localAddress: NSString
-    public prop localPort: NSNumber
-    public prop remoteAddress: NSString
-    public prop remotePort: NSNumber
-    public prop negotiatedTLSProtocolVersion: NSNumber
-    public prop negotiatedTLSCipherSuite: NSNumber
+    public prop localAddress: ?NSString
+    public prop localPort: ?NSNumber
+    public prop remoteAddress: ?NSString
+    public prop remotePort: ?NSNumber
+    public prop negotiatedTLSProtocolVersion: ?NSNumber
+    public prop negotiatedTLSCipherSuite: ?NSNumber
     public prop isCellular: Bool
     public prop isExpensive: Bool
     public prop isConstrained: Bool

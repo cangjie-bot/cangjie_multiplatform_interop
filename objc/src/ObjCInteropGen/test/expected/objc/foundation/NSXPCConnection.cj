@@ -23,13 +23,13 @@ public abstract sealed class NSXPCConnectionOptions {
 @ObjCMirror
 public open class NSXPCConnection <: NSObject & NSXPCProxyCreating {
     @ForeignName["initWithServiceName:"] public init(serviceName: NSString)
-    public prop serviceName: NSString
+    public prop serviceName: ?NSString
     @ForeignName["initWithMachServiceName:options:"] public init(name: NSString, options: Int32 /*NSXPCConnectionOptions*/)
     @ForeignName["initWithListenerEndpoint:"] public init(endpoint: NSXPCListenerEndpoint)
     public prop endpoint: NSXPCListenerEndpoint
-    public mut prop exportedInterface: NSXPCInterface
+    public mut prop exportedInterface: ?NSXPCInterface
     public mut prop exportedObject: id
-    public mut prop remoteObjectInterface: NSXPCInterface
+    public mut prop remoteObjectInterface: ?NSXPCInterface
     @ForeignName["remoteObjectProxyWithErrorHandler:"] public open func remoteObjectProxyWithErrorHandler(handler: ObjCBlock<(NSError) -> Unit>): id
     @ForeignName["synchronousRemoteObjectProxyWithErrorHandler:"] public open func synchronousRemoteObjectProxyWithErrorHandler(handler: ObjCBlock<(NSError) -> Unit>): id
     public mut prop interruptionHandler: ObjCBlock<() -> Unit>
@@ -42,7 +42,7 @@ public open class NSXPCConnection <: NSObject & NSXPCProxyCreating {
     public prop processIdentifier: pid_t
     public prop effectiveUserIdentifier: uid_t
     public prop effectiveGroupIdentifier: gid_t
-    public static func currentConnection(): NSXPCConnection
+    public static func currentConnection(): ?NSXPCConnection
     @ForeignName["scheduleSendBarrierBlock:"] public open func scheduleSendBarrierBlock(block: ObjCBlock<() -> Unit>): Unit
     @ForeignName["setCodeSigningRequirement:"] public open func setCodeSigningRequirement(requirement: NSString): Unit
 }
@@ -52,7 +52,7 @@ public open class NSXPCListener <: NSObject {
     public static func serviceListener(): NSXPCListener
     public static func anonymousListener(): NSXPCListener
     @ForeignName["initWithMachServiceName:"] public init(name: NSString)
-    public mut prop delegate: NSXPCListenerDelegate
+    public mut prop delegate: ?NSXPCListenerDelegate
     public prop endpoint: NSXPCListenerEndpoint
     public open func `resume`(): Unit
     public open func suspend(): Unit
@@ -68,7 +68,7 @@ public open class NSXPCInterface <: NSObject {
     @ForeignName["setClasses:forSelector:argumentIndex:ofReply:"] public open func setClassesForSelectorArgumentIndexOfReply(classes: NSSet/*<Class>*/, sel: SEL, arg: NSUInteger, ofReply: Bool): Unit
     @ForeignName["classesForSelector:argumentIndex:ofReply:"] public open func classesForSelectorArgumentIndexOfReply(sel: SEL, arg: NSUInteger, ofReply: Bool): NSSet/*<Class>*/
     @ForeignName["setInterface:forSelector:argumentIndex:ofReply:"] public open func setInterfaceForSelectorArgumentIndexOfReply(ifc: NSXPCInterface, sel: SEL, arg: NSUInteger, ofReply: Bool): Unit
-    @ForeignName["interfaceForSelector:argumentIndex:ofReply:"] public open func interfaceForSelectorArgumentIndexOfReply(sel: SEL, arg: NSUInteger, ofReply: Bool): NSXPCInterface
+    @ForeignName["interfaceForSelector:argumentIndex:ofReply:"] public open func interfaceForSelectorArgumentIndexOfReply(sel: SEL, arg: NSUInteger, ofReply: Bool): ?NSXPCInterface
     @ForeignName["setXPCType:forSelector:argumentIndex:ofReply:"] public open func setXPCTypeForSelectorArgumentIndexOfReply(`type`: xpc_type_t, sel: SEL, arg: NSUInteger, ofReply: Bool): Unit
     @ForeignName["XPCTypeForSelector:argumentIndex:ofReply:"] public open func XPCTypeForSelectorArgumentIndexOfReply(sel: SEL, arg: NSUInteger, ofReply: Bool): xpc_type_t
 }
@@ -81,7 +81,7 @@ public open class NSXPCListenerEndpoint <: NSObject & NSSecureCoding {
 public open class NSXPCCoder <: NSCoder {
     @ForeignName["encodeXPCObject:forKey:"] public open func encodeXPCObjectForKey(xpcObject: xpc_object_t, key: NSString): Unit
     @ForeignName["decodeXPCObjectOfType:forKey:"] public open func decodeXPCObjectOfTypeForKey(`type`: xpc_type_t, key: NSString): xpc_object_t
-    public mut prop userInfo: NSObjectProtocol
-    public prop connection: NSXPCConnection
+    public mut prop userInfo: ?NSObjectProtocol
+    public prop connection: ?NSXPCConnection
 }
 

@@ -427,8 +427,19 @@ static bool is_objc_compatible_parameters(NonTypeSymbol& method) noexcept
     return true;
 }
 
+template<class Symbol>
+void write_result_type(std::ostream& output, const Symbol& symbol, const TypeLikeSymbol& type)
+{
+    output << ": ";
+    if (!normal_mode() && symbol.is_nullable()) {
+        output << '?';
+    }
+    output << emit_cangjie(type);
+}
+
 static void write_method_parameters(std::ostream& output, const NonTypeSymbol& method)
 {
+    output << '(';
     auto parameter_count = method.parameter_count();
     for (std::size_t j = 0; j < parameter_count; ++j) {
         if (j != 0) {
@@ -438,9 +449,11 @@ static void write_method_parameters(std::ostream& output, const NonTypeSymbol& m
         auto& parameter_symbol = method.parameter(j);
         auto* parameter_type = parameter_symbol.type();
         assert(parameter_type);
-        output << escape_keyword(parameter_symbol.name()) << ": " << emit_cangjie(parameter_type);
+        output << escape_keyword(parameter_symbol.name());
+        write_result_type(output, parameter_symbol, *parameter_type);
         collect_import(*parameter_type);
     }
+    output << ')';
 }
 
 static void write_foreign_name(std::ostream& output, const NonTypeSymbol& method)
@@ -585,9 +598,9 @@ static void write_method(IndentingStringStream& output, bool is_interface, NonTy
     } else if (normal_mode() || !is_interface) {
         output << "open ";
     }
-    output << "func " << name << '(';
+    output << "func " << name;
     write_method_parameters(output, method);
-    output << "): " << emit_cangjie(return_type);
+    write_result_type(output, method, *return_type);
     if (generate_definitions_mode()) {
         if (return_type->is_unit()) {
             output << " { }";
@@ -728,7 +741,8 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
                 if (!member.is_readonly()) {
                     output << "mut ";
                 }
-                output << "prop " << escape_keyword(getter->name()) << ": " << emit_cangjie(return_type);
+                output << "prop " << escape_keyword(getter->name());
+                write_result_type(output, *getter, *return_type);
                 if (generate_definitions_mode()) {
                     output << " {\n";
                     output.indent();
@@ -761,9 +775,8 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
             if (!is_interface) {
                 output << "public ";
             }
-            output << "init(";
+            output << "init";
             write_method_parameters(output, member);
-            output << ')';
             if (generate_definitions_mode() && !is_interface) {
                 output << " { }";
             }
@@ -787,7 +800,7 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
                 output.set_comment();
             }
             output << (member.is_public() ? "public" : "protected") << " var " << escape_keyword(member.name());
-            output << ": " << emit_cangjie(return_type);
+            write_result_type(output, member, *return_type);
             if (generate_definitions_mode()) {
                 output << " = " << default_value(*return_type);
             }
@@ -807,8 +820,9 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
             if (hidden) {
                 output.set_comment();
             }
-            output << "public var " << escape_keyword(member.name()) << ": " << emit_cangjie(return_type) << " = "
-                   << default_value(*return_type);
+            output << "public var " << escape_keyword(member.name());
+            write_result_type(output, member, *return_type);
+            output << " = " << default_value(*return_type);
             if (hidden) {
                 output.reset_comment();
             } else {
@@ -820,8 +834,9 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
             auto* return_type = member.return_type();
             assert(return_type);
             assert(!return_type->is_unit());
-            output << "public static const " << escape_keyword(member.name()) << ": " << emit_cangjie(return_type)
-                   << " = ";
+            output << "public static const " << escape_keyword(member.name());
+            write_result_type(output, member, *return_type);
+            output << " = ";
             collect_import(*return_type);
             print_enum_constant_value(output, member);
             output << '\n';

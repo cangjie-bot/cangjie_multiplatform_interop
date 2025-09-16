@@ -9,34 +9,34 @@ public type NSLocaleKey = NSString
 @ObjCMirror
 public open class NSLocale <: NSObject & NSCopying & NSSecureCoding {
     @ForeignName["objectForKey:"] public open func objectForKey(key: NSLocaleKey): id
-    @ForeignName["displayNameForKey:value:"] public open func displayNameForKeyValue(key: NSLocaleKey, value: id): NSString
+    @ForeignName["displayNameForKey:value:"] public open func displayNameForKeyValue(key: NSLocaleKey, value: id): ?NSString
     @ForeignName["initWithLocaleIdentifier:"] public init(string: NSString)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
     public prop localeIdentifier: NSString
     @ForeignName["localizedStringForLocaleIdentifier:"] public open func localizedStringForLocaleIdentifier(localeIdentifier: NSString): NSString
     public prop languageCode: NSString
-    @ForeignName["localizedStringForLanguageCode:"] public open func localizedStringForLanguageCode(languageCode: NSString): NSString
+    @ForeignName["localizedStringForLanguageCode:"] public open func localizedStringForLanguageCode(languageCode: NSString): ?NSString
     public prop languageIdentifier: NSString
-    public prop countryCode: NSString
-    @ForeignName["localizedStringForCountryCode:"] public open func localizedStringForCountryCode(countryCode: NSString): NSString
-    public prop regionCode: NSString
-    public prop scriptCode: NSString
-    @ForeignName["localizedStringForScriptCode:"] public open func localizedStringForScriptCode(scriptCode: NSString): NSString
-    public prop variantCode: NSString
-    @ForeignName["localizedStringForVariantCode:"] public open func localizedStringForVariantCode(variantCode: NSString): NSString
+    public prop countryCode: ?NSString
+    @ForeignName["localizedStringForCountryCode:"] public open func localizedStringForCountryCode(countryCode: NSString): ?NSString
+    public prop regionCode: ?NSString
+    public prop scriptCode: ?NSString
+    @ForeignName["localizedStringForScriptCode:"] public open func localizedStringForScriptCode(scriptCode: NSString): ?NSString
+    public prop variantCode: ?NSString
+    @ForeignName["localizedStringForVariantCode:"] public open func localizedStringForVariantCode(variantCode: NSString): ?NSString
     public prop exemplarCharacterSet: NSCharacterSet
     public prop calendarIdentifier: NSString
-    @ForeignName["localizedStringForCalendarIdentifier:"] public open func localizedStringForCalendarIdentifier(calendarIdentifier: NSString): NSString
-    public prop collationIdentifier: NSString
-    @ForeignName["localizedStringForCollationIdentifier:"] public open func localizedStringForCollationIdentifier(collationIdentifier: NSString): NSString
+    @ForeignName["localizedStringForCalendarIdentifier:"] public open func localizedStringForCalendarIdentifier(calendarIdentifier: NSString): ?NSString
+    public prop collationIdentifier: ?NSString
+    @ForeignName["localizedStringForCollationIdentifier:"] public open func localizedStringForCollationIdentifier(collationIdentifier: NSString): ?NSString
     public prop usesMetricSystem: Bool
     public prop decimalSeparator: NSString
     public prop groupingSeparator: NSString
     public prop currencySymbol: NSString
-    public prop currencyCode: NSString
-    @ForeignName["localizedStringForCurrencyCode:"] public open func localizedStringForCurrencyCode(currencyCode: NSString): NSString
+    public prop currencyCode: ?NSString
+    @ForeignName["localizedStringForCurrencyCode:"] public open func localizedStringForCurrencyCode(currencyCode: NSString): ?NSString
     public prop collatorIdentifier: NSString
-    @ForeignName["localizedStringForCollatorIdentifier:"] public open func localizedStringForCollatorIdentifier(collatorIdentifier: NSString): NSString
+    @ForeignName["localizedStringForCollatorIdentifier:"] public open func localizedStringForCollatorIdentifier(collatorIdentifier: NSString): ?NSString
     public prop quotationBeginDelimiter: NSString
     public prop quotationEndDelimiter: NSString
     public prop alternateQuotationBeginDelimiter: NSString
@@ -55,7 +55,7 @@ public open class NSLocale <: NSObject & NSCopying & NSSecureCoding {
     @ForeignName["localeIdentifierFromComponents:"] public static func localeIdentifierFromComponents(dict: NSDictionary/*<NSString, NSString>*/): NSString
     @ForeignName["canonicalLocaleIdentifierFromString:"] public static func canonicalLocaleIdentifierFromString(string: NSString): NSString
     @ForeignName["canonicalLanguageIdentifierFromString:"] public static func canonicalLanguageIdentifierFromString(string: NSString): NSString
-    @ForeignName["localeIdentifierFromWindowsLocaleCode:"] public static func localeIdentifierFromWindowsLocaleCode(lcid: uint32_t): NSString
+    @ForeignName["localeIdentifierFromWindowsLocaleCode:"] public static func localeIdentifierFromWindowsLocaleCode(lcid: uint32_t): ?NSString
     @ForeignName["windowsLocaleCodeFromLocaleIdentifier:"] public static func windowsLocaleCodeFromLocaleIdentifier(localeIdentifier: NSString): uint32_t
     @ForeignName["characterDirectionForLanguage:"] public static func characterDirectionForLanguage(isoLangCode: NSString): Int32 /*NSLocaleLanguageDirection*/
     @ForeignName["lineDirectionForLanguage:"] public static func lineDirectionForLanguage(isoLangCode: NSString): Int32 /*NSLocaleLanguageDirection*/

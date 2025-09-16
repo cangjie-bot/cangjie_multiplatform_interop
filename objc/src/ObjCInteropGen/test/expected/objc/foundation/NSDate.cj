@@ -37,8 +37,8 @@ public open class NSDate <: NSObject & NSCopying & NSSecureCoding {
     @ForeignName["dateWithNaturalLanguageString:locale:"] public static func dateWithNaturalLanguageStringLocale(string: NSString, locale: id): id
     @ForeignName["dateWithNaturalLanguageString:"] public static func dateWithNaturalLanguageString(string: NSString): id
     @ForeignName["dateWithString:"] public static func dateWithString(aString: NSString): id
-    @ForeignName["dateWithCalendarFormat:timeZone:"] public open func dateWithCalendarFormatTimeZone(format: NSString, aTimeZone: NSTimeZone): NSCalendarDate
-    @ForeignName["descriptionWithCalendarFormat:timeZone:locale:"] public open func descriptionWithCalendarFormatTimeZoneLocale(format: NSString, aTimeZone: NSTimeZone, locale: id): NSString
+    @ForeignName["dateWithCalendarFormat:timeZone:"] public open func dateWithCalendarFormatTimeZone(format: ?NSString, aTimeZone: ?NSTimeZone): NSCalendarDate
+    @ForeignName["descriptionWithCalendarFormat:timeZone:locale:"] public open func descriptionWithCalendarFormatTimeZoneLocale(format: ?NSString, aTimeZone: ?NSTimeZone, locale: id): ?NSString
     @ForeignName["initWithString:"] public init(description: NSString)
 }
 

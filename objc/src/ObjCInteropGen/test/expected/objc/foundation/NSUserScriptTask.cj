@@ -6,13 +6,13 @@ import interoplib.objc.*
 
 @ObjCMirror
 public open class NSUserScriptTask <: NSObject {
-    protected var _scriptURL: NSURL
-    protected var _connection: NSXPCConnection
+    protected var _scriptURL: ?NSURL
+    protected var _connection: ?NSXPCConnection
     protected var _hasExeced: Bool
     protected var _hasTerminated: Bool
-    protected var _stdin: NSFileHandle
-    protected var _stdout: NSFileHandle
-    protected var _stderr: NSFileHandle
+    protected var _stdin: ?NSFileHandle
+    protected var _stdout: ?NSFileHandle
+    protected var _stderr: ?NSFileHandle
     @ForeignName["initWithURL:error:"] public init(url: NSURL, error: ObjCPointer<NSError>)
     public prop scriptURL: NSURL
     @ForeignName["executeWithCompletionHandler:"] public open func executeWithCompletionHandler(handler: NSUserScriptTaskCompletionHandler): Unit
@@ -22,25 +22,25 @@ public type NSUserScriptTaskCompletionHandler = ObjCBlock<(NSError) -> Unit>
 
 @ObjCMirror
 public open class NSUserUnixTask <: NSUserScriptTask {
-    public mut prop standardInput: NSFileHandle
-    public mut prop standardOutput: NSFileHandle
-    public mut prop standardError: NSFileHandle
-    @ForeignName["executeWithArguments:completionHandler:"] public open func executeWithArgumentsCompletionHandler(arguments: NSArray/*<NSString>*/, handler: NSUserUnixTaskCompletionHandler): Unit
+    public mut prop standardInput: ?NSFileHandle
+    public mut prop standardOutput: ?NSFileHandle
+    public mut prop standardError: ?NSFileHandle
+    @ForeignName["executeWithArguments:completionHandler:"] public open func executeWithArgumentsCompletionHandler(arguments: ?NSArray/*<NSString>*/, handler: NSUserUnixTaskCompletionHandler): Unit
 }
 
 public type NSUserUnixTaskCompletionHandler = ObjCBlock<(NSError) -> Unit>
 
 @ObjCMirror
 public open class NSUserAppleScriptTask <: NSUserScriptTask {
-    @ForeignName["executeWithAppleEvent:completionHandler:"] public open func executeWithAppleEventCompletionHandler(event: NSAppleEventDescriptor, handler: NSUserAppleScriptTaskCompletionHandler): Unit
+    @ForeignName["executeWithAppleEvent:completionHandler:"] public open func executeWithAppleEventCompletionHandler(event: ?NSAppleEventDescriptor, handler: NSUserAppleScriptTaskCompletionHandler): Unit
 }
 
 public type NSUserAppleScriptTaskCompletionHandler = ObjCBlock<(NSAppleEventDescriptor, NSError) -> Unit>
 
 @ObjCMirror
 public open class NSUserAutomatorTask <: NSUserScriptTask {
-    public mut prop variables: NSDictionary/*<NSString, id>*/
-    @ForeignName["executeWithInput:completionHandler:"] public open func executeWithInputCompletionHandler(input: NSSecureCoding, handler: NSUserAutomatorTaskCompletionHandler): Unit
+    public mut prop variables: ?NSDictionary/*<NSString, id>*/
+    @ForeignName["executeWithInput:completionHandler:"] public open func executeWithInputCompletionHandler(input: ?NSSecureCoding, handler: NSUserAutomatorTaskCompletionHandler): Unit
 }
 
 public type NSUserAutomatorTaskCompletionHandler = ObjCBlock<(id, NSError) -> Unit>

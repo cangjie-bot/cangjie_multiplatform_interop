@@ -7,7 +7,7 @@ import interoplib.objc.*
 @ObjCMirror
 public open class NSProtocolChecker <: NSProxy {
     public prop protocol: Protocol
-    public prop target: NSObject
+    public prop target: ?NSObject
     @ForeignName["protocolCheckerWithTarget:protocol:"] public static func protocolCheckerWithTargetProtocol(anObject: NSObject, aProtocol: Protocol): NSProtocolChecker
     @ForeignName["initWithTarget:protocol:"] public init(anObject: NSObject, aProtocol: Protocol)
 }

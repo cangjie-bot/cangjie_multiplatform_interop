@@ -14,12 +14,12 @@ public abstract sealed class NSHTTPCookieAcceptPolicy {
 public open class NSHTTPCookieStorage <: NSObject {
     public static prop sharedHTTPCookieStorage: NSHTTPCookieStorage
     @ForeignName["sharedCookieStorageForGroupContainerIdentifier:"] public static func sharedCookieStorageForGroupContainerIdentifier(identifier: NSString): NSHTTPCookieStorage
-    public prop cookies: NSArray/*<NSHTTPCookie>*/
+    public prop cookies: ?NSArray/*<NSHTTPCookie>*/
     @ForeignName["setCookie:"] public open func setCookie(cookie: NSHTTPCookie): Unit
     @ForeignName["deleteCookie:"] public open func deleteCookie(cookie: NSHTTPCookie): Unit
     @ForeignName["removeCookiesSinceDate:"] public open func removeCookiesSinceDate(date: NSDate): Unit
-    @ForeignName["cookiesForURL:"] public open func cookiesForURL(URL: NSURL): NSArray/*<NSHTTPCookie>*/
-    @ForeignName["setCookies:forURL:mainDocumentURL:"] public open func setCookiesForURLMainDocumentURL(cookies: NSArray/*<NSHTTPCookie>*/, URL: NSURL, mainDocumentURL: NSURL): Unit
+    @ForeignName["cookiesForURL:"] public open func cookiesForURL(URL: NSURL): ?NSArray/*<NSHTTPCookie>*/
+    @ForeignName["setCookies:forURL:mainDocumentURL:"] public open func setCookiesForURLMainDocumentURL(cookies: NSArray/*<NSHTTPCookie>*/, URL: ?NSURL, mainDocumentURL: ?NSURL): Unit
     public mut prop cookieAcceptPolicy: Int32 /*NSHTTPCookieAcceptPolicy*/
     @ForeignName["sortedCookiesUsingDescriptors:"] public open func sortedCookiesUsingDescriptors(sortOrder: NSArray/*<NSSortDescriptor>*/): NSArray/*<NSHTTPCookie>*/
     @ForeignName["storeCookies:forTask:"] public open func storeCookiesForTask(cookies: NSArray/*<NSHTTPCookie>*/, task: NSURLSessionTask): Unit

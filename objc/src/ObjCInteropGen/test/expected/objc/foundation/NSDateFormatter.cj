@@ -9,9 +9,9 @@ public open class NSDateFormatter <: NSFormatter {
     public mut prop formattingContext: Int32 /*NSFormattingContext*/
     @ForeignName["getObjectValue:forString:range:error:"] public open func getObjectValueForStringRangeError(obj: ObjCPointer<id>, string: NSString, rangep: CPointer<NSRange>, error: ObjCPointer<NSError>): Bool
     @ForeignName["stringFromDate:"] public open func stringFromDate(date: NSDate): NSString
-    @ForeignName["dateFromString:"] public open func dateFromString(string: NSString): NSDate
+    @ForeignName["dateFromString:"] public open func dateFromString(string: NSString): ?NSDate
     @ForeignName["localizedStringFromDate:dateStyle:timeStyle:"] public static func localizedStringFromDateDateStyleTimeStyle(date: NSDate, dstyle: Int32 /*NSDateFormatterStyle*/, tstyle: Int32 /*NSDateFormatterStyle*/): NSString
-    @ForeignName["dateFormatFromTemplate:options:locale:"] public static func dateFormatFromTemplateOptionsLocale(tmplate: NSString, opts: NSUInteger, locale: NSLocale): NSString
+    @ForeignName["dateFormatFromTemplate:options:locale:"] public static func dateFormatFromTemplateOptionsLocale(tmplate: NSString, opts: NSUInteger, locale: ?NSLocale): ?NSString
     public static mut prop defaultFormatterBehavior: Int32 /*NSDateFormatterBehavior*/
     @ForeignName["setLocalizedDateFormatFromTemplate:"] public open func setLocalizedDateFormatFromTemplate(dateFormatTemplate: NSString): Unit
     public mut prop dateFormat: NSString
@@ -23,8 +23,8 @@ public open class NSDateFormatter <: NSFormatter {
     public mut prop timeZone: NSTimeZone
     public mut prop calendar: NSCalendar
     public mut prop isLenient: Bool
-    public mut prop twoDigitStartDate: NSDate
-    public mut prop defaultDate: NSDate
+    public mut prop twoDigitStartDate: ?NSDate
+    public mut prop defaultDate: ?NSDate
     public mut prop eraSymbols: NSArray/*<NSString>*/
     public mut prop monthSymbols: NSArray/*<NSString>*/
     public mut prop shortMonthSymbols: NSArray/*<NSString>*/
@@ -45,7 +45,7 @@ public open class NSDateFormatter <: NSFormatter {
     public mut prop shortQuarterSymbols: NSArray/*<NSString>*/
     public mut prop standaloneQuarterSymbols: NSArray/*<NSString>*/
     public mut prop shortStandaloneQuarterSymbols: NSArray/*<NSString>*/
-    public mut prop gregorianStartDate: NSDate
+    public mut prop gregorianStartDate: ?NSDate
     public mut prop doesRelativeDateFormatting: Bool
     @ForeignName["initWithDateFormat:allowNaturalLanguage:"] public init(format: NSString, flag: Bool)
     public open func allowsNaturalLanguage(): Bool

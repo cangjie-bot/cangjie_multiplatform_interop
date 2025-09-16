@@ -6,21 +6,21 @@ import interoplib.objc.*
 
 @ObjCMirror
 public interface NSObjectProtocol <: id {
-    @ForeignName["isEqual:"] func isEqual(object: id): Bool
+    @ForeignName["isEqual:"] func isEqual(object: ?id): Bool
     public prop hash: NSUInteger
-    public prop superclass: Class
-    func `class`(): Class
+    public prop superclass: ?Class
+    func `class`(): ?Class
     func self(): NSObjectProtocol
-    @ForeignName["performSelector:"] func performSelector(aSelector: SEL): id
-    @ForeignName["performSelector:withObject:"] func performSelectorWithObject(aSelector: SEL, object: id): id
-    @ForeignName["performSelector:withObject:withObject:"] func performSelectorWithObjectWithObject(aSelector: SEL, object1: id, object2: id): id
+    @ForeignName["performSelector:"] func performSelector(aSelector: ?SEL): ?id
+    @ForeignName["performSelector:withObject:"] func performSelectorWithObject(aSelector: ?SEL, object: ?id): ?id
+    @ForeignName["performSelector:withObject:withObject:"] func performSelectorWithObjectWithObject(aSelector: ?SEL, object1: ?id, object2: ?id): ?id
     func isProxy(): Bool
-    @ForeignName["isKindOfClass:"] func isKindOfClass(aClass: Class): Bool
-    @ForeignName["isMemberOfClass:"] func isMemberOfClass(aClass: Class): Bool
-    @ForeignName["conformsToProtocol:"] func conformsToProtocol(aProtocol: Protocol): Bool
-    @ForeignName["respondsToSelector:"] func respondsToSelector(aSelector: SEL): Bool
-    public prop description: NSString
-    public prop debugDescription: NSString
+    @ForeignName["isKindOfClass:"] func isKindOfClass(aClass: ?Class): Bool
+    @ForeignName["isMemberOfClass:"] func isMemberOfClass(aClass: ?Class): Bool
+    @ForeignName["conformsToProtocol:"] func conformsToProtocol(aProtocol: ?Protocol): Bool
+    @ForeignName["respondsToSelector:"] func respondsToSelector(aSelector: ?SEL): Bool
+    public prop description: ?NSString
+    public prop debugDescription: ?NSString
 }
 
 @C
@@ -29,7 +29,7 @@ public struct _NSZone {
 
 @ObjCMirror
 public open class NSObject <: NSObjectProtocol {
-    protected var isa: Class
+    protected var isa: ?Class
     public static func load(): Unit
     public static func initialize(): Unit
     public init()
@@ -38,25 +38,25 @@ public open class NSObject <: NSObjectProtocol {
     public static func alloc(): NSObject
     public open func dealloc(): Unit
     public open func finalize(): Unit
-    public open func copy(): id
-    public open func mutableCopy(): id
-    @ForeignName["instancesRespondToSelector:"] public static func instancesRespondToSelector(aSelector: SEL): Bool
-    @ForeignName["conformsToProtocol:"] public static func conformsToProtocolStatic(protocol: Protocol): Bool
-    @ForeignName["methodForSelector:"] public open func methodForSelector(aSelector: SEL): IMP
-    @ForeignName["instanceMethodForSelector:"] public static func instanceMethodForSelector(aSelector: SEL): IMP
-    @ForeignName["doesNotRecognizeSelector:"] public open func doesNotRecognizeSelector(aSelector: SEL): Unit
-    @ForeignName["forwardingTargetForSelector:"] public open func forwardingTargetForSelector(aSelector: SEL): id
-    @ForeignName["forwardInvocation:"] public open func forwardInvocation(anInvocation: NSInvocation): Unit
-    @ForeignName["methodSignatureForSelector:"] public open func methodSignatureForSelector(aSelector: SEL): NSMethodSignature
-    @ForeignName["instanceMethodSignatureForSelector:"] public static func instanceMethodSignatureForSelector(aSelector: SEL): NSMethodSignature
-    @ForeignName["isSubclassOfClass:"] public static func isSubclassOfClass(aClass: Class): Bool
-    @ForeignName["resolveClassMethod:"] public static func resolveClassMethod(sel: SEL): Bool
-    @ForeignName["resolveInstanceMethod:"] public static func resolveInstanceMethod(sel: SEL): Bool
+    public open func copy(): ?id
+    public open func mutableCopy(): ?id
+    @ForeignName["instancesRespondToSelector:"] public static func instancesRespondToSelector(aSelector: ?SEL): Bool
+    @ForeignName["conformsToProtocol:"] public static func conformsToProtocolStatic(protocol: ?Protocol): Bool
+    @ForeignName["methodForSelector:"] public open func methodForSelector(aSelector: ?SEL): IMP
+    @ForeignName["instanceMethodForSelector:"] public static func instanceMethodForSelector(aSelector: ?SEL): IMP
+    @ForeignName["doesNotRecognizeSelector:"] public open func doesNotRecognizeSelector(aSelector: ?SEL): Unit
+    @ForeignName["forwardingTargetForSelector:"] public open func forwardingTargetForSelector(aSelector: ?SEL): ?id
+    @ForeignName["forwardInvocation:"] public open func forwardInvocation(anInvocation: ?NSInvocation): Unit
+    @ForeignName["methodSignatureForSelector:"] public open func methodSignatureForSelector(aSelector: ?SEL): ?NSMethodSignature
+    @ForeignName["instanceMethodSignatureForSelector:"] public static func instanceMethodSignatureForSelector(aSelector: ?SEL): ?NSMethodSignature
+    @ForeignName["isSubclassOfClass:"] public static func isSubclassOfClass(aClass: ?Class): Bool
+    @ForeignName["resolveClassMethod:"] public static func resolveClassMethod(sel: ?SEL): Bool
+    @ForeignName["resolveInstanceMethod:"] public static func resolveInstanceMethod(sel: ?SEL): Bool
     @ForeignName["hash"] public static func hashStatic(): NSUInteger
-    @ForeignName["superclass"] public static func superclassStatic(): Class
-    @ForeignName["class"] public static func classStatic(): Class
-    @ForeignName["description"] public static func descriptionStatic(): NSString
-    @ForeignName["debugDescription"] public static func debugDescriptionStatic(): NSString
+    @ForeignName["superclass"] public static func superclassStatic(): ?Class
+    @ForeignName["class"] public static func classStatic(): ?Class
+    @ForeignName["description"] public static func descriptionStatic(): ?NSString
+    @ForeignName["debugDescription"] public static func debugDescriptionStatic(): ?NSString
     public static func version(): NSInteger
     @ForeignName["setVersion:"] public static func setVersion(aVersion: NSInteger): Unit
     public prop classForCoder: Class
@@ -103,7 +103,7 @@ public open class NSObject <: NSObjectProtocol {
     @ForeignName["unableToSetNilForKey:"] public open func unableToSetNilForKey(key: NSString): Unit
     @ForeignName["valuesForKeys:"] public open func valuesForKeys(keys: NSArray/*<ObjectType>*/): NSDictionary/*<KeyType, ObjectType>*/
     @ForeignName["takeValuesFromDictionary:"] public open func takeValuesFromDictionary(properties: NSDictionary/*<KeyType, ObjectType>*/): Unit
-    @ForeignName["observeValueForKeyPath:ofObject:change:context:"] public open func observeValueForKeyPathOfObjectChangeContext(keyPath: NSString, object: id, change: NSDictionary/*<NSKeyValueChangeKey, id>*/, context: CPointer<Unit>): Unit
+    @ForeignName["observeValueForKeyPath:ofObject:change:context:"] public open func observeValueForKeyPathOfObjectChangeContext(keyPath: ?NSString, object: id, change: ?NSDictionary/*<NSKeyValueChangeKey, id>*/, context: CPointer<Unit>): Unit
     @ForeignName["addObserver:forKeyPath:options:context:"] public open func addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: NSString, options: Int32 /*NSKeyValueObservingOptions*/, context: CPointer<Unit>): Unit
     @ForeignName["removeObserver:forKeyPath:context:"] public open func removeObserverForKeyPathContext(observer: NSObject, keyPath: NSString, context: CPointer<Unit>): Unit
     @ForeignName["removeObserver:forKeyPath:"] public open func removeObserverForKeyPath(observer: NSObject, keyPath: NSString): Unit
@@ -117,14 +117,14 @@ public open class NSObject <: NSObjectProtocol {
     @ForeignName["automaticallyNotifiesObserversForKey:"] public static func automaticallyNotifiesObserversForKey(key: NSString): Bool
     public mut prop observationInfo: CPointer<Unit>
     @ForeignName["setKeys:triggerChangeNotificationsForDependentKey:"] public static func setKeysTriggerChangeNotificationsForDependentKey(keys: NSArray/*<ObjectType>*/, dependentKey: NSString): Unit
-    @ForeignName["setSharedObservers:"] public open func setSharedObservers(sharedObservers: NSKeyValueSharedObserversSnapshot): Unit
+    @ForeignName["setSharedObservers:"] public open func setSharedObservers(sharedObservers: ?NSKeyValueSharedObserversSnapshot): Unit
     public prop classForKeyedArchiver: Class
     @ForeignName["replacementObjectForKeyedArchiver:"] public open func replacementObjectForKeyedArchiver(archiver: NSKeyedArchiver): id
     public static func classFallbacksForKeyedArchiver(): NSArray/*<NSString>*/
     public static func classForKeyedUnarchiver(): Class
-    @ForeignName["performSelectorOnMainThread:withObject:waitUntilDone:modes:"] public open func performSelectorOnMainThreadWithObjectWaitUntilDoneModes(aSelector: SEL, arg: id, wait: Bool, array: NSArray/*<NSString>*/): Unit
+    @ForeignName["performSelectorOnMainThread:withObject:waitUntilDone:modes:"] public open func performSelectorOnMainThreadWithObjectWaitUntilDoneModes(aSelector: SEL, arg: id, wait: Bool, array: ?NSArray/*<NSString>*/): Unit
     @ForeignName["performSelectorOnMainThread:withObject:waitUntilDone:"] public open func performSelectorOnMainThreadWithObjectWaitUntilDone(aSelector: SEL, arg: id, wait: Bool): Unit
-    @ForeignName["performSelector:onThread:withObject:waitUntilDone:modes:"] public open func performSelectorOnThreadWithObjectWaitUntilDoneModes(aSelector: SEL, thr: NSThread, arg: id, wait: Bool, array: NSArray/*<NSString>*/): Unit
+    @ForeignName["performSelector:onThread:withObject:waitUntilDone:modes:"] public open func performSelectorOnThreadWithObjectWaitUntilDoneModes(aSelector: SEL, thr: NSThread, arg: id, wait: Bool, array: ?NSArray/*<NSString>*/): Unit
     @ForeignName["performSelector:onThread:withObject:waitUntilDone:"] public open func performSelectorOnThreadWithObjectWaitUntilDone(aSelector: SEL, thr: NSThread, arg: id, wait: Bool): Unit
     @ForeignName["performSelectorInBackground:withObject:"] public open func performSelectorInBackgroundWithObject(aSelector: SEL, arg: id): Unit
     public prop classForArchiver: Class
@@ -135,9 +135,9 @@ public open class NSObject <: NSObjectProtocol {
     public prop attributeKeys: NSArray/*<NSString>*/
     public prop toOneRelationshipKeys: NSArray/*<NSString>*/
     public prop toManyRelationshipKeys: NSArray/*<NSString>*/
-    @ForeignName["inverseForRelationshipKey:"] public open func inverseForRelationshipKey(relationshipKey: NSString): NSString
+    @ForeignName["inverseForRelationshipKey:"] public open func inverseForRelationshipKey(relationshipKey: NSString): ?NSString
     @ForeignName["scriptingValueForSpecifier:"] public open func scriptingValueForSpecifier(objectSpecifier: NSScriptObjectSpecifier): id
-    public mut prop scriptingProperties: NSDictionary/*<NSString, id>*/
+    public mut prop scriptingProperties: ?NSDictionary/*<NSString, id>*/
     @ForeignName["copyScriptingValue:forKey:withProperties:"] public open func copyScriptingValueForKeyWithProperties(value: id, key: NSString, properties: NSDictionary/*<NSString, id>*/): id
     @ForeignName["newScriptingObjectOfClass:forValueForKey:withContentsValue:properties:"] public open func newScriptingObjectOfClassForValueForKeyWithContentsValueProperties(objectClass: Class, key: NSString, contentsValue: id, properties: NSDictionary/*<NSString, id>*/): id
     public prop classCode: FourCharCode
@@ -150,8 +150,8 @@ public open class NSObject <: NSObjectProtocol {
     @ForeignName["replaceValueAtIndex:inPropertyWithKey:withValue:"] public open func replaceValueAtIndexInPropertyWithKeyWithValue(index: NSUInteger, key: NSString, value: id): Unit
     @ForeignName["insertValue:inPropertyWithKey:"] public open func insertValueInPropertyWithKey(value: id, key: NSString): Unit
     @ForeignName["coerceValue:forKey:"] public open func coerceValueForKey(value: id, key: NSString): id
-    public prop objectSpecifier: NSScriptObjectSpecifier
-    @ForeignName["indicesOfObjectsByEvaluatingObjectSpecifier:"] public open func indicesOfObjectsByEvaluatingObjectSpecifier(specifier: NSScriptObjectSpecifier): NSArray/*<NSNumber>*/
+    public prop objectSpecifier: ?NSScriptObjectSpecifier
+    @ForeignName["indicesOfObjectsByEvaluatingObjectSpecifier:"] public open func indicesOfObjectsByEvaluatingObjectSpecifier(specifier: NSScriptObjectSpecifier): ?NSArray/*<NSNumber>*/
     @ForeignName["isEqualTo:"] public open func isEqualTo(object: id): Bool
     @ForeignName["isLessThanOrEqualTo:"] public open func isLessThanOrEqualTo(object: id): Bool
     @ForeignName["isLessThan:"] public open func isLessThan(object: id): Bool

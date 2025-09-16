@@ -8,7 +8,7 @@ import interoplib.objc.*
 public open class NSClassDescription <: NSObject {
     @ForeignName["registerClassDescription:forClass:"] public static func registerClassDescriptionForClass(description: NSClassDescription, aClass: Class): Unit
     public static func invalidateClassDescriptionCache(): Unit
-    @ForeignName["classDescriptionForClass:"] public static func classDescriptionForClass(aClass: Class): NSClassDescription
-    @ForeignName["inverseForRelationshipKey:"] public open func inverseForRelationshipKey(relationshipKey: NSString): NSString
+    @ForeignName["classDescriptionForClass:"] public static func classDescriptionForClass(aClass: Class): ?NSClassDescription
+    @ForeignName["inverseForRelationshipKey:"] public open func inverseForRelationshipKey(relationshipKey: NSString): ?NSString
 }
 

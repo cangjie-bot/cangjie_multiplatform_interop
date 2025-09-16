@@ -23,7 +23,7 @@ public open class NSOperation <: NSObject {
     public open func waitUntilFinished(): Unit
     public mut prop threadPriority: Float64
     public mut prop qualityOfService: Int32 /*NSQualityOfService*/
-    public mut prop name: NSString
+    public mut prop name: ?NSString
 }
 
 public abstract sealed class NSOperationQueuePriority {
@@ -57,12 +57,12 @@ public open class NSOperationQueue <: NSObject & NSProgressReporting {
     @ForeignName["addBarrierBlock:"] public open func addBarrierBlock(barrier: ObjCBlock<() -> Unit>): Unit
     public mut prop maxConcurrentOperationCount: NSInteger
     public mut prop isSuspended: Bool
-    public mut prop name: NSString
+    public mut prop name: ?NSString
     public mut prop qualityOfService: Int32 /*NSQualityOfService*/
     public mut prop underlyingQueue: dispatch_queue_t
     public open func cancelAllOperations(): Unit
     public open func waitUntilAllOperationsAreFinished(): Unit
-    public static prop currentQueue: NSOperationQueue
+    public static prop currentQueue: ?NSOperationQueue
     public static prop mainQueue: NSOperationQueue
     public prop operations: NSArray/*<NSOperation>*/
     public prop operationCount: NSUInteger

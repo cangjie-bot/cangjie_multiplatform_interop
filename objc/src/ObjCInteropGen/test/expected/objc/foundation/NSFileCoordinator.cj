@@ -6,9 +6,9 @@ import interoplib.objc.*
 
 @ObjCMirror
 public interface NSFilePresenter <: NSObjectProtocol {
-    public prop presentedItemURL: NSURL
+    public prop presentedItemURL: ?NSURL
     public prop presentedItemOperationQueue: NSOperationQueue
-    public prop primaryPresentedItemURL: NSURL
+    public prop primaryPresentedItemURL: ?NSURL
     @ForeignName["relinquishPresentedItemToReader:"] func relinquishPresentedItemToReader(reader: ObjCBlock<(ObjCBlock<() -> Unit>) -> Unit>): Unit
     @ForeignName["relinquishPresentedItemToWriter:"] func relinquishPresentedItemToWriter(writer: ObjCBlock<(ObjCBlock<() -> Unit>) -> Unit>): Unit
     @ForeignName["savePresentedItemChangesWithCompletionHandler:"] func savePresentedItemChangesWithCompletionHandler(completionHandler: ObjCBlock<(NSError) -> Unit>): Unit
@@ -57,7 +57,7 @@ public open class NSFileCoordinator <: NSObject {
     @ForeignName["addFilePresenter:"] public static func addFilePresenter(filePresenter: NSFilePresenter): Unit
     @ForeignName["removeFilePresenter:"] public static func removeFilePresenter(filePresenter: NSFilePresenter): Unit
     public static prop filePresenters: NSArray/*<NSFilePresenter>*/
-    @ForeignName["initWithFilePresenter:"] public init(filePresenterOrNil: NSFilePresenter)
+    @ForeignName["initWithFilePresenter:"] public init(filePresenterOrNil: ?NSFilePresenter)
     public mut prop purposeIdentifier: NSString
     @ForeignName["coordinateAccessWithIntents:queue:byAccessor:"] public open func coordinateAccessWithIntentsQueueByAccessor(intents: NSArray/*<NSFileAccessIntent>*/, queue: NSOperationQueue, accessor: ObjCBlock<(NSError) -> Unit>): Unit
     @ForeignName["coordinateReadingItemAtURL:options:error:byAccessor:"] public open func coordinateReadingItemAtURLOptionsErrorByAccessor(url: NSURL, options: Int32 /*NSFileCoordinatorReadingOptions*/, outError: ObjCPointer<NSError>, reader: ObjCBlock<(NSURL) -> Unit>): Unit

@@ -26,7 +26,7 @@ public open class NSMapTable/*<KeyType, ObjectType>*/ <: NSObject & NSCopying & 
     @ForeignName["setObject:forKey:"] public open func setObjectForKey(anObject: id /*ObjectType*/, aKey: id /*KeyType*/): Unit
     public prop count: NSUInteger
     public open func keyEnumerator(): NSEnumerator/*<KeyType>*/
-    public open func objectEnumerator(): NSEnumerator/*<ObjectType>*/
+    public open func objectEnumerator(): ?NSEnumerator/*<ObjectType>*/
     public open func removeAllObjects(): Unit
     public open func dictionaryRepresentation(): NSDictionary/*<KeyType, ObjectType>*/
 }

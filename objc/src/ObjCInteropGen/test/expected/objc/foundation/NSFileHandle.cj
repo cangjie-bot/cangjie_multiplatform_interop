@@ -9,8 +9,8 @@ public open class NSFileHandle <: NSObject & NSSecureCoding {
     public prop availableData: NSData
     @ForeignName["initWithFileDescriptor:closeOnDealloc:"] public init(fd: Int32, closeopt: Bool)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
-    @ForeignName["readDataToEndOfFileAndReturnError:"] public open func readDataToEndOfFileAndReturnError(error: ObjCPointer<NSError>): NSData
-    @ForeignName["readDataUpToLength:error:"] public open func readDataUpToLengthError(length: NSUInteger, error: ObjCPointer<NSError>): NSData
+    @ForeignName["readDataToEndOfFileAndReturnError:"] public open func readDataToEndOfFileAndReturnError(error: ObjCPointer<NSError>): ?NSData
+    @ForeignName["readDataUpToLength:error:"] public open func readDataUpToLengthError(length: NSUInteger, error: ObjCPointer<NSError>): ?NSData
     @ForeignName["writeData:error:"] public open func writeDataError(data: NSData, error: ObjCPointer<NSError>): Bool
     @ForeignName["getOffset:error:"] public open func getOffsetError(offsetInFile: CPointer<UInt64>, error: ObjCPointer<NSError>): Bool
     @ForeignName["seekToEndReturningOffset:error:"] public open func seekToEndReturningOffsetError(offsetInFile: CPointer<UInt64>, error: ObjCPointer<NSError>): Bool
@@ -28,13 +28,13 @@ public open class NSFileHandle <: NSObject & NSSecureCoding {
     @ForeignName["fileHandleForReadingFromURL:error:"] public static func fileHandleForReadingFromURLError(url: NSURL, error: ObjCPointer<NSError>): NSFileHandle
     @ForeignName["fileHandleForWritingToURL:error:"] public static func fileHandleForWritingToURLError(url: NSURL, error: ObjCPointer<NSError>): NSFileHandle
     @ForeignName["fileHandleForUpdatingURL:error:"] public static func fileHandleForUpdatingURLError(url: NSURL, error: ObjCPointer<NSError>): NSFileHandle
-    @ForeignName["readInBackgroundAndNotifyForModes:"] public open func readInBackgroundAndNotifyForModes(modes: NSArray/*<NSRunLoopMode>*/): Unit
+    @ForeignName["readInBackgroundAndNotifyForModes:"] public open func readInBackgroundAndNotifyForModes(modes: ?NSArray/*<NSRunLoopMode>*/): Unit
     public open func readInBackgroundAndNotify(): Unit
-    @ForeignName["readToEndOfFileInBackgroundAndNotifyForModes:"] public open func readToEndOfFileInBackgroundAndNotifyForModes(modes: NSArray/*<NSRunLoopMode>*/): Unit
+    @ForeignName["readToEndOfFileInBackgroundAndNotifyForModes:"] public open func readToEndOfFileInBackgroundAndNotifyForModes(modes: ?NSArray/*<NSRunLoopMode>*/): Unit
     public open func readToEndOfFileInBackgroundAndNotify(): Unit
-    @ForeignName["acceptConnectionInBackgroundAndNotifyForModes:"] public open func acceptConnectionInBackgroundAndNotifyForModes(modes: NSArray/*<NSRunLoopMode>*/): Unit
+    @ForeignName["acceptConnectionInBackgroundAndNotifyForModes:"] public open func acceptConnectionInBackgroundAndNotifyForModes(modes: ?NSArray/*<NSRunLoopMode>*/): Unit
     public open func acceptConnectionInBackgroundAndNotify(): Unit
-    @ForeignName["waitForDataInBackgroundAndNotifyForModes:"] public open func waitForDataInBackgroundAndNotifyForModes(modes: NSArray/*<NSRunLoopMode>*/): Unit
+    @ForeignName["waitForDataInBackgroundAndNotifyForModes:"] public open func waitForDataInBackgroundAndNotifyForModes(modes: ?NSArray/*<NSRunLoopMode>*/): Unit
     public open func waitForDataInBackgroundAndNotify(): Unit
     public mut prop readabilityHandler: ObjCBlock<(NSFileHandle) -> Unit>
     public mut prop writeabilityHandler: ObjCBlock<(NSFileHandle) -> Unit>

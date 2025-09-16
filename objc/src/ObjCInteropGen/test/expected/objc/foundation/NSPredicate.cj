@@ -8,16 +8,16 @@ import interoplib.objc.*
 public open class NSPredicate <: NSObject & NSSecureCoding & NSCopying {
     protected var _predicateFlags: _predicateFlags
     protected var reserved: uint32_t
-    @ForeignName["predicateWithFormat:argumentArray:"] public static func predicateWithFormatArgumentArray(predicateFormat: NSString, arguments: NSArray/*<ObjectType>*/): NSPredicate
+    @ForeignName["predicateWithFormat:argumentArray:"] public static func predicateWithFormatArgumentArray(predicateFormat: NSString, arguments: ?NSArray/*<ObjectType>*/): NSPredicate
     @ForeignName["predicateWithFormat:"] public static func predicateWithFormat(predicateFormat: NSString): NSPredicate
     @ForeignName["predicateWithFormat:arguments:"] public static func predicateWithFormatArguments(predicateFormat: NSString, argList: va_list): NSPredicate
-    @ForeignName["predicateFromMetadataQueryString:"] public static func predicateFromMetadataQueryString(queryString: NSString): NSPredicate
+    @ForeignName["predicateFromMetadataQueryString:"] public static func predicateFromMetadataQueryString(queryString: NSString): ?NSPredicate
     @ForeignName["predicateWithValue:"] public static func predicateWithValue(value: Bool): NSPredicate
     @ForeignName["predicateWithBlock:"] public static func predicateWithBlock(block: ObjCBlock<(id, NSDictionary/*<NSString, id>*/) -> Bool>): NSPredicate
     public prop predicateFormat: NSString
     @ForeignName["predicateWithSubstitutionVariables:"] public open func predicateWithSubstitutionVariables(variables: NSDictionary/*<NSString, id>*/): NSPredicate
     @ForeignName["evaluateWithObject:"] public open func evaluateWithObject(object: id): Bool
-    @ForeignName["evaluateWithObject:substitutionVariables:"] public open func evaluateWithObjectSubstitutionVariables(object: id, bindings: NSDictionary/*<NSString, id>*/): Bool
+    @ForeignName["evaluateWithObject:substitutionVariables:"] public open func evaluateWithObjectSubstitutionVariables(object: id, bindings: ?NSDictionary/*<NSString, id>*/): Bool
     public open func allowEvaluation(): Unit
 }
 

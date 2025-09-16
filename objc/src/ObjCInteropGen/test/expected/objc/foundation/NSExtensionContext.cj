@@ -7,7 +7,7 @@ import interoplib.objc.*
 @ObjCMirror
 public open class NSExtensionContext <: NSObject {
     public prop inputItems: NSArray/*<ObjectType>*/
-    @ForeignName["completeRequestReturningItems:completionHandler:"] public open func completeRequestReturningItemsCompletionHandler(items: NSArray/*<ObjectType>*/, completionHandler: ObjCBlock<(Bool) -> Unit>): Unit
+    @ForeignName["completeRequestReturningItems:completionHandler:"] public open func completeRequestReturningItemsCompletionHandler(items: ?NSArray/*<ObjectType>*/, completionHandler: ObjCBlock<(Bool) -> Unit>): Unit
     @ForeignName["cancelRequestWithError:"] public open func cancelRequestWithError(error: NSError): Unit
     @ForeignName["openURL:completionHandler:"] public open func openURLCompletionHandler(URL: NSURL, completionHandler: ObjCBlock<(Bool) -> Unit>): Unit
 }

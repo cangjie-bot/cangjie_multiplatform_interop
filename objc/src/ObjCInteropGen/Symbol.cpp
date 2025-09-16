@@ -335,12 +335,13 @@ NonTypeSymbol& TypeDeclarationSymbol::add_constructor(std::string name, TypeLike
         NonTypeSymbol::Private(), std::move(name), NonTypeSymbol::Kind::Constructor, return_type);
 }
 
-NonTypeSymbol& TypeDeclarationSymbol::add_field(std::string name, TypeLikeSymbol* type)
+NonTypeSymbol& TypeDeclarationSymbol::add_field(std::string name, TypeLikeSymbol* type, bool is_nullable)
 {
     assert(kind() == Kind::Struct || kind() == Kind::Union);
     assert(all_of_members([&name](const auto& member) { return !member.is_field() || member.name() != name; }));
 
-    auto& member = members_.emplace_back(NonTypeSymbol::Private(), std::move(name), NonTypeSymbol::Kind::Field, type);
+    auto& member = members_.emplace_back(NonTypeSymbol::Private(), std::move(name), NonTypeSymbol::Kind::Field, type,
+        is_nullable ? ModifierNullable : 0);
     if (is_ctype_ && !member.return_type()->is_ctype()) {
         is_ctype_ = false;
     }

@@ -24,7 +24,7 @@ public open class NSPersonNameComponentsFormatter <: NSFormatter {
     @ForeignName["localizedStringFromPersonNameComponents:style:options:"] public static func localizedStringFromPersonNameComponentsStyleOptions(components: NSPersonNameComponents, nameFormatStyle: Int32 /*NSPersonNameComponentsFormatterStyle*/, nameOptions: Int32 /*NSPersonNameComponentsFormatterOptions*/): NSString
     @ForeignName["stringFromPersonNameComponents:"] public open func stringFromPersonNameComponents(components: NSPersonNameComponents): NSString
     @ForeignName["annotatedStringFromPersonNameComponents:"] public open func annotatedStringFromPersonNameComponents(components: NSPersonNameComponents): NSAttributedString
-    @ForeignName["personNameComponentsFromString:"] public open func personNameComponentsFromString(string: NSString): NSPersonNameComponents
+    @ForeignName["personNameComponentsFromString:"] public open func personNameComponentsFromString(string: NSString): ?NSPersonNameComponents
     @ForeignName["getObjectValue:forString:errorDescription:"] public open func getObjectValueForStringErrorDescription(obj: ObjCPointer<id>, string: NSString, error: ObjCPointer<NSString>): Bool
 }
 

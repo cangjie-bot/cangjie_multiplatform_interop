@@ -26,41 +26,41 @@ public abstract sealed class NSUserNotificationActivationType {
 @ObjCMirror
 public open class NSUserNotification <: NSObject & NSCopying {
     public init()
-    public mut prop title: NSString
-    public mut prop subtitle: NSString
-    public mut prop informativeText: NSString
+    public mut prop title: ?NSString
+    public mut prop subtitle: ?NSString
+    public mut prop informativeText: ?NSString
     public mut prop actionButtonTitle: NSString
-    public mut prop userInfo: NSDictionary/*<NSString, id>*/
-    public mut prop deliveryDate: NSDate
-    public mut prop deliveryTimeZone: NSTimeZone
-    public mut prop deliveryRepeatInterval: NSDateComponents
-    public prop actualDeliveryDate: NSDate
+    public mut prop userInfo: ?NSDictionary/*<NSString, id>*/
+    public mut prop deliveryDate: ?NSDate
+    public mut prop deliveryTimeZone: ?NSTimeZone
+    public mut prop deliveryRepeatInterval: ?NSDateComponents
+    public prop actualDeliveryDate: ?NSDate
     public prop isPresented: Bool
     public prop isRemote: Bool
-    public mut prop soundName: NSString
+    public mut prop soundName: ?NSString
     public mut prop hasActionButton: Bool
     public prop activationType: Int32 /*NSUserNotificationActivationType*/
     public mut prop otherButtonTitle: NSString
-    public mut prop identifier: NSString
-    public mut prop contentImage: NSImage
+    public mut prop identifier: ?NSString
+    public mut prop contentImage: ?NSImage
     public mut prop hasReplyButton: Bool
-    public mut prop responsePlaceholder: NSString
-    public prop response: NSAttributedString
-    public mut prop additionalActions: NSArray/*<NSUserNotificationAction>*/
-    public prop additionalActivationAction: NSUserNotificationAction
+    public mut prop responsePlaceholder: ?NSString
+    public prop response: ?NSAttributedString
+    public mut prop additionalActions: ?NSArray/*<NSUserNotificationAction>*/
+    public prop additionalActivationAction: ?NSUserNotificationAction
 }
 
 @ObjCMirror
 public open class NSUserNotificationAction <: NSObject & NSCopying {
-    @ForeignName["actionWithIdentifier:title:"] public static func actionWithIdentifierTitle(identifier: NSString, title: NSString): NSUserNotificationAction
-    public prop identifier: NSString
-    public prop title: NSString
+    @ForeignName["actionWithIdentifier:title:"] public static func actionWithIdentifierTitle(identifier: ?NSString, title: ?NSString): NSUserNotificationAction
+    public prop identifier: ?NSString
+    public prop title: ?NSString
 }
 
 @ObjCMirror
 public open class NSUserNotificationCenter <: NSObject {
     public static prop defaultUserNotificationCenter: NSUserNotificationCenter
-    public mut prop delegate: NSUserNotificationCenterDelegate
+    public mut prop delegate: ?NSUserNotificationCenterDelegate
     public mut prop scheduledNotifications: NSArray/*<NSUserNotification>*/
     @ForeignName["scheduleNotification:"] public open func scheduleNotification(notification: NSUserNotification): Unit
     @ForeignName["removeScheduledNotification:"] public open func removeScheduledNotification(notification: NSUserNotification): Unit

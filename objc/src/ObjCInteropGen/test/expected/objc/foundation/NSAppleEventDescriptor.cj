@@ -21,8 +21,8 @@ public abstract sealed class NSAppleEventSendOptions {
 @ObjCMirror
 public open class NSAppleEventDescriptor <: NSObject & NSCopying & NSSecureCoding {
     public static func nullDescriptor(): NSAppleEventDescriptor
-    @ForeignName["descriptorWithDescriptorType:bytes:length:"] public static func descriptorWithDescriptorTypeBytesLength(descriptorType: DescType, bytes: CPointer<Unit>, byteCount: NSUInteger): NSAppleEventDescriptor
-    @ForeignName["descriptorWithDescriptorType:data:"] public static func descriptorWithDescriptorTypeData(descriptorType: DescType, data: NSData): NSAppleEventDescriptor
+    @ForeignName["descriptorWithDescriptorType:bytes:length:"] public static func descriptorWithDescriptorTypeBytesLength(descriptorType: DescType, bytes: CPointer<Unit>, byteCount: NSUInteger): ?NSAppleEventDescriptor
+    @ForeignName["descriptorWithDescriptorType:data:"] public static func descriptorWithDescriptorTypeData(descriptorType: DescType, data: ?NSData): ?NSAppleEventDescriptor
     @ForeignName["descriptorWithBoolean:"] public static func descriptorWithBoolean(boolean: Boolean): NSAppleEventDescriptor
     @ForeignName["descriptorWithEnumCode:"] public static func descriptorWithEnumCode(enumerator: OSType): NSAppleEventDescriptor
     @ForeignName["descriptorWithInt32:"] public static func descriptorWithInt32(signedInt: SInt32): NSAppleEventDescriptor
@@ -31,7 +31,7 @@ public open class NSAppleEventDescriptor <: NSObject & NSCopying & NSSecureCodin
     @ForeignName["descriptorWithString:"] public static func descriptorWithString(string: NSString): NSAppleEventDescriptor
     @ForeignName["descriptorWithDate:"] public static func descriptorWithDate(date: NSDate): NSAppleEventDescriptor
     @ForeignName["descriptorWithFileURL:"] public static func descriptorWithFileURL(fileURL: NSURL): NSAppleEventDescriptor
-    @ForeignName["appleEventWithEventClass:eventID:targetDescriptor:returnID:transactionID:"] public static func appleEventWithEventClassEventIDTargetDescriptorReturnIDTransactionID(eventClass: AEEventClass, eventID: AEEventID, targetDescriptor: NSAppleEventDescriptor, returnID: AEReturnID, transactionID: AETransactionID): NSAppleEventDescriptor
+    @ForeignName["appleEventWithEventClass:eventID:targetDescriptor:returnID:transactionID:"] public static func appleEventWithEventClassEventIDTargetDescriptorReturnIDTransactionID(eventClass: AEEventClass, eventID: AEEventID, targetDescriptor: ?NSAppleEventDescriptor, returnID: AEReturnID, transactionID: AETransactionID): NSAppleEventDescriptor
     public static func listDescriptor(): NSAppleEventDescriptor
     public static func recordDescriptor(): NSAppleEventDescriptor
     public static func currentProcessDescriptor(): NSAppleEventDescriptor
@@ -40,8 +40,8 @@ public open class NSAppleEventDescriptor <: NSObject & NSCopying & NSSecureCodin
     @ForeignName["descriptorWithApplicationURL:"] public static func descriptorWithApplicationURL(applicationURL: NSURL): NSAppleEventDescriptor
     @ForeignName["initWithAEDescNoCopy:"] public init(aeDesc: CPointer<AEDesc>)
     @ForeignName["initWithDescriptorType:bytes:length:"] public init(descriptorType: DescType, bytes: CPointer<Unit>, byteCount: NSUInteger)
-    @ForeignName["initWithDescriptorType:data:"] public init(descriptorType: DescType, data: NSData)
-    @ForeignName["initWithEventClass:eventID:targetDescriptor:returnID:transactionID:"] public init(eventClass: AEEventClass, eventID: AEEventID, targetDescriptor: NSAppleEventDescriptor, returnID: AEReturnID, transactionID: AETransactionID)
+    @ForeignName["initWithDescriptorType:data:"] public init(descriptorType: DescType, data: ?NSData)
+    @ForeignName["initWithEventClass:eventID:targetDescriptor:returnID:transactionID:"] public init(eventClass: AEEventClass, eventID: AEEventID, targetDescriptor: ?NSAppleEventDescriptor, returnID: AEReturnID, transactionID: AETransactionID)
     // @ForeignName["initListDescriptor"] public init()
     // @ForeignName["initRecordDescriptor"] public init()
     public prop aeDesc: CPointer<AEDesc>
@@ -52,28 +52,28 @@ public open class NSAppleEventDescriptor <: NSObject & NSCopying & NSSecureCodin
     public prop int32Value: SInt32
     public prop doubleValue: Float64
     public prop typeCodeValue: OSType
-    public prop stringValue: NSString
-    public prop dateValue: NSDate
-    public prop fileURLValue: NSURL
+    public prop stringValue: ?NSString
+    public prop dateValue: ?NSDate
+    public prop fileURLValue: ?NSURL
     public prop eventClass: AEEventClass
     public prop eventID: AEEventID
     public prop returnID: AEReturnID
     public prop transactionID: AETransactionID
     @ForeignName["setParamDescriptor:forKeyword:"] public open func setParamDescriptorForKeyword(descriptor: NSAppleEventDescriptor, keyword: AEKeyword): Unit
-    @ForeignName["paramDescriptorForKeyword:"] public open func paramDescriptorForKeyword(keyword: AEKeyword): NSAppleEventDescriptor
+    @ForeignName["paramDescriptorForKeyword:"] public open func paramDescriptorForKeyword(keyword: AEKeyword): ?NSAppleEventDescriptor
     @ForeignName["removeParamDescriptorWithKeyword:"] public open func removeParamDescriptorWithKeyword(keyword: AEKeyword): Unit
     @ForeignName["setAttributeDescriptor:forKeyword:"] public open func setAttributeDescriptorForKeyword(descriptor: NSAppleEventDescriptor, keyword: AEKeyword): Unit
-    @ForeignName["attributeDescriptorForKeyword:"] public open func attributeDescriptorForKeyword(keyword: AEKeyword): NSAppleEventDescriptor
-    @ForeignName["sendEventWithOptions:timeout:error:"] public open func sendEventWithOptionsTimeoutError(sendOptions: Int32 /*NSAppleEventSendOptions*/, timeoutInSeconds: NSTimeInterval, error: ObjCPointer<NSError>): NSAppleEventDescriptor
+    @ForeignName["attributeDescriptorForKeyword:"] public open func attributeDescriptorForKeyword(keyword: AEKeyword): ?NSAppleEventDescriptor
+    @ForeignName["sendEventWithOptions:timeout:error:"] public open func sendEventWithOptionsTimeoutError(sendOptions: Int32 /*NSAppleEventSendOptions*/, timeoutInSeconds: NSTimeInterval, error: ObjCPointer<NSError>): ?NSAppleEventDescriptor
     public prop isRecordDescriptor: Bool
     public prop numberOfItems: NSInteger
     @ForeignName["insertDescriptor:atIndex:"] public open func insertDescriptorAtIndex(descriptor: NSAppleEventDescriptor, index: NSInteger): Unit
-    @ForeignName["descriptorAtIndex:"] public open func descriptorAtIndex(index: NSInteger): NSAppleEventDescriptor
+    @ForeignName["descriptorAtIndex:"] public open func descriptorAtIndex(index: NSInteger): ?NSAppleEventDescriptor
     @ForeignName["removeDescriptorAtIndex:"] public open func removeDescriptorAtIndex(index: NSInteger): Unit
     @ForeignName["setDescriptor:forKeyword:"] public open func setDescriptorForKeyword(descriptor: NSAppleEventDescriptor, keyword: AEKeyword): Unit
-    @ForeignName["descriptorForKeyword:"] public open func descriptorForKeyword(keyword: AEKeyword): NSAppleEventDescriptor
+    @ForeignName["descriptorForKeyword:"] public open func descriptorForKeyword(keyword: AEKeyword): ?NSAppleEventDescriptor
     @ForeignName["removeDescriptorWithKeyword:"] public open func removeDescriptorWithKeyword(keyword: AEKeyword): Unit
     @ForeignName["keywordForDescriptorAtIndex:"] public open func keywordForDescriptorAtIndex(index: NSInteger): AEKeyword
-    @ForeignName["coerceToDescriptorType:"] public open func coerceToDescriptorType(descriptorType: DescType): NSAppleEventDescriptor
+    @ForeignName["coerceToDescriptorType:"] public open func coerceToDescriptorType(descriptorType: DescType): ?NSAppleEventDescriptor
 }
 

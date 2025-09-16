@@ -6,7 +6,7 @@ import interoplib.objc.*
 
 @ObjCMirror
 public open class NSDistributedLock <: NSObject {
-    @ForeignName["lockWithPath:"] public static func lockWithPath(path: NSString): NSDistributedLock
+    @ForeignName["lockWithPath:"] public static func lockWithPath(path: NSString): ?NSDistributedLock
     @ForeignName["initWithPath:"] public init(path: NSString)
     public open func tryLock(): Bool
     public open func unlock(): Unit

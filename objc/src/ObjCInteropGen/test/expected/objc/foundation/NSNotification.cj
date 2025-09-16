@@ -10,11 +10,11 @@ public type NSNotificationName = NSString
 public open class NSNotification <: NSObject & NSCopying & NSCoding {
     public prop name: NSNotificationName
     public prop object: id
-    public prop userInfo: NSDictionary/*<KeyType, ObjectType>*/
-    @ForeignName["initWithName:object:userInfo:"] public init(name: NSNotificationName, object: id, userInfo: NSDictionary/*<KeyType, ObjectType>*/)
+    public prop userInfo: ?NSDictionary/*<KeyType, ObjectType>*/
+    @ForeignName["initWithName:object:userInfo:"] public init(name: NSNotificationName, object: id, userInfo: ?NSDictionary/*<KeyType, ObjectType>*/)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
     @ForeignName["notificationWithName:object:"] public static func notificationWithNameObject(aName: NSNotificationName, anObject: id): NSNotification
-    @ForeignName["notificationWithName:object:userInfo:"] public static func notificationWithNameObjectUserInfo(aName: NSNotificationName, anObject: id, aUserInfo: NSDictionary/*<KeyType, ObjectType>*/): NSNotification
+    @ForeignName["notificationWithName:object:userInfo:"] public static func notificationWithNameObjectUserInfo(aName: NSNotificationName, anObject: id, aUserInfo: ?NSDictionary/*<KeyType, ObjectType>*/): NSNotification
     public init()
 }
 
@@ -24,9 +24,9 @@ public open class NSNotificationCenter <: NSObject {
     @ForeignName["addObserver:selector:name:object:"] public open func addObserverSelectorNameObject(observer: id, aSelector: SEL, aName: NSNotificationName, anObject: id): Unit
     @ForeignName["postNotification:"] public open func postNotification(notification: NSNotification): Unit
     @ForeignName["postNotificationName:object:"] public open func postNotificationNameObject(aName: NSNotificationName, anObject: id): Unit
-    @ForeignName["postNotificationName:object:userInfo:"] public open func postNotificationNameObjectUserInfo(aName: NSNotificationName, anObject: id, aUserInfo: NSDictionary/*<KeyType, ObjectType>*/): Unit
+    @ForeignName["postNotificationName:object:userInfo:"] public open func postNotificationNameObjectUserInfo(aName: NSNotificationName, anObject: id, aUserInfo: ?NSDictionary/*<KeyType, ObjectType>*/): Unit
     @ForeignName["removeObserver:"] public open func removeObserver(observer: id): Unit
     @ForeignName["removeObserver:name:object:"] public open func removeObserverNameObject(observer: id, aName: NSNotificationName, anObject: id): Unit
-    @ForeignName["addObserverForName:object:queue:usingBlock:"] public open func addObserverForNameObjectQueueUsingBlock(name: NSNotificationName, obj: id, queue: NSOperationQueue, block: ObjCBlock<(NSNotification) -> Unit>): NSObjectProtocol
+    @ForeignName["addObserverForName:object:queue:usingBlock:"] public open func addObserverForNameObjectQueueUsingBlock(name: NSNotificationName, obj: id, queue: ?NSOperationQueue, block: ObjCBlock<(NSNotification) -> Unit>): NSObjectProtocol
 }
 

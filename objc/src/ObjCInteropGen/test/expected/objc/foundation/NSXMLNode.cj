@@ -22,8 +22,8 @@ public abstract sealed class NSXMLNodeKind {
 
 @ObjCMirror
 public open class NSXMLNode <: NSObject & NSCopying {
-    protected var _parent: NSXMLNode
-    protected var _objectValue: id
+    protected var _parent: ?NSXMLNode
+    protected var _objectValue: ?id
     protected var _kind: Int32 /*NSXMLNodeKind*/
     protected var _index: uint32_t
     public init()
@@ -34,7 +34,7 @@ public open class NSXMLNode <: NSObject & NSCopying {
     @ForeignName["elementWithName:"] public static func elementWithName(name: NSString): id
     @ForeignName["elementWithName:URI:"] public static func elementWithNameURI(name: NSString, URI: NSString): id
     @ForeignName["elementWithName:stringValue:"] public static func elementWithNameStringValue(name: NSString, string: NSString): id
-    @ForeignName["elementWithName:children:attributes:"] public static func elementWithNameChildrenAttributes(name: NSString, children: NSArray/*<NSXMLNode>*/, attributes: NSArray/*<NSXMLNode>*/): id
+    @ForeignName["elementWithName:children:attributes:"] public static func elementWithNameChildrenAttributes(name: NSString, children: ?NSArray/*<NSXMLNode>*/, attributes: ?NSArray/*<NSXMLNode>*/): id
     @ForeignName["attributeWithName:stringValue:"] public static func attributeWithNameStringValue(name: NSString, stringValue: NSString): id
     @ForeignName["attributeWithName:URI:stringValue:"] public static func attributeWithNameURIStringValue(name: NSString, URI: NSString, stringValue: NSString): id
     @ForeignName["namespaceWithName:stringValue:"] public static func namespaceWithNameStringValue(name: NSString, stringValue: NSString): id
@@ -43,34 +43,34 @@ public open class NSXMLNode <: NSObject & NSCopying {
     @ForeignName["textWithStringValue:"] public static func textWithStringValue(stringValue: NSString): id
     @ForeignName["DTDNodeWithXMLString:"] public static func DTDNodeWithXMLString(string: NSString): id
     public prop kind: Int32 /*NSXMLNodeKind*/
-    public mut prop name: NSString
+    public mut prop name: ?NSString
     public mut prop objectValue: id
-    public mut prop stringValue: NSString
+    public mut prop stringValue: ?NSString
     @ForeignName["setStringValue:resolvingEntities:"] public open func setStringValueResolvingEntities(string: NSString, resolve: Bool): Unit
     public prop index: NSUInteger
     public prop level: NSUInteger
-    public prop rootDocument: NSXMLDocument
-    public prop parent: NSXMLNode
+    public prop rootDocument: ?NSXMLDocument
+    public prop parent: ?NSXMLNode
     public prop childCount: NSUInteger
-    public prop children: NSArray/*<NSXMLNode>*/
-    @ForeignName["childAtIndex:"] public open func childAtIndex(index: NSUInteger): NSXMLNode
-    public prop previousSibling: NSXMLNode
-    public prop nextSibling: NSXMLNode
-    public prop previousNode: NSXMLNode
-    public prop nextNode: NSXMLNode
+    public prop children: ?NSArray/*<NSXMLNode>*/
+    @ForeignName["childAtIndex:"] public open func childAtIndex(index: NSUInteger): ?NSXMLNode
+    public prop previousSibling: ?NSXMLNode
+    public prop nextSibling: ?NSXMLNode
+    public prop previousNode: ?NSXMLNode
+    public prop nextNode: ?NSXMLNode
     public open func detach(): Unit
-    public prop XPath: NSString
-    public prop localName: NSString
-    public prop prefix: NSString
-    public mut prop URI: NSString
+    public prop XPath: ?NSString
+    public prop localName: ?NSString
+    public prop prefix: ?NSString
+    public mut prop URI: ?NSString
     @ForeignName["localNameForName:"] public static func localNameForName(name: NSString): NSString
-    @ForeignName["prefixForName:"] public static func prefixForName(name: NSString): NSString
-    @ForeignName["predefinedNamespaceForPrefix:"] public static func predefinedNamespaceForPrefix(name: NSString): NSXMLNode
+    @ForeignName["prefixForName:"] public static func prefixForName(name: NSString): ?NSString
+    @ForeignName["predefinedNamespaceForPrefix:"] public static func predefinedNamespaceForPrefix(name: NSString): ?NSXMLNode
     public prop XMLString: NSString
     @ForeignName["XMLStringWithOptions:"] public open func XMLStringWithOptions(options: Int32 /*NSXMLNodeOptions*/): NSString
     @ForeignName["canonicalXMLStringPreservingComments:"] public open func canonicalXMLStringPreservingComments(comments: Bool): NSString
-    @ForeignName["nodesForXPath:error:"] public open func nodesForXPathError(xpath: NSString, error: ObjCPointer<NSError>): NSArray/*<NSXMLNode>*/
-    @ForeignName["objectsForXQuery:constants:error:"] public open func objectsForXQueryConstantsError(xquery: NSString, constants: NSDictionary/*<NSString, id>*/, error: ObjCPointer<NSError>): NSArray/*<ObjectType>*/
-    @ForeignName["objectsForXQuery:error:"] public open func objectsForXQueryError(xquery: NSString, error: ObjCPointer<NSError>): NSArray/*<ObjectType>*/
+    @ForeignName["nodesForXPath:error:"] public open func nodesForXPathError(xpath: NSString, error: ObjCPointer<NSError>): ?NSArray/*<NSXMLNode>*/
+    @ForeignName["objectsForXQuery:constants:error:"] public open func objectsForXQueryConstantsError(xquery: NSString, constants: ?NSDictionary/*<NSString, id>*/, error: ObjCPointer<NSError>): ?NSArray/*<ObjectType>*/
+    @ForeignName["objectsForXQuery:error:"] public open func objectsForXQueryError(xquery: NSString, error: ObjCPointer<NSError>): ?NSArray/*<ObjectType>*/
 }
 

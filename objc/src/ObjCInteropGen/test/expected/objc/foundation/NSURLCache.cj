@@ -13,19 +13,19 @@ public abstract sealed class NSURLCacheStoragePolicy {
 @ObjCMirror
 public open class NSCachedURLResponse <: NSObject & NSSecureCoding & NSCopying {
     @ForeignName["initWithResponse:data:"] public init(response: NSURLResponse, data: NSData)
-    @ForeignName["initWithResponse:data:userInfo:storagePolicy:"] public init(response: NSURLResponse, data: NSData, userInfo: NSDictionary/*<KeyType, ObjectType>*/, storagePolicy: Int32 /*NSURLCacheStoragePolicy*/)
+    @ForeignName["initWithResponse:data:userInfo:storagePolicy:"] public init(response: NSURLResponse, data: NSData, userInfo: ?NSDictionary/*<KeyType, ObjectType>*/, storagePolicy: Int32 /*NSURLCacheStoragePolicy*/)
     public prop response: NSURLResponse
     public prop data: NSData
-    public prop userInfo: NSDictionary/*<KeyType, ObjectType>*/
+    public prop userInfo: ?NSDictionary/*<KeyType, ObjectType>*/
     public prop storagePolicy: Int32 /*NSURLCacheStoragePolicy*/
 }
 
 @ObjCMirror
 public open class NSURLCache <: NSObject {
     public static mut prop sharedURLCache: NSURLCache
-    @ForeignName["initWithMemoryCapacity:diskCapacity:diskPath:"] public init(memoryCapacity: NSUInteger, diskCapacity: NSUInteger, path: NSString)
-    @ForeignName["initWithMemoryCapacity:diskCapacity:directoryURL:"] public init(memoryCapacity: NSUInteger, diskCapacity: NSUInteger, directoryURL: NSURL)
-    @ForeignName["cachedResponseForRequest:"] public open func cachedResponseForRequest(request: NSURLRequest): NSCachedURLResponse
+    @ForeignName["initWithMemoryCapacity:diskCapacity:diskPath:"] public init(memoryCapacity: NSUInteger, diskCapacity: NSUInteger, path: ?NSString)
+    @ForeignName["initWithMemoryCapacity:diskCapacity:directoryURL:"] public init(memoryCapacity: NSUInteger, diskCapacity: NSUInteger, directoryURL: ?NSURL)
+    @ForeignName["cachedResponseForRequest:"] public open func cachedResponseForRequest(request: NSURLRequest): ?NSCachedURLResponse
     @ForeignName["storeCachedResponse:forRequest:"] public open func storeCachedResponseForRequest(cachedResponse: NSCachedURLResponse, request: NSURLRequest): Unit
     @ForeignName["removeCachedResponseForRequest:"] public open func removeCachedResponseForRequest(request: NSURLRequest): Unit
     public open func removeAllCachedResponses(): Unit

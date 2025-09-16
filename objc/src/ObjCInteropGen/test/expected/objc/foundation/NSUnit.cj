@@ -27,7 +27,7 @@ public open class NSUnit <: NSObject & NSCopying & NSSecureCoding {
 
 @ObjCMirror
 public open class NSDimension <: NSUnit & NSSecureCoding {
-    protected var _converter: NSUnitConverter
+    protected var _converter: ?NSUnitConverter
     public prop converter: NSUnitConverter
     @ForeignName["initWithSymbol:converter:"] public init(symbol: NSString, converter: NSUnitConverter)
     public static func baseUnit(): NSDimension

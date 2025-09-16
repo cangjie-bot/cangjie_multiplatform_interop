@@ -556,6 +556,7 @@ constexpr uint8_t ModifierAccessMask = ModifierPrivate | ModifierProtected | Mod
 
 constexpr uint8_t ModifierStatic = 1 << 3;
 constexpr uint8_t ModifierReadonly = 1 << 4;
+constexpr uint8_t ModifierNullable = 1 << 5;
 
 class TypeDeclarationSymbol : public NamedTypeSymbol {
     std::vector<std::unique_ptr<TypeParameterSymbol>> parameters_;
@@ -692,7 +693,7 @@ public:
 
     NonTypeSymbol& add_constructor(std::string name, TypeLikeSymbol* return_type);
 
-    NonTypeSymbol& add_field(std::string name, TypeLikeSymbol* type);
+    NonTypeSymbol& add_field(std::string name, TypeLikeSymbol* type, bool is_nullable);
 
     NonTypeSymbol& add_instance_variable(std::string name, TypeLikeSymbol* type, uint8_t modifiers);
 
@@ -915,8 +916,8 @@ public:
         return const_cast<TypeAliasSymbol*>(this);
     }
 
-    [[nodiscard]] TypeAliasSymbol *construct(
-        [[maybe_unused]] const std::vector<TypeLikeSymbol *> &arguments) const override
+    [[nodiscard]] TypeAliasSymbol* construct(
+        [[maybe_unused]] const std::vector<TypeLikeSymbol*>& arguments) const override
     {
         assert(arguments.empty());
         return const_cast<TypeAliasSymbol *>(this);
@@ -1046,6 +1047,11 @@ public:
         return modifiers_ & ModifierReadonly;
     }
 
+    [[nodiscard]] bool is_nullable() const noexcept
+    {
+        return modifiers_ & ModifierNullable;
+    }
+
     [[nodiscard]] const std::string& getter() const noexcept
     {
         return getter_;
@@ -1107,11 +1113,11 @@ public:
         return ParameterCollection(this);
     }
 
-    void add_parameter(std::string name, TypeLikeSymbol* type)
+    void add_parameter(std::string name, TypeLikeSymbol* type, bool is_nullable)
     {
         assert(is_method());
         assert(type);
-        parameters_.emplace_back(std::move(name), type);
+        parameters_.emplace_back(std::move(name), type, is_nullable);
     }
 
     [[nodiscard]] const std::string& selector_attribute() const noexcept
@@ -1176,9 +1182,11 @@ private:
 
 class ParameterSymbol final : public Symbol {
     TypeLikeSymbol* type_;
+    const bool is_nullable_;
 
 public:
-    ParameterSymbol(std::string name, TypeLikeSymbol* type) : Symbol(std::move(name)), type_(type)
+    ParameterSymbol(std::string name, TypeLikeSymbol* type, bool is_nullable)
+        : Symbol(std::move(name)), type_(type), is_nullable_(is_nullable)
     {
     }
 
@@ -1191,6 +1199,11 @@ public:
     {
         assert(type);
         type_ = type;
+    }
+
+    [[nodiscard]] bool is_nullable() const noexcept
+    {
+        return is_nullable_;
     }
 };
 

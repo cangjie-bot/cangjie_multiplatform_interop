@@ -9,8 +9,8 @@ public open class NSUUID <: NSObject & NSCopying & NSSecureCoding {
     public static func UUID(): NSUUID
     public init()
     @ForeignName["initWithUUIDString:"] public init(string: NSString)
-    @ForeignName["initWithUUIDBytes:"] public init(bytes: CPointer<UInt8>)
-    @ForeignName["getUUIDBytes:"] public open func getUUIDBytes(uuid: CPointer<UInt8>): Unit
+    @ForeignName["initWithUUIDBytes:"] public init(bytes: uuid_t)
+    @ForeignName["getUUIDBytes:"] public open func getUUIDBytes(uuid: uuid_t): Unit
     @ForeignName["compare:"] public open func compare(otherUUID: NSUUID): Int32 /*NSComparisonResult*/
     public prop UUIDString: NSString
 }

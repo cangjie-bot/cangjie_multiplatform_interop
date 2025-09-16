@@ -30,17 +30,17 @@ public abstract sealed class NSXMLDTDNodeKind {
 @ObjCMirror
 public open class NSXMLDTDNode <: NSXMLNode {
     protected var _DTDKind: Int32 /*NSXMLDTDNodeKind*/
-    protected var _name: NSString
-    protected var _notationName: NSString
-    protected var _publicID: NSString
-    protected var _systemID: NSString
+    protected var _name: ?NSString
+    protected var _notationName: ?NSString
+    protected var _publicID: ?NSString
+    protected var _systemID: ?NSString
     @ForeignName["initWithXMLString:"] public init(string: NSString)
     @ForeignName["initWithKind:options:"] public init(kind: Int32 /*NSXMLNodeKind*/, options: Int32 /*NSXMLNodeOptions*/)
     public init()
     public mut prop DTDKind: Int32 /*NSXMLDTDNodeKind*/
     public prop isExternal: Bool
-    public mut prop publicID: NSString
-    public mut prop systemID: NSString
-    public mut prop notationName: NSString
+    public mut prop publicID: ?NSString
+    public mut prop systemID: ?NSString
+    public mut prop notationName: ?NSString
 }
 

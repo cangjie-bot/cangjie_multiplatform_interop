@@ -16,8 +16,8 @@ public open class NSAppleEventManager <: NSObject {
     @ForeignName["setEventHandler:andSelector:forEventClass:andEventID:"] public open func setEventHandlerAndSelectorForEventClassAndEventID(handler: id, handleEventSelector: SEL, eventClass: AEEventClass, eventID: AEEventID): Unit
     @ForeignName["removeEventHandlerForEventClass:andEventID:"] public open func removeEventHandlerForEventClassAndEventID(eventClass: AEEventClass, eventID: AEEventID): Unit
     @ForeignName["dispatchRawAppleEvent:withRawReply:handlerRefCon:"] public open func dispatchRawAppleEventWithRawReplyHandlerRefCon(theAppleEvent: CPointer<AppleEvent>, theReply: CPointer<AppleEvent>, handlerRefCon: SRefCon): OSErr
-    public prop currentAppleEvent: NSAppleEventDescriptor
-    public prop currentReplyAppleEvent: NSAppleEventDescriptor
+    public prop currentAppleEvent: ?NSAppleEventDescriptor
+    public prop currentReplyAppleEvent: ?NSAppleEventDescriptor
     public open func suspendCurrentAppleEvent(): NSAppleEventManagerSuspensionID
     @ForeignName["appleEventForSuspensionID:"] public open func appleEventForSuspensionID(suspensionID: NSAppleEventManagerSuspensionID): NSAppleEventDescriptor
     @ForeignName["replyAppleEventForSuspensionID:"] public open func replyAppleEventForSuspensionID(suspensionID: NSAppleEventManagerSuspensionID): NSAppleEventDescriptor

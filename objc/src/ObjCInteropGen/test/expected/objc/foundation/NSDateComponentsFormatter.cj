@@ -25,16 +25,16 @@ public abstract sealed class NSDateComponentsFormatterZeroFormattingBehavior {
 
 @ObjCMirror
 public open class NSDateComponentsFormatter <: NSFormatter {
-    @ForeignName["stringForObjectValue:"] public open func stringForObjectValue(obj: id): NSString
-    @ForeignName["stringFromDateComponents:"] public open func stringFromDateComponents(components: NSDateComponents): NSString
-    @ForeignName["stringFromDate:toDate:"] public open func stringFromDateToDate(startDate: NSDate, endDate: NSDate): NSString
-    @ForeignName["stringFromTimeInterval:"] public open func stringFromTimeInterval(ti: NSTimeInterval): NSString
-    @ForeignName["localizedStringFromDateComponents:unitsStyle:"] public static func localizedStringFromDateComponentsUnitsStyle(components: NSDateComponents, unitsStyle: Int32 /*NSDateComponentsFormatterUnitsStyle*/): NSString
+    @ForeignName["stringForObjectValue:"] public open func stringForObjectValue(obj: id): ?NSString
+    @ForeignName["stringFromDateComponents:"] public open func stringFromDateComponents(components: NSDateComponents): ?NSString
+    @ForeignName["stringFromDate:toDate:"] public open func stringFromDateToDate(startDate: NSDate, endDate: NSDate): ?NSString
+    @ForeignName["stringFromTimeInterval:"] public open func stringFromTimeInterval(ti: NSTimeInterval): ?NSString
+    @ForeignName["localizedStringFromDateComponents:unitsStyle:"] public static func localizedStringFromDateComponentsUnitsStyle(components: NSDateComponents, unitsStyle: Int32 /*NSDateComponentsFormatterUnitsStyle*/): ?NSString
     public mut prop unitsStyle: Int32 /*NSDateComponentsFormatterUnitsStyle*/
     public mut prop allowedUnits: Int32 /*NSCalendarUnit*/
     public mut prop zeroFormattingBehavior: Int32 /*NSDateComponentsFormatterZeroFormattingBehavior*/
-    public mut prop calendar: NSCalendar
-    public mut prop referenceDate: NSDate
+    public mut prop calendar: ?NSCalendar
+    public mut prop referenceDate: ?NSDate
     public mut prop allowsFractionalUnits: Bool
     public mut prop maximumUnitCount: NSInteger
     public mut prop collapsesLargestUnit: Bool

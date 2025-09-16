@@ -8,7 +8,7 @@ import interoplib.objc.*
 public open class NSScanner <: NSObject & NSCopying {
     public prop string: NSString
     public mut prop scanLocation: NSUInteger
-    public mut prop charactersToBeSkipped: NSCharacterSet
+    public mut prop charactersToBeSkipped: ?NSCharacterSet
     public mut prop caseSensitive: Bool
     public mut prop locale: id
     @ForeignName["initWithString:"] public init(string: NSString)

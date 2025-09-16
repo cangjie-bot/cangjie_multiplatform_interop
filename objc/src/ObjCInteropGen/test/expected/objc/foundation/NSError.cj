@@ -10,17 +10,17 @@ public type NSErrorUserInfoKey = NSString
 
 @ObjCMirror
 public open class NSError <: NSObject & NSCopying & NSSecureCoding {
-    @ForeignName["initWithDomain:code:userInfo:"] public init(domain: NSErrorDomain, code: NSInteger, dict: NSDictionary/*<NSErrorUserInfoKey, id>*/)
-    @ForeignName["errorWithDomain:code:userInfo:"] public static func errorWithDomainCodeUserInfo(domain: NSErrorDomain, code: NSInteger, dict: NSDictionary/*<NSErrorUserInfoKey, id>*/): NSError
+    @ForeignName["initWithDomain:code:userInfo:"] public init(domain: NSErrorDomain, code: NSInteger, dict: ?NSDictionary/*<NSErrorUserInfoKey, id>*/)
+    @ForeignName["errorWithDomain:code:userInfo:"] public static func errorWithDomainCodeUserInfo(domain: NSErrorDomain, code: NSInteger, dict: ?NSDictionary/*<NSErrorUserInfoKey, id>*/): NSError
     public prop domain: NSErrorDomain
     public prop code: NSInteger
     public prop userInfo: NSDictionary/*<NSErrorUserInfoKey, id>*/
     public prop localizedDescription: NSString
-    public prop localizedFailureReason: NSString
-    public prop localizedRecoverySuggestion: NSString
-    public prop localizedRecoveryOptions: NSArray/*<NSString>*/
+    public prop localizedFailureReason: ?NSString
+    public prop localizedRecoverySuggestion: ?NSString
+    public prop localizedRecoveryOptions: ?NSArray/*<NSString>*/
     public prop recoveryAttempter: id
-    public prop helpAnchor: NSString
+    public prop helpAnchor: ?NSString
     public prop underlyingErrors: NSArray/*<NSError>*/
     @ForeignName["setUserInfoValueProviderForDomain:provider:"] public static func setUserInfoValueProviderForDomainProvider(errorDomain: NSErrorDomain, provider: ObjCBlock<(NSError, NSErrorUserInfoKey) -> id>): Unit
     @ForeignName["userInfoValueProviderForDomain:"] public static func userInfoValueProviderForDomain(err: NSError, userInfoKey: NSErrorUserInfoKey, errorDomain: NSErrorDomain): ObjCBlock<(NSError, NSErrorUserInfoKey) -> id>

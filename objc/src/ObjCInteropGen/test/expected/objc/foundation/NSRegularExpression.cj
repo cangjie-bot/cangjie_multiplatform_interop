@@ -16,11 +16,11 @@ public abstract sealed class NSRegularExpressionOptions {
 
 @ObjCMirror
 public open class NSRegularExpression <: NSObject & NSCopying & NSSecureCoding {
-    protected var _pattern: NSString
+    protected var _pattern: ?NSString
     protected var _options: NSUInteger
     protected var _internal: CPointer<Unit>
     protected var _checkout: int32_t
-    @ForeignName["regularExpressionWithPattern:options:error:"] public static func regularExpressionWithPatternOptionsError(pattern: NSString, options: Int32 /*NSRegularExpressionOptions*/, error: ObjCPointer<NSError>): NSRegularExpression
+    @ForeignName["regularExpressionWithPattern:options:error:"] public static func regularExpressionWithPatternOptionsError(pattern: NSString, options: Int32 /*NSRegularExpressionOptions*/, error: ObjCPointer<NSError>): ?NSRegularExpression
     @ForeignName["initWithPattern:options:error:"] public init(pattern: NSString, options: Int32 /*NSRegularExpressionOptions*/, error: ObjCPointer<NSError>)
     public prop pattern: NSString
     public prop options: Int32 /*NSRegularExpressionOptions*/
@@ -29,7 +29,7 @@ public open class NSRegularExpression <: NSObject & NSCopying & NSSecureCoding {
     @ForeignName["enumerateMatchesInString:options:range:usingBlock:"] public open func enumerateMatchesInStringOptionsRangeUsingBlock(string: NSString, options: Int32 /*NSMatchingOptions*/, range: NSRange, block: ObjCBlock<(NSTextCheckingResult, Int32 /*NSMatchingFlags*/, CPointer<Bool>) -> Unit>): Unit
     @ForeignName["matchesInString:options:range:"] public open func matchesInStringOptionsRange(string: NSString, options: Int32 /*NSMatchingOptions*/, range: NSRange): NSArray/*<NSTextCheckingResult>*/
     @ForeignName["numberOfMatchesInString:options:range:"] public open func numberOfMatchesInStringOptionsRange(string: NSString, options: Int32 /*NSMatchingOptions*/, range: NSRange): NSUInteger
-    @ForeignName["firstMatchInString:options:range:"] public open func firstMatchInStringOptionsRange(string: NSString, options: Int32 /*NSMatchingOptions*/, range: NSRange): NSTextCheckingResult
+    @ForeignName["firstMatchInString:options:range:"] public open func firstMatchInStringOptionsRange(string: NSString, options: Int32 /*NSMatchingOptions*/, range: NSRange): ?NSTextCheckingResult
     @ForeignName["rangeOfFirstMatchInString:options:range:"] public open func rangeOfFirstMatchInStringOptionsRange(string: NSString, options: Int32 /*NSMatchingOptions*/, range: NSRange): NSRange
     @ForeignName["stringByReplacingMatchesInString:options:range:withTemplate:"] public open func stringByReplacingMatchesInStringOptionsRangeWithTemplate(string: NSString, options: Int32 /*NSMatchingOptions*/, range: NSRange, templ: NSString): NSString
     @ForeignName["replaceMatchesInString:options:range:withTemplate:"] public open func replaceMatchesInStringOptionsRangeWithTemplate(string: NSMutableString, options: Int32 /*NSMatchingOptions*/, range: NSRange, templ: NSString): NSUInteger
@@ -56,7 +56,7 @@ public abstract sealed class NSMatchingFlags {
 @ObjCMirror
 public open class NSDataDetector <: NSRegularExpression {
     protected var _types: NSTextCheckingTypes
-    @ForeignName["dataDetectorWithTypes:error:"] public static func dataDetectorWithTypesError(checkingTypes: NSTextCheckingTypes, error: ObjCPointer<NSError>): NSDataDetector
+    @ForeignName["dataDetectorWithTypes:error:"] public static func dataDetectorWithTypesError(checkingTypes: NSTextCheckingTypes, error: ObjCPointer<NSError>): ?NSDataDetector
     @ForeignName["initWithTypes:error:"] public init(checkingTypes: NSTextCheckingTypes, error: ObjCPointer<NSError>)
     public prop checkingTypes: NSTextCheckingTypes
 }

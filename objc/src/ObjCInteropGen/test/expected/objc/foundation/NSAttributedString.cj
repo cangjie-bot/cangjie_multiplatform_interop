@@ -19,19 +19,19 @@ public open class NSAttributedString <: NSObject & NSCopying & NSMutableCopying 
     @ForeignName["attribute:atIndex:longestEffectiveRange:inRange:"] public open func attributeAtIndexLongestEffectiveRangeInRange(attrName: NSAttributedStringKey, location: NSUInteger, range: NSRangePointer, rangeLimit: NSRange): id
     @ForeignName["isEqualToAttributedString:"] public open func isEqualToAttributedString(other: NSAttributedString): Bool
     @ForeignName["initWithString:"] public init(str: NSString)
-    @ForeignName["initWithString:attributes:"] public init(str: NSString, attrs: NSDictionary/*<NSAttributedStringKey, id>*/)
+    @ForeignName["initWithString:attributes:"] public init(str: NSString, attrs: ?NSDictionary/*<NSAttributedStringKey, id>*/)
     @ForeignName["initWithAttributedString:"] public init(attrStr: NSAttributedString)
     @ForeignName["enumerateAttributesInRange:options:usingBlock:"] public open func enumerateAttributesInRangeOptionsUsingBlock(enumerationRange: NSRange, opts: Int32 /*NSAttributedStringEnumerationOptions*/, block: ObjCBlock<(NSDictionary/*<NSAttributedStringKey, id>*/, NSRange, CPointer<Bool>) -> Unit>): Unit
     @ForeignName["enumerateAttribute:inRange:options:usingBlock:"] public open func enumerateAttributeInRangeOptionsUsingBlock(attrName: NSAttributedStringKey, enumerationRange: NSRange, opts: Int32 /*NSAttributedStringEnumerationOptions*/, block: ObjCBlock<(id, NSRange, CPointer<Bool>) -> Unit>): Unit
-    @ForeignName["initWithContentsOfMarkdownFileAtURL:options:baseURL:error:"] public init(markdownFile: NSURL, options: NSAttributedStringMarkdownParsingOptions, baseURL: NSURL, error: ObjCPointer<NSError>)
-    @ForeignName["initWithMarkdown:options:baseURL:error:"] public init(markdown: NSData, options: NSAttributedStringMarkdownParsingOptions, baseURL: NSURL, error: ObjCPointer<NSError>)
-    @ForeignName["initWithMarkdownString:options:baseURL:error:"] public init(markdownString: NSString, options: NSAttributedStringMarkdownParsingOptions, baseURL: NSURL, error: ObjCPointer<NSError>)
-    @ForeignName["initWithFormat:options:locale:"] public init(format: NSAttributedString, options: Int32 /*NSAttributedStringFormattingOptions*/, locale: NSLocale)
-    @ForeignName["initWithFormat:options:locale:arguments:"] public init(format: NSAttributedString, options: Int32 /*NSAttributedStringFormattingOptions*/, locale: NSLocale, arguments: va_list)
+    @ForeignName["initWithContentsOfMarkdownFileAtURL:options:baseURL:error:"] public init(markdownFile: NSURL, options: ?NSAttributedStringMarkdownParsingOptions, baseURL: ?NSURL, error: ObjCPointer<NSError>)
+    @ForeignName["initWithMarkdown:options:baseURL:error:"] public init(markdown: NSData, options: ?NSAttributedStringMarkdownParsingOptions, baseURL: ?NSURL, error: ObjCPointer<NSError>)
+    @ForeignName["initWithMarkdownString:options:baseURL:error:"] public init(markdownString: NSString, options: ?NSAttributedStringMarkdownParsingOptions, baseURL: ?NSURL, error: ObjCPointer<NSError>)
+    @ForeignName["initWithFormat:options:locale:"] public init(format: NSAttributedString, options: Int32 /*NSAttributedStringFormattingOptions*/, locale: ?NSLocale)
+    @ForeignName["initWithFormat:options:locale:arguments:"] public init(format: NSAttributedString, options: Int32 /*NSAttributedStringFormattingOptions*/, locale: ?NSLocale, arguments: va_list)
     @ForeignName["localizedAttributedStringWithFormat:"] public static func localizedAttributedStringWithFormat(format: NSAttributedString): NSAttributedString
     @ForeignName["localizedAttributedStringWithFormat:options:"] public static func localizedAttributedStringWithFormatOptions(format: NSAttributedString, options: Int32 /*NSAttributedStringFormattingOptions*/): NSAttributedString
-    @ForeignName["initWithFormat:options:locale:context:"] public init(format: NSAttributedString, options: Int32 /*NSAttributedStringFormattingOptions*/, locale: NSLocale, context: NSDictionary/*<NSAttributedStringFormattingContextKey, id>*/)
-    @ForeignName["initWithFormat:options:locale:context:arguments:"] public init(format: NSAttributedString, options: Int32 /*NSAttributedStringFormattingOptions*/, locale: NSLocale, context: NSDictionary/*<NSAttributedStringFormattingContextKey, id>*/, arguments: va_list)
+    @ForeignName["initWithFormat:options:locale:context:"] public init(format: NSAttributedString, options: Int32 /*NSAttributedStringFormattingOptions*/, locale: ?NSLocale, context: NSDictionary/*<NSAttributedStringFormattingContextKey, id>*/)
+    @ForeignName["initWithFormat:options:locale:context:arguments:"] public init(format: NSAttributedString, options: Int32 /*NSAttributedStringFormattingOptions*/, locale: ?NSLocale, context: NSDictionary/*<NSAttributedStringFormattingContextKey, id>*/, arguments: va_list)
     @ForeignName["localizedAttributedStringWithFormat:context:"] public static func localizedAttributedStringWithFormatContext(format: NSAttributedString, context: NSDictionary/*<NSAttributedStringFormattingContextKey, id>*/): NSAttributedString
     @ForeignName["localizedAttributedStringWithFormat:options:context:"] public static func localizedAttributedStringWithFormatOptionsContext(format: NSAttributedString, options: Int32 /*NSAttributedStringFormattingOptions*/, context: NSDictionary/*<NSAttributedStringFormattingContextKey, id>*/): NSAttributedString
     public open func attributedStringByInflectingString(): NSAttributedString
@@ -45,7 +45,7 @@ public abstract sealed class NSAttributedStringEnumerationOptions {
 @ObjCMirror
 public open class NSMutableAttributedString <: NSAttributedString {
     @ForeignName["replaceCharactersInRange:withString:"] public open func replaceCharactersInRangeWithString(range: NSRange, str: NSString): Unit
-    @ForeignName["setAttributes:range:"] public open func setAttributesRange(attrs: NSDictionary/*<NSAttributedStringKey, id>*/, range: NSRange): Unit
+    @ForeignName["setAttributes:range:"] public open func setAttributesRange(attrs: ?NSDictionary/*<NSAttributedStringKey, id>*/, range: NSRange): Unit
     public prop mutableString: NSMutableString
     @ForeignName["addAttribute:value:range:"] public open func addAttributeValueRange(name: NSAttributedStringKey, value: id, range: NSRange): Unit
     @ForeignName["addAttributes:range:"] public open func addAttributesRange(attrs: NSDictionary/*<NSAttributedStringKey, id>*/, range: NSRange): Unit
@@ -98,7 +98,7 @@ public open class NSAttributedStringMarkdownParsingOptions <: NSObject & NSCopyi
     public mut prop allowsExtendedAttributes: Bool
     public mut prop interpretedSyntax: Int32 /*NSAttributedStringMarkdownInterpretedSyntax*/
     public mut prop failurePolicy: Int32 /*NSAttributedStringMarkdownParsingFailurePolicy*/
-    public mut prop languageCode: NSString
+    public mut prop languageCode: ?NSString
     public mut prop appliesSourcePositionAttributes: Bool
 }
 
@@ -131,25 +131,25 @@ public abstract sealed class NSPresentationIntentTableColumnAlignment {
 @ObjCMirror
 public open class NSPresentationIntent <: NSObject & NSCopying & NSSecureCoding {
     public prop intentKind: Int32 /*NSPresentationIntentKind*/
-    public prop parentIntent: NSPresentationIntent
-    @ForeignName["paragraphIntentWithIdentity:nestedInsideIntent:"] public static func paragraphIntentWithIdentityNestedInsideIntent(identity: NSInteger, parent: NSPresentationIntent): NSPresentationIntent
-    @ForeignName["headerIntentWithIdentity:level:nestedInsideIntent:"] public static func headerIntentWithIdentityLevelNestedInsideIntent(identity: NSInteger, level: NSInteger, parent: NSPresentationIntent): NSPresentationIntent
-    @ForeignName["codeBlockIntentWithIdentity:languageHint:nestedInsideIntent:"] public static func codeBlockIntentWithIdentityLanguageHintNestedInsideIntent(identity: NSInteger, languageHint: NSString, parent: NSPresentationIntent): NSPresentationIntent
-    @ForeignName["thematicBreakIntentWithIdentity:nestedInsideIntent:"] public static func thematicBreakIntentWithIdentityNestedInsideIntent(identity: NSInteger, parent: NSPresentationIntent): NSPresentationIntent
-    @ForeignName["orderedListIntentWithIdentity:nestedInsideIntent:"] public static func orderedListIntentWithIdentityNestedInsideIntent(identity: NSInteger, parent: NSPresentationIntent): NSPresentationIntent
-    @ForeignName["unorderedListIntentWithIdentity:nestedInsideIntent:"] public static func unorderedListIntentWithIdentityNestedInsideIntent(identity: NSInteger, parent: NSPresentationIntent): NSPresentationIntent
-    @ForeignName["listItemIntentWithIdentity:ordinal:nestedInsideIntent:"] public static func listItemIntentWithIdentityOrdinalNestedInsideIntent(identity: NSInteger, ordinal: NSInteger, parent: NSPresentationIntent): NSPresentationIntent
-    @ForeignName["blockQuoteIntentWithIdentity:nestedInsideIntent:"] public static func blockQuoteIntentWithIdentityNestedInsideIntent(identity: NSInteger, parent: NSPresentationIntent): NSPresentationIntent
-    @ForeignName["tableIntentWithIdentity:columnCount:alignments:nestedInsideIntent:"] public static func tableIntentWithIdentityColumnCountAlignmentsNestedInsideIntent(identity: NSInteger, columnCount: NSInteger, alignments: NSArray/*<NSNumber>*/, parent: NSPresentationIntent): NSPresentationIntent
-    @ForeignName["tableHeaderRowIntentWithIdentity:nestedInsideIntent:"] public static func tableHeaderRowIntentWithIdentityNestedInsideIntent(identity: NSInteger, parent: NSPresentationIntent): NSPresentationIntent
-    @ForeignName["tableRowIntentWithIdentity:row:nestedInsideIntent:"] public static func tableRowIntentWithIdentityRowNestedInsideIntent(identity: NSInteger, row: NSInteger, parent: NSPresentationIntent): NSPresentationIntent
-    @ForeignName["tableCellIntentWithIdentity:column:nestedInsideIntent:"] public static func tableCellIntentWithIdentityColumnNestedInsideIntent(identity: NSInteger, column: NSInteger, parent: NSPresentationIntent): NSPresentationIntent
+    public prop parentIntent: ?NSPresentationIntent
+    @ForeignName["paragraphIntentWithIdentity:nestedInsideIntent:"] public static func paragraphIntentWithIdentityNestedInsideIntent(identity: NSInteger, parent: ?NSPresentationIntent): NSPresentationIntent
+    @ForeignName["headerIntentWithIdentity:level:nestedInsideIntent:"] public static func headerIntentWithIdentityLevelNestedInsideIntent(identity: NSInteger, level: NSInteger, parent: ?NSPresentationIntent): NSPresentationIntent
+    @ForeignName["codeBlockIntentWithIdentity:languageHint:nestedInsideIntent:"] public static func codeBlockIntentWithIdentityLanguageHintNestedInsideIntent(identity: NSInteger, languageHint: ?NSString, parent: ?NSPresentationIntent): NSPresentationIntent
+    @ForeignName["thematicBreakIntentWithIdentity:nestedInsideIntent:"] public static func thematicBreakIntentWithIdentityNestedInsideIntent(identity: NSInteger, parent: ?NSPresentationIntent): NSPresentationIntent
+    @ForeignName["orderedListIntentWithIdentity:nestedInsideIntent:"] public static func orderedListIntentWithIdentityNestedInsideIntent(identity: NSInteger, parent: ?NSPresentationIntent): NSPresentationIntent
+    @ForeignName["unorderedListIntentWithIdentity:nestedInsideIntent:"] public static func unorderedListIntentWithIdentityNestedInsideIntent(identity: NSInteger, parent: ?NSPresentationIntent): NSPresentationIntent
+    @ForeignName["listItemIntentWithIdentity:ordinal:nestedInsideIntent:"] public static func listItemIntentWithIdentityOrdinalNestedInsideIntent(identity: NSInteger, ordinal: NSInteger, parent: ?NSPresentationIntent): NSPresentationIntent
+    @ForeignName["blockQuoteIntentWithIdentity:nestedInsideIntent:"] public static func blockQuoteIntentWithIdentityNestedInsideIntent(identity: NSInteger, parent: ?NSPresentationIntent): NSPresentationIntent
+    @ForeignName["tableIntentWithIdentity:columnCount:alignments:nestedInsideIntent:"] public static func tableIntentWithIdentityColumnCountAlignmentsNestedInsideIntent(identity: NSInteger, columnCount: NSInteger, alignments: NSArray/*<NSNumber>*/, parent: ?NSPresentationIntent): NSPresentationIntent
+    @ForeignName["tableHeaderRowIntentWithIdentity:nestedInsideIntent:"] public static func tableHeaderRowIntentWithIdentityNestedInsideIntent(identity: NSInteger, parent: ?NSPresentationIntent): NSPresentationIntent
+    @ForeignName["tableRowIntentWithIdentity:row:nestedInsideIntent:"] public static func tableRowIntentWithIdentityRowNestedInsideIntent(identity: NSInteger, row: NSInteger, parent: ?NSPresentationIntent): NSPresentationIntent
+    @ForeignName["tableCellIntentWithIdentity:column:nestedInsideIntent:"] public static func tableCellIntentWithIdentityColumnNestedInsideIntent(identity: NSInteger, column: NSInteger, parent: ?NSPresentationIntent): NSPresentationIntent
     public prop identity: NSInteger
     public prop ordinal: NSInteger
-    public prop columnAlignments: NSArray/*<NSNumber>*/
+    public prop columnAlignments: ?NSArray/*<NSNumber>*/
     public prop columnCount: NSInteger
     public prop headerLevel: NSInteger
-    public prop languageHint: NSString
+    public prop languageHint: ?NSString
     public prop column: NSInteger
     public prop row: NSInteger
     public prop indentationLevel: NSInteger

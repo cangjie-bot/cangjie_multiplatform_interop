@@ -14,7 +14,7 @@ public interface NSLocking <: id {
 public open class NSLock <: NSObject & NSLocking {
     public open func tryLock(): Bool
     @ForeignName["lockBeforeDate:"] public open func lockBeforeDate(limit: NSDate): Bool
-    public mut prop name: NSString
+    public mut prop name: ?NSString
 }
 
 @ObjCMirror
@@ -27,14 +27,14 @@ public open class NSConditionLock <: NSObject & NSLocking {
     @ForeignName["unlockWithCondition:"] public open func unlockWithCondition(condition: NSInteger): Unit
     @ForeignName["lockBeforeDate:"] public open func lockBeforeDate(limit: NSDate): Bool
     @ForeignName["lockWhenCondition:beforeDate:"] public open func lockWhenConditionBeforeDate(condition: NSInteger, limit: NSDate): Bool
-    public mut prop name: NSString
+    public mut prop name: ?NSString
 }
 
 @ObjCMirror
 public open class NSRecursiveLock <: NSObject & NSLocking {
     public open func tryLock(): Bool
     @ForeignName["lockBeforeDate:"] public open func lockBeforeDate(limit: NSDate): Bool
-    public mut prop name: NSString
+    public mut prop name: ?NSString
 }
 
 @ObjCMirror
@@ -43,6 +43,6 @@ public open class NSCondition <: NSObject & NSLocking {
     @ForeignName["waitUntilDate:"] public open func waitUntilDate(limit: NSDate): Bool
     public open func signal(): Unit
     public open func broadcast(): Unit
-    public mut prop name: NSString
+    public mut prop name: ?NSString
 }
 

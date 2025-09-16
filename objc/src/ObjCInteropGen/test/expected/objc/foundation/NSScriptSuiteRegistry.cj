@@ -14,12 +14,12 @@ public open class NSScriptSuiteRegistry <: NSObject {
     @ForeignName["registerCommandDescription:"] public open func registerCommandDescription(commandDescription: NSScriptCommandDescription): Unit
     public prop suiteNames: NSArray/*<NSString>*/
     @ForeignName["appleEventCodeForSuite:"] public open func appleEventCodeForSuite(suiteName: NSString): FourCharCode
-    @ForeignName["bundleForSuite:"] public open func bundleForSuite(suiteName: NSString): NSBundle
-    @ForeignName["classDescriptionsInSuite:"] public open func classDescriptionsInSuite(suiteName: NSString): NSDictionary/*<NSString, NSScriptClassDescription>*/
-    @ForeignName["commandDescriptionsInSuite:"] public open func commandDescriptionsInSuite(suiteName: NSString): NSDictionary/*<NSString, NSScriptCommandDescription>*/
-    @ForeignName["suiteForAppleEventCode:"] public open func suiteForAppleEventCode(appleEventCode: FourCharCode): NSString
-    @ForeignName["classDescriptionWithAppleEventCode:"] public open func classDescriptionWithAppleEventCode(appleEventCode: FourCharCode): NSScriptClassDescription
-    @ForeignName["commandDescriptionWithAppleEventClass:andAppleEventCode:"] public open func commandDescriptionWithAppleEventClassAndAppleEventCode(appleEventClassCode: FourCharCode, appleEventIDCode: FourCharCode): NSScriptCommandDescription
-    @ForeignName["aeteResource:"] public open func aeteResource(languageName: NSString): NSData
+    @ForeignName["bundleForSuite:"] public open func bundleForSuite(suiteName: NSString): ?NSBundle
+    @ForeignName["classDescriptionsInSuite:"] public open func classDescriptionsInSuite(suiteName: NSString): ?NSDictionary/*<NSString, NSScriptClassDescription>*/
+    @ForeignName["commandDescriptionsInSuite:"] public open func commandDescriptionsInSuite(suiteName: NSString): ?NSDictionary/*<NSString, NSScriptCommandDescription>*/
+    @ForeignName["suiteForAppleEventCode:"] public open func suiteForAppleEventCode(appleEventCode: FourCharCode): ?NSString
+    @ForeignName["classDescriptionWithAppleEventCode:"] public open func classDescriptionWithAppleEventCode(appleEventCode: FourCharCode): ?NSScriptClassDescription
+    @ForeignName["commandDescriptionWithAppleEventClass:andAppleEventCode:"] public open func commandDescriptionWithAppleEventClassAndAppleEventCode(appleEventClassCode: FourCharCode, appleEventIDCode: FourCharCode): ?NSScriptCommandDescription
+    @ForeignName["aeteResource:"] public open func aeteResource(languageName: NSString): ?NSData
 }
 

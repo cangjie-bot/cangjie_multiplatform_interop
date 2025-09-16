@@ -11,7 +11,7 @@ public open class NSTermOfAddress <: NSObject & NSCopying & NSSecureCoding {
     public static func masculine(): NSTermOfAddress
     public static func currentUser(): NSTermOfAddress
     @ForeignName["localizedForLanguageIdentifier:withPronouns:"] public static func localizedForLanguageIdentifierWithPronouns(language: NSString, pronouns: NSArray/*<NSMorphologyPronoun>*/): NSTermOfAddress
-    public prop languageIdentifier: NSString
-    public prop pronouns: NSArray/*<NSMorphologyPronoun>*/
+    public prop languageIdentifier: ?NSString
+    public prop pronouns: ?NSArray/*<NSMorphologyPronoun>*/
 }
 

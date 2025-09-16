@@ -16,3 +16,5 @@ public type __darwin_pid_t = __int32_t
 
 public type __darwin_uid_t = __uint32_t
 
+public type __darwin_uuid_t = CPointer<UInt8>
+

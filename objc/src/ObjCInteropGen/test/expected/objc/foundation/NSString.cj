@@ -54,7 +54,7 @@ public open class NSString <: NSObject & NSCopying & NSMutableCopying & NSSecure
     @ForeignName["rangeOfString:"] public open func rangeOfString(searchString: NSString): NSRange
     @ForeignName["rangeOfString:options:"] public open func rangeOfStringOptions(searchString: NSString, mask: Int32 /*NSStringCompareOptions*/): NSRange
     @ForeignName["rangeOfString:options:range:"] public open func rangeOfStringOptionsRange(searchString: NSString, mask: Int32 /*NSStringCompareOptions*/, rangeOfReceiverToSearch: NSRange): NSRange
-    @ForeignName["rangeOfString:options:range:locale:"] public open func rangeOfStringOptionsRangeLocale(searchString: NSString, mask: Int32 /*NSStringCompareOptions*/, rangeOfReceiverToSearch: NSRange, locale: NSLocale): NSRange
+    @ForeignName["rangeOfString:options:range:locale:"] public open func rangeOfStringOptionsRangeLocale(searchString: NSString, mask: Int32 /*NSStringCompareOptions*/, rangeOfReceiverToSearch: NSRange, locale: ?NSLocale): NSRange
     @ForeignName["rangeOfCharacterFromSet:"] public open func rangeOfCharacterFromSet(searchSet: NSCharacterSet): NSRange
     @ForeignName["rangeOfCharacterFromSet:options:"] public open func rangeOfCharacterFromSetOptions(searchSet: NSCharacterSet, mask: Int32 /*NSStringCompareOptions*/): NSRange
     @ForeignName["rangeOfCharacterFromSet:options:range:"] public open func rangeOfCharacterFromSetOptionsRange(searchSet: NSCharacterSet, mask: Int32 /*NSStringCompareOptions*/, rangeOfReceiverToSearch: NSRange): NSRange
@@ -74,9 +74,9 @@ public open class NSString <: NSObject & NSCopying & NSMutableCopying & NSSecure
     public prop localizedUppercaseString: NSString
     public prop localizedLowercaseString: NSString
     public prop localizedCapitalizedString: NSString
-    @ForeignName["uppercaseStringWithLocale:"] public open func uppercaseStringWithLocale(locale: NSLocale): NSString
-    @ForeignName["lowercaseStringWithLocale:"] public open func lowercaseStringWithLocale(locale: NSLocale): NSString
-    @ForeignName["capitalizedStringWithLocale:"] public open func capitalizedStringWithLocale(locale: NSLocale): NSString
+    @ForeignName["uppercaseStringWithLocale:"] public open func uppercaseStringWithLocale(locale: ?NSLocale): NSString
+    @ForeignName["lowercaseStringWithLocale:"] public open func lowercaseStringWithLocale(locale: ?NSLocale): NSString
+    @ForeignName["capitalizedStringWithLocale:"] public open func capitalizedStringWithLocale(locale: ?NSLocale): NSString
     @ForeignName["getLineStart:end:contentsEnd:forRange:"] public open func getLineStartEndContentsEndForRange(startPtr: CPointer<NSUInteger>, lineEndPtr: CPointer<NSUInteger>, contentsEndPtr: CPointer<NSUInteger>, range: NSRange): Unit
     @ForeignName["lineRangeForRange:"] public open func lineRangeForRange(range: NSRange): NSRange
     @ForeignName["getParagraphStart:end:contentsEnd:forRange:"] public open func getParagraphStartEndContentsEndForRange(startPtr: CPointer<NSUInteger>, parEndPtr: CPointer<NSUInteger>, contentsEndPtr: CPointer<NSUInteger>, range: NSRange): Unit
@@ -86,8 +86,8 @@ public open class NSString <: NSObject & NSCopying & NSMutableCopying & NSSecure
     public prop UTF8String: CPointer<Int8>
     public prop fastestEncoding: NSStringEncoding
     public prop smallestEncoding: NSStringEncoding
-    @ForeignName["dataUsingEncoding:allowLossyConversion:"] public open func dataUsingEncodingAllowLossyConversion(encoding: NSStringEncoding, lossy: Bool): NSData
-    @ForeignName["dataUsingEncoding:"] public open func dataUsingEncoding(encoding: NSStringEncoding): NSData
+    @ForeignName["dataUsingEncoding:allowLossyConversion:"] public open func dataUsingEncodingAllowLossyConversion(encoding: NSStringEncoding, lossy: Bool): ?NSData
+    @ForeignName["dataUsingEncoding:"] public open func dataUsingEncoding(encoding: NSStringEncoding): ?NSData
     @ForeignName["canBeConvertedToEncoding:"] public open func canBeConvertedToEncoding(encoding: NSStringEncoding): Bool
     @ForeignName["cStringUsingEncoding:"] public open func cStringUsingEncoding(encoding: NSStringEncoding): CPointer<Int8>
     @ForeignName["getCString:maxLength:encoding:"] public open func getCStringMaxLengthEncoding(buffer: CPointer<Int8>, maxBufferCount: NSUInteger, encoding: NSStringEncoding): Bool
@@ -105,11 +105,11 @@ public open class NSString <: NSObject & NSCopying & NSMutableCopying & NSSecure
     @ForeignName["componentsSeparatedByCharactersInSet:"] public open func componentsSeparatedByCharactersInSet(separator: NSCharacterSet): NSArray/*<NSString>*/
     @ForeignName["stringByTrimmingCharactersInSet:"] public open func stringByTrimmingCharactersInSet(set: NSCharacterSet): NSString
     @ForeignName["stringByPaddingToLength:withString:startingAtIndex:"] public open func stringByPaddingToLengthWithStringStartingAtIndex(newLength: NSUInteger, padString: NSString, padIndex: NSUInteger): NSString
-    @ForeignName["stringByFoldingWithOptions:locale:"] public open func stringByFoldingWithOptionsLocale(options: Int32 /*NSStringCompareOptions*/, locale: NSLocale): NSString
+    @ForeignName["stringByFoldingWithOptions:locale:"] public open func stringByFoldingWithOptionsLocale(options: Int32 /*NSStringCompareOptions*/, locale: ?NSLocale): NSString
     @ForeignName["stringByReplacingOccurrencesOfString:withString:options:range:"] public open func stringByReplacingOccurrencesOfStringWithStringOptionsRange(target: NSString, replacement: NSString, options: Int32 /*NSStringCompareOptions*/, searchRange: NSRange): NSString
     @ForeignName["stringByReplacingOccurrencesOfString:withString:"] public open func stringByReplacingOccurrencesOfStringWithString(target: NSString, replacement: NSString): NSString
     @ForeignName["stringByReplacingCharactersInRange:withString:"] public open func stringByReplacingCharactersInRangeWithString(range: NSRange, replacement: NSString): NSString
-    @ForeignName["stringByApplyingTransform:reverse:"] public open func stringByApplyingTransformReverse(transform: NSStringTransform, reverse: Bool): NSString
+    @ForeignName["stringByApplyingTransform:reverse:"] public open func stringByApplyingTransformReverse(transform: NSStringTransform, reverse: Bool): ?NSString
     @ForeignName["writeToURL:atomically:encoding:error:"] public open func writeToURLAtomicallyEncodingError(url: NSURL, useAuxiliaryFile: Bool, enc: NSStringEncoding, error: ObjCPointer<NSError>): Bool
     @ForeignName["writeToFile:atomically:encoding:error:"] public open func writeToFileAtomicallyEncodingError(path: NSString, useAuxiliaryFile: Bool, enc: NSStringEncoding, error: ObjCPointer<NSError>): Bool
     // @ForeignName["initWithCharactersNoCopy:length:freeWhenDone:"] public init(characters: CPointer<unichar>, length: NSUInteger, freeBuffer: Bool)
@@ -147,9 +147,9 @@ public open class NSString <: NSObject & NSCopying & NSMutableCopying & NSSecure
     @ForeignName["initWithContentsOfFile:usedEncoding:error:"] public init(path: NSString, enc: CPointer<NSStringEncoding>, error: ObjCPointer<NSError>)
     @ForeignName["stringWithContentsOfURL:usedEncoding:error:"] public static func stringWithContentsOfURLUsedEncodingError(url: NSURL, enc: CPointer<NSStringEncoding>, error: ObjCPointer<NSError>): NSString
     @ForeignName["stringWithContentsOfFile:usedEncoding:error:"] public static func stringWithContentsOfFileUsedEncodingError(path: NSString, enc: CPointer<NSStringEncoding>, error: ObjCPointer<NSError>): NSString
-    @ForeignName["stringEncodingForData:encodingOptions:convertedString:usedLossyConversion:"] public static func stringEncodingForDataEncodingOptionsConvertedStringUsedLossyConversion(data: NSData, opts: NSDictionary/*<NSStringEncodingDetectionOptionsKey, id>*/, string: ObjCPointer<NSString>, usedLossyConversion: CPointer<Bool>): NSStringEncoding
+    @ForeignName["stringEncodingForData:encodingOptions:convertedString:usedLossyConversion:"] public static func stringEncodingForDataEncodingOptionsConvertedStringUsedLossyConversion(data: NSData, opts: ?NSDictionary/*<NSStringEncodingDetectionOptionsKey, id>*/, string: ObjCPointer<NSString>, usedLossyConversion: CPointer<Bool>): NSStringEncoding
     public open func propertyList(): id
-    public open func propertyListFromStringsFileFormat(): NSDictionary/*<KeyType, ObjectType>*/
+    public open func propertyListFromStringsFileFormat(): ?NSDictionary/*<KeyType, ObjectType>*/
     public open func cString(): CPointer<Int8>
     public open func lossyCString(): CPointer<Int8>
     public open func cStringLength(): NSUInteger
@@ -177,21 +177,21 @@ public open class NSString <: NSObject & NSCopying & NSMutableCopying & NSSecure
     @ForeignName["stringByAppendingPathComponent:"] public open func stringByAppendingPathComponent(str: NSString): NSString
     public prop pathExtension: NSString
     public prop stringByDeletingPathExtension: NSString
-    @ForeignName["stringByAppendingPathExtension:"] public open func stringByAppendingPathExtension(str: NSString): NSString
+    @ForeignName["stringByAppendingPathExtension:"] public open func stringByAppendingPathExtension(str: NSString): ?NSString
     public prop stringByAbbreviatingWithTildeInPath: NSString
     public prop stringByExpandingTildeInPath: NSString
     public prop stringByStandardizingPath: NSString
     public prop stringByResolvingSymlinksInPath: NSString
     @ForeignName["stringsByAppendingPaths:"] public open func stringsByAppendingPaths(paths: NSArray/*<NSString>*/): NSArray/*<NSString>*/
-    @ForeignName["completePathIntoString:caseSensitive:matchesIntoArray:filterTypes:"] public open func completePathIntoStringCaseSensitiveMatchesIntoArrayFilterTypes(outputName: ObjCPointer<NSString>, flag: Bool, outputArray: ObjCPointer<NSArray/*<NSString>*/>, filterTypes: NSArray/*<NSString>*/): NSUInteger
+    @ForeignName["completePathIntoString:caseSensitive:matchesIntoArray:filterTypes:"] public open func completePathIntoStringCaseSensitiveMatchesIntoArrayFilterTypes(outputName: ObjCPointer<NSString>, flag: Bool, outputArray: ObjCPointer<NSArray/*<NSString>*/>, filterTypes: ?NSArray/*<NSString>*/): NSUInteger
     public prop fileSystemRepresentation: CPointer<Int8>
     @ForeignName["getFileSystemRepresentation:maxLength:"] public open func getFileSystemRepresentationMaxLength(cname: CPointer<Int8>, max: NSUInteger): Bool
-    @ForeignName["stringByAddingPercentEncodingWithAllowedCharacters:"] public open func stringByAddingPercentEncodingWithAllowedCharacters(allowedCharacters: NSCharacterSet): NSString
-    public prop stringByRemovingPercentEncoding: NSString
-    @ForeignName["stringByAddingPercentEscapesUsingEncoding:"] public open func stringByAddingPercentEscapesUsingEncoding(enc: NSStringEncoding): NSString
-    @ForeignName["stringByReplacingPercentEscapesUsingEncoding:"] public open func stringByReplacingPercentEscapesUsingEncoding(enc: NSStringEncoding): NSString
-    @ForeignName["linguisticTagsInRange:scheme:options:orthography:tokenRanges:"] public open func linguisticTagsInRangeSchemeOptionsOrthographyTokenRanges(range: NSRange, scheme: NSLinguisticTagScheme, options: Int32 /*NSLinguisticTaggerOptions*/, orthography: NSOrthography, tokenRanges: ObjCPointer<NSArray/*<NSValue>*/>): NSArray/*<NSLinguisticTag>*/
-    @ForeignName["enumerateLinguisticTagsInRange:scheme:options:orthography:usingBlock:"] public open func enumerateLinguisticTagsInRangeSchemeOptionsOrthographyUsingBlock(range: NSRange, scheme: NSLinguisticTagScheme, options: Int32 /*NSLinguisticTaggerOptions*/, orthography: NSOrthography, block: ObjCBlock<(NSLinguisticTag, NSRange, NSRange, CPointer<Bool>) -> Unit>): Unit
+    @ForeignName["stringByAddingPercentEncodingWithAllowedCharacters:"] public open func stringByAddingPercentEncodingWithAllowedCharacters(allowedCharacters: NSCharacterSet): ?NSString
+    public prop stringByRemovingPercentEncoding: ?NSString
+    @ForeignName["stringByAddingPercentEscapesUsingEncoding:"] public open func stringByAddingPercentEscapesUsingEncoding(enc: NSStringEncoding): ?NSString
+    @ForeignName["stringByReplacingPercentEscapesUsingEncoding:"] public open func stringByReplacingPercentEscapesUsingEncoding(enc: NSStringEncoding): ?NSString
+    @ForeignName["linguisticTagsInRange:scheme:options:orthography:tokenRanges:"] public open func linguisticTagsInRangeSchemeOptionsOrthographyTokenRanges(range: NSRange, scheme: NSLinguisticTagScheme, options: Int32 /*NSLinguisticTaggerOptions*/, orthography: ?NSOrthography, tokenRanges: ObjCPointer<NSArray/*<NSValue>*/>): NSArray/*<NSLinguisticTag>*/
+    @ForeignName["enumerateLinguisticTagsInRange:scheme:options:orthography:usingBlock:"] public open func enumerateLinguisticTagsInRangeSchemeOptionsOrthographyUsingBlock(range: NSRange, scheme: NSLinguisticTagScheme, options: Int32 /*NSLinguisticTaggerOptions*/, orthography: ?NSOrthography, block: ObjCBlock<(NSLinguisticTag, NSRange, NSRange, CPointer<Bool>) -> Unit>): Unit
 }
 
 public abstract sealed class NSStringEnumerationOptions {

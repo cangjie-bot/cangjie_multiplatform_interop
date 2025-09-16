@@ -11,22 +11,22 @@ public type NSHTTPCookieStringPolicy = NSString
 @ObjCMirror
 public open class NSHTTPCookie <: NSObject {
     @ForeignName["initWithProperties:"] public init(properties: NSDictionary/*<NSHTTPCookiePropertyKey, id>*/)
-    @ForeignName["cookieWithProperties:"] public static func cookieWithProperties(properties: NSDictionary/*<NSHTTPCookiePropertyKey, id>*/): NSHTTPCookie
+    @ForeignName["cookieWithProperties:"] public static func cookieWithProperties(properties: NSDictionary/*<NSHTTPCookiePropertyKey, id>*/): ?NSHTTPCookie
     @ForeignName["requestHeaderFieldsWithCookies:"] public static func requestHeaderFieldsWithCookies(cookies: NSArray/*<NSHTTPCookie>*/): NSDictionary/*<NSString, NSString>*/
     @ForeignName["cookiesWithResponseHeaderFields:forURL:"] public static func cookiesWithResponseHeaderFieldsForURL(headerFields: NSDictionary/*<NSString, NSString>*/, URL: NSURL): NSArray/*<NSHTTPCookie>*/
-    public prop properties: NSDictionary/*<NSHTTPCookiePropertyKey, id>*/
+    public prop properties: ?NSDictionary/*<NSHTTPCookiePropertyKey, id>*/
     public prop versionInstance: NSUInteger
     public prop name: NSString
     public prop value: NSString
-    public prop expiresDate: NSDate
+    public prop expiresDate: ?NSDate
     public prop isSessionOnly: Bool
     public prop domain: NSString
     public prop path: NSString
     public prop isSecure: Bool
     public prop isHTTPOnly: Bool
-    public prop comment: NSString
-    public prop commentURL: NSURL
-    public prop portList: NSArray/*<NSNumber>*/
+    public prop comment: ?NSString
+    public prop commentURL: ?NSURL
+    public prop portList: ?NSArray/*<NSNumber>*/
     public prop sameSitePolicy: NSHTTPCookieStringPolicy
 }
 

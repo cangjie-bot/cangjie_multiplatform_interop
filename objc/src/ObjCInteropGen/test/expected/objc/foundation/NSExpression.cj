@@ -35,9 +35,9 @@ public open class NSExpression <: NSObject & NSSecureCoding & NSCopying {
     @ForeignName["expressionForIntersectSet:with:"] public static func expressionForIntersectSetWith(left: NSExpression, right: NSExpression): NSExpression
     @ForeignName["expressionForMinusSet:with:"] public static func expressionForMinusSetWith(left: NSExpression, right: NSExpression): NSExpression
     @ForeignName["expressionForSubquery:usingIteratorVariable:predicate:"] public static func expressionForSubqueryUsingIteratorVariablePredicate(expression: NSExpression, variable: NSString, predicate: NSPredicate): NSExpression
-    @ForeignName["expressionForFunction:selectorName:arguments:"] public static func expressionForFunctionSelectorNameArguments(target: NSExpression, name: NSString, parameters: NSArray/*<ObjectType>*/): NSExpression
+    @ForeignName["expressionForFunction:selectorName:arguments:"] public static func expressionForFunctionSelectorNameArguments(target: NSExpression, name: NSString, parameters: ?NSArray/*<ObjectType>*/): NSExpression
     public static func expressionForAnyKey(): NSExpression
-    @ForeignName["expressionForBlock:arguments:"] public static func expressionForBlockArguments(block: ObjCBlock<(id, NSArray/*<NSExpression>*/, NSMutableDictionary/*<KeyType, ObjectType>*/) -> id>, arguments: NSArray/*<NSExpression>*/): NSExpression
+    @ForeignName["expressionForBlock:arguments:"] public static func expressionForBlockArguments(block: ObjCBlock<(id, NSArray/*<NSExpression>*/, NSMutableDictionary/*<KeyType, ObjectType>*/) -> id>, arguments: ?NSArray/*<NSExpression>*/): NSExpression
     @ForeignName["expressionForConditional:trueExpression:falseExpression:"] public static func expressionForConditionalTrueExpressionFalseExpression(predicate: NSPredicate, trueExpression: NSExpression, falseExpression: NSExpression): NSExpression
     @ForeignName["initWithExpressionType:"] public init(`type`: Int32 /*NSExpressionType*/)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
@@ -47,7 +47,7 @@ public open class NSExpression <: NSObject & NSSecureCoding & NSCopying {
     public prop function: NSString
     public prop variable: NSString
     public prop operand: NSExpression
-    public prop arguments: NSArray/*<NSExpression>*/
+    public prop arguments: ?NSArray/*<NSExpression>*/
     public prop collection: id
     public prop predicate: NSPredicate
     public prop leftExpression: NSExpression
@@ -55,7 +55,7 @@ public open class NSExpression <: NSObject & NSSecureCoding & NSCopying {
     public prop trueExpression: NSExpression
     public prop falseExpression: NSExpression
     public prop expressionBlock: ObjCBlock<(id, NSArray/*<NSExpression>*/, NSMutableDictionary/*<KeyType, ObjectType>*/) -> id>
-    @ForeignName["expressionValueWithObject:context:"] public open func expressionValueWithObjectContext(object: id, context: NSMutableDictionary/*<KeyType, ObjectType>*/): id
+    @ForeignName["expressionValueWithObject:context:"] public open func expressionValueWithObjectContext(object: id, context: ?NSMutableDictionary/*<KeyType, ObjectType>*/): id
     public open func allowEvaluation(): Unit
 }
 

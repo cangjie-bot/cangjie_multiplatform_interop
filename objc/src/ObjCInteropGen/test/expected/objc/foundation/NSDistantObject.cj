@@ -11,7 +11,7 @@ public open class NSDistantObject <: NSProxy & NSCoding {
     @ForeignName["proxyWithLocal:connection:"] public static func proxyWithLocalConnection(target: id, connection: NSConnection): id
     // @ForeignName["initWithLocal:connection:"] public init(target: id, connection: NSConnection)
     @ForeignName["initWithCoder:"] public init(inCoder: NSCoder)
-    @ForeignName["setProtocolForProxy:"] public open func setProtocolForProxy(proto: Protocol): Unit
+    @ForeignName["setProtocolForProxy:"] public open func setProtocolForProxy(proto: ?Protocol): Unit
     public prop connectionForProxy: NSConnection
 }
 

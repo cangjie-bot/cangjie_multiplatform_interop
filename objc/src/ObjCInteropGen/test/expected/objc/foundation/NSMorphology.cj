@@ -93,28 +93,28 @@ public open class NSMorphology <: NSObject & NSCopying & NSSecureCoding {
     public mut prop grammaticalPerson: Int32 /*NSGrammaticalPerson*/
     public mut prop pronounType: Int32 /*NSGrammaticalPronounType*/
     public mut prop definiteness: Int32 /*NSGrammaticalDefiniteness*/
-    @ForeignName["customPronounForLanguage:"] public open func customPronounForLanguage(language: NSString): NSMorphologyCustomPronoun
-    @ForeignName["setCustomPronoun:forLanguage:error:"] public open func setCustomPronounForLanguageError(features: NSMorphologyCustomPronoun, language: NSString, error: ObjCPointer<NSError>): Bool
+    @ForeignName["customPronounForLanguage:"] public open func customPronounForLanguage(language: NSString): ?NSMorphologyCustomPronoun
+    @ForeignName["setCustomPronoun:forLanguage:error:"] public open func setCustomPronounForLanguageError(features: ?NSMorphologyCustomPronoun, language: NSString, error: ObjCPointer<NSError>): Bool
     public prop isUnspecified: Bool
     public static prop userMorphology: NSMorphology
 }
 
 @ObjCMirror
 public open class NSMorphologyPronoun <: NSObject & NSCopying & NSSecureCoding {
-    @ForeignName["initWithPronoun:morphology:dependentMorphology:"] public init(pronoun: NSString, morphology: NSMorphology, dependentMorphology: NSMorphology)
+    @ForeignName["initWithPronoun:morphology:dependentMorphology:"] public init(pronoun: NSString, morphology: NSMorphology, dependentMorphology: ?NSMorphology)
     public prop pronoun: NSString
     public prop morphology: NSMorphology
-    public prop dependentMorphology: NSMorphology
+    public prop dependentMorphology: ?NSMorphology
 }
 
 @ObjCMirror
 public open class NSMorphologyCustomPronoun <: NSObject & NSCopying & NSSecureCoding {
     @ForeignName["isSupportedForLanguage:"] public static func isSupportedForLanguage(language: NSString): Bool
     @ForeignName["requiredKeysForLanguage:"] public static func requiredKeysForLanguage(language: NSString): NSArray/*<NSString>*/
-    public mut prop subjectForm: NSString
-    public mut prop objectForm: NSString
-    public mut prop possessiveForm: NSString
-    public mut prop possessiveAdjectiveForm: NSString
-    public mut prop reflexiveForm: NSString
+    public mut prop subjectForm: ?NSString
+    public mut prop objectForm: ?NSString
+    public mut prop possessiveForm: ?NSString
+    public mut prop possessiveAdjectiveForm: ?NSString
+    public mut prop reflexiveForm: ?NSString
 }
 

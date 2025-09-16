@@ -30,7 +30,7 @@ public open class NSArray/*<ObjectType>*/ <: NSObject & NSCopying & NSMutableCop
     public open func reverseObjectEnumerator(): NSEnumerator/*<ObjectType>*/
     public prop sortedArrayHint: NSData
     @ForeignName["sortedArrayUsingFunction:context:"] public open func sortedArrayUsingFunctionContext(comparator: ObjCFunc<(id /*ObjectType*/, id /*ObjectType*/, CPointer<Unit>) -> NSInteger>, context: CPointer<Unit>): NSArray/*<ObjectType>*/
-    @ForeignName["sortedArrayUsingFunction:context:hint:"] public open func sortedArrayUsingFunctionContextHint(comparator: ObjCFunc<(id /*ObjectType*/, id /*ObjectType*/, CPointer<Unit>) -> NSInteger>, context: CPointer<Unit>, hint: NSData): NSArray/*<ObjectType>*/
+    @ForeignName["sortedArrayUsingFunction:context:hint:"] public open func sortedArrayUsingFunctionContextHint(comparator: ObjCFunc<(id /*ObjectType*/, id /*ObjectType*/, CPointer<Unit>) -> NSInteger>, context: CPointer<Unit>, hint: ?NSData): NSArray/*<ObjectType>*/
     @ForeignName["sortedArrayUsingSelector:"] public open func sortedArrayUsingSelector(comparator: SEL): NSArray/*<ObjectType>*/
     @ForeignName["subarrayWithRange:"] public open func subarrayWithRange(range: NSRange): NSArray/*<ObjectType>*/
     @ForeignName["writeToURL:error:"] public open func writeToURLError(url: NSURL, error: ObjCPointer<NSError>): Bool
@@ -59,14 +59,14 @@ public open class NSArray/*<ObjectType>*/ <: NSObject & NSCopying & NSMutableCop
     @ForeignName["initWithArray:"] public init(array: NSArray/*<ObjectType>*/)
     @ForeignName["initWithArray:copyItems:"] public init(array: NSArray/*<ObjectType>*/, flag: Bool)
     @ForeignName["initWithContentsOfURL:error:"] public init(url: NSURL, error: ObjCPointer<NSError>)
-    @ForeignName["arrayWithContentsOfURL:error:"] public static func arrayWithContentsOfURLError(url: NSURL, error: ObjCPointer<NSError>): NSArray/*<ObjectType>*/
+    @ForeignName["arrayWithContentsOfURL:error:"] public static func arrayWithContentsOfURLError(url: NSURL, error: ObjCPointer<NSError>): ?NSArray/*<ObjectType>*/
     @ForeignName["differenceFromArray:withOptions:usingEquivalenceTest:"] public open func differenceFromArrayWithOptionsUsingEquivalenceTest(other: NSArray/*<ObjectType>*/, options: Int32 /*NSOrderedCollectionDifferenceCalculationOptions*/, block: ObjCBlock<(id /*ObjectType*/, id /*ObjectType*/) -> Bool>): NSOrderedCollectionDifference/*<ObjectType>*/
     @ForeignName["differenceFromArray:withOptions:"] public open func differenceFromArrayWithOptions(other: NSArray/*<ObjectType>*/, options: Int32 /*NSOrderedCollectionDifferenceCalculationOptions*/): NSOrderedCollectionDifference/*<ObjectType>*/
     @ForeignName["differenceFromArray:"] public open func differenceFromArray(other: NSArray/*<ObjectType>*/): NSOrderedCollectionDifference/*<ObjectType>*/
-    @ForeignName["arrayByApplyingDifference:"] public open func arrayByApplyingDifference(difference: NSOrderedCollectionDifference/*<ObjectType>*/): NSArray/*<ObjectType>*/
+    @ForeignName["arrayByApplyingDifference:"] public open func arrayByApplyingDifference(difference: NSOrderedCollectionDifference/*<ObjectType>*/): ?NSArray/*<ObjectType>*/
     @ForeignName["getObjects:"] public open func getObjects(objects: ObjCPointer<id /*ObjectType*/>): Unit
-    @ForeignName["arrayWithContentsOfFile:"] public static func arrayWithContentsOfFile(path: NSString): NSArray/*<ObjectType>*/
-    @ForeignName["arrayWithContentsOfURL:"] public static func arrayWithContentsOfURL(url: NSURL): NSArray/*<ObjectType>*/
+    @ForeignName["arrayWithContentsOfFile:"] public static func arrayWithContentsOfFile(path: NSString): ?NSArray/*<ObjectType>*/
+    @ForeignName["arrayWithContentsOfURL:"] public static func arrayWithContentsOfURL(url: NSURL): ?NSArray/*<ObjectType>*/
     @ForeignName["initWithContentsOfFile:"] public init(path: NSString)
     @ForeignName["initWithContentsOfURL:"] public init(url: NSURL)
     @ForeignName["writeToFile:atomically:"] public open func writeToFileAtomically(path: NSString, useAuxiliaryFile: Bool): Bool
@@ -122,8 +122,8 @@ public open class NSMutableArray/*<ObjectType>*/ <: NSArray/*<ObjectType>*/ {
     @ForeignName["sortUsingComparator:"] public open func sortUsingComparator(cmptr: NSComparator): Unit
     @ForeignName["sortWithOptions:usingComparator:"] public open func sortWithOptionsUsingComparator(opts: Int32 /*NSSortOptions*/, cmptr: NSComparator): Unit
     @ForeignName["arrayWithCapacity:"] public static func arrayWithCapacity(numItems: NSUInteger): NSMutableArray/*<ObjectType>*/
-    @ForeignName["arrayWithContentsOfFile:"] public static func arrayWithContentsOfFile(path: NSString): NSMutableArray/*<ObjectType>*/
-    @ForeignName["arrayWithContentsOfURL:"] public static func arrayWithContentsOfURL(url: NSURL): NSMutableArray/*<ObjectType>*/
+    @ForeignName["arrayWithContentsOfFile:"] public static func arrayWithContentsOfFile(path: NSString): ?NSArray/*<ObjectType>*/
+    @ForeignName["arrayWithContentsOfURL:"] public static func arrayWithContentsOfURL(url: NSURL): ?NSArray/*<ObjectType>*/
     @ForeignName["initWithContentsOfFile:"] public init(path: NSString)
     @ForeignName["initWithContentsOfURL:"] public init(url: NSURL)
     @ForeignName["applyDifference:"] public open func applyDifference(difference: NSOrderedCollectionDifference/*<ObjectType>*/): Unit

@@ -637,6 +637,17 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
         case CXType_Elaborated:
             return type_like_symbol(clang_Type_getNamedType(type));
 
+        // Libclang bug? When CXTranslationUnit_IncludeAttributedTypes is specified, the
+        // type kind of some objects is unexpectedly and incorrectly reported as
+        // CXType_Unexposed rather than CXType_Attributed.  The assert below ensures
+        // this is actually CXType_Attributed.
+        case CXType_Unexposed:
+        case CXType_Attributed: {
+            auto modified_type = clang_Type_getModifiedType(type);
+            assert(modified_type.kind != CXType_Invalid);
+            return type_like_symbol(modified_type);
+        }
+
         case CXType_ObjCTypeParam: {
             auto* owner_type = current_type_declaration();
             assert(owner_type);
@@ -865,6 +876,54 @@ private:
     }
 };
 
+// Return true if the corresponding type in the Cangjie code must be prefixed
+// with '?' (wrapped by `std.Option`).
+static bool is_nullable(CXType type)
+{
+    switch (type.kind) {
+        // Libclang bug? When CXTranslationUnit_IncludeAttributedTypes is specified, the
+        // type kind of some objects is unexpectedly and incorrectly reported as
+        // CXType_Unexposed rather than CXType_Attributed.  The assert below ensures
+        // this is actually CXType_Attributed.
+        case CXType_Unexposed:
+        case CXType_Attributed: {
+            auto modified_type_kind = clang_Type_getModifiedType(type).kind;
+            assert(modified_type_kind != CXType_Invalid);
+
+            if (modified_type_kind == CXType_ObjCObjectPointer) {
+                return clang_Type_getNullability(type) != CXTypeNullability_NonNull;
+            }
+
+            // This will be most probably converted to CPointer.  In Objective-C, C pointer
+            // can be annotated as nullable/nonnull.  But in Cangjie, CPointer is always
+            // nullable, there is no sense to make it optional.
+            return false;
+        }
+        case CXType_ObjCObjectPointer:
+        case CXType_ObjCId:
+        case CXType_ObjCClass:
+        case CXType_ObjCSel:
+            return true;
+        default:
+            return false;
+    }
+}
+
+static std::optional<CXType> nullable_overridden(CXCursor cursor)
+{
+    for (const auto& overridden_cursor : OverriddenCursors::get(cursor)) {
+        auto overridden_result_type = nullable_overridden(overridden_cursor);
+        if (overridden_result_type) {
+            return overridden_result_type;
+        }
+        auto ort = clang_getCursorResultType(overridden_cursor);
+        if (is_nullable(ort)) {
+            return ort;
+        }
+    }
+    return std::nullopt;
+}
+
 Symbol* SourceScanner::push_member_method(CXCursor cursor, std::string&& name, bool is_static)
 {
     assert(current_top_is_type() || current_top_is_property());
@@ -874,6 +933,13 @@ Symbol* SourceScanner::push_member_method(CXCursor cursor, std::string&& name, b
         decl = static_cast<CategoryDeclarationSymbol*>(decl)->interface();
     }
     auto cx_result_type = clang_getCursorResultType(cursor);
+
+    // In Cangjie, Option is not covariant.  If either overridden or overrider is
+    // nullable, do not change the result type of the overrider.
+    auto nullable_overridden_result_type = nullable_overridden(cursor);
+    if (nullable_overridden_result_type) {
+        cx_result_type = *nullable_overridden_result_type;
+    }
     if (cx_result_type.kind == CXType_ObjCId) {
         for (const auto& overridden_cursor : OverriddenCursors::get(cursor)) {
             auto overriden_result_type = clang_getCursorResultType(overridden_cursor);
@@ -886,8 +952,14 @@ Symbol* SourceScanner::push_member_method(CXCursor cursor, std::string&& name, b
             }
         }
     }
-    return push_current(
-        decl->add_member_method(std::move(name), type_like_symbol(cx_result_type), is_static ? ModifierStatic : 0));
+    uint8_t modifiers = 0;
+    if (is_static) {
+        modifiers |= ModifierStatic;
+    }
+    if (is_nullable(cx_result_type)) {
+        modifiers |= ModifierNullable;
+    }
+    return push_current(decl->add_member_method(std::move(name), type_like_symbol(cx_result_type), modifiers));
 }
 
 Symbol* SourceScanner::push_constructor(CXCursor cursor, std::string&& name)
@@ -1162,13 +1234,13 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
                     recurse = false;
                     break;
                 case clang::ObjCIvarDecl::AccessControl::Public:
-                    pushed = push_current(
-                        current_type_declaration()->add_instance_variable(name, type_like_symbol(type), 0));
+                    pushed = push_current(current_type_declaration()->add_instance_variable(
+                        name, type_like_symbol(type), is_nullable(type) ? ModifierNullable : 0));
                     break;
                 default:
                     assert(access_control == clang::ObjCIvarDecl::AccessControl::Protected);
                     pushed = push_current(current_type_declaration()->add_instance_variable(
-                        name, type_like_symbol(type), ModifierProtected));
+                        name, type_like_symbol(type), ModifierProtected | (is_nullable(type) ? ModifierNullable : 0)));
                     break;
             }
             break;
@@ -1177,7 +1249,7 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
             assert(current_top_is_type());
             assert(is_canonical(cursor));
             assert(is_defining(cursor));
-            auto& field = current_type_declaration()->add_field(name, type_like_symbol(type));
+            auto& field = current_type_declaration()->add_field(name, type_like_symbol(type), is_nullable(type));
             if (clang_Cursor_isBitField(cursor)) {
                 auto width = clang_getFieldDeclBitWidth(cursor);
                 assert(width >= 0);
@@ -1203,7 +1275,7 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
                 auto& non_type = *current_non_type();
                 if (non_type.is_member_method() || non_type.is_constructor()) {
                     // e.g. comparator function pointers in parameters
-                    non_type.add_parameter(name, type_like_symbol(type));
+                    non_type.add_parameter(name, type_like_symbol(type), is_nullable(type));
                     recurse = false;
                 } else if (non_type.is_property()) {
                     recurse = false;
@@ -1240,7 +1312,8 @@ class TranslationUnit {
 public:
     TranslationUnit(CXIndex index, const std::string& file, const std::vector<const char*>& args)
         : tu_(clang_parseTranslationUnit(index, file.c_str(), args.data(), static_cast<int>(args.size()), nullptr, 0,
-              CXTranslationUnit_KeepGoing | CXTranslationUnit_VisitImplicitAttributes))
+              CXTranslationUnit_KeepGoing | CXTranslationUnit_VisitImplicitAttributes |
+                  CXTranslationUnit_IncludeAttributedTypes))
     {
     }
 

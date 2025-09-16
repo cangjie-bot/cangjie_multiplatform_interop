@@ -12,7 +12,7 @@ public abstract sealed class NSSaveOptions {
 
 @ObjCMirror
 public open class NSCloneCommand <: NSScriptCommand {
-    @ForeignName["setReceiversSpecifier:"] public open func setReceiversSpecifier(receiversRef: NSScriptObjectSpecifier): Unit
+    @ForeignName["setReceiversSpecifier:"] public open func setReceiversSpecifier(receiversRef: ?NSScriptObjectSpecifier): Unit
     public prop keySpecifier: NSScriptObjectSpecifier
 }
 
@@ -33,7 +33,7 @@ public open class NSCreateCommand <: NSScriptCommand {
 
 @ObjCMirror
 public open class NSDeleteCommand <: NSScriptCommand {
-    @ForeignName["setReceiversSpecifier:"] public open func setReceiversSpecifier(receiversRef: NSScriptObjectSpecifier): Unit
+    @ForeignName["setReceiversSpecifier:"] public open func setReceiversSpecifier(receiversRef: ?NSScriptObjectSpecifier): Unit
     public prop keySpecifier: NSScriptObjectSpecifier
 }
 
@@ -47,7 +47,7 @@ public open class NSGetCommand <: NSScriptCommand {
 
 @ObjCMirror
 public open class NSMoveCommand <: NSScriptCommand {
-    @ForeignName["setReceiversSpecifier:"] public open func setReceiversSpecifier(receiversRef: NSScriptObjectSpecifier): Unit
+    @ForeignName["setReceiversSpecifier:"] public open func setReceiversSpecifier(receiversRef: ?NSScriptObjectSpecifier): Unit
     public prop keySpecifier: NSScriptObjectSpecifier
 }
 
@@ -58,7 +58,7 @@ public open class NSQuitCommand <: NSScriptCommand {
 
 @ObjCMirror
 public open class NSSetCommand <: NSScriptCommand {
-    @ForeignName["setReceiversSpecifier:"] public open func setReceiversSpecifier(receiversRef: NSScriptObjectSpecifier): Unit
+    @ForeignName["setReceiversSpecifier:"] public open func setReceiversSpecifier(receiversRef: ?NSScriptObjectSpecifier): Unit
     public prop keySpecifier: NSScriptObjectSpecifier
 }
 

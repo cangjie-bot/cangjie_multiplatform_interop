@@ -9,10 +9,10 @@ public open class NSPortCoder <: NSCoder {
     public open func isBycopy(): Bool
     public open func isByref(): Bool
     @ForeignName["encodePortObject:"] public open func encodePortObject(aport: NSPort): Unit
-    public open func decodePortObject(): NSPort
-    public open func connection(): NSConnection
-    @ForeignName["portCoderWithReceivePort:sendPort:components:"] public static func portCoderWithReceivePortSendPortComponents(rcvPort: NSPort, sndPort: NSPort, comps: NSArray/*<ObjectType>*/): id
-    @ForeignName["initWithReceivePort:sendPort:components:"] public init(rcvPort: NSPort, sndPort: NSPort, comps: NSArray/*<ObjectType>*/)
+    public open func decodePortObject(): ?NSPort
+    public open func connection(): ?NSConnection
+    @ForeignName["portCoderWithReceivePort:sendPort:components:"] public static func portCoderWithReceivePortSendPortComponents(rcvPort: ?NSPort, sndPort: ?NSPort, comps: ?NSArray/*<ObjectType>*/): id
+    @ForeignName["initWithReceivePort:sendPort:components:"] public init(rcvPort: ?NSPort, sndPort: ?NSPort, comps: ?NSArray/*<ObjectType>*/)
     public open func dispatch(): Unit
 }
 

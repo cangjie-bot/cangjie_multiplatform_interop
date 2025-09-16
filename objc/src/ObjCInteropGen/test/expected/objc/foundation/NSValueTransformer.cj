@@ -8,8 +8,8 @@ public type NSValueTransformerName = NSString
 
 @ObjCMirror
 public open class NSValueTransformer <: NSObject {
-    @ForeignName["setValueTransformer:forName:"] public static func setValueTransformerForName(transformer: NSValueTransformer, name: NSValueTransformerName): Unit
-    @ForeignName["valueTransformerForName:"] public static func valueTransformerForName(name: NSValueTransformerName): NSValueTransformer
+    @ForeignName["setValueTransformer:forName:"] public static func setValueTransformerForName(transformer: ?NSValueTransformer, name: NSValueTransformerName): Unit
+    @ForeignName["valueTransformerForName:"] public static func valueTransformerForName(name: NSValueTransformerName): ?NSValueTransformer
     public static func valueTransformerNames(): NSArray/*<NSValueTransformerName>*/
     public static func transformedValueClass(): Class
     public static func allowsReverseTransformation(): Bool

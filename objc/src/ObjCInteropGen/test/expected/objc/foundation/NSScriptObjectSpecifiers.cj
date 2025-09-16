@@ -27,28 +27,28 @@ public abstract sealed class NSWhoseSubelementIdentifier {
 
 @ObjCMirror
 public open class NSScriptObjectSpecifier <: NSObject & NSCoding {
-    @ForeignName["objectSpecifierWithDescriptor:"] public static func objectSpecifierWithDescriptor(descriptor: NSAppleEventDescriptor): NSScriptObjectSpecifier
+    @ForeignName["objectSpecifierWithDescriptor:"] public static func objectSpecifierWithDescriptor(descriptor: NSAppleEventDescriptor): ?NSScriptObjectSpecifier
     @ForeignName["initWithContainerSpecifier:key:"] public init(container: NSScriptObjectSpecifier, property: NSString)
-    @ForeignName["initWithContainerClassDescription:containerSpecifier:key:"] public init(classDesc: NSScriptClassDescription, container: NSScriptObjectSpecifier, property: NSString)
+    @ForeignName["initWithContainerClassDescription:containerSpecifier:key:"] public init(classDesc: NSScriptClassDescription, container: ?NSScriptObjectSpecifier, property: NSString)
     @ForeignName["initWithCoder:"] public init(inCoder: NSCoder)
-    public mut prop childSpecifier: NSScriptObjectSpecifier
-    public mut prop containerSpecifier: NSScriptObjectSpecifier
+    public mut prop childSpecifier: ?NSScriptObjectSpecifier
+    public mut prop containerSpecifier: ?NSScriptObjectSpecifier
     public mut prop containerIsObjectBeingTested: Bool
     public mut prop containerIsRangeContainerObject: Bool
     public mut prop key: NSString
-    public mut prop containerClassDescription: NSScriptClassDescription
-    public prop keyClassDescription: NSScriptClassDescription
+    public mut prop containerClassDescription: ?NSScriptClassDescription
+    public prop keyClassDescription: ?NSScriptClassDescription
     @ForeignName["indicesOfObjectsByEvaluatingWithContainer:count:"] public open func indicesOfObjectsByEvaluatingWithContainerCount(container: id, count: CPointer<NSInteger>): CPointer<NSInteger>
     @ForeignName["objectsByEvaluatingWithContainers:"] public open func objectsByEvaluatingWithContainers(containers: id): id
     public prop objectsByEvaluatingSpecifier: id
     public mut prop evaluationErrorNumber: NSInteger
-    public prop evaluationErrorSpecifier: NSScriptObjectSpecifier
-    public prop descriptor: NSAppleEventDescriptor
+    public prop evaluationErrorSpecifier: ?NSScriptObjectSpecifier
+    public prop descriptor: ?NSAppleEventDescriptor
 }
 
 @ObjCMirror
 public open class NSIndexSpecifier <: NSScriptObjectSpecifier {
-    @ForeignName["initWithContainerClassDescription:containerSpecifier:key:index:"] public init(classDesc: NSScriptClassDescription, container: NSScriptObjectSpecifier, property: NSString, index: NSInteger)
+    @ForeignName["initWithContainerClassDescription:containerSpecifier:key:index:"] public init(classDesc: NSScriptClassDescription, container: ?NSScriptObjectSpecifier, property: NSString, index: NSInteger)
     public mut prop index: NSInteger
 }
 
@@ -59,7 +59,7 @@ public open class NSMiddleSpecifier <: NSScriptObjectSpecifier {
 @ObjCMirror
 public open class NSNameSpecifier <: NSScriptObjectSpecifier {
     @ForeignName["initWithCoder:"] public init(inCoder: NSCoder)
-    @ForeignName["initWithContainerClassDescription:containerSpecifier:key:name:"] public init(classDesc: NSScriptClassDescription, container: NSScriptObjectSpecifier, property: NSString, name: NSString)
+    @ForeignName["initWithContainerClassDescription:containerSpecifier:key:name:"] public init(classDesc: NSScriptClassDescription, container: ?NSScriptObjectSpecifier, property: NSString, name: NSString)
     public mut prop name: NSString
 }
 
@@ -70,7 +70,7 @@ public open class NSPositionalSpecifier <: NSObject {
     @ForeignName["setInsertionClassDescription:"] public open func setInsertionClassDescription(classDescription: NSScriptClassDescription): Unit
     public open func evaluate(): Unit
     public prop insertionContainer: id
-    public prop insertionKey: NSString
+    public prop insertionKey: ?NSString
     public prop insertionIndex: NSInteger
     public prop insertionReplaces: Bool
 }
@@ -86,30 +86,30 @@ public open class NSRandomSpecifier <: NSScriptObjectSpecifier {
 @ObjCMirror
 public open class NSRangeSpecifier <: NSScriptObjectSpecifier {
     @ForeignName["initWithCoder:"] public init(inCoder: NSCoder)
-    @ForeignName["initWithContainerClassDescription:containerSpecifier:key:startSpecifier:endSpecifier:"] public init(classDesc: NSScriptClassDescription, container: NSScriptObjectSpecifier, property: NSString, startSpec: NSScriptObjectSpecifier, endSpec: NSScriptObjectSpecifier)
-    public mut prop startSpecifier: NSScriptObjectSpecifier
-    public mut prop endSpecifier: NSScriptObjectSpecifier
+    @ForeignName["initWithContainerClassDescription:containerSpecifier:key:startSpecifier:endSpecifier:"] public init(classDesc: NSScriptClassDescription, container: ?NSScriptObjectSpecifier, property: NSString, startSpec: ?NSScriptObjectSpecifier, endSpec: ?NSScriptObjectSpecifier)
+    public mut prop startSpecifier: ?NSScriptObjectSpecifier
+    public mut prop endSpecifier: ?NSScriptObjectSpecifier
 }
 
 @ObjCMirror
 public open class NSRelativeSpecifier <: NSScriptObjectSpecifier {
     @ForeignName["initWithCoder:"] public init(inCoder: NSCoder)
-    @ForeignName["initWithContainerClassDescription:containerSpecifier:key:relativePosition:baseSpecifier:"] public init(classDesc: NSScriptClassDescription, container: NSScriptObjectSpecifier, property: NSString, relPos: Int32 /*NSRelativePosition*/, baseSpecifier: NSScriptObjectSpecifier)
+    @ForeignName["initWithContainerClassDescription:containerSpecifier:key:relativePosition:baseSpecifier:"] public init(classDesc: NSScriptClassDescription, container: ?NSScriptObjectSpecifier, property: NSString, relPos: Int32 /*NSRelativePosition*/, baseSpecifier: ?NSScriptObjectSpecifier)
     public mut prop relativePosition: Int32 /*NSRelativePosition*/
-    public mut prop baseSpecifier: NSScriptObjectSpecifier
+    public mut prop baseSpecifier: ?NSScriptObjectSpecifier
 }
 
 @ObjCMirror
 public open class NSUniqueIDSpecifier <: NSScriptObjectSpecifier {
     @ForeignName["initWithCoder:"] public init(inCoder: NSCoder)
-    @ForeignName["initWithContainerClassDescription:containerSpecifier:key:uniqueID:"] public init(classDesc: NSScriptClassDescription, container: NSScriptObjectSpecifier, property: NSString, uniqueID: id)
+    @ForeignName["initWithContainerClassDescription:containerSpecifier:key:uniqueID:"] public init(classDesc: NSScriptClassDescription, container: ?NSScriptObjectSpecifier, property: NSString, uniqueID: id)
     public mut prop uniqueID: id
 }
 
 @ObjCMirror
 public open class NSWhoseSpecifier <: NSScriptObjectSpecifier {
     @ForeignName["initWithCoder:"] public init(inCoder: NSCoder)
-    @ForeignName["initWithContainerClassDescription:containerSpecifier:key:test:"] public init(classDesc: NSScriptClassDescription, container: NSScriptObjectSpecifier, property: NSString, test: NSScriptWhoseTest)
+    @ForeignName["initWithContainerClassDescription:containerSpecifier:key:test:"] public init(classDesc: NSScriptClassDescription, container: ?NSScriptObjectSpecifier, property: NSString, test: NSScriptWhoseTest)
     public mut prop test: NSScriptWhoseTest
     public mut prop startSubelementIdentifier: Int32 /*NSWhoseSubelementIdentifier*/
     public mut prop startSubelementIndex: NSInteger

@@ -21,13 +21,13 @@ public abstract sealed class NSDistributedNotificationOptions {
 @ObjCMirror
 public open class NSDistributedNotificationCenter <: NSNotificationCenter {
     @ForeignName["notificationCenterForType:"] public static func notificationCenterForType(notificationCenterType: NSDistributedNotificationCenterType): NSDistributedNotificationCenter
-    @ForeignName["addObserver:selector:name:object:suspensionBehavior:"] public open func addObserverSelectorNameObjectSuspensionBehavior(observer: id, selector: SEL, name: NSNotificationName, object: NSString, suspensionBehavior: Int32 /*NSNotificationSuspensionBehavior*/): Unit
-    @ForeignName["postNotificationName:object:userInfo:deliverImmediately:"] public open func postNotificationNameObjectUserInfoDeliverImmediately(name: NSNotificationName, object: NSString, userInfo: NSDictionary/*<KeyType, ObjectType>*/, deliverImmediately: Bool): Unit
-    @ForeignName["postNotificationName:object:userInfo:options:"] public open func postNotificationNameObjectUserInfoOptions(name: NSNotificationName, object: NSString, userInfo: NSDictionary/*<KeyType, ObjectType>*/, options: Int32 /*NSDistributedNotificationOptions*/): Unit
+    @ForeignName["addObserver:selector:name:object:suspensionBehavior:"] public open func addObserverSelectorNameObjectSuspensionBehavior(observer: id, selector: SEL, name: NSNotificationName, object: ?NSString, suspensionBehavior: Int32 /*NSNotificationSuspensionBehavior*/): Unit
+    @ForeignName["postNotificationName:object:userInfo:deliverImmediately:"] public open func postNotificationNameObjectUserInfoDeliverImmediately(name: NSNotificationName, object: ?NSString, userInfo: ?NSDictionary/*<KeyType, ObjectType>*/, deliverImmediately: Bool): Unit
+    @ForeignName["postNotificationName:object:userInfo:options:"] public open func postNotificationNameObjectUserInfoOptions(name: NSNotificationName, object: ?NSString, userInfo: ?NSDictionary/*<KeyType, ObjectType>*/, options: Int32 /*NSDistributedNotificationOptions*/): Unit
     public mut prop suspended: Bool
-    @ForeignName["addObserver:selector:name:object:"] public open func addObserverSelectorNameObject(observer: id, aSelector: SEL, aName: NSNotificationName, anObject: NSString): Unit
-    @ForeignName["postNotificationName:object:"] public open func postNotificationNameObject(aName: NSNotificationName, anObject: NSString): Unit
-    @ForeignName["postNotificationName:object:userInfo:"] public open func postNotificationNameObjectUserInfo(aName: NSNotificationName, anObject: NSString, aUserInfo: NSDictionary/*<KeyType, ObjectType>*/): Unit
-    @ForeignName["removeObserver:name:object:"] public open func removeObserverNameObject(observer: id, aName: NSNotificationName, anObject: NSString): Unit
+    @ForeignName["addObserver:selector:name:object:"] public open func addObserverSelectorNameObject(observer: id, aSelector: SEL, aName: NSNotificationName, anObject: ?NSString): Unit
+    @ForeignName["postNotificationName:object:"] public open func postNotificationNameObject(aName: NSNotificationName, anObject: ?NSString): Unit
+    @ForeignName["postNotificationName:object:userInfo:"] public open func postNotificationNameObjectUserInfo(aName: NSNotificationName, anObject: ?NSString, aUserInfo: ?NSDictionary/*<KeyType, ObjectType>*/): Unit
+    @ForeignName["removeObserver:name:object:"] public open func removeObserverNameObject(observer: id, aName: NSNotificationName, anObject: ?NSString): Unit
 }
 

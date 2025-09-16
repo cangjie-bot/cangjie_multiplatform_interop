@@ -64,24 +64,24 @@ public abstract sealed class NSFileManagerUnmountOptions {
 @ObjCMirror
 public open class NSFileManager <: NSObject {
     public static prop defaultManager: NSFileManager
-    @ForeignName["mountedVolumeURLsIncludingResourceValuesForKeys:options:"] public open func mountedVolumeURLsIncludingResourceValuesForKeysOptions(propertyKeys: NSArray/*<NSURLResourceKey>*/, options: Int32 /*NSVolumeEnumerationOptions*/): NSArray/*<NSURL>*/
+    @ForeignName["mountedVolumeURLsIncludingResourceValuesForKeys:options:"] public open func mountedVolumeURLsIncludingResourceValuesForKeysOptions(propertyKeys: ?NSArray/*<NSURLResourceKey>*/, options: Int32 /*NSVolumeEnumerationOptions*/): ?NSArray/*<NSURL>*/
     @ForeignName["unmountVolumeAtURL:options:completionHandler:"] public open func unmountVolumeAtURLOptionsCompletionHandler(url: NSURL, mask: Int32 /*NSFileManagerUnmountOptions*/, completionHandler: ObjCBlock<(NSError) -> Unit>): Unit
-    @ForeignName["contentsOfDirectoryAtURL:includingPropertiesForKeys:options:error:"] public open func contentsOfDirectoryAtURLIncludingPropertiesForKeysOptionsError(url: NSURL, keys: NSArray/*<NSURLResourceKey>*/, mask: Int32 /*NSDirectoryEnumerationOptions*/, error: ObjCPointer<NSError>): NSArray/*<NSURL>*/
+    @ForeignName["contentsOfDirectoryAtURL:includingPropertiesForKeys:options:error:"] public open func contentsOfDirectoryAtURLIncludingPropertiesForKeysOptionsError(url: NSURL, keys: ?NSArray/*<NSURLResourceKey>*/, mask: Int32 /*NSDirectoryEnumerationOptions*/, error: ObjCPointer<NSError>): ?NSArray/*<NSURL>*/
     @ForeignName["URLsForDirectory:inDomains:"] public open func URLsForDirectoryInDomains(directory: Int32 /*NSSearchPathDirectory*/, domainMask: Int32 /*NSSearchPathDomainMask*/): NSArray/*<NSURL>*/
-    @ForeignName["URLForDirectory:inDomain:appropriateForURL:create:error:"] public open func URLForDirectoryInDomainAppropriateForURLCreateError(directory: Int32 /*NSSearchPathDirectory*/, domain: Int32 /*NSSearchPathDomainMask*/, url: NSURL, shouldCreate: Bool, error: ObjCPointer<NSError>): NSURL
+    @ForeignName["URLForDirectory:inDomain:appropriateForURL:create:error:"] public open func URLForDirectoryInDomainAppropriateForURLCreateError(directory: Int32 /*NSSearchPathDirectory*/, domain: Int32 /*NSSearchPathDomainMask*/, url: ?NSURL, shouldCreate: Bool, error: ObjCPointer<NSError>): ?NSURL
     @ForeignName["getRelationship:ofDirectoryAtURL:toItemAtURL:error:"] public open func getRelationshipOfDirectoryAtURLToItemAtURLError(outRelationship: CPointer<Int32 /*NSURLRelationship*/>, directoryURL: NSURL, otherURL: NSURL, error: ObjCPointer<NSError>): Bool
     @ForeignName["getRelationship:ofDirectory:inDomain:toItemAtURL:error:"] public open func getRelationshipOfDirectoryInDomainToItemAtURLError(outRelationship: CPointer<Int32 /*NSURLRelationship*/>, directory: Int32 /*NSSearchPathDirectory*/, domainMask: Int32 /*NSSearchPathDomainMask*/, url: NSURL, error: ObjCPointer<NSError>): Bool
-    @ForeignName["createDirectoryAtURL:withIntermediateDirectories:attributes:error:"] public open func createDirectoryAtURLWithIntermediateDirectoriesAttributesError(url: NSURL, createIntermediates: Bool, attributes: NSDictionary/*<NSFileAttributeKey, id>*/, error: ObjCPointer<NSError>): Bool
+    @ForeignName["createDirectoryAtURL:withIntermediateDirectories:attributes:error:"] public open func createDirectoryAtURLWithIntermediateDirectoriesAttributesError(url: NSURL, createIntermediates: Bool, attributes: ?NSDictionary/*<NSFileAttributeKey, id>*/, error: ObjCPointer<NSError>): Bool
     @ForeignName["createSymbolicLinkAtURL:withDestinationURL:error:"] public open func createSymbolicLinkAtURLWithDestinationURLError(url: NSURL, destURL: NSURL, error: ObjCPointer<NSError>): Bool
-    public mut prop delegate: NSFileManagerDelegate
+    public mut prop delegate: ?NSFileManagerDelegate
     @ForeignName["setAttributes:ofItemAtPath:error:"] public open func setAttributesOfItemAtPathError(attributes: NSDictionary/*<NSFileAttributeKey, id>*/, path: NSString, error: ObjCPointer<NSError>): Bool
-    @ForeignName["createDirectoryAtPath:withIntermediateDirectories:attributes:error:"] public open func createDirectoryAtPathWithIntermediateDirectoriesAttributesError(path: NSString, createIntermediates: Bool, attributes: NSDictionary/*<NSFileAttributeKey, id>*/, error: ObjCPointer<NSError>): Bool
-    @ForeignName["contentsOfDirectoryAtPath:error:"] public open func contentsOfDirectoryAtPathError(path: NSString, error: ObjCPointer<NSError>): NSArray/*<NSString>*/
-    @ForeignName["subpathsOfDirectoryAtPath:error:"] public open func subpathsOfDirectoryAtPathError(path: NSString, error: ObjCPointer<NSError>): NSArray/*<NSString>*/
-    @ForeignName["attributesOfItemAtPath:error:"] public open func attributesOfItemAtPathError(path: NSString, error: ObjCPointer<NSError>): NSDictionary/*<NSFileAttributeKey, id>*/
-    @ForeignName["attributesOfFileSystemForPath:error:"] public open func attributesOfFileSystemForPathError(path: NSString, error: ObjCPointer<NSError>): NSDictionary/*<NSFileAttributeKey, id>*/
+    @ForeignName["createDirectoryAtPath:withIntermediateDirectories:attributes:error:"] public open func createDirectoryAtPathWithIntermediateDirectoriesAttributesError(path: NSString, createIntermediates: Bool, attributes: ?NSDictionary/*<NSFileAttributeKey, id>*/, error: ObjCPointer<NSError>): Bool
+    @ForeignName["contentsOfDirectoryAtPath:error:"] public open func contentsOfDirectoryAtPathError(path: NSString, error: ObjCPointer<NSError>): ?NSArray/*<NSString>*/
+    @ForeignName["subpathsOfDirectoryAtPath:error:"] public open func subpathsOfDirectoryAtPathError(path: NSString, error: ObjCPointer<NSError>): ?NSArray/*<NSString>*/
+    @ForeignName["attributesOfItemAtPath:error:"] public open func attributesOfItemAtPathError(path: NSString, error: ObjCPointer<NSError>): ?NSDictionary/*<NSFileAttributeKey, id>*/
+    @ForeignName["attributesOfFileSystemForPath:error:"] public open func attributesOfFileSystemForPathError(path: NSString, error: ObjCPointer<NSError>): ?NSDictionary/*<NSFileAttributeKey, id>*/
     @ForeignName["createSymbolicLinkAtPath:withDestinationPath:error:"] public open func createSymbolicLinkAtPathWithDestinationPathError(path: NSString, destPath: NSString, error: ObjCPointer<NSError>): Bool
-    @ForeignName["destinationOfSymbolicLinkAtPath:error:"] public open func destinationOfSymbolicLinkAtPathError(path: NSString, error: ObjCPointer<NSError>): NSString
+    @ForeignName["destinationOfSymbolicLinkAtPath:error:"] public open func destinationOfSymbolicLinkAtPathError(path: NSString, error: ObjCPointer<NSError>): ?NSString
     @ForeignName["copyItemAtPath:toPath:error:"] public open func copyItemAtPathToPathError(srcPath: NSString, dstPath: NSString, error: ObjCPointer<NSError>): Bool
     @ForeignName["moveItemAtPath:toPath:error:"] public open func moveItemAtPathToPathError(srcPath: NSString, dstPath: NSString, error: ObjCPointer<NSError>): Bool
     @ForeignName["linkItemAtPath:toPath:error:"] public open func linkItemAtPathToPathError(srcPath: NSString, dstPath: NSString, error: ObjCPointer<NSError>): Bool
@@ -91,11 +91,11 @@ public open class NSFileManager <: NSObject {
     @ForeignName["linkItemAtURL:toURL:error:"] public open func linkItemAtURLToURLError(srcURL: NSURL, dstURL: NSURL, error: ObjCPointer<NSError>): Bool
     @ForeignName["removeItemAtURL:error:"] public open func removeItemAtURLError(URL: NSURL, error: ObjCPointer<NSError>): Bool
     @ForeignName["trashItemAtURL:resultingItemURL:error:"] public open func trashItemAtURLResultingItemURLError(url: NSURL, outResultingURL: ObjCPointer<NSURL>, error: ObjCPointer<NSError>): Bool
-    @ForeignName["fileAttributesAtPath:traverseLink:"] public open func fileAttributesAtPathTraverseLink(path: NSString, yorn: Bool): NSDictionary/*<KeyType, ObjectType>*/
+    @ForeignName["fileAttributesAtPath:traverseLink:"] public open func fileAttributesAtPathTraverseLink(path: NSString, yorn: Bool): ?NSDictionary/*<KeyType, ObjectType>*/
     @ForeignName["changeFileAttributes:atPath:"] public open func changeFileAttributesAtPath(attributes: NSDictionary/*<KeyType, ObjectType>*/, path: NSString): Bool
-    @ForeignName["directoryContentsAtPath:"] public open func directoryContentsAtPath(path: NSString): NSArray/*<ObjectType>*/
-    @ForeignName["fileSystemAttributesAtPath:"] public open func fileSystemAttributesAtPath(path: NSString): NSDictionary/*<KeyType, ObjectType>*/
-    @ForeignName["pathContentOfSymbolicLinkAtPath:"] public open func pathContentOfSymbolicLinkAtPath(path: NSString): NSString
+    @ForeignName["directoryContentsAtPath:"] public open func directoryContentsAtPath(path: NSString): ?NSArray/*<ObjectType>*/
+    @ForeignName["fileSystemAttributesAtPath:"] public open func fileSystemAttributesAtPath(path: NSString): ?NSDictionary/*<KeyType, ObjectType>*/
+    @ForeignName["pathContentOfSymbolicLinkAtPath:"] public open func pathContentOfSymbolicLinkAtPath(path: NSString): ?NSString
     @ForeignName["createSymbolicLinkAtPath:pathContent:"] public open func createSymbolicLinkAtPathPathContent(path: NSString, otherpath: NSString): Bool
     @ForeignName["createDirectoryAtPath:attributes:"] public open func createDirectoryAtPathAttributes(path: NSString, attributes: NSDictionary/*<KeyType, ObjectType>*/): Bool
     @ForeignName["linkPath:toPath:handler:"] public open func linkPathToPathHandler(src: NSString, dest: NSString, handler: id): Bool
@@ -112,33 +112,33 @@ public open class NSFileManager <: NSObject {
     @ForeignName["isDeletableFileAtPath:"] public open func isDeletableFileAtPath(path: NSString): Bool
     @ForeignName["contentsEqualAtPath:andPath:"] public open func contentsEqualAtPathAndPath(path1: NSString, path2: NSString): Bool
     @ForeignName["displayNameAtPath:"] public open func displayNameAtPath(path: NSString): NSString
-    @ForeignName["componentsToDisplayForPath:"] public open func componentsToDisplayForPath(path: NSString): NSArray/*<NSString>*/
-    @ForeignName["enumeratorAtPath:"] public open func enumeratorAtPath(path: NSString): NSDirectoryEnumerator/*<NSString>*/
-    @ForeignName["enumeratorAtURL:includingPropertiesForKeys:options:errorHandler:"] public open func enumeratorAtURLIncludingPropertiesForKeysOptionsErrorHandler(url: NSURL, keys: NSArray/*<NSURLResourceKey>*/, mask: Int32 /*NSDirectoryEnumerationOptions*/, handler: ObjCBlock<(NSURL, NSError) -> Bool>): NSDirectoryEnumerator/*<NSURL>*/
-    @ForeignName["subpathsAtPath:"] public open func subpathsAtPath(path: NSString): NSArray/*<NSString>*/
-    @ForeignName["contentsAtPath:"] public open func contentsAtPath(path: NSString): NSData
-    @ForeignName["createFileAtPath:contents:attributes:"] public open func createFileAtPathContentsAttributes(path: NSString, data: NSData, attr: NSDictionary/*<NSFileAttributeKey, id>*/): Bool
+    @ForeignName["componentsToDisplayForPath:"] public open func componentsToDisplayForPath(path: NSString): ?NSArray/*<NSString>*/
+    @ForeignName["enumeratorAtPath:"] public open func enumeratorAtPath(path: NSString): ?NSDirectoryEnumerator/*<NSString>*/
+    @ForeignName["enumeratorAtURL:includingPropertiesForKeys:options:errorHandler:"] public open func enumeratorAtURLIncludingPropertiesForKeysOptionsErrorHandler(url: NSURL, keys: ?NSArray/*<NSURLResourceKey>*/, mask: Int32 /*NSDirectoryEnumerationOptions*/, handler: ObjCBlock<(NSURL, NSError) -> Bool>): ?NSDirectoryEnumerator/*<NSURL>*/
+    @ForeignName["subpathsAtPath:"] public open func subpathsAtPath(path: NSString): ?NSArray/*<NSString>*/
+    @ForeignName["contentsAtPath:"] public open func contentsAtPath(path: NSString): ?NSData
+    @ForeignName["createFileAtPath:contents:attributes:"] public open func createFileAtPathContentsAttributes(path: NSString, data: ?NSData, attr: ?NSDictionary/*<NSFileAttributeKey, id>*/): Bool
     @ForeignName["fileSystemRepresentationWithPath:"] public open func fileSystemRepresentationWithPath(path: NSString): CPointer<Int8>
     @ForeignName["stringWithFileSystemRepresentation:length:"] public open func stringWithFileSystemRepresentationLength(str: CPointer<Int8>, len: NSUInteger): NSString
-    @ForeignName["replaceItemAtURL:withItemAtURL:backupItemName:options:resultingItemURL:error:"] public open func replaceItemAtURLWithItemAtURLBackupItemNameOptionsResultingItemURLError(originalItemURL: NSURL, newItemURL: NSURL, backupItemName: NSString, options: Int32 /*NSFileManagerItemReplacementOptions*/, resultingURL: ObjCPointer<NSURL>, error: ObjCPointer<NSError>): Bool
+    @ForeignName["replaceItemAtURL:withItemAtURL:backupItemName:options:resultingItemURL:error:"] public open func replaceItemAtURLWithItemAtURLBackupItemNameOptionsResultingItemURLError(originalItemURL: NSURL, newItemURL: NSURL, backupItemName: ?NSString, options: Int32 /*NSFileManagerItemReplacementOptions*/, resultingURL: ObjCPointer<NSURL>, error: ObjCPointer<NSError>): Bool
     @ForeignName["setUbiquitous:itemAtURL:destinationURL:error:"] public open func setUbiquitousItemAtURLDestinationURLError(flag: Bool, url: NSURL, destinationURL: NSURL, error: ObjCPointer<NSError>): Bool
     @ForeignName["isUbiquitousItemAtURL:"] public open func isUbiquitousItemAtURL(url: NSURL): Bool
     @ForeignName["startDownloadingUbiquitousItemAtURL:error:"] public open func startDownloadingUbiquitousItemAtURLError(url: NSURL, error: ObjCPointer<NSError>): Bool
     @ForeignName["evictUbiquitousItemAtURL:error:"] public open func evictUbiquitousItemAtURLError(url: NSURL, error: ObjCPointer<NSError>): Bool
-    @ForeignName["URLForUbiquityContainerIdentifier:"] public open func URLForUbiquityContainerIdentifier(containerIdentifier: NSString): NSURL
-    @ForeignName["URLForPublishingUbiquitousItemAtURL:expirationDate:error:"] public open func URLForPublishingUbiquitousItemAtURLExpirationDateError(url: NSURL, outDate: ObjCPointer<NSDate>, error: ObjCPointer<NSError>): NSURL
-    public prop ubiquityIdentityToken: id/*<NSObjectProtocol, NSCopying, NSCoding>*/
+    @ForeignName["URLForUbiquityContainerIdentifier:"] public open func URLForUbiquityContainerIdentifier(containerIdentifier: ?NSString): ?NSURL
+    @ForeignName["URLForPublishingUbiquitousItemAtURL:expirationDate:error:"] public open func URLForPublishingUbiquitousItemAtURLExpirationDateError(url: NSURL, outDate: ObjCPointer<NSDate>, error: ObjCPointer<NSError>): ?NSURL
+    public prop ubiquityIdentityToken: ?id/*<NSObjectProtocol, NSCopying, NSCoding>*/
     @ForeignName["getFileProviderServicesForItemAtURL:completionHandler:"] public open func getFileProviderServicesForItemAtURLCompletionHandler(url: NSURL, completionHandler: ObjCBlock<(NSDictionary/*<NSFileProviderServiceName, NSFileProviderService>*/, NSError) -> Unit>): Unit
-    @ForeignName["containerURLForSecurityApplicationGroupIdentifier:"] public open func containerURLForSecurityApplicationGroupIdentifier(groupIdentifier: NSString): NSURL
+    @ForeignName["containerURLForSecurityApplicationGroupIdentifier:"] public open func containerURLForSecurityApplicationGroupIdentifier(groupIdentifier: NSString): ?NSURL
     public prop homeDirectoryForCurrentUser: NSURL
     public prop temporaryDirectory: NSURL
-    @ForeignName["homeDirectoryForUser:"] public open func homeDirectoryForUser(userName: NSString): NSURL
+    @ForeignName["homeDirectoryForUser:"] public open func homeDirectoryForUser(userName: NSString): ?NSURL
 }
 
 @ObjCMirror
 public open class NSDirectoryEnumerator/*<ObjectType>*/ <: NSEnumerator/*<ObjectType>*/ {
-    public prop fileAttributes: NSDictionary/*<NSFileAttributeKey, id>*/
-    public prop directoryAttributes: NSDictionary/*<NSFileAttributeKey, id>*/
+    public prop fileAttributes: ?NSDictionary/*<NSFileAttributeKey, id>*/
+    public prop directoryAttributes: ?NSDictionary/*<NSFileAttributeKey, id>*/
     public prop isEnumeratingDirectoryPostOrder: Bool
     public open func skipDescendents(): Unit
     public prop level: NSUInteger

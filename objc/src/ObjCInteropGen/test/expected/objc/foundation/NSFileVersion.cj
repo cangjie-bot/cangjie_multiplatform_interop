@@ -14,25 +14,25 @@ public abstract sealed class NSFileVersionReplacingOptions {
 
 @ObjCMirror
 public open class NSFileVersion <: NSObject {
-    @ForeignName["currentVersionOfItemAtURL:"] public static func currentVersionOfItemAtURL(url: NSURL): NSFileVersion
-    @ForeignName["otherVersionsOfItemAtURL:"] public static func otherVersionsOfItemAtURL(url: NSURL): NSArray/*<NSFileVersion>*/
-    @ForeignName["unresolvedConflictVersionsOfItemAtURL:"] public static func unresolvedConflictVersionsOfItemAtURL(url: NSURL): NSArray/*<NSFileVersion>*/
+    @ForeignName["currentVersionOfItemAtURL:"] public static func currentVersionOfItemAtURL(url: NSURL): ?NSFileVersion
+    @ForeignName["otherVersionsOfItemAtURL:"] public static func otherVersionsOfItemAtURL(url: NSURL): ?NSArray/*<NSFileVersion>*/
+    @ForeignName["unresolvedConflictVersionsOfItemAtURL:"] public static func unresolvedConflictVersionsOfItemAtURL(url: NSURL): ?NSArray/*<NSFileVersion>*/
     @ForeignName["getNonlocalVersionsOfItemAtURL:completionHandler:"] public static func getNonlocalVersionsOfItemAtURLCompletionHandler(url: NSURL, completionHandler: ObjCBlock<(NSArray/*<NSFileVersion>*/, NSError) -> Unit>): Unit
-    @ForeignName["versionOfItemAtURL:forPersistentIdentifier:"] public static func versionOfItemAtURLForPersistentIdentifier(url: NSURL, persistentIdentifier: id): NSFileVersion
-    @ForeignName["addVersionOfItemAtURL:withContentsOfURL:options:error:"] public static func addVersionOfItemAtURLWithContentsOfURLOptionsError(url: NSURL, contentsURL: NSURL, options: Int32 /*NSFileVersionAddingOptions*/, outError: ObjCPointer<NSError>): NSFileVersion
+    @ForeignName["versionOfItemAtURL:forPersistentIdentifier:"] public static func versionOfItemAtURLForPersistentIdentifier(url: NSURL, persistentIdentifier: id): ?NSFileVersion
+    @ForeignName["addVersionOfItemAtURL:withContentsOfURL:options:error:"] public static func addVersionOfItemAtURLWithContentsOfURLOptionsError(url: NSURL, contentsURL: NSURL, options: Int32 /*NSFileVersionAddingOptions*/, outError: ObjCPointer<NSError>): ?NSFileVersion
     @ForeignName["temporaryDirectoryURLForNewVersionOfItemAtURL:"] public static func temporaryDirectoryURLForNewVersionOfItemAtURL(url: NSURL): NSURL
     public prop URL: NSURL
-    public prop localizedName: NSString
-    public prop localizedNameOfSavingComputer: NSString
-    public prop originatorNameComponents: NSPersonNameComponents
-    public prop modificationDate: NSDate
+    public prop localizedName: ?NSString
+    public prop localizedNameOfSavingComputer: ?NSString
+    public prop originatorNameComponents: ?NSPersonNameComponents
+    public prop modificationDate: ?NSDate
     public prop persistentIdentifier: NSCoding
     public prop isConflict: Bool
     public mut prop isResolved: Bool
     public mut prop isDiscardable: Bool
     public prop hasLocalContents: Bool
     public prop hasThumbnail: Bool
-    @ForeignName["replaceItemAtURL:options:error:"] public open func replaceItemAtURLOptionsError(url: NSURL, options: Int32 /*NSFileVersionReplacingOptions*/, error: ObjCPointer<NSError>): NSURL
+    @ForeignName["replaceItemAtURL:options:error:"] public open func replaceItemAtURLOptionsError(url: NSURL, options: Int32 /*NSFileVersionReplacingOptions*/, error: ObjCPointer<NSError>): ?NSURL
     @ForeignName["removeAndReturnError:"] public open func removeAndReturnError(outError: ObjCPointer<NSError>): Bool
     @ForeignName["removeOtherVersionsOfItemAtURL:error:"] public static func removeOtherVersionsOfItemAtURLError(url: NSURL, outError: ObjCPointer<NSError>): Bool
 }

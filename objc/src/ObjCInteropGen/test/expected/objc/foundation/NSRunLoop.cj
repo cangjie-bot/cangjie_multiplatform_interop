@@ -13,7 +13,7 @@ public open class NSRunLoop <: NSObject {
     @ForeignName["addTimer:forMode:"] public open func addTimerForMode(timer: NSTimer, mode: NSRunLoopMode): Unit
     @ForeignName["addPort:forMode:"] public open func addPortForMode(aPort: NSPort, mode: NSRunLoopMode): Unit
     @ForeignName["removePort:forMode:"] public open func removePortForMode(aPort: NSPort, mode: NSRunLoopMode): Unit
-    @ForeignName["limitDateForMode:"] public open func limitDateForMode(mode: NSRunLoopMode): NSDate
+    @ForeignName["limitDateForMode:"] public open func limitDateForMode(mode: NSRunLoopMode): ?NSDate
     @ForeignName["acceptInputForMode:beforeDate:"] public open func acceptInputForModeBeforeDate(mode: NSRunLoopMode, limitDate: NSDate): Unit
     public open func run(): Unit
     @ForeignName["runUntilDate:"] public open func runUntilDate(limitDate: NSDate): Unit

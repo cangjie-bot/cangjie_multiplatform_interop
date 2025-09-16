@@ -7,9 +7,9 @@ import interoplib.objc.*
 @ObjCMirror
 public open class NSListFormatter <: NSFormatter {
     public mut prop locale: NSLocale
-    public mut prop itemFormatter: NSFormatter
+    public mut prop itemFormatter: ?NSFormatter
     @ForeignName["localizedStringByJoiningStrings:"] public static func localizedStringByJoiningStrings(strings: NSArray/*<NSString>*/): NSString
-    @ForeignName["stringFromItems:"] public open func stringFromItems(items: NSArray/*<ObjectType>*/): NSString
-    @ForeignName["stringForObjectValue:"] public open func stringForObjectValue(obj: id): NSString
+    @ForeignName["stringFromItems:"] public open func stringFromItems(items: NSArray/*<ObjectType>*/): ?NSString
+    @ForeignName["stringForObjectValue:"] public open func stringForObjectValue(obj: id): ?NSString
 }
 

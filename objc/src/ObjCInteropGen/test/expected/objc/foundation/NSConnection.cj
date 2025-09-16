@@ -19,16 +19,16 @@ public open class NSConnection <: NSObject {
     public prop statistics: NSDictionary/*<NSString, NSNumber>*/
     public static func allConnections(): NSArray/*<NSConnection>*/
     public static func defaultConnection(): NSConnection
-    @ForeignName["connectionWithRegisteredName:host:"] public static func connectionWithRegisteredNameHost(name: NSString, hostName: NSString): NSConnection
-    @ForeignName["connectionWithRegisteredName:host:usingNameServer:"] public static func connectionWithRegisteredNameHostUsingNameServer(name: NSString, hostName: NSString, server: NSPortNameServer): NSConnection
-    @ForeignName["rootProxyForConnectionWithRegisteredName:host:"] public static func rootProxyForConnectionWithRegisteredNameHost(name: NSString, hostName: NSString): NSDistantObject
-    @ForeignName["rootProxyForConnectionWithRegisteredName:host:usingNameServer:"] public static func rootProxyForConnectionWithRegisteredNameHostUsingNameServer(name: NSString, hostName: NSString, server: NSPortNameServer): NSDistantObject
+    @ForeignName["connectionWithRegisteredName:host:"] public static func connectionWithRegisteredNameHost(name: NSString, hostName: ?NSString): NSConnection
+    @ForeignName["connectionWithRegisteredName:host:usingNameServer:"] public static func connectionWithRegisteredNameHostUsingNameServer(name: NSString, hostName: ?NSString, server: NSPortNameServer): NSConnection
+    @ForeignName["rootProxyForConnectionWithRegisteredName:host:"] public static func rootProxyForConnectionWithRegisteredNameHost(name: NSString, hostName: ?NSString): ?NSDistantObject
+    @ForeignName["rootProxyForConnectionWithRegisteredName:host:usingNameServer:"] public static func rootProxyForConnectionWithRegisteredNameHostUsingNameServer(name: NSString, hostName: ?NSString, server: NSPortNameServer): ?NSDistantObject
     @ForeignName["serviceConnectionWithName:rootObject:usingNameServer:"] public static func serviceConnectionWithNameRootObjectUsingNameServer(name: NSString, root: id, server: NSPortNameServer): NSConnection
     @ForeignName["serviceConnectionWithName:rootObject:"] public static func serviceConnectionWithNameRootObject(name: NSString, root: id): NSConnection
     public mut prop requestTimeout: NSTimeInterval
     public mut prop replyTimeout: NSTimeInterval
     public mut prop rootObject: id
-    public mut prop delegate: NSConnectionDelegate
+    public mut prop delegate: ?NSConnectionDelegate
     public mut prop independentConversationQueueing: Bool
     public prop isValid: Bool
     public prop rootProxy: NSDistantObject
@@ -36,11 +36,11 @@ public open class NSConnection <: NSObject {
     @ForeignName["addRequestMode:"] public open func addRequestMode(rmode: NSString): Unit
     @ForeignName["removeRequestMode:"] public open func removeRequestMode(rmode: NSString): Unit
     public prop requestModes: NSArray/*<NSString>*/
-    @ForeignName["registerName:"] public open func registerName(name: NSString): Bool
-    @ForeignName["registerName:withNameServer:"] public open func registerNameWithNameServer(name: NSString, server: NSPortNameServer): Bool
-    @ForeignName["connectionWithReceivePort:sendPort:"] public static func connectionWithReceivePortSendPort(receivePort: NSPort, sendPort: NSPort): NSConnection
+    @ForeignName["registerName:"] public open func registerName(name: ?NSString): Bool
+    @ForeignName["registerName:withNameServer:"] public open func registerNameWithNameServer(name: ?NSString, server: NSPortNameServer): Bool
+    @ForeignName["connectionWithReceivePort:sendPort:"] public static func connectionWithReceivePortSendPort(receivePort: ?NSPort, sendPort: ?NSPort): NSConnection
     public static func currentConversation(): id
-    @ForeignName["initWithReceivePort:sendPort:"] public init(receivePort: NSPort, sendPort: NSPort)
+    @ForeignName["initWithReceivePort:sendPort:"] public init(receivePort: ?NSPort, sendPort: ?NSPort)
     public prop sendPort: NSPort
     public prop receivePort: NSPort
     public open func enableMultipleThreads(): Unit
@@ -58,6 +58,6 @@ public open class NSDistantObjectRequest <: NSObject {
     public prop invocation: NSInvocation
     public prop connection: NSConnection
     public prop conversation: id
-    @ForeignName["replyWithException:"] public open func replyWithException(exception: NSException): Unit
+    @ForeignName["replyWithException:"] public open func replyWithException(exception: ?NSException): Unit
 }
 

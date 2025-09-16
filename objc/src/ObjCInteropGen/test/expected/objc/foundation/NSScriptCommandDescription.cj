@@ -6,17 +6,17 @@ import interoplib.objc.*
 
 @ObjCMirror
 public open class NSScriptCommandDescription <: NSObject & NSCoding {
-    @ForeignName["initWithSuiteName:commandName:dictionary:"] public init(suiteName: NSString, commandName: NSString, commandDeclaration: NSDictionary/*<KeyType, ObjectType>*/)
+    @ForeignName["initWithSuiteName:commandName:dictionary:"] public init(suiteName: NSString, commandName: NSString, commandDeclaration: ?NSDictionary/*<KeyType, ObjectType>*/)
     @ForeignName["initWithCoder:"] public init(inCoder: NSCoder)
     public prop suiteName: NSString
     public prop commandName: NSString
     public prop appleEventClassCode: FourCharCode
     public prop appleEventCode: FourCharCode
     public prop commandClassName: NSString
-    public prop returnType: NSString
+    public prop returnType: ?NSString
     public prop appleEventCodeForReturnType: FourCharCode
     public prop argumentNames: NSArray/*<NSString>*/
-    @ForeignName["typeForArgumentWithName:"] public open func typeForArgumentWithName(argumentName: NSString): NSString
+    @ForeignName["typeForArgumentWithName:"] public open func typeForArgumentWithName(argumentName: NSString): ?NSString
     @ForeignName["appleEventCodeForArgumentWithName:"] public open func appleEventCodeForArgumentWithName(argumentName: NSString): FourCharCode
     @ForeignName["isOptionalArgumentWithName:"] public open func isOptionalArgumentWithName(argumentName: NSString): Bool
     public open func createCommandInstance(): NSScriptCommand

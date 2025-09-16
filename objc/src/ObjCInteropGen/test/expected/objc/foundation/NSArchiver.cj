@@ -13,7 +13,7 @@ public open class NSArchiver <: NSCoder {
     @ForeignName["archivedDataWithRootObject:"] public static func archivedDataWithRootObject(rootObject: id): NSData
     @ForeignName["archiveRootObject:toFile:"] public static func archiveRootObjectToFile(rootObject: id, path: NSString): Bool
     @ForeignName["encodeClassName:intoClassName:"] public open func encodeClassNameIntoClassName(trueName: NSString, inArchiveName: NSString): Unit
-    @ForeignName["classNameEncodedForTrueClassName:"] public open func classNameEncodedForTrueClassName(trueName: NSString): NSString
+    @ForeignName["classNameEncodedForTrueClassName:"] public open func classNameEncodedForTrueClassName(trueName: NSString): ?NSString
     @ForeignName["replaceObject:withObject:"] public open func replaceObjectWithObject(object: id, newObject: id): Unit
 }
 

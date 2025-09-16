@@ -10,8 +10,8 @@ public open class NSOrthography <: NSObject & NSCopying & NSSecureCoding {
     public prop languageMap: NSDictionary/*<NSString, NSArray<NSString>>*/
     @ForeignName["initWithDominantScript:languageMap:"] public init(script: NSString, map: NSDictionary/*<NSString, NSArray<NSString>>*/)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
-    @ForeignName["languagesForScript:"] public open func languagesForScript(script: NSString): NSArray/*<NSString>*/
-    @ForeignName["dominantLanguageForScript:"] public open func dominantLanguageForScript(script: NSString): NSString
+    @ForeignName["languagesForScript:"] public open func languagesForScript(script: NSString): ?NSArray/*<NSString>*/
+    @ForeignName["dominantLanguageForScript:"] public open func dominantLanguageForScript(script: NSString): ?NSString
     public prop dominantLanguage: NSString
     public prop allScripts: NSArray/*<NSString>*/
     public prop allLanguages: NSArray/*<NSString>*/

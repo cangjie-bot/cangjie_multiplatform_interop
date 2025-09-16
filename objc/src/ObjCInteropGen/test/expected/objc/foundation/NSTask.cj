@@ -12,11 +12,11 @@ public abstract sealed class NSTaskTerminationReason {
 @ObjCMirror
 public open class NSTask <: NSObject {
     public init()
-    public mut prop executableURL: NSURL
-    public mut prop arguments: NSArray/*<NSString>*/
-    public mut prop environment: NSDictionary/*<NSString, NSString>*/
-    public mut prop currentDirectoryURL: NSURL
-    public mut prop launchRequirementData: NSData
+    public mut prop executableURL: ?NSURL
+    public mut prop arguments: ?NSArray/*<NSString>*/
+    public mut prop environment: ?NSDictionary/*<NSString, NSString>*/
+    public mut prop currentDirectoryURL: ?NSURL
+    public mut prop launchRequirementData: ?NSData
     public mut prop standardInput: id
     public mut prop standardOutput: id
     public mut prop standardError: id
@@ -31,9 +31,9 @@ public open class NSTask <: NSObject {
     public prop terminationReason: Int32 /*NSTaskTerminationReason*/
     public mut prop terminationHandler: ObjCBlock<(NSTask) -> Unit>
     public mut prop qualityOfService: Int32 /*NSQualityOfService*/
-    @ForeignName["launchedTaskWithExecutableURL:arguments:error:terminationHandler:"] public static func launchedTaskWithExecutableURLArgumentsErrorTerminationHandler(url: NSURL, arguments: NSArray/*<NSString>*/, error: ObjCPointer<NSError>, terminationHandler: ObjCBlock<(NSTask) -> Unit>): NSTask
+    @ForeignName["launchedTaskWithExecutableURL:arguments:error:terminationHandler:"] public static func launchedTaskWithExecutableURLArgumentsErrorTerminationHandler(url: NSURL, arguments: NSArray/*<NSString>*/, error: ObjCPointer<NSError>, terminationHandler: ObjCBlock<(NSTask) -> Unit>): ?NSTask
     public open func waitUntilExit(): Unit
-    public mut prop launchPath: NSString
+    public mut prop launchPath: ?NSString
     public mut prop currentDirectoryPath: NSString
     public open func launch(): Unit
     @ForeignName["launchedTaskWithLaunchPath:arguments:"] public static func launchedTaskWithLaunchPathArguments(path: NSString, arguments: NSArray/*<NSString>*/): NSTask

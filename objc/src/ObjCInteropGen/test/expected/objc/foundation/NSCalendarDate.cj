@@ -9,7 +9,7 @@ public open class NSCalendarDate <: NSDate {
     public static func calendarDate(): id
     @ForeignName["dateWithString:calendarFormat:locale:"] public static func dateWithStringCalendarFormatLocale(description: NSString, format: NSString, locale: id): id
     @ForeignName["dateWithString:calendarFormat:"] public static func dateWithStringCalendarFormat(description: NSString, format: NSString): id
-    @ForeignName["dateWithYear:month:day:hour:minute:second:timeZone:"] public static func dateWithYearMonthDayHourMinuteSecondTimeZone(year: NSInteger, month: NSUInteger, day: NSUInteger, hour: NSUInteger, minute: NSUInteger, second: NSUInteger, aTimeZone: NSTimeZone): id
+    @ForeignName["dateWithYear:month:day:hour:minute:second:timeZone:"] public static func dateWithYearMonthDayHourMinuteSecondTimeZone(year: NSInteger, month: NSUInteger, day: NSUInteger, hour: NSUInteger, minute: NSUInteger, second: NSUInteger, aTimeZone: ?NSTimeZone): id
     @ForeignName["dateByAddingYears:months:days:hours:minutes:seconds:"] public open func dateByAddingYearsMonthsDaysHoursMinutesSeconds(year: NSInteger, month: NSInteger, day: NSInteger, hour: NSInteger, minute: NSInteger, second: NSInteger): NSCalendarDate
     public open func dayOfCommonEra(): NSInteger
     public open func dayOfMonth(): NSInteger
@@ -28,9 +28,9 @@ public open class NSCalendarDate <: NSDate {
     @ForeignName["initWithString:calendarFormat:locale:"] public init(description: NSString, format: NSString, locale: id)
     @ForeignName["initWithString:calendarFormat:"] public init(description: NSString, format: NSString)
     @ForeignName["initWithString:"] public init(description: NSString)
-    @ForeignName["initWithYear:month:day:hour:minute:second:timeZone:"] public init(year: NSInteger, month: NSUInteger, day: NSUInteger, hour: NSUInteger, minute: NSUInteger, second: NSUInteger, aTimeZone: NSTimeZone)
-    @ForeignName["setCalendarFormat:"] public open func setCalendarFormat(format: NSString): Unit
-    @ForeignName["setTimeZone:"] public open func setTimeZone(aTimeZone: NSTimeZone): Unit
+    @ForeignName["initWithYear:month:day:hour:minute:second:timeZone:"] public init(year: NSInteger, month: NSUInteger, day: NSUInteger, hour: NSUInteger, minute: NSUInteger, second: NSUInteger, aTimeZone: ?NSTimeZone)
+    @ForeignName["setCalendarFormat:"] public open func setCalendarFormat(format: ?NSString): Unit
+    @ForeignName["setTimeZone:"] public open func setTimeZone(aTimeZone: ?NSTimeZone): Unit
     @ForeignName["years:months:days:hours:minutes:seconds:sinceDate:"] public open func yearsMonthsDaysHoursMinutesSecondsSinceDate(yp: CPointer<NSInteger>, mop: CPointer<NSInteger>, dp: CPointer<NSInteger>, hp: CPointer<NSInteger>, mip: CPointer<NSInteger>, sp: CPointer<NSInteger>, date: NSCalendarDate): Unit
 }
 

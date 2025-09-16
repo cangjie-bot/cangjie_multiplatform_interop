@@ -32,6 +32,6 @@ public open class NSLogicalTest <: NSScriptWhoseTest {
 @ObjCMirror
 public open class NSSpecifierTest <: NSScriptWhoseTest {
     @ForeignName["initWithCoder:"] public init(inCoder: NSCoder)
-    @ForeignName["initWithObjectSpecifier:comparisonOperator:testObject:"] public init(obj1: NSScriptObjectSpecifier, compOp: Int32 /*NSTestComparisonOperation*/, obj2: id)
+    @ForeignName["initWithObjectSpecifier:comparisonOperator:testObject:"] public init(obj1: ?NSScriptObjectSpecifier, compOp: Int32 /*NSTestComparisonOperation*/, obj2: id)
 }
 

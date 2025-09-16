@@ -8,22 +8,22 @@ import interoplib.objc.*
 public interface NSXMLParserDelegate <: NSObjectProtocol {
     @ForeignName["parserDidStartDocument:"] func parserDidStartDocument(parser: NSXMLParser): Unit
     @ForeignName["parserDidEndDocument:"] func parserDidEndDocument(parser: NSXMLParser): Unit
-    @ForeignName["parser:foundNotationDeclarationWithName:publicID:systemID:"] func parserFoundNotationDeclarationWithNamePublicIDSystemID(parser: NSXMLParser, name: NSString, publicID: NSString, systemID: NSString): Unit
-    @ForeignName["parser:foundUnparsedEntityDeclarationWithName:publicID:systemID:notationName:"] func parserFoundUnparsedEntityDeclarationWithNamePublicIDSystemIDNotationName(parser: NSXMLParser, name: NSString, publicID: NSString, systemID: NSString, notationName: NSString): Unit
-    @ForeignName["parser:foundAttributeDeclarationWithName:forElement:type:defaultValue:"] func parserFoundAttributeDeclarationWithNameForElementTypeDefaultValue(parser: NSXMLParser, attributeName: NSString, elementName: NSString, `type`: NSString, defaultValue: NSString): Unit
+    @ForeignName["parser:foundNotationDeclarationWithName:publicID:systemID:"] func parserFoundNotationDeclarationWithNamePublicIDSystemID(parser: NSXMLParser, name: NSString, publicID: ?NSString, systemID: ?NSString): Unit
+    @ForeignName["parser:foundUnparsedEntityDeclarationWithName:publicID:systemID:notationName:"] func parserFoundUnparsedEntityDeclarationWithNamePublicIDSystemIDNotationName(parser: NSXMLParser, name: NSString, publicID: ?NSString, systemID: ?NSString, notationName: ?NSString): Unit
+    @ForeignName["parser:foundAttributeDeclarationWithName:forElement:type:defaultValue:"] func parserFoundAttributeDeclarationWithNameForElementTypeDefaultValue(parser: NSXMLParser, attributeName: NSString, elementName: NSString, `type`: ?NSString, defaultValue: ?NSString): Unit
     @ForeignName["parser:foundElementDeclarationWithName:model:"] func parserFoundElementDeclarationWithNameModel(parser: NSXMLParser, elementName: NSString, model: NSString): Unit
-    @ForeignName["parser:foundInternalEntityDeclarationWithName:value:"] func parserFoundInternalEntityDeclarationWithNameValue(parser: NSXMLParser, name: NSString, value: NSString): Unit
-    @ForeignName["parser:foundExternalEntityDeclarationWithName:publicID:systemID:"] func parserFoundExternalEntityDeclarationWithNamePublicIDSystemID(parser: NSXMLParser, name: NSString, publicID: NSString, systemID: NSString): Unit
-    @ForeignName["parser:didStartElement:namespaceURI:qualifiedName:attributes:"] func parserDidStartElementNamespaceURIQualifiedNameAttributes(parser: NSXMLParser, elementName: NSString, namespaceURI: NSString, qName: NSString, attributeDict: NSDictionary/*<NSString, NSString>*/): Unit
-    @ForeignName["parser:didEndElement:namespaceURI:qualifiedName:"] func parserDidEndElementNamespaceURIQualifiedName(parser: NSXMLParser, elementName: NSString, namespaceURI: NSString, qName: NSString): Unit
+    @ForeignName["parser:foundInternalEntityDeclarationWithName:value:"] func parserFoundInternalEntityDeclarationWithNameValue(parser: NSXMLParser, name: NSString, value: ?NSString): Unit
+    @ForeignName["parser:foundExternalEntityDeclarationWithName:publicID:systemID:"] func parserFoundExternalEntityDeclarationWithNamePublicIDSystemID(parser: NSXMLParser, name: NSString, publicID: ?NSString, systemID: ?NSString): Unit
+    @ForeignName["parser:didStartElement:namespaceURI:qualifiedName:attributes:"] func parserDidStartElementNamespaceURIQualifiedNameAttributes(parser: NSXMLParser, elementName: NSString, namespaceURI: ?NSString, qName: ?NSString, attributeDict: NSDictionary/*<NSString, NSString>*/): Unit
+    @ForeignName["parser:didEndElement:namespaceURI:qualifiedName:"] func parserDidEndElementNamespaceURIQualifiedName(parser: NSXMLParser, elementName: NSString, namespaceURI: ?NSString, qName: ?NSString): Unit
     @ForeignName["parser:didStartMappingPrefix:toURI:"] func parserDidStartMappingPrefixToURI(parser: NSXMLParser, prefix: NSString, namespaceURI: NSString): Unit
     @ForeignName["parser:didEndMappingPrefix:"] func parserDidEndMappingPrefix(parser: NSXMLParser, prefix: NSString): Unit
     @ForeignName["parser:foundCharacters:"] func parserFoundCharacters(parser: NSXMLParser, string: NSString): Unit
     @ForeignName["parser:foundIgnorableWhitespace:"] func parserFoundIgnorableWhitespace(parser: NSXMLParser, whitespaceString: NSString): Unit
-    @ForeignName["parser:foundProcessingInstructionWithTarget:data:"] func parserFoundProcessingInstructionWithTargetData(parser: NSXMLParser, target: NSString, data: NSString): Unit
+    @ForeignName["parser:foundProcessingInstructionWithTarget:data:"] func parserFoundProcessingInstructionWithTargetData(parser: NSXMLParser, target: NSString, data: ?NSString): Unit
     @ForeignName["parser:foundComment:"] func parserFoundComment(parser: NSXMLParser, comment: NSString): Unit
     @ForeignName["parser:foundCDATA:"] func parserFoundCDATA(parser: NSXMLParser, CDATABlock: NSData): Unit
-    @ForeignName["parser:resolveExternalEntityName:systemID:"] func parserResolveExternalEntityNameSystemID(parser: NSXMLParser, name: NSString, systemID: NSString): NSData
+    @ForeignName["parser:resolveExternalEntityName:systemID:"] func parserResolveExternalEntityNameSystemID(parser: NSXMLParser, name: NSString, systemID: ?NSString): ?NSData
     @ForeignName["parser:parseErrorOccurred:"] func parserParseErrorOccurred(parser: NSXMLParser, parseError: NSError): Unit
     @ForeignName["parser:validationErrorOccurred:"] func parserValidationErrorOccurred(parser: NSXMLParser, validationError: NSError): Unit
 }
@@ -40,17 +40,17 @@ public open class NSXMLParser <: NSObject {
     @ForeignName["initWithContentsOfURL:"] public init(url: NSURL)
     @ForeignName["initWithData:"] public init(data: NSData)
     @ForeignName["initWithStream:"] public init(stream: NSInputStream)
-    public mut prop delegate: NSXMLParserDelegate
+    public mut prop delegate: ?NSXMLParserDelegate
     public mut prop shouldProcessNamespaces: Bool
     public mut prop shouldReportNamespacePrefixes: Bool
     public mut prop externalEntityResolvingPolicy: Int32 /*NSXMLParserExternalEntityResolvingPolicy*/
-    public mut prop allowedExternalEntityURLs: NSSet/*<NSURL>*/
+    public mut prop allowedExternalEntityURLs: ?NSSet/*<NSURL>*/
     public open func parse(): Bool
     public open func abortParsing(): Unit
-    public prop parserError: NSError
+    public prop parserError: ?NSError
     public mut prop shouldResolveExternalEntities: Bool
-    public prop publicID: NSString
-    public prop systemID: NSString
+    public prop publicID: ?NSString
+    public prop systemID: ?NSString
     public prop lineNumber: NSInteger
     public prop columnNumber: NSInteger
 }

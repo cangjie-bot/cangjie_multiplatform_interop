@@ -7,8 +7,8 @@ import interoplib.objc.*
 @ObjCMirror
 public open class NSPortNameServer <: NSObject {
     public static func systemDefaultPortNameServer(): NSPortNameServer
-    @ForeignName["portForName:"] public open func portForName(name: NSString): NSPort
-    @ForeignName["portForName:host:"] public open func portForNameHost(name: NSString, host: NSString): NSPort
+    @ForeignName["portForName:"] public open func portForName(name: NSString): ?NSPort
+    @ForeignName["portForName:host:"] public open func portForNameHost(name: NSString, host: ?NSString): ?NSPort
     @ForeignName["registerPort:name:"] public open func registerPortName(port: NSPort, name: NSString): Bool
     @ForeignName["removePortForName:"] public open func removePortForName(name: NSString): Bool
 }
@@ -16,27 +16,27 @@ public open class NSPortNameServer <: NSObject {
 @ObjCMirror
 public open class NSMachBootstrapServer <: NSPortNameServer {
     public static func sharedInstance(): id
-    @ForeignName["portForName:"] public open func portForName(name: NSString): NSPort
-    @ForeignName["portForName:host:"] public open func portForNameHost(name: NSString, host: NSString): NSPort
+    @ForeignName["portForName:"] public open func portForName(name: NSString): ?NSPort
+    @ForeignName["portForName:host:"] public open func portForNameHost(name: NSString, host: ?NSString): ?NSPort
     @ForeignName["registerPort:name:"] public open func registerPortName(port: NSPort, name: NSString): Bool
-    @ForeignName["servicePortWithName:"] public open func servicePortWithName(name: NSString): NSPort
+    @ForeignName["servicePortWithName:"] public open func servicePortWithName(name: NSString): ?NSPort
 }
 
 @ObjCMirror
 public open class NSMessagePortNameServer <: NSPortNameServer {
     public static func sharedInstance(): id
-    @ForeignName["portForName:"] public open func portForName(name: NSString): NSPort
-    @ForeignName["portForName:host:"] public open func portForNameHost(name: NSString, host: NSString): NSPort
+    @ForeignName["portForName:"] public open func portForName(name: NSString): ?NSPort
+    @ForeignName["portForName:host:"] public open func portForNameHost(name: NSString, host: ?NSString): ?NSPort
 }
 
 @ObjCMirror
 public open class NSSocketPortNameServer <: NSPortNameServer {
     public static func sharedInstance(): id
-    @ForeignName["portForName:"] public open func portForName(name: NSString): NSPort
-    @ForeignName["portForName:host:"] public open func portForNameHost(name: NSString, host: NSString): NSPort
+    @ForeignName["portForName:"] public open func portForName(name: NSString): ?NSPort
+    @ForeignName["portForName:host:"] public open func portForNameHost(name: NSString, host: ?NSString): ?NSPort
     @ForeignName["registerPort:name:"] public open func registerPortName(port: NSPort, name: NSString): Bool
     @ForeignName["removePortForName:"] public open func removePortForName(name: NSString): Bool
-    @ForeignName["portForName:host:nameServerPortNumber:"] public open func portForNameHostNameServerPortNumber(name: NSString, host: NSString, portNumber: uint16_t): NSPort
+    @ForeignName["portForName:host:nameServerPortNumber:"] public open func portForNameHostNameServerPortNumber(name: NSString, host: ?NSString, portNumber: uint16_t): ?NSPort
     @ForeignName["registerPort:name:nameServerPortNumber:"] public open func registerPortNameNameServerPortNumber(port: NSPort, name: NSString, portNumber: uint16_t): Bool
     public mut prop defaultNameServerPortNumber: uint16_t
 }
