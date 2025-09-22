@@ -48,8 +48,6 @@ public open class NSURLRequest <: NSObject & NSSecureCoding & NSCopying & NSMuta
     public prop assumesHTTP3Capable: Bool
     public prop attribution: Int32 /*NSURLRequestAttribution*/
     public prop requiresDNSSECValidation: Bool
-    public prop allowsPersistentDNS: Bool
-    public prop cookiePartitionIdentifier: ?NSString
     public prop HTTPMethod: ?NSString
     public prop allHTTPHeaderFields: ?NSDictionary/*<NSString, NSString>*/
     @ForeignName["valueForHTTPHeaderField:"] public open func valueForHTTPHeaderField(field: NSString): ?NSString

@@ -18,8 +18,6 @@ public open class NSPointerArray <: NSObject & NSFastEnumeration & NSCopying & N
     @ForeignName["replacePointerAtIndex:withPointer:"] public open func replacePointerAtIndexWithPointer(index: NSUInteger, item: CPointer<Unit>): Unit
     public open func compact(): Unit
     public mut prop count: NSUInteger
-    public static func pointerArrayWithStrongObjects(): id
-    public static func pointerArrayWithWeakObjects(): id
     public static func strongObjectsPointerArray(): NSPointerArray
     public static func weakObjectsPointerArray(): NSPointerArray
     public prop allObjects: NSArray/*<ObjectType>*/

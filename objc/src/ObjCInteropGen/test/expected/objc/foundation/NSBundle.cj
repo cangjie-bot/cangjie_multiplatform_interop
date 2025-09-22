@@ -53,7 +53,6 @@ public open class NSBundle <: NSObject {
     @ForeignName["pathsForResourcesOfType:inDirectory:forLocalization:"] public open func pathsForResourcesOfTypeInDirectoryForLocalization(ext: ?NSString, subpath: ?NSString, localizationName: ?NSString): NSArray/*<NSString>*/
     @ForeignName["localizedStringForKey:value:table:"] public open func localizedStringForKeyValueTable(key: NSString, value: ?NSString, tableName: ?NSString): NSString
     @ForeignName["localizedAttributedStringForKey:value:table:"] public open func localizedAttributedStringForKeyValueTable(key: NSString, value: ?NSString, tableName: ?NSString): NSAttributedString
-    @ForeignName["localizedStringForKey:value:table:localizations:"] public open func localizedStringForKeyValueTableLocalizations(key: NSString, value: ?NSString, tableName: ?NSString, localizations: NSArray/*<NSString>*/): NSString
     public prop bundleIdentifier: ?NSString
     public prop infoDictionary: ?NSDictionary/*<NSString, id>*/
     public prop localizedInfoDictionary: ?NSDictionary/*<NSString, id>*/
@@ -72,6 +71,7 @@ public open class NSBundle <: NSObject {
 
 @ObjCMirror
 public open class NSBundleResourceRequest <: NSObject & NSProgressReporting {
+    public init()
     @ForeignName["initWithTags:"] public init(tags: NSSet/*<NSString>*/)
     @ForeignName["initWithTags:bundle:"] public init(tags: NSSet/*<NSString>*/, bundle: NSBundle)
     public mut prop loadingPriority: Float64

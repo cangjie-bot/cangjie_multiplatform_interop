@@ -17,6 +17,7 @@ public open class NSOrderedCollectionChange/*<ObjectType>*/ <: NSObject {
     public prop changeType: Int32 /*NSCollectionChangeType*/
     public prop index: NSUInteger
     public prop associatedIndex: NSUInteger
+    public init()
     @ForeignName["initWithObject:type:index:"] public init(anObject: id /*ObjectType*/, `type`: Int32 /*NSCollectionChangeType*/, index: NSUInteger)
     @ForeignName["initWithObject:type:index:associatedIndex:"] public init(anObject: id /*ObjectType*/, `type`: Int32 /*NSCollectionChangeType*/, index: NSUInteger, associatedIndex: NSUInteger)
 }

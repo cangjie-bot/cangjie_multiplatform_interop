@@ -4,21 +4,9 @@ package objc.foundation
 
 import interoplib.objc.*
 
-public type SInt16 = Int16
-
-public type SInt32 = Int32
-
-public type OSErr = SInt16
-
 public type FourCharCode = UInt32
 
 public type OSType = FourCharCode
-
-public type ResType = FourCharCode
-
-public type Boolean = UInt8
-
-public type SRefCon = CPointer<Unit>
 
 public type UTF32Char = UInt32
 

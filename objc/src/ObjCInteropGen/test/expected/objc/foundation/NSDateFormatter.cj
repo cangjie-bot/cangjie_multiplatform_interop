@@ -47,8 +47,6 @@ public open class NSDateFormatter <: NSFormatter {
     public mut prop shortStandaloneQuarterSymbols: NSArray/*<NSString>*/
     public mut prop gregorianStartDate: ?NSDate
     public mut prop doesRelativeDateFormatting: Bool
-    @ForeignName["initWithDateFormat:allowNaturalLanguage:"] public init(format: NSString, flag: Bool)
-    public open func allowsNaturalLanguage(): Bool
 }
 
 public abstract sealed class NSDateFormatterStyle {
@@ -61,7 +59,6 @@ public abstract sealed class NSDateFormatterStyle {
 
 public abstract sealed class NSDateFormatterBehavior {
     public static const NSDateFormatterBehaviorDefault: NSUInteger = 0
-    public static const NSDateFormatterBehavior10_0: NSUInteger = 1000
     public static const NSDateFormatterBehavior10_4: NSUInteger = 1040
 }
 

@@ -7,6 +7,10 @@ import interoplib.objc.*
 public type NSSocketNativeHandle = Int32
 
 @ObjCMirror
+public open class NSPortMessage <: id {
+}
+
+@ObjCMirror
 public interface NSPortDelegate <: NSObjectProtocol {
     @ForeignName["handlePortMessage:"] func handlePortMessage(message: NSPortMessage): Unit
 }
@@ -28,8 +32,6 @@ public open class NSPort <: NSObject & NSCopying & NSCoding {
     public prop reservedSpaceLength: NSUInteger
     @ForeignName["sendBeforeDate:components:from:reserved:"] public open func sendBeforeDateComponentsFromReserved(limitDate: NSDate, components: ?NSMutableArray/*<ObjectType>*/, receivePort: ?NSPort, headerSpaceReserved: NSUInteger): Bool
     @ForeignName["sendBeforeDate:msgid:components:from:reserved:"] public open func sendBeforeDateMsgidComponentsFromReserved(limitDate: NSDate, msgID: NSUInteger, components: ?NSMutableArray/*<ObjectType>*/, receivePort: ?NSPort, headerSpaceReserved: NSUInteger): Bool
-    @ForeignName["addConnection:toRunLoop:forMode:"] public open func addConnectionToRunLoopForMode(conn: NSConnection, runLoop: NSRunLoop, mode: NSRunLoopMode): Unit
-    @ForeignName["removeConnection:fromRunLoop:forMode:"] public open func removeConnectionFromRunLoopForMode(conn: NSConnection, runLoop: NSRunLoop, mode: NSRunLoopMode): Unit
 }
 
 @ObjCMirror
@@ -53,20 +55,5 @@ public abstract sealed class NSMachPortOptions {
 
 @ObjCMirror
 public open class NSMessagePort <: NSPort {
-}
-
-@ObjCMirror
-public open class NSSocketPort <: NSPort {
-    public init()
-    @ForeignName["initWithTCPPort:"] public init(port: UInt16)
-    // @ForeignName["initWithProtocolFamily:socketType:protocol:address:"] public init(family: Int32, `type`: Int32, protocol: Int32, address: NSData)
-    @ForeignName["initWithProtocolFamily:socketType:protocol:socket:"] public init(family: Int32, `type`: Int32, protocol: Int32, sock: NSSocketNativeHandle)
-    @ForeignName["initRemoteWithTCPPort:host:"] public init(port: UInt16, hostName: ?NSString)
-    // @ForeignName["initRemoteWithProtocolFamily:socketType:protocol:address:"] public init(family: Int32, `type`: Int32, protocol: Int32, address: NSData)
-    public prop protocolFamily: Int32
-    public prop socketType: Int32
-    public prop protocol: Int32
-    public prop address: NSData
-    public prop socket: NSSocketNativeHandle
 }
 

@@ -88,12 +88,6 @@ public open class NSURL <: NSObject & NSSecureCoding & NSCopying {
     @ForeignName["checkResourceIsReachableAndReturnError:"] public open func checkResourceIsReachableAndReturnError(error: ObjCPointer<NSError>): Bool
     public prop URLByStandardizingPath: ?NSURL
     public prop URLByResolvingSymlinksInPath: ?NSURL
-    @ForeignName["resourceDataUsingCache:"] public open func resourceDataUsingCache(shouldUseCache: Bool): ?NSData
-    @ForeignName["loadResourceDataNotifyingClient:usingCache:"] public open func loadResourceDataNotifyingClientUsingCache(client: id, shouldUseCache: Bool): Unit
-    @ForeignName["propertyForKey:"] public open func propertyForKey(propertyKey: NSString): id
-    @ForeignName["setResourceData:"] public open func setResourceData(data: NSData): Bool
-    @ForeignName["setProperty:forKey:"] public open func setPropertyForKey(property: id, propertyKey: NSString): Bool
-    @ForeignName["URLHandleUsingCache:"] public open func URLHandleUsingCache(shouldUseCache: Bool): ?NSURLHandle
 }
 
 public type NSURLFileResourceType = NSString

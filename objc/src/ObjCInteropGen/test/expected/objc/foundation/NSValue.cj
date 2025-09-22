@@ -20,14 +20,6 @@ public open class NSValue <: NSObject & NSCopying & NSSecureCoding {
     @ForeignName["getValue:"] public open func getValue(value: CPointer<Unit>): Unit
     @ForeignName["valueWithRange:"] public static func valueWithRange(range: NSRange): NSValue
     public prop rangeValue: NSRange
-    @ForeignName["valueWithPoint:"] public static func valueWithPoint(point: NSPoint): NSValue
-    @ForeignName["valueWithSize:"] public static func valueWithSize(size: NSSize): NSValue
-    @ForeignName["valueWithRect:"] public static func valueWithRect(rect: NSRect): NSValue
-    @ForeignName["valueWithEdgeInsets:"] public static func valueWithEdgeInsets(insets: NSEdgeInsets): NSValue
-    public prop pointValue: NSPoint
-    public prop sizeValue: NSSize
-    public prop rectValue: NSRect
-    public prop edgeInsetsValue: NSEdgeInsets
 }
 
 @ObjCMirror

@@ -18,7 +18,6 @@ public open class NSRunLoop <: NSObject {
     public open func run(): Unit
     @ForeignName["runUntilDate:"] public open func runUntilDate(limitDate: NSDate): Unit
     @ForeignName["runMode:beforeDate:"] public open func runModeBeforeDate(mode: NSRunLoopMode, limitDate: NSDate): Bool
-    public open func configureAsServer(): Unit
     @ForeignName["performInModes:block:"] public open func performInModesBlock(modes: NSArray/*<NSRunLoopMode>*/, block: ObjCBlock<() -> Unit>): Unit
     @ForeignName["performBlock:"] public open func performBlock(block: ObjCBlock<() -> Unit>): Unit
     @ForeignName["performSelector:target:argument:order:modes:"] public open func performSelectorTargetArgumentOrderModes(aSelector: SEL, target: id, arg: id, order: NSUInteger, modes: NSArray/*<NSRunLoopMode>*/): Unit

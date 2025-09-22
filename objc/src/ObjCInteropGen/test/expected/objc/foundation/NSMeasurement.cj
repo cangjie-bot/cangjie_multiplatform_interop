@@ -8,6 +8,7 @@ import interoplib.objc.*
 public open class NSMeasurement/*<UnitType>*/ <: NSObject & NSCopying & NSSecureCoding {
     public prop unit: id /*UnitType*/
     public prop doubleValue: Float64
+    public init()
     @ForeignName["initWithDoubleValue:unit:"] public init(doubleValue: Float64, unit: id /*UnitType*/)
     @ForeignName["canBeConvertedToUnit:"] public open func canBeConvertedToUnit(unit: NSUnit): Bool
     @ForeignName["measurementByConvertingToUnit:"] public open func measurementByConvertingToUnit(unit: NSUnit): NSMeasurement/*<UnitType>*/

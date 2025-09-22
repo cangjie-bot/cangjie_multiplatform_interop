@@ -29,8 +29,6 @@ public open class NSCoder <: NSObject {
     @ForeignName["decodeValuesOfObjCTypes:"] public open func decodeValuesOfObjCTypes(types: CPointer<Int8>): Unit
     @ForeignName["decodeArrayOfObjCType:count:at:"] public open func decodeArrayOfObjCTypeCountAt(itemType: CPointer<Int8>, count: NSUInteger, array: CPointer<Unit>): Unit
     @ForeignName["decodeBytesWithReturnedLength:"] public open func decodeBytesWithReturnedLength(lengthp: CPointer<NSUInteger>): CPointer<Unit>
-    @ForeignName["encodePropertyList:"] public open func encodePropertyList(aPropertyList: id): Unit
-    public open func decodePropertyList(): id
     public prop systemVersion: UInt32
     public prop allowsKeyedCoding: Bool
     @ForeignName["encodeObject:forKey:"] public open func encodeObjectForKey(object: id, key: NSString): Unit
@@ -52,8 +50,6 @@ public open class NSCoder <: NSObject {
     @ForeignName["decodeFloatForKey:"] public open func decodeFloatForKey(key: NSString): Float32
     @ForeignName["decodeDoubleForKey:"] public open func decodeDoubleForKey(key: NSString): Float64
     @ForeignName["decodeBytesForKey:returnedLength:"] public open func decodeBytesForKeyReturnedLength(key: NSString, lengthp: CPointer<NSUInteger>): CPointer<uint8_t>
-    @ForeignName["decodeBytesWithMinimumLength:"] public open func decodeBytesWithMinimumLength(length: NSUInteger): CPointer<Unit>
-    @ForeignName["decodeBytesForKey:minimumLength:"] public open func decodeBytesForKeyMinimumLength(key: NSString, length: NSUInteger): CPointer<uint8_t>
     @ForeignName["encodeInteger:forKey:"] public open func encodeIntegerForKey(value: NSInteger, key: NSString): Unit
     @ForeignName["decodeIntegerForKey:"] public open func decodeIntegerForKey(key: NSString): NSInteger
     public prop requiresSecureCoding: Bool
@@ -70,20 +66,6 @@ public open class NSCoder <: NSObject {
     @ForeignName["failWithError:"] public open func failWithError(error: NSError): Unit
     public prop decodingFailurePolicy: Int32 /*NSDecodingFailurePolicy*/
     public prop error: ?NSError
-    @ForeignName["encodeNXObject:"] public open func encodeNXObject(object: id): Unit
-    public open func decodeNXObject(): id
     @ForeignName["decodeValueOfObjCType:at:"] public open func decodeValueOfObjCTypeAt(`type`: CPointer<Int8>, data: CPointer<Unit>): Unit
-    @ForeignName["encodePoint:"] public open func encodePoint(point: NSPoint): Unit
-    public open func decodePoint(): NSPoint
-    @ForeignName["encodeSize:"] public open func encodeSize(size: NSSize): Unit
-    public open func decodeSize(): NSSize
-    @ForeignName["encodeRect:"] public open func encodeRect(rect: NSRect): Unit
-    public open func decodeRect(): NSRect
-    @ForeignName["encodePoint:forKey:"] public open func encodePointForKey(point: NSPoint, key: NSString): Unit
-    @ForeignName["encodeSize:forKey:"] public open func encodeSizeForKey(size: NSSize, key: NSString): Unit
-    @ForeignName["encodeRect:forKey:"] public open func encodeRectForKey(rect: NSRect, key: NSString): Unit
-    @ForeignName["decodePointForKey:"] public open func decodePointForKey(key: NSString): NSPoint
-    @ForeignName["decodeSizeForKey:"] public open func decodeSizeForKey(key: NSString): NSSize
-    @ForeignName["decodeRectForKey:"] public open func decodeRectForKey(key: NSString): NSRect
 }
 

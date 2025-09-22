@@ -43,7 +43,6 @@ public open class NSStream <: NSObject {
     public prop streamStatus: Int32 /*NSStreamStatus*/
     public prop streamError: ?NSError
     @ForeignName["getStreamsToHostWithName:port:inputStream:outputStream:"] public static func getStreamsToHostWithNamePortInputStreamOutputStream(hostname: NSString, port: NSInteger, inputStream: ObjCPointer<NSInputStream>, outputStream: ObjCPointer<NSOutputStream>): Unit
-    @ForeignName["getStreamsToHost:port:inputStream:outputStream:"] public static func getStreamsToHostPortInputStreamOutputStream(host: NSHost, port: NSInteger, inputStream: ObjCPointer<NSInputStream>, outputStream: ObjCPointer<NSOutputStream>): Unit
     @ForeignName["getBoundStreamsWithBufferSize:inputStream:outputStream:"] public static func getBoundStreamsWithBufferSizeInputStreamOutputStream(bufferSize: NSUInteger, inputStream: ObjCPointer<NSInputStream>, outputStream: ObjCPointer<NSOutputStream>): Unit
 }
 

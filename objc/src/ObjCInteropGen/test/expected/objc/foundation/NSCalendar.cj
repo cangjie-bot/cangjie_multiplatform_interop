@@ -21,7 +21,6 @@ public abstract sealed class NSCalendarUnit {
     public static const NSCalendarUnitWeekOfYear: NSUInteger = 8192
     public static const NSCalendarUnitYearForWeekOfYear: NSUInteger = 16384
     public static const NSCalendarUnitNanosecond: NSUInteger = 32768
-    public static const NSCalendarUnitDayOfYear: NSUInteger = 65536
     public static const NSCalendarUnitCalendar: NSUInteger = 1048576
     public static const NSCalendarUnitTimeZone: NSUInteger = 2097152
     public static const NSEraCalendarUnit: NSUInteger = 2
@@ -58,6 +57,7 @@ public open class NSCalendar <: NSObject & NSCopying & NSSecureCoding {
     public static prop currentCalendar: NSCalendar
     public static prop autoupdatingCurrentCalendar: NSCalendar
     @ForeignName["calendarWithIdentifier:"] public static func calendarWithIdentifier(calendarIdentifierConstant: NSCalendarIdentifier): ?NSCalendar
+    public init()
     @ForeignName["initWithCalendarIdentifier:"] public init(ident: NSCalendarIdentifier)
     public prop calendarIdentifier: NSCalendarIdentifier
     public mut prop locale: ?NSLocale
@@ -139,7 +139,6 @@ public open class NSDateComponents <: NSObject & NSCopying & NSSecureCoding {
     public mut prop weekOfMonth: NSInteger
     public mut prop weekOfYear: NSInteger
     public mut prop yearForWeekOfYear: NSInteger
-    public mut prop dayOfYear: NSInteger
     public mut prop isLeapMonth: Bool
     public prop date: ?NSDate
     public open func week(): NSInteger

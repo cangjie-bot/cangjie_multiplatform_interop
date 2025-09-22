@@ -39,13 +39,5 @@ public open class NSFileWrapper <: NSObject & NSSecureCoding {
     @ForeignName["keyForFileWrapper:"] public open func keyForFileWrapper(child: NSFileWrapper): ?NSString
     public prop regularFileContents: ?NSData
     public prop symbolicLinkDestinationURL: ?NSURL
-    // @ForeignName["initWithPath:"] public init(path: NSString)
-    // @ForeignName["initSymbolicLinkWithDestination:"] public init(path: NSString)
-    @ForeignName["needsToBeUpdatedFromPath:"] public open func needsToBeUpdatedFromPath(path: NSString): Bool
-    @ForeignName["updateFromPath:"] public open func updateFromPath(path: NSString): Bool
-    @ForeignName["writeToFile:atomically:updateFilenames:"] public open func writeToFileAtomicallyUpdateFilenames(path: NSString, atomicFlag: Bool, updateFilenamesFlag: Bool): Bool
-    @ForeignName["addFileWithPath:"] public open func addFileWithPath(path: NSString): NSString
-    @ForeignName["addSymbolicLinkWithDestination:preferredFilename:"] public open func addSymbolicLinkWithDestinationPreferredFilename(path: NSString, filename: NSString): NSString
-    public open func symbolicLinkDestination(): NSString
 }
 

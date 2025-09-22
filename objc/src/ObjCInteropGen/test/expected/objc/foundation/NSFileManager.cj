@@ -98,10 +98,6 @@ public open class NSFileManager <: NSObject {
     @ForeignName["pathContentOfSymbolicLinkAtPath:"] public open func pathContentOfSymbolicLinkAtPath(path: NSString): ?NSString
     @ForeignName["createSymbolicLinkAtPath:pathContent:"] public open func createSymbolicLinkAtPathPathContent(path: NSString, otherpath: NSString): Bool
     @ForeignName["createDirectoryAtPath:attributes:"] public open func createDirectoryAtPathAttributes(path: NSString, attributes: NSDictionary/*<KeyType, ObjectType>*/): Bool
-    @ForeignName["linkPath:toPath:handler:"] public open func linkPathToPathHandler(src: NSString, dest: NSString, handler: id): Bool
-    @ForeignName["copyPath:toPath:handler:"] public open func copyPathToPathHandler(src: NSString, dest: NSString, handler: id): Bool
-    @ForeignName["movePath:toPath:handler:"] public open func movePathToPathHandler(src: NSString, dest: NSString, handler: id): Bool
-    @ForeignName["removeFileAtPath:handler:"] public open func removeFileAtPathHandler(path: NSString, handler: id): Bool
     public prop currentDirectoryPath: NSString
     @ForeignName["changeCurrentDirectoryPath:"] public open func changeCurrentDirectoryPath(path: NSString): Bool
     @ForeignName["fileExistsAtPath:"] public open func fileExistsAtPath(path: NSString): Bool

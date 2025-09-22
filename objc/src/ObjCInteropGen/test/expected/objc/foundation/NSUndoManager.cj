@@ -4,8 +4,6 @@ package objc.foundation
 
 import interoplib.objc.*
 
-public type NSUndoManagerUserInfoKey = NSString
-
 @ObjCMirror
 public open class NSUndoManager <: NSObject {
     public open func beginUndoGrouping(): Unit
@@ -37,9 +35,6 @@ public open class NSUndoManager <: NSObject {
     public prop undoActionName: NSString
     public prop redoActionName: NSString
     @ForeignName["setActionName:"] public open func setActionName(actionName: NSString): Unit
-    @ForeignName["undoActionUserInfoValueForKey:"] public open func undoActionUserInfoValueForKey(key: NSUndoManagerUserInfoKey): id
-    @ForeignName["redoActionUserInfoValueForKey:"] public open func redoActionUserInfoValueForKey(key: NSUndoManagerUserInfoKey): id
-    @ForeignName["setActionUserInfoValue:forKey:"] public open func setActionUserInfoValueForKey(info: id, key: NSUndoManagerUserInfoKey): Unit
     public prop undoMenuItemTitle: NSString
     public prop redoMenuItemTitle: NSString
     @ForeignName["undoMenuTitleForUndoActionName:"] public open func undoMenuTitleForUndoActionName(actionName: NSString): NSString

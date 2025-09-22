@@ -69,10 +69,6 @@ public open class NSObject <: NSObjectProtocol {
     @ForeignName["performSelector:withObject:afterDelay:"] public open func performSelectorWithObjectAfterDelay(aSelector: SEL, anArgument: id, delay: NSTimeInterval): Unit
     @ForeignName["cancelPreviousPerformRequestsWithTarget:selector:object:"] public static func cancelPreviousPerformRequestsWithTargetSelectorObject(aTarget: id, aSelector: SEL, anArgument: id): Unit
     @ForeignName["cancelPreviousPerformRequestsWithTarget:"] public static func cancelPreviousPerformRequestsWithTarget(aTarget: id): Unit
-    @ForeignName["URL:resourceDataDidBecomeAvailable:"] public open func URLResourceDataDidBecomeAvailable(sender: NSURL, newBytes: NSData): Unit
-    @ForeignName["URLResourceDidFinishLoading:"] public open func URLResourceDidFinishLoading(sender: NSURL): Unit
-    @ForeignName["URLResourceDidCancelLoading:"] public open func URLResourceDidCancelLoading(sender: NSURL): Unit
-    @ForeignName["URL:resourceDidFailLoadingWithReason:"] public open func URLResourceDidFailLoadingWithReason(sender: NSURL, reason: NSString): Unit
     @ForeignName["fileManager:shouldProceedAfterError:"] public open func fileManagerShouldProceedAfterError(fm: NSFileManager, errorInfo: NSDictionary/*<KeyType, ObjectType>*/): Bool
     @ForeignName["fileManager:willProcessPath:"] public open func fileManagerWillProcessPath(fm: NSFileManager, path: NSString): Unit
     public static prop accessInstanceVariablesDirectly: Bool
@@ -116,8 +112,6 @@ public open class NSObject <: NSObjectProtocol {
     @ForeignName["keyPathsForValuesAffectingValueForKey:"] public static func keyPathsForValuesAffectingValueForKey(key: NSString): NSSet/*<NSString>*/
     @ForeignName["automaticallyNotifiesObserversForKey:"] public static func automaticallyNotifiesObserversForKey(key: NSString): Bool
     public mut prop observationInfo: CPointer<Unit>
-    @ForeignName["setKeys:triggerChangeNotificationsForDependentKey:"] public static func setKeysTriggerChangeNotificationsForDependentKey(keys: NSArray/*<ObjectType>*/, dependentKey: NSString): Unit
-    @ForeignName["setSharedObservers:"] public open func setSharedObservers(sharedObservers: ?NSKeyValueSharedObserversSnapshot): Unit
     public prop classForKeyedArchiver: Class
     @ForeignName["replacementObjectForKeyedArchiver:"] public open func replacementObjectForKeyedArchiver(archiver: NSKeyedArchiver): id
     public static func classFallbacksForKeyedArchiver(): NSArray/*<NSString>*/
@@ -127,48 +121,6 @@ public open class NSObject <: NSObjectProtocol {
     @ForeignName["performSelector:onThread:withObject:waitUntilDone:modes:"] public open func performSelectorOnThreadWithObjectWaitUntilDoneModes(aSelector: SEL, thr: NSThread, arg: id, wait: Bool, array: ?NSArray/*<NSString>*/): Unit
     @ForeignName["performSelector:onThread:withObject:waitUntilDone:"] public open func performSelectorOnThreadWithObjectWaitUntilDone(aSelector: SEL, thr: NSThread, arg: id, wait: Bool): Unit
     @ForeignName["performSelectorInBackground:withObject:"] public open func performSelectorInBackgroundWithObject(aSelector: SEL, arg: id): Unit
-    public prop classForArchiver: Class
-    @ForeignName["replacementObjectForArchiver:"] public open func replacementObjectForArchiver(archiver: NSArchiver): id
-    public prop classForPortCoder: Class
-    @ForeignName["replacementObjectForPortCoder:"] public open func replacementObjectForPortCoder(coder: NSPortCoder): id
-    public prop classDescription: NSClassDescription
-    public prop attributeKeys: NSArray/*<NSString>*/
-    public prop toOneRelationshipKeys: NSArray/*<NSString>*/
-    public prop toManyRelationshipKeys: NSArray/*<NSString>*/
-    @ForeignName["inverseForRelationshipKey:"] public open func inverseForRelationshipKey(relationshipKey: NSString): ?NSString
-    @ForeignName["scriptingValueForSpecifier:"] public open func scriptingValueForSpecifier(objectSpecifier: NSScriptObjectSpecifier): id
-    public mut prop scriptingProperties: ?NSDictionary/*<NSString, id>*/
-    @ForeignName["copyScriptingValue:forKey:withProperties:"] public open func copyScriptingValueForKeyWithProperties(value: id, key: NSString, properties: NSDictionary/*<NSString, id>*/): id
-    @ForeignName["newScriptingObjectOfClass:forValueForKey:withContentsValue:properties:"] public open func newScriptingObjectOfClassForValueForKeyWithContentsValueProperties(objectClass: Class, key: NSString, contentsValue: id, properties: NSDictionary/*<NSString, id>*/): id
-    public prop classCode: FourCharCode
-    public prop className: NSString
-    @ForeignName["valueAtIndex:inPropertyWithKey:"] public open func valueAtIndexInPropertyWithKey(index: NSUInteger, key: NSString): id
-    @ForeignName["valueWithName:inPropertyWithKey:"] public open func valueWithNameInPropertyWithKey(name: NSString, key: NSString): id
-    @ForeignName["valueWithUniqueID:inPropertyWithKey:"] public open func valueWithUniqueIDInPropertyWithKey(uniqueID: id, key: NSString): id
-    @ForeignName["insertValue:atIndex:inPropertyWithKey:"] public open func insertValueAtIndexInPropertyWithKey(value: id, index: NSUInteger, key: NSString): Unit
-    @ForeignName["removeValueAtIndex:fromPropertyWithKey:"] public open func removeValueAtIndexFromPropertyWithKey(index: NSUInteger, key: NSString): Unit
-    @ForeignName["replaceValueAtIndex:inPropertyWithKey:withValue:"] public open func replaceValueAtIndexInPropertyWithKeyWithValue(index: NSUInteger, key: NSString, value: id): Unit
-    @ForeignName["insertValue:inPropertyWithKey:"] public open func insertValueInPropertyWithKey(value: id, key: NSString): Unit
-    @ForeignName["coerceValue:forKey:"] public open func coerceValueForKey(value: id, key: NSString): id
-    public prop objectSpecifier: ?NSScriptObjectSpecifier
-    @ForeignName["indicesOfObjectsByEvaluatingObjectSpecifier:"] public open func indicesOfObjectsByEvaluatingObjectSpecifier(specifier: NSScriptObjectSpecifier): ?NSArray/*<NSNumber>*/
-    @ForeignName["isEqualTo:"] public open func isEqualTo(object: id): Bool
-    @ForeignName["isLessThanOrEqualTo:"] public open func isLessThanOrEqualTo(object: id): Bool
-    @ForeignName["isLessThan:"] public open func isLessThan(object: id): Bool
-    @ForeignName["isGreaterThanOrEqualTo:"] public open func isGreaterThanOrEqualTo(object: id): Bool
-    @ForeignName["isGreaterThan:"] public open func isGreaterThan(object: id): Bool
-    @ForeignName["isNotEqualTo:"] public open func isNotEqualTo(object: id): Bool
-    @ForeignName["doesContain:"] public open func doesContain(object: id): Bool
-    @ForeignName["isLike:"] public open func isLike(object: NSString): Bool
-    @ForeignName["isCaseInsensitiveLike:"] public open func isCaseInsensitiveLike(object: NSString): Bool
-    @ForeignName["scriptingIsEqualTo:"] public open func scriptingIsEqualTo(object: id): Bool
-    @ForeignName["scriptingIsLessThanOrEqualTo:"] public open func scriptingIsLessThanOrEqualTo(object: id): Bool
-    @ForeignName["scriptingIsLessThan:"] public open func scriptingIsLessThan(object: id): Bool
-    @ForeignName["scriptingIsGreaterThanOrEqualTo:"] public open func scriptingIsGreaterThanOrEqualTo(object: id): Bool
-    @ForeignName["scriptingIsGreaterThan:"] public open func scriptingIsGreaterThan(object: id): Bool
-    @ForeignName["scriptingBeginsWith:"] public open func scriptingBeginsWith(object: id): Bool
-    @ForeignName["scriptingEndsWith:"] public open func scriptingEndsWith(object: id): Bool
-    @ForeignName["scriptingContains:"] public open func scriptingContains(object: id): Bool
 }
 
 @ObjCMirror

@@ -215,7 +215,6 @@ public open class NSURLSessionConfiguration <: NSObject & NSCopying {
     public mut prop shouldUseExtendedBackgroundIdleMode: Bool
     public mut prop protocolClasses: ?NSArray/*<Class>*/
     public mut prop multipathServiceType: Int32 /*NSURLSessionMultipathServiceType*/
-    public mut prop usesClassicLoadingMode: Bool
     public init()
     public static func new(): NSURLSessionConfiguration
     @ForeignName["backgroundSessionConfiguration:"] public static func backgroundSessionConfiguration(identifier: NSString): NSURLSessionConfiguration

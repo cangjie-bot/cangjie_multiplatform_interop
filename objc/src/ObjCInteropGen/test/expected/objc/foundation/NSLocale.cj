@@ -45,6 +45,7 @@ public open class NSLocale <: NSObject & NSCopying & NSSecureCoding {
     public static prop currentLocale: NSLocale
     public static prop systemLocale: NSLocale
     @ForeignName["localeWithLocaleIdentifier:"] public static func localeWithLocaleIdentifier(ident: NSString): NSLocale
+    public init()
     public static prop availableLocaleIdentifiers: NSArray/*<NSString>*/
     public static prop ISOLanguageCodes: NSArray/*<NSString>*/
     public static prop ISOCountryCodes: NSArray/*<NSString>*/

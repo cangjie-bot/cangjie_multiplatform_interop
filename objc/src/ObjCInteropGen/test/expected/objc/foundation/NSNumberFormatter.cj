@@ -6,7 +6,6 @@ import interoplib.objc.*
 
 public abstract sealed class NSNumberFormatterBehavior {
     public static const NSNumberFormatterBehaviorDefault: NSUInteger = 0
-    public static const NSNumberFormatterBehavior10_0: NSUInteger = 1000
     public static const NSNumberFormatterBehavior10_4: NSUInteger = 1040
 }
 
@@ -19,7 +18,6 @@ public open class NSNumberFormatter <: NSFormatter {
     @ForeignName["localizedStringFromNumber:numberStyle:"] public static func localizedStringFromNumberNumberStyle(num: NSNumber, nstyle: Int32 /*NSNumberFormatterStyle*/): NSString
     public static func defaultFormatterBehavior(): Int32 /*NSNumberFormatterBehavior*/
     @ForeignName["setDefaultFormatterBehavior:"] public static func setDefaultFormatterBehavior(behavior: Int32 /*NSNumberFormatterBehavior*/): Unit
-    public mut prop minimumGroupingDigits: NSInteger
     public mut prop numberStyle: Int32 /*NSNumberFormatterStyle*/
     public mut prop locale: NSLocale
     public mut prop generatesDecimalNumbers: Bool
@@ -76,14 +74,6 @@ public open class NSNumberFormatter <: NSFormatter {
     public mut prop minimumSignificantDigits: NSUInteger
     public mut prop maximumSignificantDigits: NSUInteger
     public mut prop isPartialStringValidationEnabled: Bool
-    public mut prop hasThousandSeparators: Bool
-    public mut prop thousandSeparator: NSString
-    public mut prop localizesFormat: Bool
-    public mut prop format: NSString
-    public mut prop attributedStringForZero: NSAttributedString
-    public mut prop attributedStringForNil: NSAttributedString
-    public mut prop attributedStringForNotANumber: NSAttributedString
-    public mut prop roundingBehavior: NSDecimalNumberHandler
 }
 
 public abstract sealed class NSNumberFormatterStyle {
