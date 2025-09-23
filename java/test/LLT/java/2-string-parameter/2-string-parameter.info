@@ -1,0 +1,26 @@
+// Copyright (c) Huawei Technologies Co., Ltd. 2025. All rights reserved.
+// This source file is part of the Cangjie project, licensed under Apache-2.0
+// with Runtime Library Exception.
+//
+// See https://cangjie-lang.cn/pages/LICENSE for license information.
+
+// DEPENDENCE: generated original-java
+// RUN-EXEC-0: %compiler -Woff all %compile_shared_lib_opt generated/A.cj -linteroplib.interop -lcinteroplib
+// RUN-EXEC-0: %javac %cp_cj_loader_java_interop original-java/M.java generated/A.java original-java/Main.java -d .
+// RUN-EXEC-0: %java %cp_cj_loader_java_interop -Djava.library.path=. Main 2>&1 | compare ./%f
+
+/* SCAN-IN
+Invokes Java super.goo(String)
+Invokes Java super.goo(String)
+Invokes Java super.gooMultipleArgs(String, int)
+8
+Hello from overridden A goo(String) From Java object a
+Get super.f field value 2
+Set super.f field value to 5
+6
+Hello from overridden A goo(String) From Java object b
+Get super.f field value 4
+Set super.f field value to 5
+6
+Hello from overridden A gooMultipleArgs(String, int) From Java object a
+*/

@@ -1,0 +1,42 @@
+// Copyright (c) Huawei Technologies Co., Ltd. 2025. All rights reserved.
+// This source file is part of the Cangjie project, licensed under Apache-2.0
+// with Runtime Library Exception.
+//
+// See https://cangjie-lang.cn/pages/LICENSE for license information.
+
+package cjworld
+
+import interoplib.objc.*
+
+public class M1 {
+    public let obj: NativeObjCId
+
+    public init(obj: NativeObjCId) {
+        this.obj = obj
+    }
+
+    public init() {
+        this(
+            unsafe {
+                CFunc<(NativeObjCId, NativeObjCSel) -> NativeObjCId>(ObjCRuntime.msgSend)(alloc("M1"),
+                    registerName("init"))
+            })
+    }
+
+    public func fooBar(): Bool {
+        withAutoreleasePool<Bool> {
+            => unsafe {
+                CFunc<(NativeObjCId, NativeObjCSel) -> Bool>(ObjCRuntime.msgSend)(obj, registerName("fooBar"))
+            }
+        }
+    }
+
+    /**
+     * Finalizer MUST be generated for every mirror.
+     */
+    ~init() {
+        unsafe {
+            ObjCRuntime.release(obj)
+        }
+    }
+}

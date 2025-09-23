@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="java-mirror-gen" default="build" basedir=".">
+
+    <dirname property="j2cj.basedir" file="${ant.file.java-mirror-gen}" />
+
+    <import file="${j2cj.basedir}/env.xml" optional="true" />
+    <property environment="env"/>
+    <property name="java-mirror-gen.jdk" value="${env.JAVA_HOME}"/>
+
+    <!-- Global property definitions. -->
+
+    <property name="java-mirror-gen.jar"     location="java-mirror-gen.jar"/>
+    <property name="javax.jar"               location="build/javax.jar"/>
+
+    <property name="javac.opts"     value ="-XDignore.symbol.file=true -Xlint:all,-deprecation,-options,-exports,-requires-automatic -Werror -g:source,lines,vars"/>
+    <property name="javac.source"   value = "17"/>
+    <property name="javac.target"   value = "17"/>
+    <property name="javac.encoding" value = "UTF-8"/>
+
+    <property name="javac.build.opts"   value ="-XDignore.symbol.file=true -Xlint:all,-deprecation,-options -Werror -g:source,lines,vars"/>
+    <property name="javac.build.source" value = "8"/>
+    <property name="javac.build.target" value = "8"/>
+
+    <property name="javac.resource.compiler.properties" value="com/sun/tools/javac/resources/compiler.properties" />
+
+    <property name="javac.debug" value="false"/>
+    <property name="javac.profile" value="false"/>
+
+    <condition property="remote.debug.jvm.args" value="-agentlib:jdwp=transport=dt_socket,server=n,address=localhost:5005,suspend=y" else="-Dno.meaning.arg">
+        <istrue value="${javac.debug}"/>
+    </condition>
+
+    <condition property="profile.jvm.args" value="-XX:StartFlightRecording=filename=j2cj.jfr" else="-Dno.meaning.arg">
+        <istrue value="${javac.profile}"/>
+    </condition>
+
+    <!-- Convenient shorthands for standard locations within the workspace. -->
+
+    <property name="build.dir" location="build"/>
+    <property name="src.dir" location="src"/>
+    <property name="vendor.jdk.compiler.src.dir" location="third_party/jdk/src/jdk.compiler/share/classes"/>
+    <property name="vendor.java.compiler.src.dir" location="third_party/jdk/src/java.compiler/share/classes"/>
+    <property name="make.dir" location="make"/>
+    <property name="make.tools.dir" location="${make.dir}/tools"/>
+
+    <property name="build.modules" location="${build.dir}/modules"/>
+    <property name="build.classes" location="${build.dir}/classes"/>
+    <property name="build.gensrc" location="${build.dir}/gensrc"/>
+    <property name="build.tools" location="${build.dir}/toolclasses"/>
+
+    <!-- Primary targets -->
+
+    <target name="build" depends="make-jar"/>
+
+    <target name="clean" description="Delete all generated files">
+        <delete dir="${build.dir}"/>
+        <delete file="${java-mirror-gen.jar}"/>
+    </target>
+
+
+    <!-- Utility targets -->
+
+    <target name="-prepare-build">
+        <mkdir dir="${build.modules}"/>
+        <mkdir dir="${build.tools}"/>
+        <mkdir dir="${build.gensrc}"/>
+    </target>
+
+    <target name="generate-sources"  depends="-prepare-build,-def-pparse,-def-pcompile">
+        <pparse destdir="${vendor.jdk.compiler.src.dir}" includes="${javac.resource.compiler.properties}">
+            <src path="${vendor.jdk.compiler.src.dir}"/>
+        </pparse>
+        <pcompile destdir="${build.gensrc}" includes="**/*.properties">
+            <src path="${vendor.jdk.compiler.src.dir}"/>
+        </pcompile>
+    </target>
+
+    <target name="build-all-classes"  depends="generate-sources">
+        <javac executable="${java-mirror-gen.jdk}/bin/javac" failonerror="true" fork="true"
+               destdir="${build.modules}"
+               encoding="${javac.encoding}"
+               includeantruntime="false" source="${javac.source}" target="${javac.target}">
+            <compilerarg line="${javac.opts}" />
+            <src path="${src.dir}" />
+            <src path="${vendor.jdk.compiler.src.dir}"/>
+            <src path="${vendor.java.compiler.src.dir}"/>
+            <src path="${build.gensrc}" />
+        </javac>
+    </target>
+
+    <target name="make-jar"  depends="build-all-classes">
+        <jar jarfile="${java-mirror-gen.jar}">
+            <fileset dir="${build.modules}" />
+            <manifest>
+                <attribute name="Main-Class"
+                           value="cangjie.interop.main.Main"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <!-- Tests -->
+
+    <property name="tests.src" location="./tests/testData"/>
+    <property name="tests.bin" location="./tests/generated"/>
+
+    <property name="cj.mirror.gen" value="cj_mirror_gen"/>
+    <property name="cj.mirror.src" location="./tests/testData/${cj.mirror.gen}"/>
+
+    <fileset id="fileset" dir="${tests.src}">
+        <include name="**/*.java"/>
+        <exclude name="${cj.mirror.gen}*/*.java"/>
+    </fileset>
+    <pathconvert refid="fileset" property="tests.files" pathsep=" "/>
+
+    <presetdef name="j2cj.javac">
+        <java fork="yes" jar="${java-mirror-gen.jar}" jvm="${java-mirror-gen.jdk}/bin/java">
+            <jvmarg value="-ea"/>
+            <jvmarg value="-XX:MaxJavaStackTraceDepth=0"/>
+            <jvmarg value="-XX:FlightRecorderOptions=stackdepth=256"/>
+            <jvmarg value="${profile.jvm.args}"/>
+            <jvmarg value="${remote.debug.jvm.args}"/>
+            <jvmarg value="-Dfile.encoding=${javac.encoding}" />
+            <jvmarg value="-Dpackage.mode=true"/>
+            <jvmarg value="-Dgenerate.definition=true"/>
+            <arg value="-d" />
+            <arg value="${tests.bin}" />
+            <arg value="-sourcepath" />
+            <arg value="${tests.files}" />
+            <arg value="-target" />
+            <arg value="21" />
+        </java>
+    </presetdef>
+
+    <target name="test-bind-gen" depends="build" description="Run tests for binding generation">
+        <delete>
+            <fileset dir="${tests.bin}">
+                <include name="**/*"/>
+            </fileset>
+        </delete>
+
+        <mkdir dir="${tests.bin}/${cj.mirror.gen}_simple" />
+        <mkdir dir="${tests.bin}/${cj.mirror.gen}_str_param" />
+        <mkdir dir="${tests.bin}/${cj.mirror.gen}_hashmap_param" />
+        <mkdir dir="${tests.bin}/${cj.mirror.gen}_bridge" />
+        <mkdir dir="${tests.bin}/${cj.mirror.gen}_bridge_public" />
+        <mkdir dir="${tests.bin}/${cj.mirror.gen}_protected" />
+        <mkdir dir="${tests.bin}/${cj.mirror.gen}_constructor" />
+        <mkdir dir="${tests.bin}/${cj.mirror.gen}_enum_open" />
+        <mkdir dir="${tests.bin}/${cj.mirror.gen}_parameters" />
+        <mkdir dir="${tests.bin}/${cj.mirror.gen}_omit_modifier" />
+        <mkdir dir="${tests.bin}/${cj.mirror.gen}_keyword_mangle" />
+        <mkdir dir="${tests.bin}/${cj.mirror.gen}_nested_mangle" />
+        <mkdir dir="${tests.bin}/${cj.mirror.gen}_array_list" />
+        <mkdir dir="${tests.bin}/${cj.mirror.gen}_static_method"/>
+        <mkdir dir="${tests.bin}/${cj.mirror.gen}_static_covariant"/>
+
+        <javac srcdir="${cj.mirror.src}_simple" destdir="${tests.bin}/${cj.mirror.gen}_simple" includeantruntime="false"/>
+        <echo file="javac.args"
+              message="-d ${tests.bin}/${cj.mirror.gen}_simple -cp ${tests.bin}/${cj.mirror.gen}_simple M"/>
+        <j2cj.javac>
+            <arg line="@javac.args"/>
+        </j2cj.javac>
+
+        <javac srcdir="${cj.mirror.src}_str_param" destdir="${tests.bin}/${cj.mirror.gen}_str_param" includeantruntime="false"/>
+        <echo file="javac.args"
+              message="-d ${tests.bin}/${cj.mirror.gen}_str_param -cp ${tests.bin}/${cj.mirror.gen}_str_param M"/>
+        <j2cj.javac>
+            <arg line="@javac.args"/>
+        </j2cj.javac>
+
+        <javac srcdir="${cj.mirror.src}_hashmap_param" destdir="${tests.bin}/${cj.mirror.gen}_hashmap_param" includeantruntime="false"/>
+        <echo file="javac.args"
+              message="-d ${tests.bin}/${cj.mirror.gen}_hashmap_param -cp ${tests.bin}/${cj.mirror.gen}_hashmap_param mirrors.M"/>
+        <j2cj.javac>
+            <arg line="@javac.args"/>
+        </j2cj.javac>
+
+        <javac srcdir="${cj.mirror.src}_bridge" destdir="${tests.bin}/${cj.mirror.gen}_bridge" includeantruntime="false"/>
+        <echo file="javac.args"
+              message="-d ${tests.bin}/${cj.mirror.gen}_bridge -cp ${tests.bin}/${cj.mirror.gen}_bridge TestClass05"/>
+        <j2cj.javac>
+            <arg line="@javac.args"/>
+        </j2cj.javac>
+
+        <javac srcdir="${cj.mirror.src}_bridge_public" destdir="${tests.bin}/${cj.mirror.gen}_bridge_public" includeantruntime="false"/>
+        <echo file="javac.args"
+              message="-d ${tests.bin}/${cj.mirror.gen}_bridge_public -cp ${tests.bin}/${cj.mirror.gen}_bridge_public TestClass05"/>
+        <j2cj.javac>
+            <arg line="@javac.args"/>
+        </j2cj.javac>
+
+        <javac srcdir="${cj.mirror.src}_protected" destdir="${tests.bin}/${cj.mirror.gen}_protected" includeantruntime="false"/>
+        <echo file="javac.args"
+              message="-d ${tests.bin}/${cj.mirror.gen}_protected -cp ${tests.bin}/${cj.mirror.gen}_protected Init03"/>
+        <j2cj.javac>
+            <arg line="@javac.args"/>
+        </j2cj.javac>
+
+        <javac srcdir="${cj.mirror.src}_constructor" destdir="${tests.bin}/${cj.mirror.gen}_constructor" includeantruntime="false"/>
+        <echo file="javac.args"
+              message="-d ${tests.bin}/${cj.mirror.gen}_constructor -cp ${tests.bin}/${cj.mirror.gen}_constructor com.xxx.CalledA"/>
+        <j2cj.javac>
+            <arg line="@javac.args"/>
+        </j2cj.javac>
+
+        <javac srcdir="${cj.mirror.src}_enum_open" destdir="${tests.bin}/${cj.mirror.gen}_enum_open" includeantruntime="false"/>
+        <echo file="javac.args"
+              message="-d ${tests.bin}/${cj.mirror.gen}_enum_open -cp ${tests.bin}/${cj.mirror.gen}_enum_open TestEnum01 ee TestEnum03 TestEnum03$EE TestEnum03$TestEnum"/>
+        <j2cj.javac>
+            <arg line="@javac.args"/>
+        </j2cj.javac>
+
+        <javac srcdir="${cj.mirror.src}_parameters" destdir="${tests.bin}/${cj.mirror.gen}_parameters" includeantruntime="false">
+            <compilerarg value="-parameters"/>
+        </javac>
+        <echo file="javac.args"
+              message="-d ${tests.bin}/${cj.mirror.gen}_parameters -cp ${tests.bin}/${cj.mirror.gen}_parameters TestClass01"/>
+        <j2cj.javac>
+            <arg line="@javac.args"/>
+        </j2cj.javac>
+
+        <javac srcdir="${cj.mirror.src}_omit_modifier" destdir="${tests.bin}/${cj.mirror.gen}_omit_modifier" includeantruntime="false"/>
+        <echo file="javac.args"
+              message="-d ${tests.bin}/${cj.mirror.gen}_omit_modifier -cp ${tests.bin}/${cj.mirror.gen}_omit_modifier com.JavaClass "/>
+        <j2cj.javac>
+            <arg line="@javac.args"/>
+        </j2cj.javac>
+
+        <javac srcdir="${cj.mirror.src}_keyword_mangle" destdir="${tests.bin}/${cj.mirror.gen}_keyword_mangle" includeantruntime="false"/>
+        <echo file="javac.args"
+              message="-d ${tests.bin}/${cj.mirror.gen}_keyword_mangle -cp ${tests.bin}/${cj.mirror.gen}_keyword_mangle Unit"/>
+        <j2cj.javac>
+            <arg line="@javac.args"/>
+        </j2cj.javac>
+
+        <javac srcdir="${cj.mirror.src}_nested_mangle" destdir="${tests.bin}/${cj.mirror.gen}_nested_mangle" includeantruntime="false">
+            <compilerarg value="-parameters"/>
+        </javac>
+        <echo file="javac.args"
+              message="-d ${tests.bin}/${cj.mirror.gen}_nested_mangle -cp ${tests.bin}/${cj.mirror.gen}_nested_mangle the$root.the$child.Test$Type$Inner$$$$Type"/>
+        <j2cj.javac>
+            <jvmarg value="-Dgenerate.annotation=true"/>
+            <arg line="@javac.args"/>
+        </j2cj.javac>
+
+        <javac srcdir="${cj.mirror.src}_array_list" destdir="${tests.bin}/${cj.mirror.gen}_array_list" includeantruntime="false">
+            <compilerarg value="-parameters"/>
+        </javac>
+        <echo file="javac.args"
+              message="-d ${tests.bin}/${cj.mirror.gen}_array_list -cp ${tests.bin}/${cj.mirror.gen}_array_list java.util.ArrayList$SubList java.util.Spliterators$AbstractIntSpliterator"/>
+        <j2cj.javac>
+            <jvmarg value="-Dgenerate.definition=false"/>
+            <arg line="@javac.args"/>
+        </j2cj.javac>
+
+        <javac srcdir="${cj.mirror.src}_static_method" destdir="${tests.bin}/${cj.mirror.gen}_static_method"
+               includeantruntime="false">
+            <compilerarg value="-parameters"/>
+        </javac>
+        <echo file="javac.args"
+              message="-d ${tests.bin}/${cj.mirror.gen}_static_method -cp ${tests.bin}/${cj.mirror.gen}_static_method JavaClass"/>
+        <j2cj.javac>
+            <jvmarg value="-Dgenerate.definition=false"/>
+            <arg line="@javac.args"/>
+        </j2cj.javac>
+
+        <javac srcdir="${cj.mirror.src}_static_covariant" destdir="${tests.bin}/${cj.mirror.gen}_static_covariant"
+               includeantruntime="false">
+            <compilerarg value="-parameters"/>
+        </javac>
+        <echo file="javac.args"
+              message="-d ${tests.bin}/${cj.mirror.gen}_static_covariant -cp ${tests.bin}/${cj.mirror.gen}_static_covariant JavaClass"/>
+        <j2cj.javac>
+            <jvmarg value="-Dgenerate.definition=false"/>
+            <arg line="@javac.args"/>
+        </j2cj.javac>
+    </target>
+
+    <target name="test" depends="test-bind-gen" description="Run tests">
+    </target>
+
+    <!-- Utility definitions -->
+
+    <target name="-def-pparse">
+        <copy todir="${build.tools}/propertiesparser" >
+            <fileset dir="${make.tools.dir}/propertiesparser" includes="**/resources/**"/>
+        </copy>
+        <javac fork="true"
+               source="${javac.build.source}"
+               target="${javac.build.target}"
+               srcdir="${make.tools.dir}"
+               includes="propertiesparser/* anttasks/PropertiesParser* anttasks/PathFileSet*"
+               destdir="${build.tools}"
+               classpath="${ant.core.lib}"
+               encoding="${javac.encoding}"
+               includeantruntime="false">
+            <compilerarg line="${javac.build.opts} -XDstringConcat=inline"/>
+        </javac>
+        <taskdef name="pparse"
+                 classname="anttasks.PropertiesParserTask"
+                 classpath="${build.tools}"/>
+    </target>
+
+    <target name="-def-pcompile">
+        <javac fork="true"
+               source="${javac.build.source}"
+               target="${javac.build.target}"
+               srcdir="${make.tools.dir}"
+               includes="compileproperties/* anttasks/CompileProperties* anttasks/PathFileSet*"
+               destdir="${build.dir}/toolclasses/"
+               classpath="${ant.core.lib}"
+               encoding="${javac.encoding}"
+               includeantruntime="false">
+            <compilerarg line="${javac.build.opts} -XDstringConcat=inline"/>
+        </javac>
+
+        <taskdef name="pcompile"
+                 classname="anttasks.CompilePropertiesTask"
+                 classpath="${build.tools}"/>
+    </target>
+
+</project>

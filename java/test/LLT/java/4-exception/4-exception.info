@@ -1,0 +1,27 @@
+// Copyright (c) Huawei Technologies Co., Ltd. 2025. All rights reserved.
+// This source file is part of the Cangjie project, licensed under Apache-2.0
+// with Runtime Library Exception.
+//
+// See https://cangjie-lang.cn/pages/LICENSE for license information.
+
+// DEPENDENCE: generated original-java
+// RUN-EXEC-0: %compiler -Woff all %compile_shared_lib_opt generated/A.cj -linteroplib.interop -lcinteroplib
+// RUN-EXEC-0: %javac %cp_cj_loader_java_interop original-java/Utils.java generated/A.java original-java/Main.java -d .
+// RUN-EXEC-0: %java %cp_cj_loader_java_interop -Djava.library.path=. Main 2>&1 | compare ./%f
+
+/* SCAN-IN
+java.lang.Exception: Exception from Java A gooExceptionStatic
+	at Utils.gooExceptionStatic(Utils.java:4)
+	at A.gooImpl(Native Method)
+	at A.goo(A.java:15)
+	at Main.main(Main.java:6)
+
+java.lang.Exception: CJ Exception thrown from gooCJThrowPut
+	at A.gooCJThrowGetImpl(Native Method)
+	at A.gooCJThrowGet(A.java:19)
+	at Main.main(Main.java:15)
+Hello from A goo(). Then we expect gooExceptionStatic thrown and caught exception
+Exception: java.lang.Exception: Exception from Java A gooExceptionStatic
+Hello from A goo(). Then we expect gooExceptionStatic thrown and uncaught exception
+Hello from A gooCJThrowGet(). Then we expect gooCJThrowPut thrown CJ exception
+*/

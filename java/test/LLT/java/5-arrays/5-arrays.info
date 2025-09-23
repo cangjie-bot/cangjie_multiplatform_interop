@@ -1,0 +1,42 @@
+// Copyright (c) Huawei Technologies Co., Ltd. 2025. All rights reserved.
+// This source file is part of the Cangjie project, licensed under Apache-2.0
+// with Runtime Library Exception.
+//
+// See https://cangjie-lang.cn/pages/LICENSE for license information.
+
+// DEPENDENCE: generated original-java
+// RUN-EXEC-0: %compiler -Woff all %compile_shared_lib_opt generated/A.cj -linteroplib.interop -lcinteroplib
+// RUN-EXEC-0: %javac %cp_cj_loader_java_interop original-java/M.java generated/A.java original-java/Main.java -d .
+// RUN-EXEC-0: %java %cp_cj_loader_java_interop -Djava.library.path=. Main 2>&1 | compare ./%f
+
+/* SCAN-IN
+Hello from Java M goo(). This object contains array [1, 2, 3, 4, 5, 6, 7, 8, 9]
+Hello from Cangjie A goo(). This object contains array [9, 8, 7, 6, 5, 4, 3, 2, 1].
+Then we expect optional array sort and Java M goo() call
+Array in this object is unsorted, so performing sort
+  Sort: array [9, 8, 7, 6, 5, 4, 3, 2, 1]
+    Sort: array [9, 8, 7, 6]
+      Sort: array [9, 8]
+        Sort: array [9]
+        Sort: array [8]
+      Merge: [9] and [8]: [8, 9]
+      Sort: array [7, 6]
+        Sort: array [7]
+        Sort: array [6]
+      Merge: [7] and [6]: [6, 7]
+    Merge: [8, 9] and [6, 7]: [6, 7, 8, 9]
+    Sort: array [5, 4, 3, 2, 1]
+      Sort: array [5, 4]
+        Sort: array [5]
+        Sort: array [4]
+      Merge: [5] and [4]: [4, 5]
+      Sort: array [3, 2, 1]
+        Sort: array [3]
+        Sort: array [2, 1]
+          Sort: array [2]
+          Sort: array [1]
+        Merge: [2] and [1]: [1, 2]
+      Merge: [3] and [1, 2]: [1, 2, 3]
+    Merge: [4, 5] and [1, 2, 3]: [1, 2, 3, 4, 5]
+  Merge: [6, 7, 8, 9] and [1, 2, 3, 4, 5]: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+*/

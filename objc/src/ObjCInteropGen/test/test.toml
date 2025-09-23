@@ -1,0 +1,17 @@
+[output-roots.default]
+path = "generated"
+
+[sources.all]
+paths = ["test.h"]
+
+[sources-mixins.default]
+sources = [".*"]
+arguments-append = [
+    "-F", "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks",
+    "-isystem", "/Library/Developer/CommandLineTools/usr/lib/clang/17/include",
+    "-isystem", "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/usr/include"
+]
+
+[[packages]]
+filters = { include = ["NS.+"] }
+package-name = "objc.foundation"
