@@ -10,14 +10,12 @@
 
 extern enum class Mode {
     // Mode that is compatible with the current FE.  The generated mirrors are
-    // compilable and can be used in interop.
+    // compilable and can be used in interop. This mode is default.
     NORMAL,
 
     // For internal testing only.  May be removed in the future.  The generator uses
     // all features, including those not supported by the current FE.  The generated
     // mirrors therefore may not be compilable.
-    //
-    // Currently this mode is default by compatibility reasons.
     EXPERIMENTAL,
 
     // For internal testing only.  May be removed in the future.  The same as
