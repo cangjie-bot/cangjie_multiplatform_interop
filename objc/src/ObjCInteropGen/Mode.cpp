@@ -6,6 +6,4 @@
 
 #include "Mode.h"
 
-// By default, the mode should be `NORMAL`.  It is `EXPERIMENTAL` for
-// compatibility with existing test cases.
-Mode mode = Mode::EXPERIMENTAL;
+Mode mode = Mode::NORMAL;
