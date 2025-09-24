@@ -915,10 +915,11 @@ public:
         return const_cast<TypeAliasSymbol*>(this);
     }
 
-    [[nodiscard]] TypeAliasSymbol* construct([[maybe_unused]] const std::vector<TypeLikeSymbol*>& arguments) const override
+    [[nodiscard]] TypeAliasSymbol *construct(
+        [[maybe_unused]] const std::vector<TypeLikeSymbol *> &arguments) const override
     {
         assert(arguments.empty());
-        return const_cast<TypeAliasSymbol*>(this);
+        return const_cast<TypeAliasSymbol *>(this);
     }
 
     [[nodiscard]] bool is_file_level() const noexcept override

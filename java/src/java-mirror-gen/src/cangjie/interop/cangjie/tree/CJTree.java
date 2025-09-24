@@ -436,9 +436,6 @@ public abstract sealed class CJTree {
                     public IdentifierName(String identifier) {
                         assert identifier.indexOf('.') == -1 : identifier;
                         assert identifier.indexOf('$') == -1 : identifier;
-                        // assert identifier.indexOf('<') == -1 : identifier;
-                        // assert identifier.indexOf('>') == -1 : identifier;
-                        // assert identifier.indexOf('?') == -1 : identifier;
                         this.identifier = identifier;
                     }
 
