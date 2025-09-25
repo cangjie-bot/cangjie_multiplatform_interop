@@ -40,8 +40,8 @@
     <property name="src.dir" location="src"/>
     <property name="vendor.jdk.compiler.src.dir" location="third_party/jdk/src/jdk.compiler/share/classes"/>
     <property name="vendor.java.compiler.src.dir" location="third_party/jdk/src/java.compiler/share/classes"/>
-    <property name="make.dir" location="make"/>
-    <property name="make.tools.dir" location="${make.dir}/tools"/>
+    <property name="make.dir" location="third_party/jdk/make"/>
+    <property name="make.tools.dir" location="${make.dir}/langtools/tools"/>
 
     <property name="build.modules" location="${build.dir}/modules"/>
     <property name="build.classes" location="${build.dir}/classes"/>
