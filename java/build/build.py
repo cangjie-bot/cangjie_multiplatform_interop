@@ -146,10 +146,11 @@ def fetch_jdk(target_dir):
     """Download only required folders from bishengjdk-21 repository"""
     repo_url = "https://gitee.com/openeuler/bishengjdk-21"
     tag_name = "jdk-21.0.8-ga-b011"
-    required_folders = ["jdk.compiler", "java.compiler"]
+    required_folders_src = ["jdk.compiler", "java.compiler"]
+    required_folders_tools = ["anttasks", "compileproperties", "propertiesparser"]
 
     # Define files and folders to exclude
-    exclusions = {
+    exclusions_src = {
         "java.compiler": [
             "share/classes/module-info.java"
         ],
@@ -163,8 +164,17 @@ def fetch_jdk(target_dir):
         ]
     }
 
+    exclusions_tools = {
+        "anttasks": [
+            "DumpClassesTask.java",
+            "GenStubsTask.java",
+            "SelectToolTask.java"
+        ]
+    }
+
     # Creating a target directory
     jdk_src_dir = os.path.join(target_dir, "jdk", "src")
+    jdk_tools_dir = os.path.join(target_dir, "jdk", "make", "langtools", "tools")
     clone_dir = os.path.join(target_dir, "bishengjdk-21")
 
     # Download the BishengJDK
@@ -182,21 +192,39 @@ def fetch_jdk(target_dir):
         os.makedirs(jdk_src_dir, exist_ok=True)
         LOG.info(f"The target directory has been created: {jdk_src_dir}")
         # Traverse and copy the required folders
-        for folder in required_folders:
+        for folder in required_folders_src:
             src_path = os.path.join(clone_dir, "src", folder)
-            dest_path = os.path.join(jdk_src_dir, folder)
+            dest_path_src = os.path.join(jdk_src_dir, folder)
+            dest_path_tools = os.path.join(jdk_tools_dir, folder)
             if not os.path.exists(src_path):
                 LOG.error(f"The required folder does not exist: {src_path}")
                 continue
 
             # If the target folder already exists, delete it first
-            if os.path.exists(dest_path):
-                LOG.info(f"The target folder already exists and is being deleted: {dest_path}")
-                shutil.rmtree(dest_path)
+            if os.path.exists(dest_path_src):
+                LOG.info(f"The target folder already exists and is being deleted: {dest_path_src}")
+                shutil.rmtree(dest_path_src)
 
             # Copy folder
-            LOG.info(f"Copying: {src_path} -> {dest_path}")
-            copy_with_exclusions(src_path, dest_path, exclusions.get(folder, []))
+            LOG.info(f"Copying: {src_path} -> {dest_path_src}")
+            copy_with_exclusions(src_path, dest_path_src, exclusions_src.get(folder, []))
+            LOG.info(f"Copy Successfully: {folder}")
+
+        for folder in required_folders_tools:
+            src_path = os.path.join(clone_dir, "make", "langtools", "tools", folder)
+            dest_path_tools = os.path.join(jdk_tools_dir, folder)
+            if not os.path.exists(src_path):
+                LOG.error(f"The required folder does not exist: {src_path}")
+                continue
+
+            # If the target folder already exists, delete it first
+            if os.path.exists(dest_path_tools):
+                LOG.info(f"The target folder already exists and is being deleted: {dest_path_tools}")
+                shutil.rmtree(dest_path_tools)
+
+            # Copy folder
+            LOG.info(f"Copying: {src_path} -> {dest_path_tools}")
+            copy_with_exclusions(src_path, dest_path_tools, exclusions_tools.get(folder, []))
             LOG.info(f"Copy Successfully: {folder}")
 
         LOG.info(f"Delete temporary clone directory: {clone_dir}")

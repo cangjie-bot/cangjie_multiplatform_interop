@@ -16150,3 +16150,122 @@ index 7b993c1..6447679 100644
  import java.util.EnumSet;
  
  /**
+diff --git java/src/java-mirror-gen/third_party/jdk/make/langtools/tools/compileproperties/CompileProperties.java java/src/java-mirror-gen/third_party/jdk/make/langtools/tools/compileproperties/CompileProperties.java
+index de17b3b..56c1926 100644
+--- java/src/java-mirror-gen/third_party/jdk/make/langtools/tools/compileproperties/CompileProperties.java
++++ java/src/java-mirror-gen/third_party/jdk/make/langtools/tools/compileproperties/CompileProperties.java
+@@ -1,4 +1,5 @@
+ /*
++ * Copyright (c) 2025, Huawei Technologies Co., Ltd. All rights reserved.
+  * Copyright (c) 2002, 2022, Oracle and/or its affiliates. All rights reserved.
+  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+  *
+@@ -209,7 +210,7 @@ public class CompileProperties {
+             log.error("IO error on file " + propertiesPath, e);
+         }
+         if ( ok ) {
+-            String packageName = inferPackageName(propertiesPath, outputPath);
++            String packageName = "vendor." + inferPackageName(propertiesPath, outputPath);
+             log.verbose("inferred package name: " + packageName);
+             List<String> sortedKeys = new ArrayList<String>();
+             for ( Object key : p.keySet() ) {
+diff --git java/src/java-mirror-gen/third_party/jdk/make/langtools/tools/propertiesparser/gen/ClassGenerator.java java/src/java-mirror-gen/third_party/jdk/make/langtools/tools/propertiesparser/gen/ClassGenerator.java
+index e3ab548..fc01424 100644
+--- java/src/java-mirror-gen/third_party/jdk/make/langtools/tools/propertiesparser/gen/ClassGenerator.java
++++ java/src/java-mirror-gen/third_party/jdk/make/langtools/tools/propertiesparser/gen/ClassGenerator.java
+@@ -1,4 +1,5 @@
+ /*
++ * Copyright (c) 2025, Huawei Technologies Co., Ltd. All rights reserved.
+  * Copyright (c) 2015, 2018, Oracle and/or its affiliates. All rights reserved.
+  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
+  *
+@@ -204,7 +205,7 @@ public class ClassGenerator {
+         int begin = path.lastIndexOf(File.separatorChar + "com" + File.separatorChar);
+         String packagePath = path.substring(begin + 1, path.lastIndexOf(File.separatorChar));
+         String packageName =  packagePath.replace(File.separatorChar, '.');
+-        return packageName;
++        return "vendor." + packageName;
+     }
+
+     /**
+diff --git java/src/java-mirror-gen/third_party/jdk/make/langtools/tools/propertiesparser/parser/MessageType.java java/src/java-mirror-gen/third_party/jdk/make/langtools/tools/propertiesparser/parser/MessageType.java
+index 05da11d..5873449 100644
+--- java/src/java-mirror-gen/third_party/jdk/make/langtools/tools/propertiesparser/parser/MessageType.java
++++ java/src/java-mirror-gen/third_party/jdk/make/langtools/tools/propertiesparser/parser/MessageType.java
+@@ -73,30 +73,30 @@ public interface MessageType {
+      */
+     public enum SimpleType implements MessageType {
+
+-        ANNOTATION("annotation", "Compound", "com.sun.tools.javac.code.Attribute"),
++        ANNOTATION("annotation", "Compound", "vendor.com.sun.tools.javac.code.Attribute"),
+         BOOLEAN("boolean", "boolean", null),
+         COLLECTION("collection", "Collection", "java.util"),
+-        FLAG("flag", "Flag", "com.sun.tools.javac.code.Flags"),
++        FLAG("flag", "Flag", "vendor.com.sun.tools.javac.code.Flags"),
+         FRAGMENT("fragment", "Fragment", null),
+-        DIAGNOSTIC("diagnostic", "JCDiagnostic", "com.sun.tools.javac.util"),
+-        MODIFIER("modifier", "Modifier", "javax.lang.model.element"),
++        DIAGNOSTIC("diagnostic", "JCDiagnostic", "vendor.com.sun.tools.javac.util"),
++        MODIFIER("modifier", "Modifier", "vendor.javax.lang.model.element"),
+         FILE("file", "File", "java.io"),
+-        FILE_OBJECT("file object", "JavaFileObject", "javax.tools"),
++        FILE_OBJECT("file object", "JavaFileObject", "vendor.javax.tools"),
+         PATH("path", "Path", "java.nio.file"),
+-        NAME("name", "Name", "com.sun.tools.javac.util"),
++        NAME("name", "Name", "vendor.com.sun.tools.javac.util"),
+         NUMBER("number", "int", null),
+-        OPTION_NAME("option name", "Option", "com.sun.tools.javac.main"),
+-        PROFILE("profile", "Profile", "com.sun.tools.javac.jvm"),
+-        SOURCE("source", "Source", "com.sun.tools.javac.code"),
+-        SOURCE_VERSION("source version", "SourceVersion", "javax.lang.model"),
++        OPTION_NAME("option name", "Option", "vendor.com.sun.tools.javac.main"),
++        PROFILE("profile", "Profile", "vendor.com.sun.tools.javac.jvm"),
++        SOURCE("source", "Source", "vendor.com.sun.tools.javac.code"),
++        SOURCE_VERSION("source version", "SourceVersion", "vendor.javax.lang.model"),
+         STRING("string", "String", null),
+-        SYMBOL("symbol", "Symbol", "com.sun.tools.javac.code"),
+-        SYMBOL_KIND("symbol kind", "Kind", "com.sun.tools.javac.code.Kinds"),
+-        KIND_NAME("kind name", "KindName", "com.sun.tools.javac.code.Kinds"),
+-        TARGET("target", "Target", "com.sun.tools.javac.jvm"),
+-        TOKEN("token", "TokenKind", "com.sun.tools.javac.parser.Tokens"),
+-        TREE_TAG("tree tag", "Tag", "com.sun.tools.javac.tree.JCTree"),
+-        TYPE("type", "Type", "com.sun.tools.javac.code"),
++        SYMBOL("symbol", "Symbol", "vendor.com.sun.tools.javac.code"),
++        SYMBOL_KIND("symbol kind", "Kind", "vendor.com.sun.tools.javac.code.Kinds"),
++        KIND_NAME("kind name", "KindName", "vendor.com.sun.tools.javac.code.Kinds"),
++        TARGET("target", "Target", "vendor.com.sun.tools.javac.jvm"),
++        TOKEN("token", "TokenKind", "vendor.com.sun.tools.javac.parser.Tokens"),
++        TREE_TAG("tree tag", "Tag", "vendor.com.sun.tools.javac.tree.JCTree"),
++        TYPE("type", "Type", "vendor.com.sun.tools.javac.code"),
+         URL("url", "URL", "java.net"),
+         SET("set", "Set", "java.util"),
+         LIST("list", "List", "java.util"),
+@@ -253,7 +253,7 @@ public interface MessageType {
+     /**
+      * Visitor class.
+      */
+-    public static abstract class Visitor<R, A> {
++    public abstract static class Visitor<R, A> {
+         public abstract R visitCustomType(CustomType t, A a);
+         public abstract R visitSimpleType(SimpleType t, A a);
+         public abstract R visitCompoundType(CompoundType t, A a);
+diff --git java/src/java-mirror-gen/third_party/jdk/make/langtools/tools/propertiesparser/resources/templates.properties java/src/java-mirror-gen/third_party/jdk/make/langtools/tools/propertiesparser/resources/templates.properties
+index b6685e6..ad4fee9 100644
+--- java/src/java-mirror-gen/third_party/jdk/make/langtools/tools/propertiesparser/resources/templates.properties
++++ java/src/java-mirror-gen/third_party/jdk/make/langtools/tools/propertiesparser/resources/templates.properties
+@@ -27,10 +27,10 @@ toplevel.decl=\
+     package {0};\n\
+     \n\
+     {1}\n\
+-    import com.sun.tools.javac.util.JCDiagnostic.Error;\n\
+-    import com.sun.tools.javac.util.JCDiagnostic.Warning;\n\
+-    import com.sun.tools.javac.util.JCDiagnostic.Note;\n\
+-    import com.sun.tools.javac.util.JCDiagnostic.Fragment;\n\
++    import vendor.com.sun.tools.javac.util.JCDiagnostic.Error;\n\
++    import vendor.com.sun.tools.javac.util.JCDiagnostic.Warning;\n\
++    import vendor.com.sun.tools.javac.util.JCDiagnostic.Note;\n\
++    import vendor.com.sun.tools.javac.util.JCDiagnostic.Fragment;\n\
+     \n\
+     public class {2} '{'\n\
+     {3}\n\
+
