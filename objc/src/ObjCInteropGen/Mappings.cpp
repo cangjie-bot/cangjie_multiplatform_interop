@@ -50,6 +50,7 @@ public:
         constexpr unsigned sizeOfInt16 = 2;
         constexpr unsigned sizeOfInt32 = 4;
         constexpr unsigned sizeOfInt64 = 8;
+        constexpr unsigned sizeOfInt128 = 16;
         assert(can_map(type));
         if (auto* type_decl = dynamic_cast<TypeDeclarationSymbol*>(type)) {
             if (auto info = type_decl->primitive_information()) {
@@ -70,6 +71,8 @@ public:
                                 return find("Int32");
                             case sizeOfInt64:
                                 return find("Int64");
+                            case sizeOfInt128:
+                                return type;
                             default:
                                 assert(false);
                                 return type;
@@ -84,6 +87,8 @@ public:
                                 return find("UInt32");
                             case sizeOfInt64:
                                 return find("UInt64");
+                            case sizeOfInt128:
+                                return type;
                             default:
                                 assert(false);
                                 return type;

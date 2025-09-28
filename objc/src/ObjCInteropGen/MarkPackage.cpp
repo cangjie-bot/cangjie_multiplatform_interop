@@ -347,8 +347,41 @@ void register_symbols_in_declaration_order()
     }
 }
 
+/** Given the N-dimensional VArray, get the type of its element */
+static TypeLikeSymbol& get_element_type(const VArraySymbol& varray) noexcept
+{
+    const auto* subvarray = dynamic_cast<const VArraySymbol*>(varray.element_type_);
+    return subvarray ? get_element_type(*subvarray) : *varray.element_type_;
+}
+
+/**
+ * For each function parameter, if the type of the parameter is array, convert
+ * it to pointer to its element
+ */
+static void decay_parameter_types()
+{
+    for (auto& type : Universe::all_declarations()) {
+        auto* decl = dynamic_cast<TypeDeclarationSymbol*>(&type);
+        if (decl) {
+            for (auto& member : decl->members()) {
+                if (member.is_method()) {
+                    for (auto& parameter : member.parameters()) {
+                        auto* parameter_type = parameter.type();
+                        const auto* varray = dynamic_cast<const VArraySymbol*>(&parameter_type->canonical_type());
+                        if (varray) {
+                            parameter.set_type(&pointer(get_element_type(*varray)));
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 bool mark_package()
 {
+    decay_parameter_types();
+
     if (!mark_roots()) {
         return false;
     }

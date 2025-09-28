@@ -203,29 +203,20 @@ static void collect_import(TypeLikeSymbol& symbol)
     ImportCollectVisitor().visit(&symbol);
 }
 
-static TypeLikeSymbol* get_effective_type(TypeLikeSymbol& type) noexcept
-{
-    auto* named_type = dynamic_cast<NamedTypeSymbol*>(&type);
-    if (!named_type) {
-        return &type;
-    }
-    return named_type->effective_type();
-}
-
 static bool is_objc_compatible_type(TypeLikeSymbol& type) noexcept
 {
     assert(normal_mode());
-    auto* effective_type = dynamic_cast<NamedTypeSymbol*>(get_effective_type(type));
-    if (!effective_type) {
+    auto* canonical_type = dynamic_cast<NamedTypeSymbol*>(&type.canonical_type());
+    if (!canonical_type) {
         return false;
     }
-    switch (effective_type->kind()) {
+    switch (canonical_type->kind()) {
         case NamedTypeSymbol::Kind::TargetPrimitive:
         case NamedTypeSymbol::Kind::Enum: {
             return true;
         }
         case NamedTypeSymbol::Kind::Struct:
-            return effective_type->is_ctype();
+            return canonical_type->is_ctype();
         case NamedTypeSymbol::Kind::Protocol:
             return false;
         default:
@@ -236,24 +227,24 @@ static bool is_objc_compatible_type(TypeLikeSymbol& type) noexcept
 static bool is_objc_compatible_parameter_type(TypeLikeSymbol& type) noexcept
 {
     assert(normal_mode());
-    auto* effective_type = dynamic_cast<NamedTypeSymbol*>(get_effective_type(type));
-    if (!effective_type) {
+    auto* canonical_type = dynamic_cast<NamedTypeSymbol*>(&type.canonical_type());
+    if (!canonical_type) {
         return false;
     }
-    switch (effective_type->kind()) {
+    switch (canonical_type->kind()) {
         case NamedTypeSymbol::Kind::TargetPrimitive:
         case NamedTypeSymbol::Kind::Enum: {
-            auto name = effective_type->name();
+            auto name = canonical_type->name();
             return name != "CPointer" && name != "CFunc";
         }
         case NamedTypeSymbol::Kind::Struct:
         case NamedTypeSymbol::Kind::Protocol:
             return false;
         default: {
-            if (effective_type->is_ctype()) {
+            if (canonical_type->is_ctype()) {
                 return false;
             }
-            auto name = effective_type->name();
+            auto name = canonical_type->name();
             return name != "SEL" && name != "Class" && name != "Protocol";
         }
     }
@@ -368,6 +359,19 @@ std::ostream& operator<<(std::ostream& stream, const DefaultValuePrinter& op)
             default:
                 break;
         }
+    } else {
+        const auto* varray = dynamic_cast<const VArraySymbol*>(&op.type);
+        if (varray) {
+            stream << '[';
+            if (varray->size_) {
+                auto value = default_value(*varray->element_type_);
+                stream << value;
+                for (size_t i = 1; i < varray->size_; ++i) {
+                    stream << ", " << value;
+                }
+            }
+            return stream << ']';
+        }
     }
     return stream << emit_cangjie(op.type) << "()";
 }
@@ -378,7 +382,7 @@ static void print_enum_constant_value(std::ostream& output, const NonTypeSymbol&
     auto value = symbol.enum_constant_value();
     auto* named_type = dynamic_cast<NamedTypeSymbol*>(symbol.return_type());
     if (named_type) {
-        named_type = dynamic_cast<NamedTypeSymbol*>(named_type->effective_type());
+        named_type = dynamic_cast<NamedTypeSymbol*>(&named_type->canonical_type());
         if (named_type && named_type->kind() == NamedTypeSymbol::Kind::TargetPrimitive) {
             auto type_name = named_type->name();
             // Avoid the "number exceeds the value range of type" Cangjie compiler error by
@@ -427,8 +431,7 @@ static bool is_objc_compatible_parameters(NonTypeSymbol& method) noexcept
     return true;
 }
 
-template<class Symbol>
-void write_result_type(std::ostream& output, const Symbol& symbol, const TypeLikeSymbol& type)
+template <class Symbol> void write_result_type(std::ostream& output, const Symbol& symbol, const TypeLikeSymbol& type)
 {
     output << ": ";
     if (!normal_mode() && symbol.is_nullable()) {

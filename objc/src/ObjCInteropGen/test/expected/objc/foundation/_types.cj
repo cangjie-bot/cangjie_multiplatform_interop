@@ -8,13 +8,11 @@ public type __int32_t = Int32
 
 public type __uint32_t = UInt32
 
-public type __darwin_va_list = __builtin_va_list
+public type __darwin_va_list = CPointer<Int8>
 
 public type __darwin_gid_t = __uint32_t
 
 public type __darwin_pid_t = __int32_t
 
 public type __darwin_uid_t = __uint32_t
-
-public type __darwin_uuid_t = CPointer<UInt8>
 

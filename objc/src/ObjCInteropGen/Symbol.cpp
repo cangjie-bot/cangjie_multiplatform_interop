@@ -80,20 +80,6 @@ void NamedTypeSymbol::rename(const std::string_view new_name)
     universe.process_rename(this, old_name);
 }
 
-TypeLikeSymbol* NamedTypeSymbol::effective_type()
-{
-    if (kind_ != Kind::TypeDef) {
-        return this;
-    }
-    assert(dynamic_cast<TypeAliasSymbol*>(this));
-    auto* target = static_cast<TypeAliasSymbol*>(this)->target();
-    if (!target) {
-        return nullptr;
-    }
-    auto* named_target = dynamic_cast<NamedTypeSymbol*>(target);
-    return named_target ? named_target->effective_type() : target;
-}
-
 template <class UnaryPred>
 bool NamedTypeSymbol::is_recursively(UnaryPred cond) const noexcept(noexcept(cond(std::declval<NamedTypeSymbol>())))
 {
@@ -439,6 +425,19 @@ void NarrowedTypeParameterSymbol::print(std::ostream& stream, SymbolPrintFormat 
     }
 }
 
+void VArraySymbol::print(std::ostream& stream, SymbolPrintFormat format) const
+{
+    stream << name() << '<';
+    element_type_->print(stream, format);
+    stream << ", $" << size_ << '>';
+}
+
+[[nodiscard]] VArraySymbol* VArraySymbol::map()
+{
+    auto* new_element_type = element_type_->map();
+    return new_element_type == element_type_ ? this : new VArraySymbol(*new_element_type, size_);
+}
+
 void TypeDeclarationSymbol::visit_impl(SymbolVisitor& visitor)
 {
     // TODO: is infinite recursion possible? With CRTP for example.
@@ -577,6 +576,13 @@ TypeLikeSymbol* TypeAliasSymbol::root_target() const
     return target ? target->root_target() : target_;
 }
 
+TypeLikeSymbol& TypeAliasSymbol::canonical_type()
+{
+    auto* target = this->target();
+    assert(target);
+    return target->canonical_type();
+}
+
 void NonTypeSymbol::visit_impl(SymbolVisitor& visitor)
 {
     if (const auto count = this->parameter_count(); count) {
@@ -611,6 +617,21 @@ NamedTypeSymbol* cfunc(FuncTypeSymbol* symbol)
 NamedTypeSymbol* objc_func(FuncTypeSymbol* symbol)
 {
     return construct_symbol(NamedTypeSymbol::Kind::Struct, "ObjCFunc", symbol);
+}
+
+NamedTypeSymbol& pointer(TypeLikeSymbol& pointee)
+{
+    // C pointer to anything other than function is converted `CPointer` or
+    // `ObjCPointer`.  Pointer-to-function is converted to `CFunc` or `ObjCFunc`.
+    auto* named_pointee = dynamic_cast<NamedTypeSymbol*>(&pointee);
+    if (dynamic_cast<const ConstructedTypeSymbol*>(&pointee)) {
+        auto name = pointee.name();
+        if (name == "ObjCFunc" || name == "CFunc") {
+            assert(named_pointee);
+            return *named_pointee;
+        }
+    }
+    return *(named_pointee && named_pointee->is_ctype() ? cpointer(&pointee) : objc_pointer(&pointee));
 }
 
 static TypeDeclarationSymbol& add_cangjie_primitive(const std::string& name)

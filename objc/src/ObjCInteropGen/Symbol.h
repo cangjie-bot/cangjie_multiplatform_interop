@@ -369,6 +369,16 @@ public:
         return name() == "instancetype";
     }
 
+    /**
+     * Return the canonical type for `this`, in the sense of the
+     * `clang_getCanonicalType` API.  That is, either the type itself, or its
+     * underlying type in case of typedef.
+     */
+    [[nodiscard]] virtual TypeLikeSymbol& canonical_type()
+    {
+        return *this;
+    }
+
 protected:
     explicit TypeLikeSymbol(std::string name) : FileLevelSymbol(std::move(name))
     {
@@ -439,6 +449,35 @@ private:
     std::string protocol_name_;
 };
 
+class VArraySymbol final : public TypeLikeSymbol {
+public:
+    TypeLikeSymbol* const element_type_;
+    const size_t size_;
+
+    explicit VArraySymbol(TypeLikeSymbol& element_type, size_t size)
+        : TypeLikeSymbol("VArray"), element_type_(&element_type), size_(size)
+    {
+    }
+
+    void print(std::ostream& stream, SymbolPrintFormat format) const override;
+
+    void visit_impl(SymbolVisitor&) override
+    {
+    }
+
+    [[nodiscard]] VArraySymbol* map() override;
+
+    [[nodiscard]] bool is_ctype() const noexcept override
+    {
+        return element_type_->is_ctype();
+    }
+
+    [[nodiscard]] bool is_file_level() const noexcept override
+    {
+        return false;
+    }
+};
+
 class NamedTypeSymbol : public TypeLikeSymbol {
 public:
     enum class Kind : std::uint8_t {
@@ -454,11 +493,10 @@ public:
         Category,
     };
 
-    /**
-     * If this is an instance of `TypeAliasSymbol`, return the result of applying
-     * this function to the alias's target.  Otherwise, return `this`.
-     */
-    TypeLikeSymbol* effective_type();
+    [[nodiscard]] TypeLikeSymbol& canonical_type() override
+    {
+        return *this;
+    }
 
     void rename(std::string_view new_name) override;
 
@@ -928,6 +966,8 @@ public:
         return true;
     }
 
+    [[nodiscard]] TypeLikeSymbol& canonical_type() override;
+
 protected:
     void visit_impl(SymbolVisitor& visitor) override;
 };
@@ -1214,6 +1254,8 @@ public:
 [[nodiscard]] NamedTypeSymbol* cfunc(FuncTypeSymbol* symbol);
 
 [[nodiscard]] NamedTypeSymbol* objc_func(FuncTypeSymbol* symbol);
+
+[[nodiscard]] NamedTypeSymbol& pointer(TypeLikeSymbol& pointee);
 
 void add_builtin_types();
 

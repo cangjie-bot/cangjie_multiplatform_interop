@@ -26,8 +26,3 @@ public open class ObjCFunc<T> {
 
 public struct ObjCBlock<T> {
 }
-
-public type __builtin_va_list = CPointer<Unit>
-
-//public struct __va_list_tag {
-//}

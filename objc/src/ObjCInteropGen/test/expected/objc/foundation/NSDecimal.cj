@@ -26,6 +26,6 @@ public struct NSDecimal {
     public var _isNegative: UInt32 = 0
     public var _isCompact: UInt32 = 0
     public var _reserved: UInt32 = 0
-    public var _mantissa: CPointer<UInt16> = CPointer<UInt16>()
+    public var _mantissa: VArray<UInt16, $8> = [0, 0, 0, 0, 0, 0, 0, 0]
 }
 

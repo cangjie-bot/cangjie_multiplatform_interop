@@ -247,8 +247,8 @@ void do_type_map()
             }
         } else if (auto* alias = dynamic_cast<TypeAliasSymbol*>(&decl)) {
             auto* target = alias->target();
-            // Implicit typedefs like "__builtin_va_list" don't have a declaration, so they don't set a target.
-            // TODO: consider using clang_getTypeDeclaration when creating a TypeAliasSymbol?
+            // `instancetype` is a special type which has no explicit declaration located in
+            // a file, so it does not set a target.
             if (target) {
                 alias->set_target(target->map());
             }

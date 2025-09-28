@@ -190,8 +190,6 @@ class SourceScanner final : public ClangVisitor {
 
     [[nodiscard]] TypeDeclarationSymbol* type_symbol(CXType type);
 
-    [[nodiscard]] NamedTypeSymbol* pointer(CXType type);
-
     [[nodiscard]] NamedTypeSymbol* func(FuncTypeSymbol* func_type) const;
 
     [[nodiscard]] NamedTypeSymbol* block(CXType type);
@@ -365,14 +363,17 @@ Location::Location(const CXCursor decl) : Location((assert(is_valid(decl)), clan
     return path.stem().u8string();
 }
 
-void set_definition_location(const CXCursor decl, FileLevelSymbol* symbol)
+static bool set_definition_location(const CXCursor decl, FileLevelSymbol* symbol)
 {
     assert(is_valid(decl));
     assert(symbol);
-    if (const auto loc = clang_getCursorLocation(decl); !is_null_location(loc)) {
-        Location l = loc;
-        symbol->set_definition_location(inputs[std::filesystem::absolute(l.file)], l);
+    auto loc = clang_getCursorLocation(decl);
+    if (is_null_location(loc)) {
+        return false;
     }
+    Location l = loc;
+    symbol->set_definition_location(inputs[std::filesystem::absolute(l.file)], l);
+    return true;
 }
 
 template <class Decl>
@@ -436,23 +437,6 @@ TypeDeclarationSymbol* SourceScanner::type_symbol(CXType type)
     return result;
 }
 
-NamedTypeSymbol* SourceScanner::pointer(CXType type)
-{
-    // A C pointer to anything other than function should generate `CPointer` or
-    // `ObjCPointer`.  Pointer-to-function should generate `CFunc` or `ObjCFunc`.
-    auto* pointee = type_like_symbol(type);
-    auto* named_pointee = dynamic_cast<NamedTypeSymbol*>(pointee);
-    const auto* constructedPointee = dynamic_cast<const ConstructedTypeSymbol*>(pointee);
-    if (constructedPointee) {
-        auto original_name = constructedPointee->original()->name();
-        if (original_name == "ObjCFunc" || original_name == "CFunc") {
-            assert(named_pointee);
-            return named_pointee;
-        }
-    }
-    return named_pointee && named_pointee->is_ctype() ? cpointer(pointee) : objc_pointer(pointee);
-}
-
 [[nodiscard]] NamedTypeSymbol* SourceScanner::func(FuncTypeSymbol* func_type) const
 {
     return func_type->is_ctype() ? cfunc(func_type) : objc_func(func_type);
@@ -492,8 +476,6 @@ NamedTypeSymbol* SourceScanner::add_type(const NamedTypeSymbol::Kind kind, const
         symbol = new TypeDeclarationSymbol(kind, name);
     }
 
-    universe.register_type(symbol);
-
     if (is_builtin(type)) {
         if (auto* type_decl = dynamic_cast<TypeDeclarationSymbol*>(symbol)) {
             const auto type_category = get_primitive_category(type);
@@ -511,8 +493,33 @@ NamedTypeSymbol* SourceScanner::add_type(const NamedTypeSymbol::Kind kind, const
             anonymous_.emplace(type, symbol);
         }
 
-        set_definition_location(decl, symbol);
+        auto has_definition_location = set_definition_location(decl, symbol);
+        if (!has_definition_location && type.kind == CXType_Typedef && name != "instancetype") {
+            // The type has a declaration that has no file location.  This means a built-in
+            // clang type, for example:
+            //
+            //   Protocol          - a built-in interface
+            //   instancetype      - alias for `id`
+            //   __builtin_va_list - alias for `char*`
+            //   __uuint128_t      - alias for `unsigned __int128`.
+            //
+            // The declaration of such a type is not visited by libclang.  That is, the
+            // mirror type will not be declared, which could result in cjc compiler errors.
+            // If the built-in type is actually a typedef (alias), we will return its target
+            // type obtained via libclang API.
+            //
+            // `instancetype` is a special case.  It will be replaced by the actual type
+            // (not just `id`) at later stages.
+            auto cx_target = clang_getTypedefDeclUnderlyingType(decl);
+            if (cx_target.kind != CXType_Invalid) {
+                auto* target = type_like_symbol(cx_target);
+                assert(dynamic_cast<NamedTypeSymbol*>(target));
+                return static_cast<NamedTypeSymbol*>(target);
+            }
+        }
     }
+
+    universe.register_type(symbol);
 
     return symbol;
 }
@@ -629,7 +636,7 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
             return type_like_symbol(clang_getPointeeType(type));
 
         case CXType_Pointer:
-            return pointer(clang_getPointeeType(type));
+            return &pointer(*type_like_symbol(clang_getPointeeType(type)));
 
         case CXType_BlockPointer:
             return block(clang_getPointeeType(type));
@@ -710,11 +717,11 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
         }
 
         case CXType_IncompleteArray:
-            return pointer(clang_getArrayElementType(type));
+            return new VArraySymbol(*type_like_symbol(clang_getArrayElementType(type)), 0);
 
         case CXType_ConstantArray:
-            // TODO: special consideration?
-            return pointer(clang_getArrayElementType(type));
+            return new VArraySymbol(
+                *type_like_symbol(clang_getArrayElementType(type)), static_cast<size_t>(clang_getArraySize(type)));
 
             // We will handle the rest below this switch.
 
@@ -1040,20 +1047,8 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
             switch (def->kind()) {
                 case NamedTypeSymbol::Kind::TypeDef:
                     assert(dynamic_cast<TypeAliasSymbol*>(def));
-                    {
-                        auto target_type = clang_getTypedefDeclUnderlyingType(cursor);
-                        if constexpr ((false)) {
-                            if (as_string(clang_getTypeSpelling(target_type)) == "__builtin_va_list") {
-                                // This is a built-in clang type having no declaration.  The target type has to
-                                // be obtained in a specific way.
-                                auto va_list_type = clang_Type_getNamedType(target_type);
-                                assert(va_list_type.kind == CXType_Typedef);
-                                target_type =
-                                    clang_getTypedefDeclUnderlyingType(clang_getTypeDeclaration(va_list_type));
-                            }
-                        }
-                        static_cast<TypeAliasSymbol*>(def)->set_target(type_like_symbol(target_type));
-                    }
+                    static_cast<TypeAliasSymbol*>(def)->set_target(
+                        type_like_symbol(clang_getTypedefDeclUnderlyingType(cursor)));
                     break;
                 case NamedTypeSymbol::Kind::Protocol:
                     // This is the type `id`.  It is specially processed by the generator, ignore
