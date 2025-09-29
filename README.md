@@ -29,10 +29,10 @@ The specific repositories related to Cangjie interoperability are:
 For detailed information, please refer to the user guides under each component's `doc` directory:
 
 - Cangjie-Java:
-    - [Cangjie-Java User Guide](./java/doc/user_guide.md)
+    - [Cangjie-Java User Guide](https://gitcode.com/Cangjie/cangjie_docs/tree/main/docs/dev-guide/source_zh_cn/multiplatform/cangjie-android-Java.md)
     - [Cangjie-Java Developer Guide](./java/doc/developer_guide.md)
 - Cangjie-ObjC:
-    - [Cangjie-ObjC User Guide](./objc/doc/user_guide.md)
+    - [Cangjie-ObjC User Guide](https://gitcode.com/Cangjie/cangjie_docs/tree/main/docs/dev-guide/source_zh_cn/multiplatform/cangjie-ios-objc.md)
     - [Cangjie-ObjC Developer Guide](./objc/doc/developer_guide.md)
 
 ## Build Dependencies

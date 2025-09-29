@@ -32,10 +32,10 @@ Cangjie 互操作能力的相关仓具体为：
 若想获取详细信息，请参阅各组件 `doc` 目录下的使用指南：
 
 - Cangjie-Java:
-    - [Cangjie-Java 用户指南](./java/doc/user_guide.md)
+    - [Cangjie-Java 用户指南](https://gitcode.com/Cangjie/cangjie_docs/tree/dev/docs/dev-guide/source_zh_cn/multiplatform/cangjie-android-Java.md)
     - [Cangjie-Java 开发者指南](./java/doc/developer_guide.md)
 - Cangjie-ObjC:
-    - [Cangjie-ObjC 用户指南](./objc/doc/user_guide.md)
+    - [Cangjie-ObjC 用户指南](https://gitcode.com/Cangjie/cangjie_docs/tree/dev/docs/dev-guide/source_zh_cn/multiplatform/cangjie-ios-objc.md)
     - [Cangjie-ObjC 开发者指南](./objc/doc/developer_guide.md)
 
 ## 构建依赖
