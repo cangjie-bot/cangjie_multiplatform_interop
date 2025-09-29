@@ -1,4 +1,4 @@
-# 仓颉语言互操作工具集
+# 仓颉语言互操作子系统
 
 ## 简介
 
@@ -23,7 +23,7 @@
 - [Cangjie-Java 目录](./java/doc/developer_guide.md#目录)
 - [Cangjie-ObjC 目录](./objc/doc/developer_guide.md#目录)
 
-Cangjie互操作能力的相关仓具体为：
+Cangjie 互操作能力的相关仓具体为：
 
 - [Cangjie-Java 相关仓](./java/doc/developer_guide.md#相关仓)
 - [Cangjie-ObjC 相关仓](./objc/doc/developer_guide.md#相关仓)
@@ -38,7 +38,7 @@ Cangjie互操作能力的相关仓具体为：
     - [Cangjie-ObjC 用户指南](./objc/doc/user_guide.md)
     - [Cangjie-ObjC 开发者指南](./objc/doc/developer_guide.md)
 
-## 仓颉 SDK 集成构建
+## 构建依赖
 
 仓颉互操作工具集构建依赖于仓颉 `SDK`，请参考[仓颉 SDK 集成构建指南](https://gitcode.com/Cangjie/cangjie_build/blob/dev/README_zh.md)
 
@@ -48,4 +48,4 @@ Cangjie互操作能力的相关仓具体为：
 
 ## 参与贡献
 
-欢迎给我们提交 Issue，欢迎参与任何形式的贡献。
+欢迎开发者们提供任何形式的贡献，包括但不限于代码、文档、issue 等。
