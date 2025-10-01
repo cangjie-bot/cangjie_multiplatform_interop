@@ -13,23 +13,10 @@
 #include <sstream>
 
 #include "Logging.h"
+#include "Mode.h"
 #include "Package.h"
 #include "SingleDeclarationSymbolVisitor.h"
 #include "Strings.h"
-
-// By default, the mode should be `NORMAL`.  It is `EXPERIMENTAL` for
-// compatibility with existing test cases.
-Mode mode = Mode::EXPERIMENTAL;
-
-static bool normal_mode() noexcept
-{
-    return mode == Mode::NORMAL;
-}
-
-static bool generate_definitions_mode() noexcept
-{
-    return mode == Mode::GENERATE_DEFINITIONS;
-}
 
 static constexpr char INDENT[] = "    ";
 static constexpr std::size_t INDENT_LENGTH = sizeof(INDENT) - 1;
@@ -131,25 +118,25 @@ private:
     IndentingStringBuf fos_buf;
 };
 
-PackageFile* current_package_file = nullptr;
+std::string_view current_package_name;
 std::set<std::string> imports;
 
 class PackageFileScope final {
-    PackageFile* file_;
+    const std::string_view package_name_;
 
 public:
-    [[nodiscard]] explicit PackageFileScope(PackageFile* file) : file_(file)
+    [[nodiscard]] explicit PackageFileScope(std::string_view package_name) noexcept : package_name_(package_name_)
     {
-        assert(!current_package_file);
-        assert(file);
+        assert(current_package_name.empty());
+        assert(!package_name.empty());
         assert(imports.empty());
-        current_package_file = file;
+        current_package_name = package_name;
     }
 
     ~PackageFileScope()
     {
-        assert(current_package_file == file_);
-        current_package_file = nullptr;
+        assert(current_package_name == package_name_);
+        current_package_name = {};
         imports.clear();
     }
 
@@ -164,9 +151,10 @@ public:
 
 std::string symbol_to_import_name(const FileLevelSymbol& symbol)
 {
-    assert(current_package_file);
-    if (const auto* package = symbol.package(); package && package != current_package_file->package()) {
-        auto import_name = std::string(package->cangjie_name());
+    assert(!current_package_name.empty());
+    const auto& symbol_package_name = symbol.cangjie_package_name();
+    if (!symbol_package_name.empty() && symbol_package_name != current_package_name) {
+        auto import_name = symbol_package_name;
         import_name += ".";
         import_name += symbol.name();
         return import_name;
@@ -224,7 +212,36 @@ static bool is_objc_compatible_type(TypeLikeSymbol& type) noexcept
     }
 }
 
-static bool is_objc_compatible_parameter_type(TypeLikeSymbol& type) noexcept
+// Currently in the NORMAL mode, `ObjCPointer` supports only primitives,
+// `ObjCPointer` itself, and classes as its type parameter.
+static bool is_objc_compatible_objcpointer_pointee(const NamedTypeSymbol& pointee)
+{
+    assert(normal_mode());
+    switch (pointee.kind()) {
+        case NamedTypeSymbol::Kind::Struct: {
+            if (pointee.name() != "ObjCPointer") {
+                return false;
+            }
+            assert(pointee.parameter_count() == 1);
+            auto* p = pointee.parameter(0);
+            if (!p) {
+                return false;
+            }
+            const auto* canonical_p = dynamic_cast<const NamedTypeSymbol*>(&p->canonical_type());
+            return canonical_p && is_objc_compatible_objcpointer_pointee(*canonical_p);
+        }
+        case NamedTypeSymbol::Kind::TargetPrimitive: {
+            const auto& name = pointee.name();
+            return name != "CPointer" && name != "CFunc";
+        }
+        case NamedTypeSymbol::Kind::Interface:
+            return true;
+        default:
+            return false;
+    }
+}
+
+static bool is_objc_compatible_parameter_type(TypeLikeSymbol& type)
 {
     assert(normal_mode());
     auto* canonical_type = dynamic_cast<NamedTypeSymbol*>(&type.canonical_type());
@@ -237,7 +254,19 @@ static bool is_objc_compatible_parameter_type(TypeLikeSymbol& type) noexcept
             auto name = canonical_type->name();
             return name != "CPointer" && name != "CFunc";
         }
-        case NamedTypeSymbol::Kind::Struct:
+        case NamedTypeSymbol::Kind::Struct: {
+            if (canonical_type->name() != "ObjCPointer") {
+                return false;
+            }
+            assert(canonical_type->parameter_count() == 1);
+            const auto* pointee = canonical_type->parameter(0);
+            assert(pointee);
+            const auto* named_pointee = dynamic_cast<const NamedTypeSymbol*>(pointee);
+            if (named_pointee) {
+                return is_objc_compatible_objcpointer_pointee(*named_pointee);
+            }
+            return false;
+        }
         case NamedTypeSymbol::Kind::Protocol:
             return false;
         default: {
@@ -330,16 +359,15 @@ std::ostream& operator<<(std::ostream& stream, const DefaultValuePrinter& op)
                 if (name == "CFunc") {
                     return stream << emit_cangjie(op.type) << "(CPointer<Unit>())";
                 }
-            }
 
                 if (named_type->is_unit()) {
                     return stream << "()";
                 }
                 break;
-            case NamedTypeSymbol::Kind::TypeDef:
+            }
+            case NamedTypeSymbol::Kind::TypeDef: {
                 // Some time later it should be simplified to be just
                 assert(dynamic_cast<const TypeAliasSymbol*>(named_type));
-                {
                     const auto* alias = static_cast<const TypeAliasSymbol*>(named_type);
                     const auto* named_target = dynamic_cast<const NamedTypeSymbol*>(alias->root_target());
                     if (named_target && named_target->is(NamedTypeSymbol::Kind::TargetPrimitive) &&
@@ -356,6 +384,11 @@ std::ostream& operator<<(std::ostream& stream, const DefaultValuePrinter& op)
             case NamedTypeSymbol::Kind::Protocol:
                 print_tricky_default_value(stream, named_type->name());
                 return stream;
+            case NamedTypeSymbol::Kind::Struct:
+                if (named_type->name() == "ObjCPointer") {
+                    return stream << emit_cangjie(op.type) << "(CPointer<Unit>())";
+                }
+                break;
             default:
                 break;
         }
@@ -871,7 +904,7 @@ void write_cangjie()
         for (auto&& package_file : package) {
             assert(package_file.package() == &package);
 
-            PackageFileScope scope(&package_file);
+            PackageFileScope scope(package_file.package()->cangjie_name());
 
             auto file_path = package_file.output_path();
             create_directories(file_path.parent_path());
