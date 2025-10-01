@@ -300,7 +300,10 @@ class FileLevelSymbol : public Symbol {
     InputFile* input_file_ = nullptr; // Stage 1
     LineCol location_ = {0, 0};
     std::unordered_set<FileLevelSymbol*> references_symbols_; // Stage 2
-    PackageFile* output_file_ = nullptr;                      // Stage 3
+
+    std::string cangjie_package_name_;
+    PackageFile* output_file_ = nullptr; // Stage 3
+
     bool no_output_file_ = false;
 
 public:
@@ -311,6 +314,8 @@ public:
         assert(symbol1.input_file_ == symbol2.input_file_);
         return symbol1.location_ < symbol2.location_;
     }
+
+    [[nodiscard]] const std::string& cangjie_package_name() const;
 
     [[nodiscard]] Package* package() const;
 
@@ -329,6 +334,8 @@ public:
     void set_definition_location(InputFile* defining_file, const LineCol& location);
 
     void set_package_file(PackageFile* package_file);
+
+    void set_cangjie_package_name(std::string cangjie_package_name) noexcept;
 
     [[nodiscard]] const std::unordered_set<FileLevelSymbol*>& references_symbols() const
     {
