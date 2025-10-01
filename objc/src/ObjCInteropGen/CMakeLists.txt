@@ -32,6 +32,8 @@ add_executable(ObjCInteropGen
         MappingsConfig.cpp
         MarkPackage.cpp
         MarkPackage.h
+        Mode.cpp
+        Mode.h
         Package.cpp
         Package.h
         PackageConfig.h
@@ -51,7 +53,6 @@ add_executable(ObjCInteropGen
         Universe.cpp
         Universe.h
         main.cpp
-        ../../third_party/tomlplusplus/toml.hpp
 )
 
 # Aggressive C++ standard library assertions for libstdc++

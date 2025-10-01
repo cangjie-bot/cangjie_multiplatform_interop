@@ -2,6 +2,7 @@
 
 package objc.foundation
 
+import objc.lang.ObjCPointer
 import interoplib.objc.*
 
 public abstract sealed class NSDataReadingOptions {

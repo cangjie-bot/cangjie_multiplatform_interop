@@ -19,6 +19,7 @@ public open class Protocol {
 }
 
 public open class ObjCPointer<T> {
+    public ObjCPointer(let ptr: CPointer<Unit>) {}
 }
 
 public open class ObjCFunc<T> {
