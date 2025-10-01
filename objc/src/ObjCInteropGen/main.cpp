@@ -13,6 +13,7 @@
 #include "Logging.h"
 #include "Mappings.h"
 #include "MarkPackage.h"
+#include "Mode.h"
 #include "Package.h"
 #include "SourceScannerConfig.h"
 #include "Strings.h"
