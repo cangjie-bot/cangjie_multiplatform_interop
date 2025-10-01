@@ -4,10 +4,8 @@
 //
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
-#pragma once
-#ifndef CANGJIEWRITER_H
-#define CANGJIEWRITER_H
+#include "Mode.h"
 
-void write_cangjie();
-
-#endif // CANGJIEWRITER_H
+// By default, the mode should be `NORMAL`.  It is `EXPERIMENTAL` for
+// compatibility with existing test cases.
+Mode mode = Mode::EXPERIMENTAL;
