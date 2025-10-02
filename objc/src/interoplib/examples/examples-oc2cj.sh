@@ -1,26 +1,21 @@
+#!/usr/bin/env bash
 # Copyright (c) Huawei Technologies Co., Ltd. 2025. All rights reserved.
 # This source file is part of the Cangjie project, licensed under Apache-2.0
 # with Runtime Library Exception.
 #
 # See https://cangjie-lang.cn/pages/LICENSE for license information.
-
-#!/usr/bin/env bash
 set -e
 
-# Add example directory here
+# Add example directory here, supported examples must contain origin-cangjie folder
 EXAMPLES=(
-    ctor_without_params
-    field
-    method_without_params
-    mirror_inherit_from_mirror
-    objc_pointer
-    prop
+    cjmapping_nonopen
+    cjmapping_struct
 )
 
 get_os_family() {
     unameOut="$(uname -s)"
     case "$unameOut" in
-        Linux*) 
+        Linux*)
             echo "linux"
             return 0
             ;;
@@ -38,7 +33,7 @@ get_hwarch() {
     unameOut="$(uname -m)"
     if [ -z "$unameOut" ]; then
         echo "x86_64"
-    elif [ "$unameOut" = "arm64" ] && [ "$OS_FAMILY" = "darwin" ]; then 
+    elif [ "$unameOut" = "arm64" ] && [ "$OS_FAMILY" = "darwin" ]; then
         echo "aarch64"
     else
         echo "$unameOut"
@@ -79,7 +74,7 @@ clean_example() {
     printf "\"%s\" example was cleaned successfully!\n" "$1"
 }
 
-build_example_origin_objc() {    
+build_example_objc() {
     printf "Building \"%s\" example...\n" "$1"
 
     cd "$1"
@@ -87,7 +82,7 @@ build_example_origin_objc() {
     mkdir build
     mkdir out
 
-    cp origin-objc/* build/
+    cp objc/* build/
 
     if [ "$OS_FAMILY" = "darwin" ]; then
         clang -fmodules -fobjc-arc build/*.m -o out/main -I. -Lout
@@ -108,10 +103,10 @@ build_example() {
     mkdir -p build/cjworld build/objc-gen
     mkdir out
 
-    cp origin-objc/* build/
+    cp objc/* build/
 
     if [ "$MODE" = "real" ]; then
-        cp -r cjworld build/
+        cp -r origin-cangjie build/cjworld
     else
         cp -r generated/objc-gen build/
         cp -r generated/cjworld build/
@@ -119,9 +114,10 @@ build_example() {
 
     cd build
 
-    cjc --output-type=dylib --int-overflow=wrapping cjworld/* -o ../out/ -L"$INTEROPLIB_DYLIB_PATH" -L"$OBJ_C_LANG_DYLIB_PATH" --import-path="$INTEROPLIB_DYLIB_PATH" --import-path="$OBJ_C_LANG_DYLIB_PATH" -linteroplib.common -lobjc.lang -linteroplib.objc
+    cjc --output-type=dylib --int-overflow=wrapping cjworld/* -o ../out/ -L"$INTEROPLIB_DYLIB_PATH" -L"$OBJ_C_LANG_DYLIB_PATH" --import-path="$INTEROPLIB_DYLIB_PATH" --import-path="$OBJ_C_LANG_DYLIB_PATH" -lobjc.lang -linteroplib.objc
 
     # crutch to replace *.dylib to *.so when loading cj libraries
+    touch objc-gen/KEEP_DIR
     [ "$OS_FAMILY" = "linux" ] && sed -i "s/\.dylib/\.so/g" objc-gen/*
 
     cp -f objc-gen/* .
@@ -250,11 +246,15 @@ run() {
 
     for cur in "${chosen[@]}"
     do
+        if [ ! -d "$cur/origin-cangjie" ]; then
+            echo "Warning: $cur example is not supported (not an oc2cj example)."
+            continue # skip it
+        fi
         printf "Processing \"%s\" example...\n" "$cur"
 
         clean_example "$cur"
         if [ "$MODE" = "origin-objc" ]; then
-            build_example_origin_objc "$cur"
+            build_example_objc "$cur"
         else
             build_example "$cur"
         fi
@@ -269,7 +269,7 @@ print_main_help() {
 Interop with Objective-C examples
 
 Usage:
-    ./examples.sh [command] [option]
+    ./examples-oc2cj.sh [command] [option]
 
 Available commands:
     run             Run examples
@@ -277,7 +277,7 @@ Available commands:
 Available options:
     -h, --help      print this message
 
-Use "./examples.sh [command] --help" for more information about a command.
+Use "./examples-oc2cj.sh [command] --help" for more information about a command.
 EOF
 }
 
