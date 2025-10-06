@@ -330,49 +330,49 @@ ClangSessionImpl& ClangSession::impl() const
     return cursor == declaration;
 }
 
-[[nodiscard]] bool is_null_location(const CXSourceLocation loc)
+[[nodiscard]] static bool is_null_location(const CXSourceLocation& loc)
 {
     return clang_equalLocations(loc, clang_getNullLocation());
 }
 
-struct Location : LineCol {
-    std::string file;
-
-    Location(CXSourceLocation loc);
-    Location(CXCursor decl);
-};
-
-Location::Location(CXSourceLocation loc)
+static Location get_location(const CXSourceLocation& loc)
 {
     assert(!is_null_location(loc));
+    Location location;
     CXFile file;
-    clang_getFileLocation(loc, &file, &line, &col, nullptr);
+    clang_getFileLocation(loc, &file, &location.line_, &location.col_, nullptr);
     assert(file);
-    this->file = as_string(clang_getFileName(file));
+    location.file_ = as_string(clang_getFileName(file));
+    if (!location.file_.is_absolute()) {
+        location.file_ = std::filesystem::absolute(location.file_);
+    }
+    return location;
 }
 
-Location::Location(const CXCursor decl) : Location((assert(is_valid(decl)), clang_getCursorLocation(decl)))
-{
-}
-
-[[nodiscard]] std::string declaring_file_name(const CXCursor decl)
+static Location get_location(const CXCursor& decl)
 {
     assert(is_valid(decl));
-    std::filesystem::path path = Location(decl).file;
-    assert(path.has_stem());
-    return path.stem().u8string();
+    auto loc = clang_getCursorLocation(decl);
+    return is_null_location(loc) ? Location{{0, 0}, {}} : get_location(loc);
 }
 
-static bool set_definition_location(const CXCursor decl, FileLevelSymbol* symbol)
+[[nodiscard]] static std::string declaring_file_name(const CXCursor& decl)
+{
+    assert(is_valid(decl));
+    auto location = get_location(decl);
+    assert(location.file_.has_stem());
+    return location.file_.stem().u8string();
+}
+
+static bool set_definition_location(const CXCursor& decl, FileLevelSymbol* symbol)
 {
     assert(is_valid(decl));
     assert(symbol);
-    auto loc = clang_getCursorLocation(decl);
-    if (is_null_location(loc)) {
+    auto loc = get_location(decl);
+    if (loc.is_null()) {
         return false;
     }
-    Location l = loc;
-    symbol->set_definition_location(inputs[std::filesystem::absolute(l.file)], l);
+    symbol->set_definition_location(loc);
     return true;
 }
 
@@ -1036,6 +1036,12 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
         return CXChildVisit_Continue;
     }
 
+    if (!inputs.add_cursor(get_location(cursor), name)) {
+        // This cursor already has been processed in one of the previous translations.
+        // Omit it to avoid redefinitions.
+        return CXChildVisit_Continue;
+    }
+
     Symbol* pushed = nullptr;
     auto recurse = true;
 
@@ -1346,6 +1352,7 @@ static bool parse_source(CXIndex index, const std::string& file, std::vector<con
 
     const auto cursor = clang_getTranslationUnitCursor(tu);
 
+    inputs.next_translation();
     visitor.visit(cursor);
     return true;
 }
