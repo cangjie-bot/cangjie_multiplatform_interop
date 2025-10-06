@@ -402,13 +402,12 @@ Package* FileLevelSymbol::package() const
     return file ? file->package() : nullptr;
 }
 
-void FileLevelSymbol::set_definition_location(InputFile* defining_file, const LineCol& location)
+void FileLevelSymbol::set_definition_location(const Location& location)
 {
     assert(!input_file_);
-    assert(defining_file);
-    input_file_ = defining_file;
+    input_file_ = &inputs[location.file_];
     location_ = location;
-    defining_file->add_symbol(this);
+    input_file_->add_symbol(this);
 }
 
 void FileLevelSymbol::set_package_file(PackageFile* package_file)
