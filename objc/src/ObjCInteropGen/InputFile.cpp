@@ -6,6 +6,8 @@
 
 #include "InputFile.h"
 
+#include "Symbol.h"
+
 Inputs inputs;
 
 bool InputFile::SymbolComparator::operator()(
@@ -21,6 +23,21 @@ void InputFile::add_symbol(FileLevelSymbol* symbol)
     symbols_.insert(symbol);
 }
 
+void InputFile::next_translation()
+{
+    cursors_up_to_this_translation_.merge(cursors_in_this_translation_);
+    cursors_in_this_translation_.clear();
+}
+
+bool InputFile::add_cursor(const LineCol& location)
+{
+    if (cursors_up_to_this_translation_.find(location) != cursors_up_to_this_translation_.end()) {
+        return false;
+    }
+    cursors_in_this_translation_.emplace(location);
+    return true;
+}
+
 InputFile::InputFile(InputDirectory* directory, std::filesystem::path path)
     : directory_(directory), path_(std::move(path))
 {
@@ -28,7 +45,7 @@ InputFile::InputFile(InputDirectory* directory, std::filesystem::path path)
     directory->files_.push_back(this);
 }
 
-InputFile* Inputs::operator[](const std::filesystem::path& path)
+InputFile& Inputs::operator[](const std::filesystem::path& path)
 {
     assert(path.has_parent_path());
     const auto parent = path.parent_path();
@@ -45,8 +62,30 @@ InputFile* Inputs::operator[](const std::filesystem::path& path)
     }
     for (auto* file : *found_directory) {
         if (file->path() == path) {
-            return file;
+            return *file;
         }
     }
-    return new InputFile(found_directory, path);
+    return *new InputFile(found_directory, path);
+}
+
+void Inputs::next_translation()
+{
+    for (auto* directory : directories_) {
+        for (auto* file : *directory) {
+            file->next_translation();
+        }
+    }
+    builtin_cursors_up_to_this_translation_.merge(builtin_cursors_in_this_translation_);
+    builtin_cursors_in_this_translation_.clear();
+}
+
+bool Inputs::add_cursor(const Location& location, const std::string& name) {
+    if (location.is_null()) {
+        if (builtin_cursors_up_to_this_translation_.find(name) != builtin_cursors_up_to_this_translation_.end()) {
+            return false;
+        }
+        builtin_cursors_in_this_translation_.emplace(name);
+        return true;
+    }
+    return (*this)[location.file_].add_cursor(location);
 }
