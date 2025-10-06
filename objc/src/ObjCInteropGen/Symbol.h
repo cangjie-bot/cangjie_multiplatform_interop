@@ -9,31 +9,17 @@
 #define SYMBOL_H
 
 #include <cassert>
-#include <cstdint>
-#include <memory>
 #include <optional>
-#include <stdexcept>
-#include <string>
 #include <unordered_set>
-#include <utility>
-#include <vector>
 
-class InputFile;
-class PackageFile;
-struct TypeMapping;
-class Package;
-class Symbol;
-class FileLevelSymbol;
-class TypeLikeSymbol;
-class NamedTypeSymbol;
-class TypeDeclarationSymbol;
-class TypeParameterSymbol;
-class TupleTypeSymbol;
-class FuncTypeSymbol;
-class ConstructedTypeSymbol;
-class TypeAliasSymbol;
+#include "InputFile.h"
+
 class NonTypeSymbol;
+class Package;
+class PackageFile;
 class ParameterSymbol;
+class Symbol;
+struct TypeMapping;
 
 class SymbolPrintFormat {
 public:
@@ -268,16 +254,6 @@ protected:
     virtual void visit_impl(FileLevelSymbol* owner, FileLevelSymbol* value, SymbolProperty property) = 0;
 };
 
-struct LineCol {
-    unsigned line;
-    unsigned col;
-
-    friend bool operator<(const LineCol& loc1, const LineCol& loc2) noexcept
-    {
-        return loc1.line < loc2.line || (loc1.line == loc2.line && loc1.col < loc2.col);
-    }
-};
-
 class FileLevelSymbol : public Symbol {
     InputFile* input_file_ = nullptr; // Stage 1
     LineCol location_ = {0, 0};
@@ -313,7 +289,7 @@ public:
         return input_file_;
     }
 
-    void set_definition_location(InputFile* defining_file, const LineCol& location);
+    void set_definition_location(const Location& location);
 
     void set_package_file(PackageFile* package_file);
 
