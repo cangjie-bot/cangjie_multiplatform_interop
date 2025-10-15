@@ -112,7 +112,7 @@ def fetch_tomlplusplus(target_dir):
     if not os.path.exists(tomlplusplus_dir):
         LOG.info('Fetching tomlplusplus from GitHub...\n')
         output = subprocess.Popen(
-            ["git", "clone", "--depth=1", "-b", "v3.4.0", "https://github.com/marzer/tomlplusplus.git",
+            ["git", "clone", "--depth=1", "-b", "v3.4.0", "https://gitee.com/mirrors_marzer/tomlplusplus.git",
              tomlplusplus_dir], stdout=PIPE,
         )
         log_output(output)

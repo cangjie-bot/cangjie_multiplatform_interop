@@ -233,8 +233,8 @@ def fetch_jdk(target_dir):
         """Apply a patch file to the target directory"""
         patch_path = os.path.join(JAVA_INTEROP_THIRD_PARTY, "jdk_interop.patch")
         if os.path.exists(patch_path):
-            patch_cmd = f"patch -p1 < {patch_path}"
-            patch_process = subprocess.Popen(patch_cmd, shell=True, stdout=PIPE)
+            patch_cmd = f"patch -p1 -l -f < {patch_path}"
+            patch_process = subprocess.Popen(patch_cmd, shell=True, stdout=PIPE, cwd=HOME_DIR)
             LOG.info('Patch applied successfully')
         else:
             LOG.info('Warning: jdk_interop.patch not found at {HOME_DIR}')
