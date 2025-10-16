@@ -1,10 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright (c) Huawei Technologies Co., Ltd. 2025. All rights reserved.
 This source file is part of the Cangjie project, licensed under Apache-2.0
 with Runtime Library Exception.
 
 See https://cangjie-lang.cn/pages/LICENSE for license information. -->
-
-<?xml version="1.0" encoding="UTF-8"?>
 <project name="java-mirror-gen" default="build" basedir=".">
 
     <dirname property="j2cj.basedir" file="${ant.file.java-mirror-gen}" />
@@ -159,6 +158,7 @@ See https://cangjie-lang.cn/pages/LICENSE for license information. -->
         <mkdir dir="${tests.bin}/${cj.mirror.gen}_array_list" />
         <mkdir dir="${tests.bin}/${cj.mirror.gen}_static_method"/>
         <mkdir dir="${tests.bin}/${cj.mirror.gen}_static_covariant"/>
+        <mkdir dir="${tests.bin}/${cj.mirror.gen}_fields"/>
 
         <javac srcdir="${cj.mirror.src}_simple" destdir="${tests.bin}/${cj.mirror.gen}_simple" includeantruntime="false"/>
         <echo file="javac.args"
@@ -276,6 +276,17 @@ See https://cangjie-lang.cn/pages/LICENSE for license information. -->
         </javac>
         <echo file="javac.args"
               message="-d ${tests.bin}/${cj.mirror.gen}_static_covariant -cp ${tests.bin}/${cj.mirror.gen}_static_covariant JavaClass"/>
+        <j2cj.javac>
+            <jvmarg value="-Dgenerate.definition=false"/>
+            <arg line="@javac.args"/>
+        </j2cj.javac>
+
+        <javac srcdir="${cj.mirror.src}_fields" destdir="${tests.bin}/${cj.mirror.gen}_fields"
+               includeantruntime="false">
+            <compilerarg value="-parameters"/>
+        </javac>
+        <echo file="javac.args"
+              message="-d ${tests.bin}/${cj.mirror.gen}_fields -cp ${tests.bin}/${cj.mirror.gen}_fields A"/>
         <j2cj.javac>
             <jvmarg value="-Dgenerate.definition=false"/>
             <arg line="@javac.args"/>
