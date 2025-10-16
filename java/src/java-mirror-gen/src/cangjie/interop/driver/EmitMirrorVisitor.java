@@ -41,6 +41,7 @@ import static cangjie.interop.driver.VisitorUtils.name;
 import static cangjie.interop.driver.VisitorUtils.setImportsMap;
 import static cangjie.interop.driver.VisitorUtils.setNames;
 import static cangjie.interop.driver.VisitorUtils.setSymtab;
+import static cangjie.interop.driver.VisitorUtils.defaultMethodAnnotationGen;
 import static cangjie.interop.util.StdCoreNames.STD_CORE_NAMES;
 import static vendor.com.sun.tools.javac.code.Kinds.Kind.MTH;
 import static vendor.com.sun.tools.javac.code.Kinds.Kind.VAR;
@@ -107,12 +108,8 @@ public final class EmitMirrorVisitor {
             !System.getProperty("generate.definition", "false").equalsIgnoreCase("false");
     private final boolean generateAnnotationMode = onePackageMode && !generateDefinition
             || System.getProperty("generate.annotation") != null;
-    private final boolean interfaceDefaultWorkaround = !generateDefinition
-            && System.getProperty("no.interface.default.workaround") == null;
     private final boolean interfaceObjectMethodsWorkaround =
             System.getProperty("no.interface.jobject.workaround") == null;
-    private final boolean interfaceDefaultToClassWorkaround =
-            System.getProperty("no.interface.default.to.class.workaround") == null;
     private final Map<String, List<String>> writtenPaths = new HashMap<>();
     private final Map<String, List<Symbol.ClassSymbol>> clashingClasses = new HashMap<>();
     private final Set<String> clashingFiles = new HashSet<>();
@@ -419,12 +416,6 @@ public final class EmitMirrorVisitor {
                 continue;
             }
             if (element instanceof Symbol.MethodSymbol symbol) {
-                // There is no @Default annotation at the moment,
-                // FE has no way to know that the method really is implemented.
-                if (interfaceDefaultWorkaround && classSymbol.isInterface() && symbol.isDefault()) {
-                    continue;
-                }
-
                 // JObject methods cause problems in interfaces. Skip them.
                 if (interfaceObjectMethodsWorkaround && classSymbol.isInterface()
                         && types.overridesObjectMethod(symbol.enclClass(), symbol)) {
@@ -468,9 +459,8 @@ public final class EmitMirrorVisitor {
         boolean hasInit = false;
 
         final List<Symbol> members = getMembers(classSymbol);
-        if (interfaceDefaultToClassWorkaround && !classSymbol.isInterface()) {
-            members.addAll(defaultMethods.findAllDefaultMethods(classSymbol));
-        }
+        members.addAll(defaultMethods.findAllDefaultMethods(classSymbol));
+
         if (generateDefinition) {
             final var mergeDefaultMethods = defaultMethods.mergeMultipleInterfaceDefaultMethods(classSymbol);
             mergeDefaultMethods.removeIf(members::contains);
@@ -494,6 +484,13 @@ public final class EmitMirrorVisitor {
                         && renamed
                         && overrideChains.isRenamedInThisClass(classSymbol, methodSymbol)) {
                     tree.annotations.add(foreignNameAnnotationGen(originalName));
+                }
+
+                if (generateAnnotationMode &&
+                        currentClass.isInterface() &&
+                        (methodSymbol.isDefault() && !methodSymbol.isStatic() ||
+                                methodSymbol.isAbstract() && overrideChains.overridesNonAbstractMethod(methodSymbol))) {
+                    tree.annotations.add(defaultMethodAnnotationGen());
                 }
             } else if (element instanceof Symbol.VarSymbol varSymbol) {
                 final var tree = translate(varSymbol);
