@@ -26,6 +26,7 @@ void InputFile::add_symbol(FileLevelSymbol* symbol)
 void InputFile::next_translation()
 {
     cursors_up_to_this_translation_.merge(cursors_in_this_translation_);
+    cursors_in_this_translation_.clear();
 }
 
 bool InputFile::add_cursor(const LineCol& location)
@@ -75,6 +76,7 @@ void Inputs::next_translation()
         }
     }
     builtin_cursors_up_to_this_translation_.merge(builtin_cursors_in_this_translation_);
+    builtin_cursors_in_this_translation_.clear();
 }
 
 bool Inputs::add_cursor(const Location& location, const std::string& name) {

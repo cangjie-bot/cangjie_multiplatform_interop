@@ -8,8 +8,10 @@
 #ifndef INPUTFILE_H
 #define INPUTFILE_H
 
+#include <climits>
 #include <filesystem>
 #include <set>
+#include <unordered_set>
 #include <vector>
 
 #ifdef OBJCINTEROPGEN_NO_WARNINGS
@@ -33,18 +35,29 @@ struct LineCol {
     {
         return loc1.line_ < loc2.line_ || (loc1.line_ == loc2.line_ && loc1.col_ < loc2.col_);
     }
+
+    friend bool operator==(const LineCol& loc1, const LineCol& loc2) noexcept
+    {
+        return loc1.line_ == loc2.line_ && loc1.col_ == loc2.col_;
+    }
+};
+
+template <> struct std::hash<LineCol> {
+    size_t operator()(const LineCol& pos) const noexcept
+    {
+        constexpr auto half_width = sizeof(size_t) * CHAR_BIT / 2;
+        return (static_cast<size_t>(pos.line_) << half_width) + pos.line_;
+    }
 };
 
 struct Location : LineCol {
     std::filesystem::path file_;
 
-    [[nodiscard]] auto is_null() const noexcept
+    [[nodiscard]] bool is_null() const noexcept
     {
         return file_.empty();
     }
 };
-
-static Location null_location = Location{{0, 0}, {}};
 
 class InputFile final {
     struct SymbolComparator {
@@ -54,8 +67,8 @@ class InputFile final {
     InputDirectory* directory_;
     std::filesystem::path path_;
 
-    std::set<LineCol> cursors_up_to_this_translation_;
-    std::set<LineCol> cursors_in_this_translation_;
+    std::unordered_set<LineCol> cursors_up_to_this_translation_;
+    std::unordered_set<LineCol> cursors_in_this_translation_;
 
     std::multiset<FileLevelSymbol*, SymbolComparator> symbols_;
 

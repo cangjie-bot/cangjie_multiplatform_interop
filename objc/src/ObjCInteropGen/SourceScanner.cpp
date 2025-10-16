@@ -364,7 +364,7 @@ static Location get_location(const CXCursor& decl)
 {
     assert(is_valid(decl));
     auto loc = clang_getCursorLocation(decl);
-    return is_null_location(loc) ? null_location : get_location(loc);
+    return is_null_location(loc) ? Location{{0, 0}, {}} : get_location(loc);
 }
 
 [[nodiscard]] static std::string declaring_file_name(const CXCursor& decl)
