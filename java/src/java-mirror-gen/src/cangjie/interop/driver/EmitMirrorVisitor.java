@@ -364,8 +364,7 @@ public final class EmitMirrorVisitor {
 
     public CJTree.Declaration translate(Symbol.VarSymbol varSymbol) {
         final var mangledName = addBackticksIfNeeded(varSymbol.name);
-        // TODO: Remove right part of condition when compiler fixes ForeignName annotations for fields
-        boolean genProperty = currentClass.isInterface() || newName.get(varSymbol) != null;
+        boolean genProperty = currentClass.isInterface();
         final var decl = new CJTree.Declaration.VariableDeclaration.Variable(mangledName, genProperty);
         final var newVariableName = newName.get(varSymbol);
         if (newVariableName != null) {
