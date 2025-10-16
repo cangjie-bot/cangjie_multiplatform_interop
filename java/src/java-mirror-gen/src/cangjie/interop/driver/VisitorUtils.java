@@ -251,6 +251,11 @@ public final class VisitorUtils {
         return annotation;
     }
 
+    public static CJTree.Declaration.Annotation defaultMethodAnnotationGen() {
+        final var defaultMethodAnnotation = new CJTree.Expression.Name.SimpleName.IdentifierName("JavaHasDefault");
+        return new CJTree.Declaration.Annotation(defaultMethodAnnotation);
+    }
+
     public static Name formTypeName(Symbol.TypeSymbol type) {
         Symbol symbol = type;
         Name result = null;
