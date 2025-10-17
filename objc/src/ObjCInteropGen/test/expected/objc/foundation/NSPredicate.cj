@@ -6,7 +6,7 @@ import interoplib.objc.*
 
 @ObjCMirror
 public open class NSPredicate <: NSObject & NSSecureCoding & NSCopying {
-    protected var _predicateFlags: _predicateFlags
+    // protected var _predicateFlags: _predicateFlags
     protected var reserved: uint32_t
     @ForeignName["predicateWithFormat:argumentArray:"] public static func predicateWithFormatArgumentArray(predicateFormat: NSString, arguments: ?NSArray/*<ObjectType>*/): NSPredicate
     @ForeignName["predicateWithFormat:"] public static func predicateWithFormat(predicateFormat: NSString): NSPredicate
