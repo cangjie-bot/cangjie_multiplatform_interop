@@ -25,8 +25,8 @@ cjc --strip-all --link-options "-z relro" --link-options "-z now" --output-type=
 
 cjc --strip-all --link-options "-z relro" --link-options "-z now" --output-type=dylib --output-dir=../../dist --int-overflow wrapping --import-path=../../dist ./javalib/*.cj --target=$1 --sysroot $2 -B $3
 
-javac -d ../../dist LibraryLoader.java
-javac -d ../../dist \$\$NativeConstructorMarker.java
+javac -source 8 -target 8 -d ../../dist LibraryLoader.java
+javac -source 8 -target 8 -d ../../dist \$\$NativeConstructorMarker.java
 cd ../../dist
 jar cf library-loader.jar cangjie/lang/LibraryLoader.class cangjie/lang/internal/\$\$NativeConstructorMarker.class
 

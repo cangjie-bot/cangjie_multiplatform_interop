@@ -314,7 +314,7 @@ def build(args):
         log_output(output)
 
         output = subprocess.Popen(
-            ["javac", "-d", DIST_DIR, "LibraryLoader.java", "$$NativeConstructorMarker.java"],
+            ["javac", "-d", DIST_DIR, "-source", "8", "-target", "8", "LibraryLoader.java", "$$NativeConstructorMarker.java"],
             cwd=INTEROPLIB_DIR,
             stdout=PIPE,
         )
