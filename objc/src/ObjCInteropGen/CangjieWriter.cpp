@@ -255,6 +255,9 @@ static bool is_objc_compatible_parameter_type(TypeLikeSymbol& type)
             return name != "CPointer" && name != "CFunc";
         }
         case NamedTypeSymbol::Kind::Struct: {
+            if (canonical_type->is_ctype()) {
+                return true;
+            }
             if (canonical_type->name() != "ObjCPointer") {
                 return false;
             }
@@ -652,6 +655,53 @@ static void write_method(IndentingStringStream& output, bool is_interface, NonTy
     output << '\n';
 }
 
+static bool is_hidden(const TypeDeclarationSymbol& decl, TypeLikeSymbol& type, const std::string& name)
+{
+    auto decl_kind = decl.kind();
+    switch (decl_kind) {
+        case NamedTypeSymbol::Kind::Interface:
+        case NamedTypeSymbol::Kind::Protocol:
+            // Current FE fails to process a field or property of an @ObjCMirror class if
+            // the field and its type have the same name (no such problem in non-@ObjCMirror
+            // classes). As a workaround, comment out such fields.
+            if (name == type.name()) {
+                return true;
+            }
+            break;
+        default:
+            break;
+    }
+    if (!normal_mode()) {
+        // In experimental modes, all types are allowed.
+        return false;
+    }
+    switch (decl_kind) {
+        case NamedTypeSymbol::Kind::Interface:
+        case NamedTypeSymbol::Kind::Protocol:
+            // @ObjCMirror class/interface.  Only Objective-C compatible types can be used.
+            return !is_objc_compatible_parameter_type(type);
+        default:
+            // This is a structure
+            if (decl.is_ctype()) {
+                // @C structure.  It could not be identified as @C if the type was non-@C.
+                assert(type.is_ctype());
+
+                // This is fully supported by C interoperability, never hide
+                return false;
+            }
+            // Regular (non-@C) @ObjCMirror structures are not supported by the front end
+            // yet, so in the NORMAL mode the @ObjCMirror attribute is commented out.  The
+            // lack of the attribute means no restrictions to types being used.  But!  In
+            // the EXPERIMENTAL mode it is @ObjCMirror, so in the EXPERIMENTAL mode only
+            // Objective-C compatible types and CType are supported.  It is logical to
+            // consider NORMAL as a subset of EXPERIMENTAL, so this restriction goes to
+            // NORMAL as well.
+            //
+            // So, hide all but @C and Objective-C compatible.
+            return !type.is_ctype() && !is_objc_compatible_parameter_type(type);
+    }
+}
+
 void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol* type)
 {
     auto is_interface = type->is(NamedTypeSymbol::Kind::Protocol);
@@ -766,7 +816,8 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
                 auto* return_type = getter->return_type();
                 assert(return_type);
                 assert(!return_type->is_unit());
-                auto hidden = normal_mode() && !is_objc_compatible_parameter_type(*return_type);
+                const auto& name = getter->name();
+                auto hidden = is_hidden(*type, *return_type, name);
                 if (hidden) {
                     output.set_comment();
                 }
@@ -781,7 +832,7 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
                 if (!member.is_readonly()) {
                     output << "mut ";
                 }
-                output << "prop " << escape_keyword(getter->name());
+                output << "prop " << escape_keyword(name);
                 write_result_type(output, *getter, *return_type);
                 if (generate_definitions_mode()) {
                     output << " {\n";
@@ -835,11 +886,12 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
             assert(return_type);
             assert(!return_type->is_unit());
             assert(member.is_public() || member.is_protected());
-            auto hidden = normal_mode() && !is_objc_compatible_parameter_type(*return_type);
+            const auto& name = member.name();
+            auto hidden = is_hidden(*type, *return_type, name);
             if (hidden) {
                 output.set_comment();
             }
-            output << (member.is_public() ? "public" : "protected") << " var " << escape_keyword(member.name());
+            output << (member.is_public() ? "public" : "protected") << " var " << escape_keyword(name);
             write_result_type(output, member, *return_type);
             if (generate_definitions_mode()) {
                 output << " = " << default_value(*return_type);
@@ -856,11 +908,12 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
             auto* return_type = member.return_type();
             assert(return_type);
             assert(!return_type->is_unit());
-            auto hidden = normal_mode() && !is_objc_compatible_parameter_type(*return_type);
+            const auto& name = member.name();
+            auto hidden = is_hidden(*type, *return_type, name);
             if (hidden) {
                 output.set_comment();
             }
-            output << "public var " << escape_keyword(member.name());
+            output << "public var " << escape_keyword(name);
             write_result_type(output, member, *return_type);
             output << " = " << default_value(*return_type);
             if (hidden) {
