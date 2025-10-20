@@ -90,6 +90,7 @@ import java.util.Set;
 public final class EmitMirrorVisitor {
     public final Queue<Symbol.ClassSymbol> queue;
     public final Set<Symbol.ClassSymbol> visited;
+    private final HashMap<Symbol.ClassSymbol, Integer> traversalPathMap;
     private final JavaFileManager fileManager;
     private final Types types;
     private final Symtab symtab;
@@ -116,6 +117,8 @@ public final class EmitMirrorVisitor {
     private final Map<String, String> importsMap = new HashMap<>();
     private final String defaultImportsConfig = "imports_config.txt";
     private String importsConfig = System.getProperty("imports.config");
+    private boolean limitedDepth = System.getProperty("gen.closure.depth") != null;
+    private int maxPathLength = Integer.MAX_VALUE;
     private Symbol.ClassSymbol currentClass;
 
     private EmitMirrorVisitor(Context context) {
@@ -138,6 +141,19 @@ public final class EmitMirrorVisitor {
 
         setSymtab(symtab);
         setNames(names);
+
+        traversalPathMap = new HashMap<>();
+        if (limitedDepth) {
+            traversalPathMap.put((Symbol.ClassSymbol) symtab.objectType.tsym, 0);
+            traversalPathMap.put((Symbol.ClassSymbol) symtab.stringType.tsym, 0);
+            try {
+                maxPathLength = Integer.parseInt(System.getProperty("gen.closure.depth"));
+            } catch (Exception e) {
+                System.out.print(e.getMessage());
+                limitedDepth = false;
+                maxPathLength = Integer.MAX_VALUE;
+            }
+        }
 
         if (importsConfig != null) {
             if (importsConfig.isEmpty()) {
@@ -321,11 +337,19 @@ public final class EmitMirrorVisitor {
         final var classDecl = new CJTree.Declaration.TypeDeclaration(kind(classSymbol));
         classDecl.setType(new CJTree.Expression.Name.SimpleName.IdentifierName(name));
 
+        final var depth = traversalPathMap.get(classSymbol);
+
         final var superTypes = types.directSupertypes(classSymbol.type);
         for (Type superType : superTypes) {
             if (superType.tsym == symtab.objectType.tsym && (!generateDefinition || classSymbol.isInterface())) {
                 // Interop toolchain provides implicit JObject super type, skip it.
                 // Note: need to preserve JObject for non-interop toolchain.
+                continue;
+            }
+
+            if (depth != null && depth == maxPathLength &&
+                    superType.tsym != symtab.objectType.tsym &&
+                    !traversalPathMap.containsKey(superType.tsym)) {
                 continue;
             }
 
@@ -390,7 +414,11 @@ public final class EmitMirrorVisitor {
         return decl;
     }
 
-    private void putToQueue(Symbol.TypeSymbol typeSymbol) {
+    private void putToQueue(Symbol.TypeSymbol typeSymbol, Integer pathLevel) {
+        if (pathLevel != null && pathLevel > maxPathLength) {
+            return;
+        }
+
         if (typeSymbol == symtab.objectType.tsym) {
             return;
         }
@@ -399,12 +427,68 @@ public final class EmitMirrorVisitor {
         }
         if (typeSymbol instanceof Symbol.ClassSymbol paramSymbol && !paramSymbol.type.isPrimitiveOrVoid()) {
             queue.add(paramSymbol);
+            if (limitedDepth && !traversalPathMap.containsKey(paramSymbol)) {
+                traversalPathMap.put(paramSymbol, pathLevel);
+            }
         }
+    }
+
+    private boolean exceedMaxDepth(Symbol.TypeSymbol symbol) {
+        if (symbol instanceof Symbol.ClassSymbol classSymbol && !classSymbol.type.isPrimitiveOrVoid()) {
+            return traversalPathMap.get(classSymbol) == null;
+        }
+        return false;
+    }
+
+    private boolean hasExceededMaxDepthPath(Symbol symbol, Integer depth) {
+        if (!limitedDepth) {
+            return false;
+        }
+
+        if (depth != null && symbol instanceof Symbol.MethodSymbol methodSymbol) {
+            if (methodSymbol.owner.isInterface() && !methodSymbol.isDefault() && !methodSymbol.isStatic()) {
+                for (Symbol.ClassSymbol classSymbol : traversalPathMap.keySet()) {
+                    if (!classSymbol.isAbstract() && !classSymbol.isInterface()) {
+                        final var closure = types.closure(classSymbol.type);
+                        for (Type type : closure) {
+                            if (type.tsym.equals(methodSymbol.owner) &&
+                                    !overrideChains.isMethodOverriddenInClass(classSymbol, methodSymbol)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (depth != null && depth == maxPathLength) {
+            if (symbol instanceof Symbol.MethodSymbol methodSymbol) {
+                for (var param : methodSymbol.params()) {
+                    final var paramTypeSymbol = erasureType(param.type, types);
+                    if (exceedMaxDepth(paramTypeSymbol)) {
+                        return true;
+                    }
+                    for (var typeParam : param.type.getTypeArguments()) {
+                        if (exceedMaxDepth(typeParam.tsym)) {
+                            return true;
+                        }
+                    }
+                }
+                final var returnTypeSymbol = erasureType(methodSymbol.getReturnType(), types);
+                if (exceedMaxDepth(returnTypeSymbol)) {
+                    return true;
+                }
+            } else if (symbol instanceof Symbol.VarSymbol varSymbol) {
+                return exceedMaxDepth(erasureType(varSymbol.type, types));
+            }
+        }
+        return false;
     }
 
     private ArrayList<Symbol> getMembers(Symbol.ClassSymbol classSymbol) {
         final var tmpScope = classSymbol.members();
         final var members = new ArrayList<Symbol>();
+        final var depth = traversalPathMap.get(classSymbol);
         if (tmpScope == null) {
             return members;
         }
@@ -437,6 +521,8 @@ public final class EmitMirrorVisitor {
                     continue;
                 }
 
+                if (hasExceededMaxDepthPath(methodSymbol, depth)) continue;
+
                 if (visitedMethods.add(methodSymbol)) {
                     members.add(methodSymbol);
                 }
@@ -444,6 +530,9 @@ public final class EmitMirrorVisitor {
                 if (varSymbol.owner.type.isInterface() && varSymbol.getModifiers().contains(Modifier.FINAL)) {
                     continue;
                 }
+
+                if (hasExceededMaxDepthPath(varSymbol, depth)) continue;
+
                 members.add(varSymbol);
             }
         }
@@ -459,12 +548,25 @@ public final class EmitMirrorVisitor {
         boolean hasInit = false;
 
         final List<Symbol> members = getMembers(classSymbol);
-        members.addAll(defaultMethods.findAllDefaultMethods(classSymbol));
+        final var depth = traversalPathMap.get(classSymbol);
+
+        for (Symbol.MethodSymbol methodSymbol : defaultMethods.findAllDefaultMethods(classSymbol)) {
+            if (hasExceededMaxDepthPath(methodSymbol, depth)) {
+                continue;
+            }
+            members.add(methodSymbol);
+        }
 
         if (generateDefinition) {
             final var mergeDefaultMethods = defaultMethods.mergeMultipleInterfaceDefaultMethods(classSymbol);
             mergeDefaultMethods.removeIf(members::contains);
-            members.addAll(mergeDefaultMethods);
+
+            for (Symbol.MethodSymbol methodSymbol : mergeDefaultMethods) {
+                if (hasExceededMaxDepthPath(methodSymbol, depth)) {
+                    continue;
+                }
+                members.add(methodSymbol);
+            }
         }
         for (Symbol element : members) {
             final var originalName = element.name;
@@ -728,30 +830,44 @@ public final class EmitMirrorVisitor {
         if (classSymbol.members() != null) {
             renameCangjieClashes(classSymbol.members());
         }
+
+        final var depth = traversalPathMap.get(classSymbol);
+        final var depthNext = (limitedDepth && depth != null) ? depth + 1 : null;
+
         final List<Symbol> members = getMembers(classSymbol);
+
+        if (limitedDepth) {
+            for (Symbol.MethodSymbol methodSymbol : defaultMethods.findAllDefaultMethods(classSymbol)) {
+                if (hasExceededMaxDepthPath(methodSymbol, depth)) {
+                    continue;
+                }
+                members.add(methodSymbol);
+            }
+        }
+
         for (Symbol element : members) {
             if (element instanceof Symbol.MethodSymbol symbol) {
                 for (var param : symbol.params()) {
-                    putToQueue(erasureType(param.type, types));
+                    putToQueue(erasureType(param.type, types), depthNext);
 
                     for (var typeParam : param.type.getTypeArguments()) {
-                        putToQueue(typeParam.tsym);
+                        putToQueue(typeParam.tsym, depthNext);
                     }
                 }
                 if (!symbol.isConstructor()) {
-                    putToQueue(erasureType(symbol.getReturnType(), types));
+                    putToQueue(erasureType(symbol.getReturnType(), types), depthNext);
                 }
             } else if (element instanceof Symbol.VarSymbol symbol) {
-                putToQueue(erasureType(symbol.type, types));
+                putToQueue(erasureType(symbol.type, types), depthNext);
             }
         }
         final var superClass = classSymbol.getSuperclass();
         if (superClass != null) {
-            putToQueue(superClass.tsym);
+            putToQueue(superClass.tsym, depthNext);
         }
         final var interfaces = classSymbol.getInterfaces();
         for (var superInterface : interfaces) {
-            putToQueue(superInterface.tsym);
+            putToQueue(superInterface.tsym, depthNext);
         }
     }
 
@@ -792,6 +908,9 @@ public final class EmitMirrorVisitor {
 
     public void traverseDependenciesClosure(Symbol.ClassSymbol classSymbol) {
         if (classSymbol != null) {
+            if (limitedDepth && traversalPathMap.get(classSymbol) == null) {
+                traversalPathMap.put(classSymbol, 0);
+            }
             queue.add(classSymbol);
         }
         while (!queue.isEmpty()) {
