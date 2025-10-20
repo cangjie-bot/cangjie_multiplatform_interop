@@ -1,0 +1,64 @@
+package cangjie.interop.java;
+
+import java.util.HashMap;
+
+public final class ClassAnalyser<T> {
+    private final class<T>baseClass;
+    private final MethodDef[] virtualMethods;
+
+    private volatile HashMap<class<?>, Long> classMap = new HashMap<>();
+
+    public ClassAnalyser(Class<T> baseClass, MethodDef[] virtualMethods) {
+        this.baseClass = baseClass;
+        this.virtualMethods = virtualMethods;
+        if (baseClass.isInterface()) {
+            throw new IllegalArgumentException();
+        }
+        for(MethodDef mdef : virtualMethods) {
+            try {
+
+            } catch (NoSuchMethodException e) {
+                throw new IllegalArgumentException(e.getMessage());
+            }
+        }
+    }
+
+    public <E extends T> long getOverrideMask(Class<E> clazz) {
+        if (clazz == baseClass) {
+            return 0;
+        }
+        if (!baseClass.isAssignableFrom(clazz)) {
+            throw new IllegalArgumentException("Class " + clazz + " should inherit " + baseClass);
+        }
+        try {
+            clazz.getDeclaredMethod("finalize");
+            throw new IllegalArgumentException("Class" + clazz + " is not allowed to have finalizer");
+        } catch (NoSuchMethodException e) {
+
+        }
+        Lone overrideMask = classMap.get(clazz);
+        if (overrideMask != null) {
+            return overrideMask;
+        }
+        long mask = 0;
+        for (Class<?> c = clazz; c != baseClass; c = c.getSuperclass()) {
+            for (int i = 0; i < virtualMethods.length && i < 64; i++) {
+                try {
+                    clazz.getDeclaredMethod(virtualMethods[i].name, virtualMethods[i].parameters);
+                    mask |= 1L << i;
+                } catch (NoSuchMethodException e) {
+
+                }
+            }
+        }
+        synchronized (this) {
+            if (classMap.containsKey(clazz)) {
+                return mask;
+            }
+            HashMap<Clazz<?>, Long> newMap = new HashMap<>(classMap);
+            newMap.put(clazz, mask);
+            classMap = newMap;
+        }
+        return mask;
+    }
+}
