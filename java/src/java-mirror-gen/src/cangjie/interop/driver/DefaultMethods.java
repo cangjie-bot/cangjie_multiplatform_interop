@@ -22,6 +22,7 @@
 
 package cangjie.interop.driver;
 
+import vendor.com.sun.tools.javac.code.Flags;
 import vendor.com.sun.tools.javac.code.Symbol;
 import vendor.com.sun.tools.javac.code.Types;
 import vendor.com.sun.tools.javac.util.Context;
@@ -110,6 +111,12 @@ public final class DefaultMethods {
                     final var rightMethodList = getAllDefaultMethods((Symbol.ClassSymbol) rightInterface.tsym);
                     for (final var rightMethod : rightMethodList) {
                         if (leftMethod != rightMethod) {
+                            continue;
+                        }
+
+                        // Exclude synthetic members of interfaces like java.lang.reflect.AnnotatedElement
+                        // lambda$getDeclaredAnnotationsByType$0
+                        if ((leftMethod.flags() & Flags.SYNTHETIC) != 0) {
                             continue;
                         }
 
