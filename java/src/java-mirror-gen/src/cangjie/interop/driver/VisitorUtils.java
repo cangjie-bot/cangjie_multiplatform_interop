@@ -229,9 +229,11 @@ public final class VisitorUtils {
     }
 
     public static Symbol.TypeSymbol erasureType(Type type, Types types) {
-        return type instanceof Type.ArrayType arrayType
-                ? types.erasure(arrayType.elemtype).tsym
-                : types.erasure(type).tsym;
+        var result = type;
+        while (result instanceof Type.ArrayType arrayType) {
+            result = arrayType.elemtype;
+        }
+        return types.erasure(result).tsym;
     }
 
     public static CJTree.Expression createJavaMirrorAnnotation() {
