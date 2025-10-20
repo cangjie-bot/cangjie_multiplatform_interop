@@ -314,14 +314,14 @@ def build(args):
         log_output(output)
 
         output = subprocess.Popen(
-            ["javac", "-d", DIST_DIR, "-source", "8", "-target", "8", "LibraryLoader.java", "$$NativeConstructorMarker.java"],
+            ["javac", "-d", DIST_DIR, "-source", "8", "-target", "8", "LibraryLoader.java", "$$NativeConstructorMarker.java", "ClassAnalyser.java", "MethodDef.java"],
             cwd=INTEROPLIB_DIR,
             stdout=PIPE,
         )
         log_output(output)
 
         output = subprocess.Popen(
-            ["jar", "cf",  LIBRARY_LOADER_JAR, "cangjie/lang/LibraryLoader.class", "cangjie/lang/internal/$$NativeConstructorMarker.class"],
+            ["jar", "cf",  LIBRARY_LOADER_JAR, "cangjie/lang/LibraryLoader.class", "cangjie/lang/internal/$$NativeConstructorMarker.class", "cangjie/interop/java/ClassAnalyser.class", "cangjie/interop/java/MethodDef.class"],
             cwd=DIST_DIR,
             stdout=PIPE,
         )
