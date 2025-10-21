@@ -82,7 +82,14 @@ build_example() {
 
     # app/*.m + generated/*.m + libapi + libcjworld => out/main
     if [ "$OS_FAMILY" = "darwin" ]; then
-        clang -fmodules -fobjc-arc app/*.m generated/*.m -o out/main -I"$CANGJIE_RUNTIME_INCLUDE_PATH" -Iapp -Igenerated -Lout -lcangjie-runtime -lapi -lcjworld -L"$CANGJIE_RUNTIME_LIB_PATH"
+        # ARC is always OFF for glue-code
+        # use ARC_MACRO to setup if [super dealloc] should be called in CJMirror classes
+        [ "test$ARCOFF" != "test" ] && ARC_MACRO="-D CALL_SUPER_DEALLOC=1" || ARC_MACRO=""
+        clang -fmodules $ARC_MACRO -shared -undefined dynamic_lookup generated/*.m -o out/libgluecode.dylib -I"$CANGJIE_RUNTIME_INCLUDE_PATH" -Igenerated -lcangjie-runtime -L"$CANGJIE_RUNTIME_LIB_PATH"
+
+        # for app code ARC is ON by default, export ARCOFF with some value to turn it OFF
+        [ "test$ARCOFF" != "test" ] && ARC="" || ARC="-fobjc-arc"
+        clang -fmodules $ARC app/*.m -o out/main -I"$CANGJIE_RUNTIME_INCLUDE_PATH" -Iapp -Igenerated -Lout -lcangjie-runtime -lapi -lcjworld -lgluecode -L"$CANGJIE_RUNTIME_LIB_PATH"
     else
         # shellcheck disable=SC2046
         clang-10 $(gnustep-config --objc-flags) $(gnustep-config --base-libs) app/*.m generated/*.m -o out/main -I"$CANGJIE_RUNTIME_INCLUDE_PATH" -Iapp -Igenerated -Lout -ldl -lcangjie-runtime -lapi -lcjworld -L"$CANGJIE_RUNTIME_LIB_PATH"
