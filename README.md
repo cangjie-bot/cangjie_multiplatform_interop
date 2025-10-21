@@ -4,27 +4,40 @@
 
 Cangjie provides developers with the capability to interoperate with Java and Objective-C languages. After successfully installing the Cangjie toolchain, you can use these capabilities according to the manual.
 
-## Open Source Project Overview
+## System Architecture
 
-The current interoperability features of Cangjie are:
+Overall Architecture of Cangjie-Java Interop:
 
-- Cangjie-Java Interoperability
-- Cangjie-Objective-C Interoperability
+![Cangjie-Java互操作架构图](java/figures/Cangjie-Java.png)
 
-The corresponding software architecture diagrams are available at:
+Overall Architecture of Cangjie-ObjC Interop:
 
-- [Cangjie-Java Interoperability Architecture](./java/doc/developer_guide.md#开源项目介绍)
-- [Cangjie-ObjC Interoperability Architecture](./objc/doc/developer_guide.md#开源项目介绍)
+![Cangjie-ObjC互操作架构图](objc/figures/Cangjie-ObjC.png)
 
-The corresponding directory structures are:
+This repository provides the following tools in the interop toolchain:
 
-- [Cangjie-Java Directory](./java/doc/developer_guide.md#目录)
-- [Cangjie-ObjC Directory](./objc/doc/developer_guide.md#目录)
+* Java binding-generator: A tool provided in the Cangjie SDK, with the filename java-mirror-gen.jar. It is used to automatically generate Cangjie-format Mirror Types based on Java .class files.
+* ObjC binding-generator: A tool for generating Objective-C (ObjC) mirror files.
 
-The specific repositories related to Cangjie interoperability are:
+## Directory Structure
 
-- [Cangjie-Java Related Repositories](./java/doc/developer_guide.md#相关仓)
-- [Cangjie-ObjC Related Repositories](./objc/doc/developer_guide.md#相关仓)
+```
+|--java
+   |-- build   # Build scripts
+   |-- doc     # Documentation
+   |-- src     # Source code files
+       |-- interoplib # Interop library
+       |-- java-mirror-gen # Cangjie mirror file generation tool
+   |-- test # Test cases
+|--objc
+   |-- build  # Build scripts
+   |-- doc    # Documentation
+   |-- src    # Source code files
+       |-- interoplib    # Interop library
+       |-- ObjCInteropGen    # Source code of Cangjie mirror generator
+   |-- test    # Test cases
+   |-- third_party    # Code for TOML file reading and writing functions
+```
 
 For detailed information, please refer to the user guides under each component's `doc` directory:
 
@@ -42,6 +55,18 @@ The Cangjie interoperability toolkit depends on the Cangjie SDK for building. Pl
 ## Open Source License
 
 This project is licensed under the [Apache-2.0 with Runtime Library Exception](./LICENSE). Feel free to enjoy and participate in the open-source community.
+
+## Related Repositories
+
+* [cangjie compiler](https://gitcode.com/Cangjie/cangjie_compiler)
+* [cangjie test](https://gitcode.com/Cangjie/cangjie_test)
+
+## Open Source Software Statement
+
+| Open-Source Software Name               | Open-Source License             | Usage Description                  | 	User Entity | Usage Method         |
+|----------------------|---------------------|-----------------------|------|--------------|
+| bishengjdk         | GPLv2 with Classpath Exception  | The Java Mirror generation tool uses javac source code to parse Java class files and generates corresponding mirrors during the syntax parsing phase| Language Service | Integrated in the tool release package |
+| tinytoml  | BSD-2-Clause        | The ObjC Mirror generation tool is used to parse TOML configuration files      | Language Service | Integrated in the tool release package |
 
 ## Contribution
 
