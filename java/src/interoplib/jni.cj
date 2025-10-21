@@ -2249,7 +2249,14 @@ public func Java_CFFI_get_env(): JNIEnv_ptr {
     unsafe {
         let envPtr = CPointer<JNIEnv_ptr>(LibC.malloc<JNIEnv_ptr>(count: 1))
         let javaVM: JNIInvokeInterface_ = jvm.read().read()
-        javaVM.AttachCurrentThread(jvm, envPtr, CPointer<Unit>())
+        /*
+            Thread should be attached as daemon skip waiting for cangjie threads.
+            Since cangjie runtime thread is registered (for example, during objects finalization),
+            it causes blocking java program finishing.
+
+            Better solution should inclue cangjie thread deattaching from JVM,
+        */
+        javaVM.AttachCurrentThreadAsDaemon(jvm, envPtr, CPointer<Unit>())
 
         envPtr.read()
     }
