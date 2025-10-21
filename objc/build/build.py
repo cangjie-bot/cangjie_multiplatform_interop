@@ -102,10 +102,9 @@ def fatal(message):
 def command(*args, cwd=None, env=None):
     """Execute a child program via 'subprocess.Popen' and log the output"""
     output = subprocess.Popen(args, stdout=PIPE, cwd=cwd, env=env)
+    log_output(output)
     if output.returncode:
         fatal('"' + ' '.join(args) + '" returned ' + output.returncode)
-    else:
-        log_output(output)
 
 def runtime_name(target):
     return target+"_cjnative"
