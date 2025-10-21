@@ -56,16 +56,6 @@ OUT_OBJC_LANG_CJO   = os.path.join(OBJC_OUT_PREFIX, "objc.lang.cjo")
 LOG_DIR = os.path.join(BUILD_DIR, 'logs')
 LOG_FILE = os.path.join(LOG_DIR, 'ObjCInteropGen.log')
 
-clang_path = shutil.which('clang')
-clang_pp_path = shutil.which('clang++')
-if not clang_path:
-  LOG.error('clang is required to build cangjie compiler')
-if not clang_pp_path:
-  LOG.error('clang++ is required to build cangjie compiler')
-
-os.environ['CC'] = clang_path
-os.environ['CXX'] = clang_pp_path
-
 def log_output(output):
     """log command output"""
     while True:
@@ -104,9 +94,18 @@ def init_log(name):
     log.addHandler(filehandler)
     return log
 
+def fatal(message):
+    """Log the message as CRITICAL and raise Exception with the same message"""
+    LOG.critical(message)
+    raise Exception(message)
+
 def command(*args, cwd=None, env=None):
     """Execute a child program via 'subprocess.Popen' and log the output"""
-    log_output(subprocess.Popen(args, stdout=PIPE, cwd=cwd, env=env))
+    output = subprocess.Popen(args, stdout=PIPE, cwd=cwd, env=env)
+    if output.returncode:
+        fatal('"' + ' '.join(args) + '" returned ' + output.returncode)
+    else:
+        log_output(output)
 
 def runtime_name(target):
     return target+"_cjnative"
@@ -180,6 +179,8 @@ def get_install_dir(install_path, *relative_path):
 def install_file(install_dir, file):
     if os.path.isfile(file):
         shutil.copy2(file, install_dir)
+    else:
+        fatal("Cannot find \"%s\" for installing to \"%s\"", file, install_dir)
 
 def install_files(install_dir, *files):
     for file in files:
@@ -190,9 +191,26 @@ def find_match(lines, regexp):
     pattern = re.compile(regexp)
     for line in lines:
         matched = re.search(pattern, line)
-        if (matched):
+        if matched:
             return matched.group(1)
     return None
+
+def change_binary_dependency(binary, otool_output, library):
+    """
+    Change the dependent library install name to the @rpath-based one.  If the
+    binary does not contain an install name for this library, raise an exception.
+
+    Arguments:
+    binary - the name of the binary file where to change the dependency
+    otool_output - the output of the `otool -l <binary>` command, splitted into
+                   lines
+    library - the file name (without a path) of the library
+    """
+    path = find_match(otool_output, r"name (.*/" + library + r") \(offset \d*\)")
+    if path:
+        command("install_name_tool", "-change", path, "@rpath/" + library, binary)
+    else:
+        fatal("Expected dependency on \"" + library + "\" in \"" + binary + "\" not found")
 
 def install(args):
     """install objc-interop-gen or interoplib"""
@@ -229,11 +247,11 @@ def install(args):
         install_file(install_dir, os.path.join(CMAKE_BUILD_DIR, "ObjCInteropGen"))
         if IS_DARWIN:
             INSTALLED_OBJC_INTEROP_GEN = os.path.join(install_dir, "ObjCInteropGen")
-            load_commands = subprocess.run(
+            otool_output = subprocess.run(
                 ["otool", "-l", INSTALLED_OBJC_INTEROP_GEN],
                 capture_output=True
             ).stdout.decode().splitlines()
-            rpath = find_match(load_commands, r"path (.*) \(offset \d*\)")
+            rpath = find_match(otool_output, r"path (.*) \(offset \d*\)")
             if rpath:
                 command(
                     "install_name_tool",
@@ -242,24 +260,15 @@ def install(args):
                     "@loader_path/../../third_party/llvm/lib",
                     INSTALLED_OBJC_INTEROP_GEN
                 )
-            libclang_dylib = find_match(load_commands, r"name (.*/libclang.dylib) \(offset \d*\)")
-            if libclang_dylib:
+            else:
                 command(
                     "install_name_tool",
-                    "-change",
-                    libclang_dylib,
-                    "@rpath/libclang.dylib",
+                    "-add_rpath",
+                    "@loader_path/../../third_party/llvm/lib",
                     INSTALLED_OBJC_INTEROP_GEN
                 )
-            libLLVM_dylib = find_match(load_commands, r"name (.*/libLLVM.dylib) \(offset \d*\)")
-            if libLLVM_dylib:
-                command(
-                    "install_name_tool",
-                    "-change",
-                    libLLVM_dylib,
-                    "@rpath/libLLVM.dylib",
-                    INSTALLED_OBJC_INTEROP_GEN
-                )
+            change_binary_dependency(INSTALLED_OBJC_INTEROP_GEN, otool_output, "libclang.dylib")
+            change_binary_dependency(INSTALLED_OBJC_INTEROP_GEN, otool_output, "libLLVM.dylib")
 
         LOG.info("end install objc-interop-gen")
 
@@ -283,6 +292,16 @@ class BuildType(Enum):
 
 def main():
     """build entry"""
+    clang_path = shutil.which('clang')
+    clang_pp_path = shutil.which('clang++')
+    if not clang_path:
+      LOG.error('clang is required to build cangjie compiler')
+    if not clang_pp_path:
+      LOG.error('clang++ is required to build cangjie compiler')
+
+    os.environ['CC'] = clang_path
+    os.environ['CXX'] = clang_pp_path
+
     parser = argparse.ArgumentParser(description='build Objective-C binding generator or interoplib')
     subparsers = parser.add_subparsers(help='sub command help')
     parser_build = subparsers.add_parser('build', help='build Objective-C binding generator or interoplib')
