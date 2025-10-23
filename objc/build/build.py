@@ -142,7 +142,7 @@ def build(args):
             cjpm_env["SYSROOT_OPTION"] = "--sysroot=" + args.target_sysroot
         # target_toolchain is not used for now
 
-        command("cjpm", "build", "--target-dir=" + INTEROPLIB_OUT, CJPM_CONFIG, env=cjpm_env, cwd=INTEROPLIB_DIR)
+        command("cjpm", "build", "--target-dir=" + INTEROPLIB_OUT, CJPM_CONFIG, cwd=INTEROPLIB_DIR, env=cjpm_env)
 
         LOG.info('end build interoplib for ' + runtime + '\n')
     else:
@@ -169,11 +169,15 @@ def clean(args):
     command("cjpm", "clean", "--target-dir=" + INTEROPLIB_OUT, cwd=INTEROPLIB_DIR)
     LOG.info("end clean interoplib\n")
 
-def get_install_dir(install_path, *relative_path):
-    DEST = os.path.join(install_path, *relative_path)
-    if not os.path.exists(DEST):
-        os.makedirs(DEST)
-    return DEST
+def prepare_dir(base_path, *relative_path):
+    """
+    Insure that the directory specified by the arguments exists (create it if it
+    does not) and return its path.
+    """
+    path = os.path.join(base_path, *relative_path)
+    if not os.path.exists(path):
+        os.makedirs(path)
+    return path
 
 def install_file(install_dir, file):
     if os.path.isfile(file):
@@ -221,18 +225,18 @@ def install(args):
         LOG.info("begin install interoplib for " + runtime + "\n")
 
         install_files(
-            get_install_dir(install_path, "runtime", "lib", runtime),
+            prepare_dir(install_path, "runtime", "lib", runtime),
             OUT_INTEROPLIB_COMMON_DYLIB,
             OUT_INTEROPLIB_OBJC_DYLIB,
             OUT_OBJC_LANG_DYLIB
         )
-        install_files(get_install_dir(install_path, "lib", runtime),
+        install_files(prepare_dir(install_path, "lib", runtime),
             OUT_INTEROPLIB_COMMON_A,
             OUT_INTEROPLIB_OBJC_A,
             OUT_OBJC_LANG_A
         )
         install_files(
-            get_install_dir(install_path, "modules", runtime),
+            prepare_dir(install_path, "modules", runtime),
             OUT_INTEROPLIB_COMMON_CJO,
             OUT_INTEROPLIB_OBJC_CJO,
             OUT_OBJC_LANG_CJO
@@ -242,7 +246,7 @@ def install(args):
     else:
         LOG.info("begin install objc-interop-gen...")
 
-        install_dir = get_install_dir(install_path, "tools", "bin");
+        install_dir = prepare_dir(install_path, "tools", "bin");
         install_file(install_dir, os.path.join(CMAKE_BUILD_DIR, "ObjCInteropGen"))
         if IS_DARWIN:
             INSTALLED_OBJC_INTEROP_GEN = os.path.join(install_dir, "ObjCInteropGen")
