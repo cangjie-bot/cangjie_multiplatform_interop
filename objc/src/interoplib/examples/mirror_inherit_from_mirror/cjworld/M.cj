@@ -6,12 +6,11 @@
 
 package cjworld
 
-import interoplib.objc.*
+import objc.lang.*
 
 @ObjCMirror
 open class M <: M1 {
     @ForeignName["init"]
     public init()
-    @ForeignName["goo"]
     public override func goo(): Int64
 }

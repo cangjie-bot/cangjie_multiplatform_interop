@@ -6,7 +6,7 @@
 
 package cjworld
 
-import interoplib.objc.*
+import objc.lang.*
 
 public class A <: M {
     private var _b: M1
@@ -90,5 +90,5 @@ public func CJImpl_ObjC_cjworld_A_getC(registryId: RegistryId): Bool {
 public func CJImpl_ObjC_cjworld_A_deleteCJObject(registryId: RegistryId): Unit {
     let a = getFromRegistryById<A>(registryId)
     removeFromRegistry(registryId)
-    unsafe { ObjCRuntime.release(a.obj) }
+    unsafe { objCRelease(a.obj) }
 }
