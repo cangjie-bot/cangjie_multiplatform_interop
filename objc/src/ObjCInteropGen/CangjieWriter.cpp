@@ -693,12 +693,27 @@ static bool is_hidden(const TypeDeclarationSymbol& decl, TypeLikeSymbol& type, c
     switch (decl_kind) {
         case NamedTypeSymbol::Kind::Interface:
         case NamedTypeSymbol::Kind::Protocol:
-            // @ObjCMirror class. Only Objective-C compatible types can be used.
+            // @ObjCMirror class/interface.  Only Objective-C compatible types can be used.
             return !is_objc_compatible_parameter_type(type);
         default:
-            // If the declaration is a @C structure, only CType can be used.  Otherwise,
-            // Objective-C compatible types can be used as well.
-            return !type.is_ctype() && (decl.is_ctype() || !is_objc_compatible_parameter_type(type));
+            // This is a structure
+            if (decl.is_ctype()) {
+                // @C structure.  It could not be identified as @C if the type was non-@C.
+                assert(type.is_ctype());
+
+                // This is fully supported by C interoperability, never hide
+                return false;
+            }
+            // Regular (non-@C) @ObjCMirror structures are not supported by the front end
+            // yet, so in the NORMAL mode the @ObjCMirror attribute is commented out.  The
+            // lack of the attribute means no restrictions to types being used.  But!  In
+            // the EXPERIMENTAL mode it is @ObjCMirror, so in the EXPERIMENTAL mode only
+            // Objective-C compatible types and CType are supported.  It is logical to
+            // consider NORMAL as a subset of EXPERIMENTAL, so this restriction goes to
+            // NORMAL as well.
+            //
+            // So, hide all but @C and Objective-C compatible.
+            return !type.is_ctype() && !is_objc_compatible_parameter_type(type);
     }
 }
 
