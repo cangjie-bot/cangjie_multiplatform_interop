@@ -6,7 +6,7 @@
 
 package cjworld
 
-import interoplib.objc.*
+import objc.lang.*
 
 public class A <: M {
     public init(obj: NativeObjCId) {
@@ -18,22 +18,19 @@ public class A <: M {
     }
 
     public func fooBar(): M1 {
-        M1(
-            withAutoreleasePoolObj(
-                {
-                    => unsafe {
-                        let res0 = CFunc<(NativeObjCId, NativeObjCSel) -> Int32>(ObjCRuntime.msgSend)(obj,
-                            registerName("super$goo"))
-                        println("cj: get Int32 res from objc: ${res0}")
-
-                        let res1 = M1(
-                            CFunc<(NativeObjCId, NativeObjCSel) -> NativeObjCId>(ObjCRuntime.msgSend)(obj,
-                                registerName("super$foo")))
-                        println("cj: get object from objc with result: ${res1.fooBar()}")
-
-                        res1.obj
-                    }
-                }))
+        let res0 = withMethodEnv<Int32>(obj), { receiver, objCSuper => unsafe {
+            CFunc<(CPointer<Unit>, NativeObjCSel) -> Int32>(
+                    objCMsgSendSuper(objCSuper, registerName("goo")))(receiver, registerName("goo"))
+        }}
+        println("cj: get Int32 res from objc: ${res0}")
+        let res1 = M1(
+            withMethodEnvObj(obj), { receiver, objCSuper => unsafe {
+                CFunc<(CPointer<Unit>, NativeObjCSel) -> NativeObjCId>(
+                        objCMsgSendSuper(objCSuper, registerName("foo")))(receiver, registerName("foo"))
+            }}
+        )
+        println("cj: get object from objc with result: ${res1.fooBar()}")
+        res1
     }
 }
 
@@ -51,5 +48,5 @@ public func CJImpl_ObjC_cjworld_A_initPu(obj: NativeObjCId): RegistryId {
 public func CJImpl_ObjC_cjworld_A_deleteCJObject(registryId: RegistryId): Unit {
     let a = getFromRegistryById<A>(registryId)
     removeFromRegistry(registryId)
-    unsafe { ObjCRuntime.release(a.obj) }
+    unsafe { objCRelease(a.obj) }
 }

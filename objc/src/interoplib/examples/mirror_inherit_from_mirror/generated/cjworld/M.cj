@@ -6,7 +6,7 @@
 
 package cjworld
 
-import interoplib.objc.*
+import objc.lang.*
 
 open class M <: M1 {
     public init(obj: NativeObjCId) {
@@ -14,17 +14,16 @@ open class M <: M1 {
     }
 
     public init() {
-        this(
-            unsafe {
-                CFunc<(NativeObjCId, NativeObjCSel) -> NativeObjCId>(ObjCRuntime.msgSend)(alloc("M"),
+        this(withAutoreleasePoolObj { => unsafe {
+                CFunc<(NativeObjCId, NativeObjCSel) -> NativeObjCId>(objCMsgSend())(alloc("M"),
                     registerName("init"))
-            })
+            }})
     }
 
     public override func goo(): Int64 {
         withAutoreleasePool<Int64> {
             => unsafe {
-                CFunc<(NativeObjCId, NativeObjCSel) -> Int64>(ObjCRuntime.msgSend)(obj, registerName("goo"))
+                CFunc<(NativeObjCId, NativeObjCSel) -> Int64>(objCMsgSend())(obj, registerName("goo"))
             }
         }
     }
