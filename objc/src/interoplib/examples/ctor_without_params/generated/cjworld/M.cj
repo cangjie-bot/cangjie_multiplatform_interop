@@ -6,7 +6,7 @@
 
 package cjworld
 
-import interoplib.objc.*
+import objc.lang.*
 
 open class M {
     public let obj: NativeObjCId
@@ -16,10 +16,10 @@ open class M {
     }
 
     public init() {
-        this(
-            unsafe {
-                CFunc<(NativeObjCId, NativeObjCSel) -> NativeObjCId>(ObjCRuntime.msgSend)(alloc("M"),
-                    registerName("init"))
-            })
+        this(withAutoreleasePoolObj({
+            => unsafe {
+                CFunc<(NativeObjCId, NativeObjCSel) -> NativeObjCId>(objCMsgSend())(alloc("M"), registerName("init"))
+            }
+        }))
     }
 }

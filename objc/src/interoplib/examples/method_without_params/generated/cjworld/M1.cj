@@ -6,7 +6,7 @@
 
 package cjworld
 
-import interoplib.objc.*
+import objc.lang.*
 
 public class M1 {
     public let obj: NativeObjCId
@@ -16,17 +16,16 @@ public class M1 {
     }
 
     public init() {
-        this(
-            unsafe {
-                CFunc<(NativeObjCId, NativeObjCSel) -> NativeObjCId>(ObjCRuntime.msgSend)(alloc("M1"),
+        this(withAutoreleasePoolObj { => unsafe {
+                CFunc<(NativeObjCId, NativeObjCSel) -> NativeObjCId>(objCMsgSend())(alloc("M1"),
                     registerName("init"))
-            })
+            }})
     }
 
     public func fooBar(): Bool {
         withAutoreleasePool<Bool> {
             => unsafe {
-                CFunc<(NativeObjCId, NativeObjCSel) -> Bool>(ObjCRuntime.msgSend)(obj, registerName("fooBar"))
+                CFunc<(NativeObjCId, NativeObjCSel) -> Bool>(objCMsgSend())(obj, registerName("fooBar"))
             }
         }
     }
@@ -36,7 +35,7 @@ public class M1 {
      */
     ~init() {
         unsafe {
-            ObjCRuntime.release(obj)
+            objCRelease(obj)
         }
     }
 }
