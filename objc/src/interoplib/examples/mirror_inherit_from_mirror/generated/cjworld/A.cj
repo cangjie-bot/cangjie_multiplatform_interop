@@ -6,7 +6,7 @@
 
 package cjworld
 
-import interoplib.objc.*
+import objc.lang.*
 
 public class A <: M {
     public init(obj: NativeObjCId) {
@@ -41,7 +41,7 @@ public func CJImpl_ObjC_cjworld_A_initPu(obj: NativeObjCId): RegistryId {
 public func CJImpl_ObjC_cjworld_A_deleteCJObject(registryId: RegistryId): Unit {
     let a = getFromRegistryById<A>(registryId)
     removeFromRegistry(registryId)
-    unsafe { ObjCRuntime.release(a.obj) }
+    unsafe { objCRelease(a.obj) }
 }
 
 @C

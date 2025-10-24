@@ -6,7 +6,7 @@
 
 package cjworld
 
-import interoplib.objc.*
+import objc.lang.*
 
 public open class M {
     public let obj: NativeObjCId
@@ -14,12 +14,12 @@ public open class M {
     public mut prop foo: Int64 {
         get() {
             unsafe {
-                CFunc<(NativeObjCId, NativeObjCSel) -> Int64>(ObjCRuntime.msgSend)(obj, registerName("foo"))
+                CFunc<(NativeObjCId, NativeObjCSel) -> Int64>(objCMsgSend())(obj, registerName("foo"))
             }
         }
         set(value) {
             unsafe {
-                CFunc<(NativeObjCId, NativeObjCSel, Int64) -> Unit>(ObjCRuntime.msgSend)(obj, registerName("setFoo:"),
+                CFunc<(NativeObjCId, NativeObjCSel, Int64) -> Unit>(objCMsgSend())(obj, registerName("setFoo:"),
                     value)
             }
         }
@@ -30,7 +30,7 @@ public open class M {
             M1(
                 withAutoreleasePoolObj {
                     => unsafe {
-                        CFunc<(NativeObjCId, NativeObjCSel) -> NativeObjCId>(ObjCRuntime.msgSend)(obj,
+                        CFunc<(NativeObjCId, NativeObjCSel) -> NativeObjCId>(objCMsgSend())(obj,
                             registerName("bar"))
                     }
                 })
@@ -38,7 +38,7 @@ public open class M {
         set(value) {
             withAutoreleasePool<Unit> {
                 => unsafe {
-                    CFunc<(NativeObjCId, NativeObjCSel, NativeObjCId) -> Unit>(ObjCRuntime.msgSend)(obj,
+                    CFunc<(NativeObjCId, NativeObjCSel, NativeObjCId) -> Unit>(objCMsgSend())(obj,
                         registerName("setBar:"), value.obj)
                 }
             }
@@ -50,10 +50,9 @@ public open class M {
     }
 
     public init() {
-        this(
-            unsafe {
-                CFunc<(NativeObjCId, NativeObjCSel) -> NativeObjCId>(ObjCRuntime.msgSend)(alloc("M"),
+        this(withAutoreleasePoolObj { => unsafe {
+                CFunc<(NativeObjCId, NativeObjCSel) -> NativeObjCId>(objCMsgSend())(alloc("M"),
                     registerName("init"))
-            })
+            }})
     }
 }
