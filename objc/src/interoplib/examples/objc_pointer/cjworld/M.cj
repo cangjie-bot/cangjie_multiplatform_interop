@@ -6,8 +6,6 @@
 
 package cjworld
 
-import interoplib.common.*
-import interoplib.objc.*
 import objc.lang.*
 
 @ObjCMirror

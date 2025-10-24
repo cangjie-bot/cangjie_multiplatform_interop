@@ -6,7 +6,7 @@
 
 package cjworld
 
-import interoplib.objc.*
+import objc.lang.*
 
 class M1 {
     public let obj: NativeObjCId
@@ -22,11 +22,12 @@ class M1 {
     }
 
     public init(answer: Float64) {
-        this(
-            unsafe {
-                CFunc<(NativeObjCId, NativeObjCSel, Float64) -> NativeObjCId>(ObjCRuntime.msgSend)(alloc("M1"),
+        
+        this(withAutoreleasePoolObj({
+            => unsafe {
+                CFunc<(NativeObjCId, NativeObjCSel, Float64) -> NativeObjCId>(objCMsgSend())(alloc("M1"),
                     registerName("initWithAnswer:"), answer)
-            })
+            }}))
     }
 
     /**
@@ -34,7 +35,7 @@ class M1 {
      */
     ~init() {
         unsafe {
-            ObjCRuntime.release(obj)
+            objCRelease(obj)
         }
     }
 }
