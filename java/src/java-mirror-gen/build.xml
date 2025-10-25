@@ -154,6 +154,7 @@
         <mkdir dir="${tests.bin}/${cj.mirror.gen}_static_method"/>
         <mkdir dir="${tests.bin}/${cj.mirror.gen}_static_covariant"/>
         <mkdir dir="${tests.bin}/${cj.mirror.gen}_fields"/>
+        <mkdir dir="${tests.bin}/${cj.mirror.gen}_default_method"/>
 
         <javac srcdir="${cj.mirror.src}_simple" destdir="${tests.bin}/${cj.mirror.gen}_simple" includeantruntime="false"/>
         <echo file="javac.args"
@@ -282,6 +283,17 @@
         </javac>
         <echo file="javac.args"
               message="-d ${tests.bin}/${cj.mirror.gen}_fields -cp ${tests.bin}/${cj.mirror.gen}_fields A"/>
+        <j2cj.javac>
+            <jvmarg value="-Dgenerate.definition=false"/>
+            <arg line="@javac.args"/>
+        </j2cj.javac>
+
+        <javac srcdir="${cj.mirror.src}_default_method" destdir="${tests.bin}/${cj.mirror.gen}_default_method"
+               includeantruntime="false">
+            <compilerarg value="-parameters"/>
+        </javac>
+        <echo file="javac.args"
+              message="-d ${tests.bin}/${cj.mirror.gen}_default_method -cp ${tests.bin}/${cj.mirror.gen}_default_method I2"/>
         <j2cj.javac>
             <jvmarg value="-Dgenerate.definition=false"/>
             <arg line="@javac.args"/>
