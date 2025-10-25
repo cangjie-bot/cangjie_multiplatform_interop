@@ -229,9 +229,11 @@ public final class VisitorUtils {
     }
 
     public static Symbol.TypeSymbol erasureType(Type type, Types types) {
-        return type instanceof Type.ArrayType arrayType
-                ? types.erasure(arrayType.elemtype).tsym
-                : types.erasure(type).tsym;
+        var result = type;
+        while (result instanceof Type.ArrayType arrayType) {
+            result = arrayType.elemtype;
+        }
+        return types.erasure(result).tsym;
     }
 
     public static CJTree.Expression createJavaMirrorAnnotation() {
@@ -249,6 +251,11 @@ public final class VisitorUtils {
         final var argument = new CJTree.Expression.Literal.String(originalName.toString());
         annotation.argumentList.add(argument);
         return annotation;
+    }
+
+    public static CJTree.Declaration.Annotation defaultMethodAnnotationGen() {
+        final var defaultMethodAnnotation = new CJTree.Expression.Name.SimpleName.IdentifierName("JavaHasDefault");
+        return new CJTree.Declaration.Annotation(defaultMethodAnnotation);
     }
 
     public static Name formTypeName(Symbol.TypeSymbol type) {
