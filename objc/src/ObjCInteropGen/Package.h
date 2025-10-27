@@ -176,7 +176,7 @@ public:
 
     Package& operator=(Package&& other) noexcept = delete;
 
-    [[nodiscard]] std::string_view cangjie_name() const
+    [[nodiscard]] const auto& cangjie_name() const noexcept
     {
         return cangjie_name_;
     }

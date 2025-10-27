@@ -2,12 +2,13 @@
 
 package objc.foundation
 
+import objc.lang.ObjCPointer
 import interoplib.objc.*
 
 @ObjCMirror
 public struct NSFastEnumerationState {
     public var state: UInt64 = 0
-    public var itemsPtr: ObjCPointer<id> = ObjCPointer<id>()
+    public var itemsPtr: ObjCPointer<id> = ObjCPointer<id>(CPointer<Unit>())
     public var mutationsPtr: CPointer<UInt64> = CPointer<UInt64>()
     public var extra: VArray<UInt64, $5> = [0, 0, 0, 0, 0]
 }

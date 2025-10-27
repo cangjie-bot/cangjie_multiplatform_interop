@@ -10,6 +10,7 @@
 
 #include "InputFile.h"
 #include "Mappings.h"
+#include "Mode.h"
 #include "Package.h"
 #include "Universe.h"
 
@@ -230,6 +231,10 @@ NamedTypeSymbol* NamedTypeSymbol::construct(const std::vector<TypeLikeSymbol*>& 
             auto* original_type = dynamic_cast<TypeDeclarationSymbol*>(original);
             assert(original_type);
             auto* result = new ConstructedTypeSymbol(original_type);
+            const auto& cangjie_package_name = original_type->cangjie_package_name();
+            if (!cangjie_package_name.empty()) {
+                result->set_cangjie_package_name(cangjie_package_name);
+            }
             for (auto* argument : arguments) {
                 result->add_parameter(argument);
             }
@@ -369,27 +374,49 @@ void TypeDeclarationSymbol::add_base(TypeLikeSymbol* base)
     bases_.push_back(base);
 }
 
+const std::string& FileLevelSymbol::cangjie_package_name() const
+{
+    if (!cangjie_package_name_.empty()) {
+        assert(!output_file_);
+        return cangjie_package_name_;
+    }
+    if (!output_file_) {
+        return cangjie_package_name_;
+    }
+    auto* package = output_file_->package();
+    assert(package);
+    return package->cangjie_name();
+}
+
 Package* FileLevelSymbol::package() const
 {
     const auto* file = package_file();
     return file ? file->package() : nullptr;
 }
 
-void FileLevelSymbol::set_definition_location(InputFile* defining_file, const LineCol& location)
+void FileLevelSymbol::set_definition_location(const Location& location)
 {
     assert(!input_file_);
-    assert(defining_file);
-    input_file_ = defining_file;
+    input_file_ = &inputs[location.file_];
     location_ = location;
-    defining_file->add_symbol(this);
+    input_file_->add_symbol(this);
 }
 
 void FileLevelSymbol::set_package_file(PackageFile* package_file)
 {
+    assert(cangjie_package_name_.empty());
     assert(!output_file_);
     assert(package_file);
     assert(this->is_file_level());
     output_file_ = package_file;
+}
+
+void FileLevelSymbol::set_cangjie_package_name(std::string cangjie_package_name) noexcept
+{
+    assert(cangjie_package_name_.empty());
+    assert(!output_file_);
+    assert(!cangjie_package_name.empty());
+    cangjie_package_name_ = std::move(cangjie_package_name);
 }
 
 void FileLevelSymbol::add_reference(FileLevelSymbol* symbol)
@@ -683,7 +710,17 @@ void add_builtin_types()
     add_cangjie_primitive("CPointer").add_parameter("T");
     add_cangjie_primitive("CFunc").add_parameter("T");
 
-    add_cangjie_struct("ObjCPointer").add_parameter("T");
+    auto& objc_pointer = add_cangjie_struct("ObjCPointer");
+    objc_pointer.add_parameter("T");
+
+    // In the GENERATE_DEFINITIONS mode we can only use our own fake implementation
+    // of ObjCPointer, not the one from objc.lang.  Because in this mode we do not
+    // mark classes as @ObjCMirror, and FE forbids using ObjCPointer with
+    // non-@ObjCMirror classes.
+    if (!generate_definitions_mode()) {
+        objc_pointer.set_cangjie_package_name("objc.lang");
+    }
+
     add_cangjie_struct("ObjCFunc").add_parameter("T");
     add_cangjie_struct("ObjCBlock").add_parameter("T");
     add_cangjie_class("Class" /* "ObjCClass" */);
