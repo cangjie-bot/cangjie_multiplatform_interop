@@ -113,12 +113,12 @@ public open class NSString <: NSObject & NSCopying & NSMutableCopying & NSSecure
     @ForeignName["stringByApplyingTransform:reverse:"] public open func stringByApplyingTransformReverse(transform: NSStringTransform, reverse: Bool): ?NSString
     @ForeignName["writeToURL:atomically:encoding:error:"] public open func writeToURLAtomicallyEncodingError(url: NSURL, useAuxiliaryFile: Bool, enc: NSStringEncoding, error: ObjCPointer<NSError>): Bool
     @ForeignName["writeToFile:atomically:encoding:error:"] public open func writeToFileAtomicallyEncodingError(path: NSString, useAuxiliaryFile: Bool, enc: NSStringEncoding, error: ObjCPointer<NSError>): Bool
-    // @ForeignName["initWithCharactersNoCopy:length:freeWhenDone:"] public init(characters: CPointer<unichar>, length: NSUInteger, freeBuffer: Bool)
+    @ObjCInit @ForeignName["initWithCharactersNoCopy:length:freeWhenDone:"] public static func initWithCharactersNoCopyLengthFreeWhenDone(characters: CPointer<unichar>, length: NSUInteger, freeBuffer: Bool): NSString
     @ForeignName["initWithCharactersNoCopy:length:deallocator:"] public init(chars: CPointer<unichar>, len: NSUInteger, deallocator: ObjCBlock<(CPointer<unichar>, NSUInteger) -> Unit>)
-    // @ForeignName["initWithCharacters:length:"] public init(characters: CPointer<unichar>, length: NSUInteger)
-    // @ForeignName["initWithUTF8String:"] public init(nullTerminatedCString: CPointer<Int8>)
-    // @ForeignName["initWithString:"] public init(aString: NSString)
-    // @ForeignName["initWithFormat:"] public init(format: NSString)
+    @ObjCInit @ForeignName["initWithCharacters:length:"] public static func initWithCharactersLength(characters: CPointer<unichar>, length: NSUInteger): NSString
+    @ObjCInit @ForeignName["initWithUTF8String:"] public static func initWithUTF8String(nullTerminatedCString: CPointer<Int8>): NSString
+    @ObjCInit @ForeignName["initWithString:"] public static func initWithString(aString: NSString): NSString
+    @ObjCInit @ForeignName["initWithFormat:"] public static func initWithFormat(format: NSString): NSString
     @ForeignName["initWithFormat:arguments:"] public init(format: NSString, argList: va_list)
     @ForeignName["initWithFormat:locale:"] public init(format: NSString, locale: id)
     @ForeignName["initWithFormat:locale:arguments:"] public init(format: NSString, locale: id, argList: va_list)
@@ -159,13 +159,13 @@ public open class NSString <: NSObject & NSCopying & NSMutableCopying & NSSecure
     @ForeignName["getCString:maxLength:range:remainingRange:"] public open func getCStringMaxLengthRangeRemainingRange(bytes: CPointer<Int8>, maxLength: NSUInteger, aRange: NSRange, leftoverRange: NSRangePointer): Unit
     @ForeignName["writeToFile:atomically:"] public open func writeToFileAtomically(path: NSString, useAuxiliaryFile: Bool): Bool
     @ForeignName["writeToURL:atomically:"] public open func writeToURLAtomically(url: NSURL, atomically: Bool): Bool
-    // @ForeignName["initWithContentsOfFile:"] public init(path: NSString)
+    @ObjCInit @ForeignName["initWithContentsOfFile:"] public static func initWithContentsOfFile(path: NSString): id
     @ForeignName["initWithContentsOfURL:"] public init(url: NSURL)
     @ForeignName["stringWithContentsOfFile:"] public static func stringWithContentsOfFile(path: NSString): id
     @ForeignName["stringWithContentsOfURL:"] public static func stringWithContentsOfURL(url: NSURL): id
-    // @ForeignName["initWithCStringNoCopy:length:freeWhenDone:"] public init(bytes: CPointer<Int8>, length: NSUInteger, freeBuffer: Bool)
-    // @ForeignName["initWithCString:length:"] public init(bytes: CPointer<Int8>, length: NSUInteger)
-    // @ForeignName["initWithCString:"] public init(bytes: CPointer<Int8>)
+    @ObjCInit @ForeignName["initWithCStringNoCopy:length:freeWhenDone:"] public static func initWithCStringNoCopyLengthFreeWhenDone(bytes: CPointer<Int8>, length: NSUInteger, freeBuffer: Bool): id
+    @ObjCInit @ForeignName["initWithCString:length:"] public static func initWithCStringLength(bytes: CPointer<Int8>, length: NSUInteger): id
+    @ObjCInit @ForeignName["initWithCString:"] public static func initWithCString(bytes: CPointer<Int8>): id
     @ForeignName["stringWithCString:length:"] public static func stringWithCStringLength(bytes: CPointer<Int8>, length: NSUInteger): id
     @ForeignName["stringWithCString:"] public static func stringWithCString(bytes: CPointer<Int8>): id
     @ForeignName["getCharacters:"] public open func getCharacters(buffer: CPointer<unichar>): Unit
