@@ -8,6 +8,7 @@ set -e
 
 # Add example directory here, supported examples must contain origin-cangjie folder
 EXAMPLES=(
+    cjmapping_interface
     cjmapping_nonopen
     cjmapping_struct
 )
