@@ -19,9 +19,9 @@ public abstract sealed class NSFileWrapperWritingOptions {
 public open class NSFileWrapper <: NSObject & NSSecureCoding {
     @ForeignName["initWithURL:options:error:"] public init(url: NSURL, options: Int32 /*NSFileWrapperReadingOptions*/, outError: ObjCPointer<NSError>)
     @ForeignName["initDirectoryWithFileWrappers:"] public init(childrenByPreferredName: NSDictionary/*<NSString, NSFileWrapper>*/)
-    // @ForeignName["initRegularFileWithContents:"] public init(contents: NSData)
+    @ObjCInit @ForeignName["initRegularFileWithContents:"] public static func initRegularFileWithContents(contents: NSData): NSFileWrapper
     @ForeignName["initSymbolicLinkWithDestinationURL:"] public init(url: NSURL)
-    // @ForeignName["initWithSerializedRepresentation:"] public init(serializeRepresentation: NSData)
+    @ObjCInit @ForeignName["initWithSerializedRepresentation:"] public static func initWithSerializedRepresentation(serializeRepresentation: NSData): NSFileWrapper
     @ForeignName["initWithCoder:"] public init(inCoder: NSCoder)
     public open prop isDirectory: Bool
     public open prop isRegularFile: Bool

@@ -10,7 +10,7 @@ public type NSTimeInterval = Float64
 public open class NSDate <: NSObject & NSCopying & NSSecureCoding {
     public open prop timeIntervalSinceReferenceDate: NSTimeInterval
     public init()
-    // @ForeignName["initWithTimeIntervalSinceReferenceDate:"] public init(ti: NSTimeInterval)
+    @ObjCInit @ForeignName["initWithTimeIntervalSinceReferenceDate:"] public static func initWithTimeIntervalSinceReferenceDate(ti: NSTimeInterval): NSDate
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
     @ForeignName["timeIntervalSinceDate:"] public open func timeIntervalSinceDate(anotherDate: NSDate): NSTimeInterval
     public open prop timeIntervalSinceNow: NSTimeInterval
@@ -31,8 +31,8 @@ public open class NSDate <: NSObject & NSCopying & NSSecureCoding {
     public static prop distantFuture: NSDate
     public static prop distantPast: NSDate
     public static prop now: NSDate
-    // @ForeignName["initWithTimeIntervalSinceNow:"] public init(secs: NSTimeInterval)
-    // @ForeignName["initWithTimeIntervalSince1970:"] public init(secs: NSTimeInterval)
+    @ObjCInit @ForeignName["initWithTimeIntervalSinceNow:"] public static func initWithTimeIntervalSinceNow(secs: NSTimeInterval): NSDate
+    @ObjCInit @ForeignName["initWithTimeIntervalSince1970:"] public static func initWithTimeIntervalSince1970(secs: NSTimeInterval): NSDate
     @ForeignName["initWithTimeInterval:sinceDate:"] public init(secsToBeAdded: NSTimeInterval, date: NSDate)
 }
 

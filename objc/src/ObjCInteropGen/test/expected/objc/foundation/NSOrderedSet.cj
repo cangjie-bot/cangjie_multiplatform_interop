@@ -53,8 +53,8 @@ public open class NSOrderedSet/*<ObjectType>*/ <: NSObject & NSCopying & NSMutab
     @ForeignName["orderedSetWithArray:range:copyItems:"] public static func orderedSetWithArrayRangeCopyItems(array: NSArray/*<ObjectType>*/, range: NSRange, flag: Bool): NSOrderedSet/*<ObjectType>*/
     @ForeignName["orderedSetWithSet:"] public static func orderedSetWithSet(set: NSSet/*<ObjectType>*/): NSOrderedSet/*<ObjectType>*/
     @ForeignName["orderedSetWithSet:copyItems:"] public static func orderedSetWithSetCopyItems(set: NSSet/*<ObjectType>*/, flag: Bool): NSOrderedSet/*<ObjectType>*/
-    // @ForeignName["initWithObject:"] public init(object: id /*ObjectType*/)
-    // @ForeignName["initWithObjects:"] public init(firstObj: id /*ObjectType*/)
+    @ObjCInit @ForeignName["initWithObject:"] public static func initWithObject(object: id /*ObjectType*/): NSOrderedSet/*<ObjectType>*/
+    @ObjCInit @ForeignName["initWithObjects:"] public static func initWithObjects(firstObj: id /*ObjectType*/): NSOrderedSet/*<ObjectType>*/
     @ForeignName["initWithOrderedSet:"] public init(set: NSOrderedSet/*<ObjectType>*/)
     @ForeignName["initWithOrderedSet:copyItems:"] public init(set: NSOrderedSet/*<ObjectType>*/, flag: Bool)
     @ForeignName["initWithOrderedSet:range:copyItems:"] public init(set: NSOrderedSet/*<ObjectType>*/, range: NSRange, flag: Bool)

@@ -15,24 +15,24 @@ public open class NSURL <: NSObject & NSSecureCoding & NSCopying {
     protected var _reserved: CPointer<Unit>
     @ForeignName["initWithScheme:host:path:"] public init(scheme: NSString, host: ?NSString, path: NSString)
     @ForeignName["initFileURLWithPath:isDirectory:relativeToURL:"] public init(path: NSString, isDir: Bool, baseURL: ?NSURL)
-    // @ForeignName["initFileURLWithPath:relativeToURL:"] public init(path: NSString, baseURL: ?NSURL)
-    // @ForeignName["initFileURLWithPath:isDirectory:"] public init(path: NSString, isDir: Bool)
-    // @ForeignName["initFileURLWithPath:"] public init(path: NSString)
+    @ObjCInit @ForeignName["initFileURLWithPath:relativeToURL:"] public static func initFileURLWithPathRelativeToURL(path: NSString, baseURL: ?NSURL): NSURL
+    @ObjCInit @ForeignName["initFileURLWithPath:isDirectory:"] public static func initFileURLWithPathIsDirectory(path: NSString, isDir: Bool): NSURL
+    @ObjCInit @ForeignName["initFileURLWithPath:"] public static func initFileURLWithPath(path: NSString): NSURL
     @ForeignName["fileURLWithPath:isDirectory:relativeToURL:"] public static func fileURLWithPathIsDirectoryRelativeToURL(path: NSString, isDir: Bool, baseURL: ?NSURL): NSURL
     @ForeignName["fileURLWithPath:relativeToURL:"] public static func fileURLWithPathRelativeToURL(path: NSString, baseURL: ?NSURL): NSURL
     @ForeignName["fileURLWithPath:isDirectory:"] public static func fileURLWithPathIsDirectory(path: NSString, isDir: Bool): NSURL
     @ForeignName["fileURLWithPath:"] public static func fileURLWithPath(path: NSString): NSURL
     @ForeignName["initFileURLWithFileSystemRepresentation:isDirectory:relativeToURL:"] public init(path: CPointer<Int8>, isDir: Bool, baseURL: ?NSURL)
     @ForeignName["fileURLWithFileSystemRepresentation:isDirectory:relativeToURL:"] public static func fileURLWithFileSystemRepresentationIsDirectoryRelativeToURL(path: CPointer<Int8>, isDir: Bool, baseURL: ?NSURL): NSURL
-    // @ForeignName["initWithString:"] public init(URLString: NSString)
-    // @ForeignName["initWithString:relativeToURL:"] public init(URLString: NSString, baseURL: ?NSURL)
+    @ObjCInit @ForeignName["initWithString:"] public static func initWithString(URLString: NSString): NSURL
+    @ObjCInit @ForeignName["initWithString:relativeToURL:"] public static func initWithStringRelativeToURL(URLString: NSString, baseURL: ?NSURL): NSURL
     @ForeignName["URLWithString:"] public static func URLWithString(URLString: NSString): NSURL
     @ForeignName["URLWithString:relativeToURL:"] public static func URLWithStringRelativeToURL(URLString: NSString, baseURL: ?NSURL): NSURL
-    // @ForeignName["initWithString:encodingInvalidCharacters:"] public init(URLString: NSString, encodingInvalidCharacters: Bool)
+    @ObjCInit @ForeignName["initWithString:encodingInvalidCharacters:"] public static func initWithStringEncodingInvalidCharacters(URLString: NSString, encodingInvalidCharacters: Bool): NSURL
     @ForeignName["URLWithString:encodingInvalidCharacters:"] public static func URLWithStringEncodingInvalidCharacters(URLString: NSString, encodingInvalidCharacters: Bool): NSURL
-    // @ForeignName["initWithDataRepresentation:relativeToURL:"] public init(data: NSData, baseURL: ?NSURL)
+    @ObjCInit @ForeignName["initWithDataRepresentation:relativeToURL:"] public static func initWithDataRepresentationRelativeToURL(data: NSData, baseURL: ?NSURL): NSURL
     @ForeignName["URLWithDataRepresentation:relativeToURL:"] public static func URLWithDataRepresentationRelativeToURL(data: NSData, baseURL: ?NSURL): NSURL
-    // @ForeignName["initAbsoluteURLWithDataRepresentation:relativeToURL:"] public init(data: NSData, baseURL: ?NSURL)
+    @ObjCInit @ForeignName["initAbsoluteURLWithDataRepresentation:relativeToURL:"] public static func initAbsoluteURLWithDataRepresentationRelativeToURL(data: NSData, baseURL: ?NSURL): NSURL
     @ForeignName["absoluteURLWithDataRepresentation:relativeToURL:"] public static func absoluteURLWithDataRepresentationRelativeToURL(data: NSData, baseURL: ?NSURL): NSURL
     public open prop dataRepresentation: NSData
     public open prop absoluteString: ?NSString
