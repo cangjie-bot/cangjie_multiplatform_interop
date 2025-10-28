@@ -2,8 +2,8 @@
 
 package objc.foundation
 
-import objc.lang.ObjCPointer
 import interoplib.objc.*
+import objc.lang.*
 
 public abstract sealed class NSDataReadingOptions {
     public static const NSDataReadingMappedIfSafe: NSUInteger = 1
@@ -75,15 +75,15 @@ public open class NSData <: NSObject & NSCopying & NSMutableCopying & NSSecureCo
     @ForeignName["initWithData:"] public init(data: NSData)
     @ForeignName["dataWithData:"] public static func dataWithData(data: NSData): NSData
     @ForeignName["initWithBase64EncodedString:options:"] public init(base64String: NSString, options: Int32 /*NSDataBase64DecodingOptions*/)
-    @ForeignName["base64EncodedStringWithOptions:"] public open func base64EncodedStringWithOptions(options: Int32 /*NSDataBase64EncodingOptions*/): NSString 
+    @ForeignName["base64EncodedStringWithOptions:"] public open func base64EncodedStringWithOptions(options: Int32 /*NSDataBase64EncodingOptions*/): NSString
     @ForeignName["initWithBase64EncodedData:options:"] public init(base64Data: NSData, options: Int32 /*NSDataBase64DecodingOptions*/)
     @ForeignName["base64EncodedDataWithOptions:"] public open func base64EncodedDataWithOptions(options: Int32 /*NSDataBase64EncodingOptions*/): NSData
     @ForeignName["decompressedDataUsingAlgorithm:error:"] public open func decompressedDataUsingAlgorithmError(algorithm: Int32 /*NSDataCompressionAlgorithm*/, error: ObjCPointer<NSError>): NSData
     @ForeignName["compressedDataUsingAlgorithm:error:"] public open func compressedDataUsingAlgorithmError(algorithm: Int32 /*NSDataCompressionAlgorithm*/, error: ObjCPointer<NSError>): NSData
     @ForeignName["getBytes:"] public open func getBytes(buffer: CPointer<Unit>): Unit
-    @ForeignName["dataWithContentsOfMappedFile:"] public static func dataWithContentsOfMappedFile(path: NSString): id
-    @ObjCInit @ForeignName["initWithContentsOfMappedFile:"] public static func initWithContentsOfMappedFile(path: NSString): id
-    @ObjCInit @ForeignName["initWithBase64Encoding:"] public static func initWithBase64Encoding(base64String: NSString): id
+    @ForeignName["dataWithContentsOfMappedFile:"] public static func dataWithContentsOfMappedFile(path: NSString): ObjCId
+    @ObjCInit @ForeignName["initWithContentsOfMappedFile:"] public static func initWithContentsOfMappedFile(path: NSString): ObjCId
+    @ObjCInit @ForeignName["initWithBase64Encoding:"] public static func initWithBase64Encoding(base64String: NSString): ObjCId
     public open func base64Encoding(): NSString
 }
 

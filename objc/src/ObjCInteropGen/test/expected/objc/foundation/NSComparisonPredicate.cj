@@ -3,6 +3,7 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 public abstract sealed class NSComparisonPredicateOptions {
     public static const NSCaseInsensitivePredicateOption: NSUInteger = 1

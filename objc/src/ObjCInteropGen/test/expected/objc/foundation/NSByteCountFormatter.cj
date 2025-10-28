@@ -3,6 +3,7 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 public abstract sealed class NSByteCountFormatterUnits {
     public static const NSByteCountFormatterUseDefault: NSUInteger = 0

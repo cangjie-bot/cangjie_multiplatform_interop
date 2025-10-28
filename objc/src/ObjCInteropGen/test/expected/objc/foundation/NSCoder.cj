@@ -2,8 +2,8 @@
 
 package objc.foundation
 
-import objc.lang.ObjCPointer
 import interoplib.objc.*
+import objc.lang.*
 
 public abstract sealed class NSDecodingFailurePolicy {
     public static const NSDecodingFailurePolicyRaiseException: NSInteger = 0

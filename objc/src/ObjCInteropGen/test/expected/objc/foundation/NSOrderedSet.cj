@@ -2,59 +2,59 @@
 
 package objc.foundation
 
-import objc.lang.ObjCPointer
 import interoplib.objc.*
+import objc.lang.*
 
 @ObjCMirror
 public open class NSOrderedSet/*<ObjectType>*/ <: NSObject & NSCopying & NSMutableCopying & NSSecureCoding & NSFastEnumeration {
     public open prop count: NSUInteger
-    @ForeignName["objectAtIndex:"] public open func objectAtIndex(idx: NSUInteger): id /*ObjectType*/
-    @ForeignName["indexOfObject:"] public open func indexOfObject(object: id /*ObjectType*/): NSUInteger
+    @ForeignName["objectAtIndex:"] public open func objectAtIndex(idx: NSUInteger): ObjCId /*ObjectType*/
+    @ForeignName["indexOfObject:"] public open func indexOfObject(object: ObjCId /*ObjectType*/): NSUInteger
     public init()
-    @ForeignName["initWithObjects:count:"] public init(objects: ObjCPointer<id /*ObjectType*/>, cnt: NSUInteger)
+    @ForeignName["initWithObjects:count:"] public init(objects: ObjCPointer<ObjCId /*ObjectType*/>, cnt: NSUInteger)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
-    @ForeignName["getObjects:range:"] public open func getObjectsRange(objects: ObjCPointer<id /*ObjectType*/>, range: NSRange): Unit
+    @ForeignName["getObjects:range:"] public open func getObjectsRange(objects: ObjCPointer<ObjCId /*ObjectType*/>, range: NSRange): Unit
     @ForeignName["objectsAtIndexes:"] public open func objectsAtIndexes(indexes: NSIndexSet): NSArray/*<ObjectType>*/
-    public open prop firstObject: id /*ObjectType*/ 
-    public open prop lastObject: id /*ObjectType*/
+    public open prop firstObject: ObjCId /*ObjectType*/
+    public open prop lastObject: ObjCId /*ObjectType*/
     @ForeignName["isEqualToOrderedSet:"] public open func isEqualToOrderedSet(other: NSOrderedSet/*<ObjectType>*/): Bool
-    @ForeignName["containsObject:"] public open func containsObject(object: id /*ObjectType*/): Bool
+    @ForeignName["containsObject:"] public open func containsObject(object: ObjCId /*ObjectType*/): Bool
     @ForeignName["intersectsOrderedSet:"] public open func intersectsOrderedSet(other: NSOrderedSet/*<ObjectType>*/): Bool
     @ForeignName["intersectsSet:"] public open func intersectsSet(set: NSSet/*<ObjectType>*/): Bool
     @ForeignName["isSubsetOfOrderedSet:"] public open func isSubsetOfOrderedSet(other: NSOrderedSet/*<ObjectType>*/): Bool
     @ForeignName["isSubsetOfSet:"] public open func isSubsetOfSet(set: NSSet/*<ObjectType>*/): Bool
-    @ForeignName["objectAtIndexedSubscript:"] public open func objectAtIndexedSubscript(idx: NSUInteger): id /*ObjectType*/
+    @ForeignName["objectAtIndexedSubscript:"] public open func objectAtIndexedSubscript(idx: NSUInteger): ObjCId /*ObjectType*/
     public open func objectEnumerator(): NSEnumerator/*<ObjectType>*/
     public open func reverseObjectEnumerator(): NSEnumerator/*<ObjectType>*/
     public open prop reversedOrderedSet: NSOrderedSet/*<ObjectType>*/
     public open prop array: NSArray/*<ObjectType>*/
     public open prop set: NSSet/*<ObjectType>*/
-    @ForeignName["enumerateObjectsUsingBlock:"] public open func enumerateObjectsUsingBlock(block: ObjCBlock<(id /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Unit>): Unit
-    @ForeignName["enumerateObjectsWithOptions:usingBlock:"] public open func enumerateObjectsWithOptionsUsingBlock(opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(id /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Unit>): Unit
-    @ForeignName["enumerateObjectsAtIndexes:options:usingBlock:"] public open func enumerateObjectsAtIndexesOptionsUsingBlock(s: NSIndexSet, opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(id /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Unit>): Unit
-    @ForeignName["indexOfObjectPassingTest:"] public open func indexOfObjectPassingTest(predicate: ObjCBlock<(id /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Bool>): NSUInteger
-    @ForeignName["indexOfObjectWithOptions:passingTest:"] public open func indexOfObjectWithOptionsPassingTest(opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(id /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Bool>): NSUInteger
-    @ForeignName["indexOfObjectAtIndexes:options:passingTest:"] public open func indexOfObjectAtIndexesOptionsPassingTest(s: NSIndexSet, opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(id /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Bool>): NSUInteger
-    @ForeignName["indexesOfObjectsPassingTest:"] public open func indexesOfObjectsPassingTest(predicate: ObjCBlock<(id /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Bool>): NSIndexSet
-    @ForeignName["indexesOfObjectsWithOptions:passingTest:"] public open func indexesOfObjectsWithOptionsPassingTest(opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(id /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Bool>): NSIndexSet
-    @ForeignName["indexesOfObjectsAtIndexes:options:passingTest:"] public open func indexesOfObjectsAtIndexesOptionsPassingTest(s: NSIndexSet, opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(id /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Bool>): NSIndexSet
-    @ForeignName["indexOfObject:inSortedRange:options:usingComparator:"] public open func indexOfObjectInSortedRangeOptionsUsingComparator(object: id /*ObjectType*/, range: NSRange, opts: Int32 /*NSBinarySearchingOptions*/, cmp: NSComparator): NSUInteger
+    @ForeignName["enumerateObjectsUsingBlock:"] public open func enumerateObjectsUsingBlock(block: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Unit>): Unit
+    @ForeignName["enumerateObjectsWithOptions:usingBlock:"] public open func enumerateObjectsWithOptionsUsingBlock(opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Unit>): Unit
+    @ForeignName["enumerateObjectsAtIndexes:options:usingBlock:"] public open func enumerateObjectsAtIndexesOptionsUsingBlock(s: NSIndexSet, opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Unit>): Unit
+    @ForeignName["indexOfObjectPassingTest:"] public open func indexOfObjectPassingTest(predicate: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Bool>): NSUInteger
+    @ForeignName["indexOfObjectWithOptions:passingTest:"] public open func indexOfObjectWithOptionsPassingTest(opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Bool>): NSUInteger
+    @ForeignName["indexOfObjectAtIndexes:options:passingTest:"] public open func indexOfObjectAtIndexesOptionsPassingTest(s: NSIndexSet, opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Bool>): NSUInteger
+    @ForeignName["indexesOfObjectsPassingTest:"] public open func indexesOfObjectsPassingTest(predicate: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Bool>): NSIndexSet
+    @ForeignName["indexesOfObjectsWithOptions:passingTest:"] public open func indexesOfObjectsWithOptionsPassingTest(opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Bool>): NSIndexSet
+    @ForeignName["indexesOfObjectsAtIndexes:options:passingTest:"] public open func indexesOfObjectsAtIndexesOptionsPassingTest(s: NSIndexSet, opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Bool>): NSIndexSet
+    @ForeignName["indexOfObject:inSortedRange:options:usingComparator:"] public open func indexOfObjectInSortedRangeOptionsUsingComparator(object: ObjCId /*ObjectType*/, range: NSRange, opts: Int32 /*NSBinarySearchingOptions*/, cmp: NSComparator): NSUInteger
     @ForeignName["sortedArrayUsingComparator:"] public open func sortedArrayUsingComparator(cmptr: NSComparator): NSArray/*<ObjectType>*/
     @ForeignName["sortedArrayWithOptions:usingComparator:"] public open func sortedArrayWithOptionsUsingComparator(opts: Int32 /*NSSortOptions*/, cmptr: NSComparator): NSArray/*<ObjectType>*/
-    @ForeignName["descriptionWithLocale:"] public open func descriptionWithLocale(locale: id): NSString
-    @ForeignName["descriptionWithLocale:indent:"] public open func descriptionWithLocaleIndent(locale: id, level: NSUInteger): NSString
+    @ForeignName["descriptionWithLocale:"] public open func descriptionWithLocale(locale: ObjCId): NSString
+    @ForeignName["descriptionWithLocale:indent:"] public open func descriptionWithLocaleIndent(locale: ObjCId, level: NSUInteger): NSString
     public static func orderedSet(): NSOrderedSet/*<ObjectType>*/
-    @ForeignName["orderedSetWithObject:"] public static func orderedSetWithObject(object: id /*ObjectType*/): NSOrderedSet/*<ObjectType>*/
-    @ForeignName["orderedSetWithObjects:count:"] public static func orderedSetWithObjectsCount(objects: ObjCPointer<id /*ObjectType*/>, cnt: NSUInteger): NSOrderedSet/*<ObjectType>*/
-    @ForeignName["orderedSetWithObjects:"] public static func orderedSetWithObjects(firstObj: id /*ObjectType*/): NSOrderedSet/*<ObjectType>*/
+    @ForeignName["orderedSetWithObject:"] public static func orderedSetWithObject(object: ObjCId /*ObjectType*/): NSOrderedSet/*<ObjectType>*/
+    @ForeignName["orderedSetWithObjects:count:"] public static func orderedSetWithObjectsCount(objects: ObjCPointer<ObjCId /*ObjectType*/>, cnt: NSUInteger): NSOrderedSet/*<ObjectType>*/
+    @ForeignName["orderedSetWithObjects:"] public static func orderedSetWithObjects(firstObj: ObjCId /*ObjectType*/): NSOrderedSet/*<ObjectType>*/
     @ForeignName["orderedSetWithOrderedSet:"] public static func orderedSetWithOrderedSet(set: NSOrderedSet/*<ObjectType>*/): NSOrderedSet/*<ObjectType>*/
     @ForeignName["orderedSetWithOrderedSet:range:copyItems:"] public static func orderedSetWithOrderedSetRangeCopyItems(set: NSOrderedSet/*<ObjectType>*/, range: NSRange, flag: Bool): NSOrderedSet/*<ObjectType>*/
     @ForeignName["orderedSetWithArray:"] public static func orderedSetWithArray(array: NSArray/*<ObjectType>*/): NSOrderedSet/*<ObjectType>*/
     @ForeignName["orderedSetWithArray:range:copyItems:"] public static func orderedSetWithArrayRangeCopyItems(array: NSArray/*<ObjectType>*/, range: NSRange, flag: Bool): NSOrderedSet/*<ObjectType>*/
     @ForeignName["orderedSetWithSet:"] public static func orderedSetWithSet(set: NSSet/*<ObjectType>*/): NSOrderedSet/*<ObjectType>*/
     @ForeignName["orderedSetWithSet:copyItems:"] public static func orderedSetWithSetCopyItems(set: NSSet/*<ObjectType>*/, flag: Bool): NSOrderedSet/*<ObjectType>*/
-    @ObjCInit @ForeignName["initWithObject:"] public static func initWithObject(object: id /*ObjectType*/): NSOrderedSet/*<ObjectType>*/
-    @ObjCInit @ForeignName["initWithObjects:"] public static func initWithObjects(firstObj: id /*ObjectType*/): NSOrderedSet/*<ObjectType>*/
+    @ObjCInit @ForeignName["initWithObject:"] public static func initWithObject(object: ObjCId /*ObjectType*/): NSOrderedSet/*<ObjectType>*/
+    @ObjCInit @ForeignName["initWithObjects:"] public static func initWithObjects(firstObj: ObjCId /*ObjectType*/): NSOrderedSet/*<ObjectType>*/
     @ForeignName["initWithOrderedSet:"] public init(set: NSOrderedSet/*<ObjectType>*/)
     @ForeignName["initWithOrderedSet:copyItems:"] public init(set: NSOrderedSet/*<ObjectType>*/, flag: Bool)
     @ForeignName["initWithOrderedSet:range:copyItems:"] public init(set: NSOrderedSet/*<ObjectType>*/, range: NSRange, flag: Bool)
@@ -63,12 +63,12 @@ public open class NSOrderedSet/*<ObjectType>*/ <: NSObject & NSCopying & NSMutab
     @ForeignName["initWithArray:range:copyItems:"] public init(set: NSArray/*<ObjectType>*/, range: NSRange, flag: Bool)
     @ForeignName["initWithSet:"] public init(set: NSSet/*<ObjectType>*/)
     @ForeignName["initWithSet:copyItems:"] public init(set: NSSet/*<ObjectType>*/, flag: Bool)
-    @ForeignName["differenceFromOrderedSet:withOptions:usingEquivalenceTest:"] public open func differenceFromOrderedSetWithOptionsUsingEquivalenceTest(other: NSOrderedSet/*<ObjectType>*/, options: Int32 /*NSOrderedCollectionDifferenceCalculationOptions*/, block: ObjCBlock<(id /*ObjectType*/, id /*ObjectType*/) -> Bool>): NSOrderedCollectionDifference/*<ObjectType>*/
+    @ForeignName["differenceFromOrderedSet:withOptions:usingEquivalenceTest:"] public open func differenceFromOrderedSetWithOptionsUsingEquivalenceTest(other: NSOrderedSet/*<ObjectType>*/, options: Int32 /*NSOrderedCollectionDifferenceCalculationOptions*/, block: ObjCBlock<(ObjCId /*ObjectType*/, ObjCId /*ObjectType*/) -> Bool>): NSOrderedCollectionDifference/*<ObjectType>*/
     @ForeignName["differenceFromOrderedSet:withOptions:"] public open func differenceFromOrderedSetWithOptions(other: NSOrderedSet/*<ObjectType>*/, options: Int32 /*NSOrderedCollectionDifferenceCalculationOptions*/): NSOrderedCollectionDifference/*<ObjectType>*/
     @ForeignName["differenceFromOrderedSet:"] public open func differenceFromOrderedSet(other: NSOrderedSet/*<ObjectType>*/): NSOrderedCollectionDifference/*<ObjectType>*/
     @ForeignName["orderedSetByApplyingDifference:"] public open func orderedSetByApplyingDifference(difference: NSOrderedCollectionDifference/*<ObjectType>*/): ?NSOrderedSet/*<ObjectType>*/
-    @ForeignName["valueForKey:"] public open func valueForKey(key: NSString): id
-    @ForeignName["setValue:forKey:"] public open func setValueForKey(value: id, key: NSString): Unit
+    @ForeignName["valueForKey:"] public open func valueForKey(key: NSString): ObjCId
+    @ForeignName["setValue:forKey:"] public open func setValueForKey(value: ObjCId, key: NSString): Unit
     @ForeignName["addObserver:forKeyPath:options:context:"] public open func addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: NSString, options: Int32 /*NSKeyValueObservingOptions*/, context: CPointer<Unit>): Unit
     @ForeignName["removeObserver:forKeyPath:context:"] public open func removeObserverForKeyPathContext(observer: NSObject, keyPath: NSString, context: CPointer<Unit>): Unit
     @ForeignName["removeObserver:forKeyPath:"] public open func removeObserverForKeyPath(observer: NSObject, keyPath: NSString): Unit
@@ -78,26 +78,26 @@ public open class NSOrderedSet/*<ObjectType>*/ <: NSObject & NSCopying & NSMutab
 
 @ObjCMirror
 public open class NSMutableOrderedSet/*<ObjectType>*/ <: NSOrderedSet/*<ObjectType>*/ {
-    @ForeignName["insertObject:atIndex:"] public open func insertObjectAtIndex(object: id /*ObjectType*/, idx: NSUInteger): Unit
+    @ForeignName["insertObject:atIndex:"] public open func insertObjectAtIndex(object: ObjCId /*ObjectType*/, idx: NSUInteger): Unit
     @ForeignName["removeObjectAtIndex:"] public open func removeObjectAtIndex(idx: NSUInteger): Unit
-    @ForeignName["replaceObjectAtIndex:withObject:"] public open func replaceObjectAtIndexWithObject(idx: NSUInteger, object: id /*ObjectType*/): Unit
+    @ForeignName["replaceObjectAtIndex:withObject:"] public open func replaceObjectAtIndexWithObject(idx: NSUInteger, object: ObjCId /*ObjectType*/): Unit
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
     public init()
     @ForeignName["initWithCapacity:"] public init(numItems: NSUInteger)
-    @ForeignName["addObject:"] public open func addObject(object: id /*ObjectType*/): Unit
-    @ForeignName["addObjects:count:"] public open func addObjectsCount(objects: ObjCPointer<id /*ObjectType*/>, count: NSUInteger): Unit
+    @ForeignName["addObject:"] public open func addObject(object: ObjCId /*ObjectType*/): Unit
+    @ForeignName["addObjects:count:"] public open func addObjectsCount(objects: ObjCPointer<ObjCId /*ObjectType*/>, count: NSUInteger): Unit
     @ForeignName["addObjectsFromArray:"] public open func addObjectsFromArray(array: NSArray/*<ObjectType>*/): Unit
     @ForeignName["exchangeObjectAtIndex:withObjectAtIndex:"] public open func exchangeObjectAtIndexWithObjectAtIndex(idx1: NSUInteger, idx2: NSUInteger): Unit
     @ForeignName["moveObjectsAtIndexes:toIndex:"] public open func moveObjectsAtIndexesToIndex(indexes: NSIndexSet, idx: NSUInteger): Unit
     @ForeignName["insertObjects:atIndexes:"] public open func insertObjectsAtIndexes(objects: NSArray/*<ObjectType>*/, indexes: NSIndexSet): Unit
-    @ForeignName["setObject:atIndex:"] public open func setObjectAtIndex(obj: id /*ObjectType*/, idx: NSUInteger): Unit
-    @ForeignName["setObject:atIndexedSubscript:"] public open func setObjectAtIndexedSubscript(obj: id /*ObjectType*/, idx: NSUInteger): Unit
-    @ForeignName["replaceObjectsInRange:withObjects:count:"] public open func replaceObjectsInRangeWithObjectsCount(range: NSRange, objects: ObjCPointer<id /*ObjectType*/>, count: NSUInteger): Unit
+    @ForeignName["setObject:atIndex:"] public open func setObjectAtIndex(obj: ObjCId /*ObjectType*/, idx: NSUInteger): Unit
+    @ForeignName["setObject:atIndexedSubscript:"] public open func setObjectAtIndexedSubscript(obj: ObjCId /*ObjectType*/, idx: NSUInteger): Unit
+    @ForeignName["replaceObjectsInRange:withObjects:count:"] public open func replaceObjectsInRangeWithObjectsCount(range: NSRange, objects: ObjCPointer<ObjCId /*ObjectType*/>, count: NSUInteger): Unit
     @ForeignName["replaceObjectsAtIndexes:withObjects:"] public open func replaceObjectsAtIndexesWithObjects(indexes: NSIndexSet, objects: NSArray/*<ObjectType>*/): Unit
     @ForeignName["removeObjectsInRange:"] public open func removeObjectsInRange(range: NSRange): Unit
     @ForeignName["removeObjectsAtIndexes:"] public open func removeObjectsAtIndexes(indexes: NSIndexSet): Unit
     public open func removeAllObjects(): Unit
-    @ForeignName["removeObject:"] public open func removeObject(object: id /*ObjectType*/): Unit
+    @ForeignName["removeObject:"] public open func removeObject(object: ObjCId /*ObjectType*/): Unit
     @ForeignName["removeObjectsInArray:"] public open func removeObjectsInArray(array: NSArray/*<ObjectType>*/): Unit
     @ForeignName["intersectOrderedSet:"] public open func intersectOrderedSet(other: NSOrderedSet/*<ObjectType>*/): Unit
     @ForeignName["minusOrderedSet:"] public open func minusOrderedSet(other: NSOrderedSet/*<ObjectType>*/): Unit

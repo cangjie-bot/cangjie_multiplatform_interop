@@ -3,6 +3,7 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 public abstract sealed class NSKeyValueObservingOptions {
     public static const NSKeyValueObservingOptionNew: NSUInteger = 1
