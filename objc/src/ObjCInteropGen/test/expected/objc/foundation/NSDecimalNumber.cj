@@ -5,7 +5,7 @@ package objc.foundation
 import interoplib.objc.*
 
 @ObjCMirror
-public interface NSDecimalNumberBehaviors <: id {
+public interface NSDecimalNumberBehaviors {
     func roundingMode(): Int32 /*NSRoundingMode*/
     func scale(): Int16
     @ForeignName["exceptionDuringOperation:error:leftOperand:rightOperand:"] func exceptionDuringOperationErrorLeftOperandRightOperand(operation: SEL, error: Int32 /*NSCalculationError*/, leftOperand: NSDecimalNumber, rightOperand: ?NSDecimalNumber): ?NSDecimalNumber

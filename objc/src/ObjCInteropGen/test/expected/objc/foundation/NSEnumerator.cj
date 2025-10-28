@@ -14,7 +14,7 @@ public struct NSFastEnumerationState {
 }
 
 @ObjCMirror
-public interface NSFastEnumeration <: id {
+public interface NSFastEnumeration {
     @ForeignName["countByEnumeratingWithState:objects:count:"] func countByEnumeratingWithStateObjectsCount(state: ObjCPointer<NSFastEnumerationState>, buffer: ObjCPointer<ObjCId>, len: NSUInteger): NSUInteger
 }
 

@@ -10,7 +10,7 @@ public interface NSXPCListenerDelegate <: NSObjectProtocol {
 }
 
 @ObjCMirror
-public interface NSXPCProxyCreating <: id {
+public interface NSXPCProxyCreating {
     func remoteObjectProxy(): ObjCId
     @ForeignName["remoteObjectProxyWithErrorHandler:"] func remoteObjectProxyWithErrorHandler(handler: ObjCBlock<(NSError) -> Unit>): ObjCId
     @ForeignName["synchronousRemoteObjectProxyWithErrorHandler:"] func synchronousRemoteObjectProxyWithErrorHandler(handler: ObjCBlock<(NSError) -> Unit>): ObjCId
