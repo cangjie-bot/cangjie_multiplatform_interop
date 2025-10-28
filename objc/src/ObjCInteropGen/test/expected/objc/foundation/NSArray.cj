@@ -2,8 +2,8 @@
 
 package objc.foundation
 
-import objc.lang.ObjCPointer
 import interoplib.objc.*
+import objc.lang.*
 
 @ObjCMirror
 public open class NSArray/*<ObjectType>*/ <: NSObject & NSCopying & NSMutableCopying & NSSecureCoding & NSFastEnumeration {
