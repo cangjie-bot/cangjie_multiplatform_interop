@@ -3,6 +3,7 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 public abstract sealed class NSPointerFunctionsOptions {
     public static const NSPointerFunctionsStrongMemory: NSUInteger = 0
