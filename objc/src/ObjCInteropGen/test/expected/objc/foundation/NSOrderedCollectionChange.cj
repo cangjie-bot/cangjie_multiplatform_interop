@@ -3,6 +3,7 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 public abstract sealed class NSCollectionChangeType {
     public static const NSCollectionChangeInsert: NSInteger = 0

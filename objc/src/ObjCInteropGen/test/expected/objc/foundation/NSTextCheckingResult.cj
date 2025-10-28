@@ -3,6 +3,7 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 public abstract sealed class NSTextCheckingType {
     public static const NSTextCheckingTypeOrthography: uint64_t = 1
