@@ -31,10 +31,10 @@ public open class NSNumber <: NSValue {
     @ForeignName["initWithUnsignedShort:"] public init(value: UInt16)
     @ForeignName["initWithInt:"] public init(value: Int32)
     @ForeignName["initWithUnsignedInt:"] public init(value: UInt32)
-    // @ForeignName["initWithLong:"] public init(value: Int64)
-    // @ForeignName["initWithUnsignedLong:"] public init(value: UInt64)
-    // @ForeignName["initWithLongLong:"] public init(value: Int64)
-    // @ForeignName["initWithUnsignedLongLong:"] public init(value: UInt64)
+    @ObjCInit @ForeignName["initWithLong:"] public static func initWithLong(value: Int64): NSNumber
+    @ObjCInit @ForeignName["initWithUnsignedLong:"] public static func initWithUnsignedLong(value: UInt64): NSNumber
+    @ObjCInit @ForeignName["initWithLongLong:"] public static func initWithLongLong(value: Int64): NSNumber
+    @ObjCInit @ForeignName["initWithUnsignedLongLong:"] public static func initWithUnsignedLongLong(value: UInt64): NSNumber
     @ForeignName["initWithFloat:"] public init(value: Float32)
     @ForeignName["initWithDouble:"] public init(value: Float64)
     @ForeignName["initWithBool:"] public init(value: Bool)

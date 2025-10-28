@@ -9,8 +9,8 @@ public open class NSUserDefaults <: NSObject {
     public static prop standardUserDefaults: NSUserDefaults
     public static func resetStandardUserDefaults(): Unit
     public init()
-    // @ForeignName["initWithSuiteName:"] public init(suitename: ?NSString)
-    // @ForeignName["initWithUser:"] public init(username: NSString)
+    @ObjCInit @ForeignName["initWithSuiteName:"] public static func initWithSuiteName(suitename: ?NSString): NSUserDefaults
+    @ObjCInit @ForeignName["initWithUser:"] public static func initWithUser(username: NSString): id
     @ForeignName["objectForKey:"] public open func objectForKey(defaultName: NSString): id
     @ForeignName["setObject:forKey:"] public open func setObjectForKey(value: id, defaultName: NSString): Unit
     @ForeignName["removeObjectForKey:"] public open func removeObjectForKey(defaultName: NSString): Unit

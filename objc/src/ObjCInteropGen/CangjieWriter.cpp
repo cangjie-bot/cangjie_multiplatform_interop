@@ -371,16 +371,16 @@ std::ostream& operator<<(std::ostream& stream, const DefaultValuePrinter& op)
             case NamedTypeSymbol::Kind::TypeDef: {
                 // Some time later it should be simplified to be just
                 assert(dynamic_cast<const TypeAliasSymbol*>(named_type));
-                    const auto* alias = static_cast<const TypeAliasSymbol*>(named_type);
-                    const auto* named_target = dynamic_cast<const NamedTypeSymbol*>(alias->root_target());
-                    if (named_target && named_target->is(NamedTypeSymbol::Kind::TargetPrimitive) &&
-                        is_integer_type(named_target->name())) {
-                        return stream << "unsafe{zeroValue<" << named_type->name() << ">()}";
-                    }
-                    const auto* target = alias->target();
-                    assert(target);
-                    return stream << default_value(*target);
+                const auto* alias = static_cast<const TypeAliasSymbol*>(named_type);
+                const auto* named_target = dynamic_cast<const NamedTypeSymbol*>(alias->root_target());
+                if (named_target && named_target->is(NamedTypeSymbol::Kind::TargetPrimitive) &&
+                    is_integer_type(named_target->name())) {
+                    return stream << "unsafe{zeroValue<" << named_type->name() << ">()}";
                 }
+                const auto* target = alias->target();
+                assert(target);
+                return stream << default_value(*target);
+            }
             case NamedTypeSymbol::Kind::Enum:
                 return stream << '0';
             case NamedTypeSymbol::Kind::Interface:
@@ -852,8 +852,7 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
                 output << '\n';
             }
         } else if (member.is_constructor()) {
-            auto hidden = is_interface || (normal_mode() && !is_objc_compatible_parameters(member)) ||
-                is_overloading_constructor(*type, member);
+            auto hidden = is_interface || (normal_mode() && !is_objc_compatible_parameters(member));
             if (hidden) {
                 output.set_comment();
             } else {
@@ -862,17 +861,43 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
                     default_constructor_exists = member.parameter_count() == 0;
                 }
             }
-            write_foreign_name(output, member);
-            if (!is_interface) {
-                output << "public ";
-            }
-            output << "init";
-            write_method_parameters(output, member);
-            if (generate_definitions_mode() && !is_interface) {
-                output << " { }";
-            }
-            if (hidden) {
-                output.reset_comment();
+            if (is_overloading_constructor(*type, member)) {
+                if (!generate_definitions_mode()) {
+                    output << "@ObjCInit ";
+                }
+                write_foreign_name(output, member);
+                if (!is_interface) {
+                    output << "public ";
+                }
+                output << "static func " << escape_keyword(member.name());
+                write_method_parameters(output, member);
+
+                // FE requires the return type to be strictly the declaring class
+                auto* return_type = normal_mode() ? type : member.return_type();
+                assert(return_type);
+
+                write_result_type(output, member, *return_type);
+                if (generate_definitions_mode() && !is_interface) {
+                    output << " { " << default_value(*return_type) << " }";
+                }
+                if (hidden) {
+                    output.reset_comment();
+                } else {
+                    collect_import(*return_type);
+                }
+            } else {
+                write_foreign_name(output, member);
+                if (!is_interface) {
+                    output << "public ";
+                }
+                output << "init";
+                write_method_parameters(output, member);
+                if (generate_definitions_mode() && !is_interface) {
+                    output << " { }";
+                }
+                if (hidden) {
+                    output.reset_comment();
+                }
             }
             output << '\n';
         } else if (member.is_member_method()) {
