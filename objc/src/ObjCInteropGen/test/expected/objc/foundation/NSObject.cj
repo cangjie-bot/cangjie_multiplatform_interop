@@ -6,7 +6,7 @@ import objc.lang.ObjCPointer
 import interoplib.objc.*
 
 @ObjCMirror
-public interface NSObjectProtocol <: id {
+public interface NSObjectProtocol {
     @ForeignName["isEqual:"] func isEqual(object: ?ObjCId): Bool
     prop hash: NSUInteger
     prop superclass: ?Class
@@ -125,17 +125,17 @@ public open class NSObject <: NSObjectProtocol {
 }
 
 @ObjCMirror
-public interface NSCopying <: id {
+public interface NSCopying {
     @ForeignName["copyWithZone:"] func copyWithZone(zone: CPointer<NSZone>): ObjCId
 }
 
 @ObjCMirror
-public interface NSMutableCopying <: id {
+public interface NSMutableCopying {
     @ForeignName["mutableCopyWithZone:"] func mutableCopyWithZone(zone: CPointer<NSZone>): ObjCId
 }
 
 @ObjCMirror
-public interface NSCoding <: id {
+public interface NSCoding {
     @ForeignName["encodeWithCoder:"] func encodeWithCoder(coder: NSCoder): Unit
     // @ForeignName["initWithCoder:"] init(coder: NSCoder)
 }
@@ -146,7 +146,7 @@ public interface NSSecureCoding <: NSCoding {
 }
 
 @ObjCMirror
-public interface NSDiscardableContent <: id {
+public interface NSDiscardableContent {
     func beginContentAccess(): Bool
     func endContentAccess(): Unit
     func discardContentIfPossible(): Unit
