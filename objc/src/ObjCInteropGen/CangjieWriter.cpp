@@ -371,16 +371,16 @@ std::ostream& operator<<(std::ostream& stream, const DefaultValuePrinter& op)
             case NamedTypeSymbol::Kind::TypeDef: {
                 // Some time later it should be simplified to be just
                 assert(dynamic_cast<const TypeAliasSymbol*>(named_type));
-                    const auto* alias = static_cast<const TypeAliasSymbol*>(named_type);
-                    const auto* named_target = dynamic_cast<const NamedTypeSymbol*>(alias->root_target());
-                    if (named_target && named_target->is(NamedTypeSymbol::Kind::TargetPrimitive) &&
-                        is_integer_type(named_target->name())) {
-                        return stream << "unsafe{zeroValue<" << named_type->name() << ">()}";
-                    }
-                    const auto* target = alias->target();
-                    assert(target);
-                    return stream << default_value(*target);
+                const auto* alias = static_cast<const TypeAliasSymbol*>(named_type);
+                const auto* named_target = dynamic_cast<const NamedTypeSymbol*>(alias->root_target());
+                if (named_target && named_target->is(NamedTypeSymbol::Kind::TargetPrimitive) &&
+                    is_integer_type(named_target->name())) {
+                    return stream << "unsafe{zeroValue<" << named_type->name() << ">()}";
                 }
+                const auto* target = alias->target();
+                assert(target);
+                return stream << default_value(*target);
+            }
             case NamedTypeSymbol::Kind::Enum:
                 return stream << '0';
             case NamedTypeSymbol::Kind::Interface:
@@ -862,7 +862,9 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
                 }
             }
             if (is_overloading_constructor(*type, member)) {
-                output << "@ObjCInit ";
+                if (!generate_definitions_mode()) {
+                    output << "@ObjCInit ";
+                }
                 write_foreign_name(output, member);
                 if (!is_interface) {
                     output << "public ";
