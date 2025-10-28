@@ -239,7 +239,7 @@ static bool is_objc_compatible_objcpointer_pointee(const NamedTypeSymbol& pointe
     }
 }
 
-static bool is_objc_compatible_parameter_type(TypeLikeSymbol& type) 
+static bool is_objc_compatible_parameter_type(TypeLikeSymbol& type)
 {
     assert(normal_mode());
     auto* canonical_type = dynamic_cast<NamedTypeSymbol*>(&type.canonical_type());
@@ -369,16 +369,16 @@ std::ostream& operator<<(std::ostream& stream, const DefaultValuePrinter& op)
             case NamedTypeSymbol::Kind::TypeDef: {
                 // Some time later it should be simplified to be just
                 assert(dynamic_cast<const TypeAliasSymbol*>(named_type));
-                    const auto* alias = static_cast<const TypeAliasSymbol*>(named_type);
-                    const auto* named_target = dynamic_cast<const NamedTypeSymbol*>(alias->root_target());
-                    if (named_target && named_target->is(NamedTypeSymbol::Kind::TargetPrimitive) &&
-                        is_integer_type(named_target->name())) {
-                        return stream << "unsafe{zeroValue<" << named_type->name() << ">()}";
-                    }
-                    const auto* target = alias->target();
-                    assert(target);
-                    return stream << default_value(*target);
+                const auto* alias = static_cast<const TypeAliasSymbol*>(named_type);
+                const auto* named_target = dynamic_cast<const NamedTypeSymbol*>(alias->root_target());
+                if (named_target && named_target->is(NamedTypeSymbol::Kind::TargetPrimitive) &&
+                    is_integer_type(named_target->name())) {
+                    return stream << "unsafe{zeroValue<" << named_type->name() << ">()}";
                 }
+                const auto* target = alias->target();
+                assert(target);
+                return stream << default_value(*target);
+            }
             case NamedTypeSymbol::Kind::Enum:
                 return stream << '0';
             case NamedTypeSymbol::Kind::Interface:
@@ -946,7 +946,8 @@ void write_cangjie()
                 file_output << "import " << import << std::endl;
             }
             if (!generate_definitions_mode()) {
-                file_output << "import interoplib.objc.*\n\n";
+                file_output << "import interoplib.objc.*\n"
+                               "import objc.lang.*\n\n";
             }
             file_output << output.str();
 
