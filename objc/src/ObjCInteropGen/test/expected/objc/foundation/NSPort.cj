@@ -7,7 +7,7 @@ import interoplib.objc.*
 public type NSSocketNativeHandle = Int32
 
 @ObjCMirror
-public open class NSPortMessage <: id {
+public open class NSPortMessage {
 }
 
 @ObjCMirror
