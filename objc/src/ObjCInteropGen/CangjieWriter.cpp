@@ -239,7 +239,7 @@ static bool is_objc_compatible_objcpointer_pointee(const NamedTypeSymbol& pointe
     }
 }
 
-static bool is_objc_compatible_parameter_type(TypeLikeSymbol& type) 
+static bool is_objc_compatible_parameter_type(TypeLikeSymbol& type)
 {
     assert(normal_mode());
     auto* canonical_type = dynamic_cast<NamedTypeSymbol*>(&type.canonical_type());
@@ -971,7 +971,8 @@ void write_cangjie()
                 file_output << "import " << import << std::endl;
             }
             if (!generate_definitions_mode()) {
-                file_output << "import interoplib.objc.*\n\n";
+                file_output << "import interoplib.objc.*\n"
+                               "import objc.lang.*\n\n";
             }
             file_output << output.str();
 
