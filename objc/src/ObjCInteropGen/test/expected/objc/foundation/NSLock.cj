@@ -5,7 +5,7 @@ package objc.foundation
 import interoplib.objc.*
 
 @ObjCMirror
-public interface NSLocking <: id {
+public interface NSLocking {
     func lock(): Unit
     func unlock(): Unit
 }
