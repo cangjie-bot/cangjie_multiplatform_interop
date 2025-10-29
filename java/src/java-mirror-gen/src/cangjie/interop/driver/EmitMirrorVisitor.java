@@ -740,7 +740,15 @@ public final class EmitMirrorVisitor {
             final var fields = symbols.stream().filter(f -> f.kind == VAR).toList();
             if (fields.size() > 1) {
                 for (var field : fields) {
-                    newName.put(field, field.name.append('_', field.owner.name));
+                    final var mangledFieldName = Utils.addUnderscoresIfNeeded(field.name);
+                    final var mangledFieldOwnerName = Utils.addUnderscoresIfNeeded(field.owner.name);
+
+                    final var sb = new StringBuilder(mangledFieldName);
+                    sb.append("_");
+                    sb.append(mangledFieldOwnerName);
+
+                    final var newFieldName = names.fromString(sb.toString());
+                    newName.put(field, newFieldName);
                 }
             }
 
