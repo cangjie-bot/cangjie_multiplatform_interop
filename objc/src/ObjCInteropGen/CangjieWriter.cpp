@@ -467,7 +467,7 @@ static bool is_objc_compatible_parameters(NonTypeSymbol& method) noexcept
     return true;
 }
 
-template <class Symbol> void write_result_type(std::ostream& output, const Symbol& symbol, const TypeLikeSymbol& type)
+template <class Symbol> void write_type(std::ostream& output, const Symbol& symbol, const TypeLikeSymbol& type)
 {
     output << ": ";
     if (symbol.is_nullable()) {
@@ -489,7 +489,7 @@ static void write_method_parameters(std::ostream& output, const NonTypeSymbol& m
         auto* parameter_type = parameter_symbol.type();
         assert(parameter_type);
         output << escape_keyword(parameter_symbol.name());
-        write_result_type(output, parameter_symbol, *parameter_type);
+        write_type(output, parameter_symbol, *parameter_type);
         collect_import(*parameter_type);
     }
     output << ')';
@@ -639,7 +639,7 @@ static void write_method(IndentingStringStream& output, bool is_interface, NonTy
     }
     output << "func " << name;
     write_method_parameters(output, method);
-    write_result_type(output, method, *return_type);
+    write_type(output, method, *return_type);
     if (generate_definitions_mode()) {
         if (return_type->is_unit()) {
             output << " { }";
@@ -833,7 +833,7 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
                     output << "mut ";
                 }
                 output << "prop " << escape_keyword(name);
-                write_result_type(output, *getter, *return_type);
+                write_type(output, *getter, *return_type);
                 if (generate_definitions_mode()) {
                     output << " {\n";
                     output.indent();
@@ -876,7 +876,7 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
                 auto* return_type = normal_mode() ? type : member.return_type();
                 assert(return_type);
 
-                write_result_type(output, member, *return_type);
+                write_type(output, member, *return_type);
                 if (generate_definitions_mode() && !is_interface) {
                     output << " { " << default_value(*return_type) << " }";
                 }
@@ -917,7 +917,7 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
                 output.set_comment();
             }
             output << (member.is_public() ? "public" : "protected") << " var " << escape_keyword(name);
-            write_result_type(output, member, *return_type);
+            write_type(output, member, *return_type);
             if (generate_definitions_mode()) {
                 output << " = " << default_value(*return_type);
             }
@@ -939,7 +939,7 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
                 output.set_comment();
             }
             output << "public var " << escape_keyword(name);
-            write_result_type(output, member, *return_type);
+            write_type(output, member, *return_type);
             output << " = " << default_value(*return_type);
             if (hidden) {
                 output.reset_comment();
@@ -953,7 +953,7 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
             assert(return_type);
             assert(!return_type->is_unit());
             output << "public static const " << escape_keyword(member.name());
-            write_result_type(output, member, *return_type);
+            write_type(output, member, *return_type);
             output << " = ";
             collect_import(*return_type);
             print_enum_constant_value(output, member);
