@@ -148,7 +148,7 @@ public func withObjCSuper<R>(id: NativeObjCId, action: (CPointer<Unit>, NativeOb
     unsafe {
         let objCSuper = getObjCSuper(id)
         try {
-            action(objCSuper, objCSuper)
+            action(CPointer<Unit>(objCSuper), objCSuper)
         } finally {
             LibC.free(objCSuper)
         }
