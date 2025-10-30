@@ -289,6 +289,11 @@ public:
         return input_file_;
     }
 
+    [[nodiscard]] virtual bool is_ctype() const noexcept
+    {
+        return false;
+    }
+
     void set_definition_location(const Location& location);
 
     void set_package_file(PackageFile* package_file);
@@ -335,11 +340,6 @@ protected:
 class TypeLikeSymbol : public FileLevelSymbol {
 public:
     [[nodiscard]] virtual TypeLikeSymbol* map() = 0;
-
-    [[nodiscard]] virtual bool is_ctype() const noexcept
-    {
-        return false;
-    }
 
     [[nodiscard]] bool is_unit() const
     {
@@ -474,6 +474,7 @@ public:
         Union,
         Enum,
         Category,
+        TopLevel,
     };
 
     [[nodiscard]] TypeLikeSymbol& canonical_type() override
@@ -521,7 +522,7 @@ protected:
     explicit NamedTypeSymbol(const Kind kind, std::string name) : TypeLikeSymbol(std::move(name)), kind_(kind)
     {
         // Categories can have empty names
-        assert(!this->name().empty() || this->kind_ == Kind::Category);
+        assert(!this->name().empty() || this->kind_ == Kind::Category || this->kind_ == Kind::TopLevel);
 
         assert(this->kind_ != Kind::Undefined);
     }
@@ -941,7 +942,7 @@ public:
         [[maybe_unused]] const std::vector<TypeLikeSymbol*>& arguments) const override
     {
         assert(arguments.empty());
-        return const_cast<TypeAliasSymbol *>(this);
+        return const_cast<TypeAliasSymbol*>(this);
     }
 
     [[nodiscard]] bool is_file_level() const noexcept override
@@ -1110,6 +1111,8 @@ public:
         return bit_field_size_ != 0xFF;
     }
 
+    [[nodiscard]] bool is_ctype() const noexcept;
+
     void set_return_type(TypeLikeSymbol* return_type)
     {
         assert(return_type);
@@ -1200,7 +1203,9 @@ private:
     std::string selector_attribute_;
     std::optional<std::uint64_t> enum_constant_value_;
 
+    // Only these classes are allowed to create instances of NonTypeSymbol
     friend class TypeDeclarationSymbol;
+    friend class TopLevel;
 };
 
 class ParameterSymbol final : public Symbol {

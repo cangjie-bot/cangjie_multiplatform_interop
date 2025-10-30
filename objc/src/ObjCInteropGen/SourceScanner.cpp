@@ -179,6 +179,8 @@ class SourceScanner final : public ClangVisitor {
         current_.pop_back();
     }
 
+    [[nodiscard]] Symbol* push_top_level_function(const CXCursor& cursor, std::string&& name);
+
     [[nodiscard]] Symbol* push_property(
         std::string&& name, std::string&& getter, std::string&& setter, uint8_t modifiers);
 
@@ -931,6 +933,18 @@ static std::optional<CXType> nullable_overridden(CXCursor cursor)
     return std::nullopt;
 }
 
+Symbol* SourceScanner::push_top_level_function(const CXCursor& cursor, std::string&& name)
+{
+    assert(is_on_top_level());
+    auto cx_result_type = clang_getCursorResultType(cursor);
+    auto* result_type = type_like_symbol(cx_result_type);
+    assert(result_type);
+    auto& function = universe.register_top_level_function(
+        std::move(name), *result_type, is_nullable(cx_result_type) ? ModifierNullable : 0);
+    set_definition_location(cursor, &function);
+    return push_current(&function);
+}
+
 Symbol* SourceScanner::push_member_method(CXCursor cursor, std::string&& name, bool is_static)
 {
     assert(current_top_is_type() || current_top_is_property());
@@ -1274,9 +1288,14 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
             assert(is_defining(cursor));
             if (current_top_is_non_type()) {
                 auto& non_type = *current_non_type();
-                if (non_type.is_member_method() || non_type.is_constructor()) {
-                    // e.g. comparator function pointers in parameters
-                    non_type.add_parameter(name, type_like_symbol(type), is_nullable(type));
+                if (non_type.is_method()) {
+                    // Top-level function parameters can be nameless
+                    if (name.empty()) {
+                        assert(non_type.kind() == NonTypeSymbol::Kind::GlobalFunction || !name.empty());
+                        auto n = non_type.parameter_count();
+                        name = n ? "x" + std::to_string(n) : "x";
+                    }
+                    non_type.add_parameter(std::move(name), type_like_symbol(type), is_nullable(type));
                     recurse = false;
                 } else if (non_type.is_property()) {
                     recurse = false;
@@ -1284,9 +1303,11 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
             }
             break;
         }
-        case CXCursor_VarDecl:
-        case CXCursor_FunctionDecl: {
-            // We don't support functions/variables (generic C interop) at the moment.
+        case CXCursor_FunctionDecl:
+            pushed = push_top_level_function(cursor, std::move(name));
+            break;
+        case CXCursor_VarDecl: {
+            // We don't support variables (generic C interop) at the moment.
             // TODO: consider special-casing static const variables, like:
             // static const NSLayoutPriority NSLayoutPriorityDefaultHigh = 750.0;
             recurse = false;
