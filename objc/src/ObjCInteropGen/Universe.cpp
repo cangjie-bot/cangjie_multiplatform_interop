@@ -8,6 +8,22 @@
 
 Universe universe;
 
+NonTypeSymbol& TopLevel::add_function(std::string name, TypeLikeSymbol& return_type, uint8_t modifiers)
+{
+    return members_.emplace_back(
+        NonTypeSymbol::Private(), std::move(name), NonTypeSymbol::Kind::GlobalFunction, &return_type, modifiers);
+}
+
+TopLevelIterator Universe::top_level() noexcept
+{
+    return universe.top_level_.get_iterator();
+}
+
+NonTypeSymbol& Universe::register_top_level_function(std::string name, TypeLikeSymbol& return_type, uint8_t modifiers)
+{
+    return top_level_.add_function(std::move(name), return_type, modifiers);
+}
+
 void Universe::register_type(NamedTypeSymbol* symbol)
 {
     assert(symbol);
