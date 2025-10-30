@@ -42,9 +42,45 @@ bool check_symbol(FileLevelSymbol* symbol)
     return symbol->is_file_level();
 }
 
+static bool set_package(FileLevelSymbol& symbol)
+{
+    bool success = true;
+
+    const auto& name = symbol.name();
+
+    bool package_found = false;
+
+    for (auto&& package : packages) {
+        if (!package.filters()->apply(name)) {
+            continue;
+        }
+
+        if (symbol.package()) {
+            std::cerr << "Entity `" << name << "` is ambiguous between packages `" << symbol.package()->cangjie_name()
+                      << "` and `" << package.cangjie_name() << "`" << std::endl;
+            success = false;
+            continue;
+        }
+
+        symbol.set_package_file(input_to_output(&package, &symbol));
+        package_found = true;
+    }
+
+    if (!package_found && verbosity >= LogLevel::TRACE) {
+        std::cerr << "Entity `" << name << "` does not match any package filter" << std::endl;
+    }
+    return success;
+}
+
 bool mark_roots()
 {
     auto success = true;
+
+    for (auto& member : universe.top_level()) {
+        if (!set_package(member)) {
+            success = false;
+        }
+    }
 
     for (auto&& type : Universe::all_declarations()) {
         // Omit primitive types, as well as types having no definition in source files
@@ -54,28 +90,8 @@ bool mark_roots()
             continue;
         }
 
-        const auto type_name = type.name();
-
-        auto package_found = false;
-
-        for (auto&& package : packages) {
-            if (!package.filters()->apply(type_name)) {
-                continue;
-            }
-
-            if (type.package()) {
-                std::cerr << "Entity `" << type_name << "` is ambiguous between packages `"
-                          << type.package()->cangjie_name() << "` and `" << package.cangjie_name() << "`" << std::endl;
-                success = false;
-                continue;
-            }
-
-            type.set_package_file(input_to_output(&package, &type));
-            package_found = true;
-        }
-
-        if (!package_found && verbosity >= LogLevel::TRACE) {
-            std::cerr << "Entity `" << type_name << "` does not match any package filter" << std::endl;
+        if (!set_package(type)) {
+            success = false;
         }
     }
 
@@ -358,22 +374,29 @@ static TypeLikeSymbol& get_element_type(const VArraySymbol& varray) noexcept
  * For each function parameter, if the type of the parameter is array, convert
  * it to pointer to its element
  */
+static void decay_parameter_types(NonTypeSymbol& function)
+{
+    for (auto& parameter : function.parameters()) {
+        auto* parameter_type = parameter.type();
+        const auto* varray = dynamic_cast<const VArraySymbol*>(&parameter_type->canonical_type());
+        if (varray) {
+            parameter.set_type(&pointer(get_element_type(*varray)));
+        }
+    }
+}
+
+/**
+ * For each function parameter, if the type of the parameter is array, convert
+ * it to pointer to its element
+ */
 static void decay_parameter_types()
 {
-    for (auto& type : Universe::all_declarations()) {
-        auto* decl = dynamic_cast<TypeDeclarationSymbol*>(&type);
-        if (decl) {
-            for (auto& member : decl->members()) {
-                if (member.is_method()) {
-                    for (auto& parameter : member.parameters()) {
-                        auto* parameter_type = parameter.type();
-                        const auto* varray = dynamic_cast<const VArraySymbol*>(&parameter_type->canonical_type());
-                        if (varray) {
-                            parameter.set_type(&pointer(get_element_type(*varray)));
-                        }
-                    }
-                }
-            }
+    for (auto& top_level : Universe::top_level()) {
+        decay_parameter_types(top_level);
+    }
+    for (auto& type : Universe::type_definitions()) {
+        for (auto& member : type.members()) {
+            decay_parameter_types(member);
         }
     }
 }
