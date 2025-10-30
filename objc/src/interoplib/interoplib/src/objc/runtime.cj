@@ -148,7 +148,7 @@ public func withObjCSuper<R>(id: NativeObjCId, action: (CPointer<Unit>, NativeOb
     unsafe {
         let objCSuper = getObjCSuper(id)
         try {
-            action(objCSuper, objCSuper)
+            action(CPointer<Unit>(objCSuper), objCSuper)
         } finally {
             LibC.free(objCSuper)
         }
@@ -340,6 +340,39 @@ private unsafe func getIvar(id: NativeObjCId, fieldName: String): NativeObjCIvar
     ivar
 }
 
+public func isKindOfClass(id: NativeObjCId, clazz: NativeObjCClass): Bool {
+    unsafe {
+        var realClass = object_getClass(id);
+        while (realClass.isNotNull()) {
+            if (realClass.toUIntNative() == clazz.toUIntNative()) {
+                return true
+            }
+            realClass = class_getSuperclass(realClass)
+        }
+        return false
+    }
+}
+
+public func conformsToProtocol(id: NativeObjCId, proto: NativeObjCProtocol): Bool {
+    unsafe {
+        var realClass = object_getClass(id);
+        while (realClass.isNotNull()) {
+            if (class_conformsToProtocol(realClass, proto)) {
+                return true
+            }
+            realClass = class_getSuperclass(realClass)
+        }
+        return false
+    }
+}
+
+public func respondsToSelector(id: NativeObjCId, sel: NativeObjCSel): Bool {
+    unsafe {
+        var realClass = object_getClass(id)
+        return class_respondsToSelector(realClass, sel)
+    }
+}
+
 /**
  * Returns objc_super* for `id`.
  * Note: the result must be freed.
@@ -366,6 +399,12 @@ foreign func objc_msgSend(): Unit
  * super: NativeObjCSuperPtr, sel: NativeObjCSel, ...
  */
 foreign func objc_msgSendSuper(): Unit
+
+/**
+ * id: NativeObjCId, sel: NativeObjCSel, ...
+ */
+foreign func objc_alloc(clazz: NativeObjCClass): NativeObjCId
+
 
 @FastNative
 /**
@@ -452,6 +491,19 @@ foreign func class_getName(cls: NativeObjCClass): CString
  * Returns the superclass of the specified class.
  */
 foreign func class_getSuperclass(cls: NativeObjCClass): NativeObjCClass
+
+@FastNative
+/**
+ * Returns the superclass of the specified class.
+ */
+foreign func class_conformsToProtocol(cls: NativeObjCClass, proto: NativeObjCProtocol): Bool
+
+@FastNative
+/**
+ * Returns the superclass of the specified class.
+ */
+foreign func class_respondsToSelector(cls: NativeObjCClass, sel: NativeObjCSel): Bool
+
 
 @FastNative
 /**
