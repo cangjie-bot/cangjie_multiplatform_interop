@@ -314,7 +314,7 @@ NonTypeSymbol& TypeDeclarationSymbol::add_member_method(
 {
     // No clash detection, otherwise might assert on method overloads
 
-    assert(kind() == Kind::Interface || kind() == Kind::Protocol);
+    assert(kind() == Kind::Interface || kind() == Kind::Protocol || kind() == Kind::TopLevel);
     return members_.emplace_back(
         NonTypeSymbol::Private(), std::move(name), NonTypeSymbol::Kind::MemberMethod, return_type, modifiers);
 }
@@ -608,6 +608,18 @@ TypeLikeSymbol& TypeAliasSymbol::canonical_type()
     auto* target = this->target();
     assert(target);
     return target->canonical_type();
+}
+
+bool NonTypeSymbol::is_ctype() const noexcept
+{
+    auto n = parameter_count();
+    for (size_t i = 0; i < n; ++i) {
+        const auto& p = parameter(i);
+        if (!p.type()->is_ctype()) {
+            return false;
+        }
+    }
+    return return_type_->is_ctype();
 }
 
 void NonTypeSymbol::visit_impl(SymbolVisitor& visitor)

@@ -125,7 +125,7 @@ class PackageFileScope final {
     const std::string_view package_name_;
 
 public:
-    [[nodiscard]] explicit PackageFileScope(std::string_view package_name) noexcept : package_name_(package_name_)
+    [[nodiscard]] explicit PackageFileScope(std::string_view package_name) noexcept : package_name_(package_name)
     {
         assert(current_package_name.empty());
         assert(!package_name.empty());
@@ -616,29 +616,39 @@ static NonTypeSymbol* get_overridden_property(TypeDeclarationSymbol& decl, const
     return nullptr;
 }
 
-static void write_method(IndentingStringStream& output, bool is_interface, NonTypeSymbol& method)
+enum class FuncKind { TopLevelFunc, InterfaceMethod, ClassMethod };
+
+static void write_function(IndentingStringStream& output, FuncKind kind, NonTypeSymbol& function)
 {
-    auto name = escape_keyword(method.name());
-    auto* return_type = method.return_type();
+    bool is_ctype = false;
+    if (kind == FuncKind::TopLevelFunc) {
+      is_ctype = function.is_ctype();
+        if (is_ctype) {
+            output << "foreign ";
+        } else if (!generate_definitions_mode()) {
+            output << "@ObjCMirror\n";
+        }
+    }
+    auto* return_type = function.return_type();
     assert(return_type);
     auto hidden =
-        normal_mode() && (!is_objc_compatible_parameter_type(*return_type) || !is_objc_compatible_parameters(method));
+        normal_mode() && (!is_objc_compatible_parameter_type(*return_type) || !is_objc_compatible_parameters(function));
     if (hidden) {
         output.set_comment();
     }
-    write_foreign_name(output, method);
-    if (!is_interface) {
+    write_foreign_name(output, function);
+    if (kind == FuncKind::ClassMethod || (kind == FuncKind::TopLevelFunc && !is_ctype)) {
         output << "public ";
     }
-    if (method.is_static()) {
+    if (function.is_static()) {
         output << "static ";
-    } else if (!is_interface) {
+    } else if (kind == FuncKind::ClassMethod) {
         output << "open ";
     }
-    output << "func " << name;
-    write_method_parameters(output, method);
-    write_type(output, method, *return_type);
-    if (generate_definitions_mode()) {
+    output << "func " << escape_keyword(function.name());
+    write_method_parameters(output, function);
+    write_type(output, function, *return_type);
+    if (generate_definitions_mode() && !is_ctype) {
         if (return_type->is_unit()) {
             output << " { }";
         } else {
@@ -864,7 +874,7 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
         } else if (member.is_member_method()) {
             if (!get_property(*type, member) &&
                 !get_overridden_property(*type, member.selector(), member.is_static())) {
-                write_method(output, is_interface, member);
+                write_function(output, is_interface ? FuncKind::InterfaceMethod : FuncKind::ClassMethod, member);
             }
         } else if (member.is_instance_variable()) {
             assert(member.is_instance());
@@ -957,7 +967,10 @@ void write_cangjie()
                 } else if (auto* type = dynamic_cast<TypeDeclarationSymbol*>(symbol)) {
                     write_type_declaration(output, type);
                 } else {
-                    assert(false);
+                    assert(dynamic_cast<NonTypeSymbol*>(symbol));
+                    auto& top_level = static_cast<NonTypeSymbol&>(*symbol);
+                    assert(top_level.kind() == NonTypeSymbol::Kind::GlobalFunction);
+                    write_function(output, FuncKind::TopLevelFunc, top_level);
                 }
                 output << std::endl;
             }

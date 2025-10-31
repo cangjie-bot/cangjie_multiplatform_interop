@@ -227,23 +227,31 @@ void set_type_mappings()
     }
 }
 
-void do_type_map()
+static void do_map(NonTypeSymbol& symbol, TypeDeclarationSymbol* decl)
 {
+    for (auto&& parameter : symbol.parameters()) {
+        parameter.set_type(parameter.type()->map());
+    }
+    auto return_type = symbol.return_type()->map();
+    assert(return_type);
+    if (return_type->is_instancetype()) {
+        assert(decl);
+        return_type = decl;
+    }
+    symbol.set_return_type(return_type);
+}
+
+static void do_map()
+{
+    for (auto& top_level : Universe::top_level()) {
+        do_map(top_level, nullptr);
+    }
     for (auto&& decl : Universe::all_declarations()) {
         if (auto* type = dynamic_cast<TypeDeclarationSymbol*>(&decl)) {
             for (auto&& member : type->members()) {
-                if (member.is_property()) {
-                    continue;
+                if (!member.is_property()) {
+                    do_map(member, type);
                 }
-                for (auto&& parameter : member.parameters()) {
-                    parameter.set_type(parameter.type()->map());
-                }
-                auto return_type = member.return_type()->map();
-                assert(return_type);
-                if (return_type->is_instancetype()) {
-                    return_type = &decl;
-                }
-                member.set_return_type(return_type);
             }
         } else if (auto* alias = dynamic_cast<TypeAliasSymbol*>(&decl)) {
             auto* target = alias->target();
@@ -260,5 +268,5 @@ void apply_transforms()
 {
     do_rename();
     set_type_mappings();
-    do_type_map();
+    do_map();
 }

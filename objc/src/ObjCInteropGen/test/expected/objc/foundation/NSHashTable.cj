@@ -41,6 +41,49 @@ public struct NSHashEnumerator {
 }
 
 @ObjCMirror
+public func NSFreeHashTable(table: NSHashTable/*<ObjectType>*/): Unit
+
+@ObjCMirror
+public func NSResetHashTable(table: NSHashTable/*<ObjectType>*/): Unit
+
+@ObjCMirror
+public func NSCompareHashTables(table1: NSHashTable/*<ObjectType>*/, table2: NSHashTable/*<ObjectType>*/): Bool
+
+@ObjCMirror
+public func NSCopyHashTableWithZone(table: NSHashTable/*<ObjectType>*/, zone: CPointer<NSZone>): NSHashTable/*<ObjectType>*/
+
+@ObjCMirror
+public func NSHashGet(table: NSHashTable/*<ObjectType>*/, pointer: CPointer<Unit>): CPointer<Unit>
+
+@ObjCMirror
+public func NSHashInsert(table: NSHashTable/*<ObjectType>*/, pointer: CPointer<Unit>): Unit
+
+@ObjCMirror
+public func NSHashInsertKnownAbsent(table: NSHashTable/*<ObjectType>*/, pointer: CPointer<Unit>): Unit
+
+@ObjCMirror
+public func NSHashInsertIfAbsent(table: NSHashTable/*<ObjectType>*/, pointer: CPointer<Unit>): CPointer<Unit>
+
+@ObjCMirror
+public func NSHashRemove(table: NSHashTable/*<ObjectType>*/, pointer: CPointer<Unit>): Unit
+
+@ObjCMirror
+public func NSEnumerateHashTable(table: NSHashTable/*<ObjectType>*/): NSHashEnumerator
+
+foreign func NSNextHashEnumeratorItem(enumerator: CPointer<NSHashEnumerator>): CPointer<Unit>
+
+foreign func NSEndHashTableEnumeration(enumerator: CPointer<NSHashEnumerator>): Unit
+
+@ObjCMirror
+public func NSCountHashTable(table: NSHashTable/*<ObjectType>*/): NSUInteger
+
+@ObjCMirror
+public func NSStringFromHashTable(table: NSHashTable/*<ObjectType>*/): NSString
+
+@ObjCMirror
+public func NSAllHashTableObjects(table: NSHashTable/*<ObjectType>*/): NSArray/*<ObjectType>*/
+
+@ObjCMirror
 public struct NSHashTableCallBacks {
     public var hash: ObjCFunc<(NSHashTable/*<ObjectType>*/, CPointer<Unit>) -> NSUInteger> = ObjCFunc<(NSHashTable/*<ObjectType>*/, CPointer<Unit>) -> NSUInteger>()
     public var isEqual: ObjCFunc<(NSHashTable/*<ObjectType>*/, CPointer<Unit>, CPointer<Unit>) -> Bool> = ObjCFunc<(NSHashTable/*<ObjectType>*/, CPointer<Unit>, CPointer<Unit>) -> Bool>()
@@ -48,4 +91,10 @@ public struct NSHashTableCallBacks {
     public var release: ObjCFunc<(NSHashTable/*<ObjectType>*/, CPointer<Unit>) -> Unit> = ObjCFunc<(NSHashTable/*<ObjectType>*/, CPointer<Unit>) -> Unit>()
     public var describe: ObjCFunc<(NSHashTable/*<ObjectType>*/, CPointer<Unit>) -> NSString> = ObjCFunc<(NSHashTable/*<ObjectType>*/, CPointer<Unit>) -> NSString>()
 }
+
+@ObjCMirror
+public func NSCreateHashTableWithZone(callBacks: NSHashTableCallBacks, capacity: NSUInteger, zone: CPointer<NSZone>): NSHashTable/*<ObjectType>*/
+
+@ObjCMirror
+public func NSCreateHashTable(callBacks: NSHashTableCallBacks, capacity: NSUInteger): NSHashTable/*<ObjectType>*/
 

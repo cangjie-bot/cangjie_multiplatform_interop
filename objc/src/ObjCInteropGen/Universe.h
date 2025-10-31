@@ -8,6 +8,7 @@
 #ifndef UNIVERSE_H
 #define UNIVERSE_H
 
+#include <deque>
 #include <unordered_map>
 
 #include "Symbol.h"
@@ -121,10 +122,45 @@ template <bool OnlyType> struct UniverseTypes final {
     }
 };
 
+class TopLevelIterator final {
+public:
+    explicit TopLevelIterator(std::deque<NonTypeSymbol>& members) noexcept : members_(members)
+    {
+    }
+
+    [[nodiscard]] auto begin() const noexcept
+    {
+        return members_.begin();
+    }
+
+    [[nodiscard]] auto end() const noexcept
+    {
+        return members_.end();
+    }
+
+private:
+    std::deque<NonTypeSymbol>& members_;
+};
+
+class TopLevel final {
+public:
+    auto get_iterator() noexcept
+    {
+        return TopLevelIterator(members_);
+    }
+
+    NonTypeSymbol& add_function(std::string name, TypeLikeSymbol& return_type, uint8_t modifiers);
+
+private:
+    std::deque<NonTypeSymbol> members_;
+};
+
 class Universe final {
     static constexpr int PREALLOCATED_TYPE_COUNT = 8192;
 
     using type_map_t = std::unordered_map<std::string, NamedTypeSymbol*>;
+
+    TopLevel top_level_;
 
     type_map_t types_[TYPE_NAMESPACE_COUNT];
     type_order_t type_order_;
@@ -153,6 +189,8 @@ public:
         type_order_.reserve(PREALLOCATED_TYPE_COUNT);
     }
 
+    NonTypeSymbol& register_top_level_function(std::string name, TypeLikeSymbol& return_type, uint8_t modifiers);
+
     void register_type(NamedTypeSymbol* symbol);
 
     NamedTypeSymbol* type(const NamedTypeSymbol::Kind where, const std::string& name) const
@@ -180,6 +218,8 @@ public:
     }
 
     void process_rename(NamedTypeSymbol* symbol, const std::string& old_name);
+
+    static TopLevelIterator top_level() noexcept;
 
     static auto all_declarations()
     {

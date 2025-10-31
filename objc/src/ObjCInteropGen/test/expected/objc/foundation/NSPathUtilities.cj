@@ -5,6 +5,24 @@ package objc.foundation
 import interoplib.objc.*
 import objc.lang.*
 
+@ObjCMirror
+public func NSUserName(): NSString
+
+@ObjCMirror
+public func NSFullUserName(): NSString
+
+@ObjCMirror
+public func NSHomeDirectory(): NSString
+
+@ObjCMirror
+public func NSHomeDirectoryForUser(userName: ?NSString): ?NSString
+
+@ObjCMirror
+public func NSTemporaryDirectory(): NSString
+
+@ObjCMirror
+public func NSOpenStepRootDirectory(): NSString
+
 public abstract sealed class NSSearchPathDirectory {
     public static const NSApplicationDirectory: NSUInteger = 1
     public static const NSDemoApplicationDirectory: NSUInteger = 2
@@ -42,4 +60,7 @@ public abstract sealed class NSSearchPathDomainMask {
     public static const NSSystemDomainMask: NSUInteger = 8
     public static const NSAllDomainsMask: NSUInteger = 65535
 }
+
+@ObjCMirror
+public func NSSearchPathForDirectoriesInDomains(directory: Int32 /*NSSearchPathDirectory*/, domainMask: Int32 /*NSSearchPathDomainMask*/, expandTilde: Bool): NSArray/*<NSString>*/
 
