@@ -13,6 +13,32 @@ public type NSExceptionName = NSString
 
 public type NSRunLoopMode = NSString
 
+@ObjCMirror
+func NSStringFromSelector(aSelector: SEL): NSString
+
+@ObjCMirror
+func NSSelectorFromString(aSelectorName: NSString): SEL
+
+@ObjCMirror
+func NSStringFromClass(aClass: Class): NSString
+
+@ObjCMirror
+func NSClassFromString(aClassName: NSString): Class
+
+@ObjCMirror
+func NSStringFromProtocol(proto: Protocol): NSString
+
+@ObjCMirror
+func NSProtocolFromString(namestr: NSString): ?Protocol
+
+foreign func NSGetSizeAndAlignment(typePtr: CPointer<Int8>, sizep: CPointer<NSUInteger>, alignp: CPointer<NSUInteger>): CPointer<Int8>
+
+@ObjCMirror
+func NSLog(format: NSString): Unit
+
+@ObjCMirror
+func NSLogv(format: NSString, args: va_list): Unit
+
 public abstract sealed class NSComparisonResult {
     public static const NSOrderedAscending: NSInteger = -1
     public static const NSOrderedSame: NSInteger = 0

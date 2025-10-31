@@ -22,6 +22,12 @@ public open class NSException <: NSObject & NSCopying & NSSecureCoding {
 public type NSUncaughtExceptionHandler = ObjCFunc<(NSException) -> Unit>
 
 @ObjCMirror
+func NSGetUncaughtExceptionHandler(): ObjCPointer<NSUncaughtExceptionHandler>
+
+@ObjCMirror
+func NSSetUncaughtExceptionHandler(x: ObjCPointer<NSUncaughtExceptionHandler>): Unit
+
+@ObjCMirror
 public open class NSAssertionHandler <: NSObject {
     public static prop currentHandler: NSAssertionHandler
     @ForeignName["handleFailureInMethod:object:file:lineNumber:description:"] public open func handleFailureInMethodObjectFileLineNumberDescription(selector: SEL, object: ObjCId, fileName: NSString, line: NSInteger, format: ?NSString): Unit
