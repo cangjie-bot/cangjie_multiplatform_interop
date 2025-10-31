@@ -125,7 +125,7 @@ class PackageFileScope final {
     const std::string_view package_name_;
 
 public:
-    [[nodiscard]] explicit PackageFileScope(std::string_view package_name) noexcept : package_name_(package_name_)
+    [[nodiscard]] explicit PackageFileScope(std::string_view package_name) noexcept : package_name_(package_name)
     {
         assert(current_package_name.empty());
         assert(!package_name.empty());
