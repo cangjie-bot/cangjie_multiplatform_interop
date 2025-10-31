@@ -22,10 +22,10 @@ public open class NSException <: NSObject & NSCopying & NSSecureCoding {
 public type NSUncaughtExceptionHandler = ObjCFunc<(NSException) -> Unit>
 
 @ObjCMirror
-func NSGetUncaughtExceptionHandler(): ObjCPointer<NSUncaughtExceptionHandler>
+public func NSGetUncaughtExceptionHandler(): ObjCPointer<NSUncaughtExceptionHandler>
 
 @ObjCMirror
-func NSSetUncaughtExceptionHandler(x: ObjCPointer<NSUncaughtExceptionHandler>): Unit
+public func NSSetUncaughtExceptionHandler(x: ObjCPointer<NSUncaughtExceptionHandler>): Unit
 
 @ObjCMirror
 public open class NSAssertionHandler <: NSObject {

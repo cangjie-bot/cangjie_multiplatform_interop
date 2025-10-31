@@ -28,8 +28,8 @@ foreign func NSUnionRange(range1: NSRange, range2: NSRange): NSRange
 foreign func NSIntersectionRange(range1: NSRange, range2: NSRange): NSRange
 
 @ObjCMirror
-func NSStringFromRange(range: NSRange): NSString
+public func NSStringFromRange(range: NSRange): NSString
 
 @ObjCMirror
-func NSRangeFromString(aString: NSString): NSRange
+public func NSRangeFromString(aString: NSString): NSRange
 

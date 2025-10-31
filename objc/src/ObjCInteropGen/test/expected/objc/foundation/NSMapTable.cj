@@ -40,53 +40,53 @@ public struct NSMapEnumerator {
 }
 
 @ObjCMirror
-func NSFreeMapTable(table: NSMapTable/*<KeyType, ObjectType>*/): Unit
+public func NSFreeMapTable(table: NSMapTable/*<KeyType, ObjectType>*/): Unit
 
 @ObjCMirror
-func NSResetMapTable(table: NSMapTable/*<KeyType, ObjectType>*/): Unit
+public func NSResetMapTable(table: NSMapTable/*<KeyType, ObjectType>*/): Unit
 
 @ObjCMirror
-func NSCompareMapTables(table1: NSMapTable/*<KeyType, ObjectType>*/, table2: NSMapTable/*<KeyType, ObjectType>*/): Bool
+public func NSCompareMapTables(table1: NSMapTable/*<KeyType, ObjectType>*/, table2: NSMapTable/*<KeyType, ObjectType>*/): Bool
 
 @ObjCMirror
-func NSCopyMapTableWithZone(table: NSMapTable/*<KeyType, ObjectType>*/, zone: CPointer<NSZone>): NSMapTable/*<KeyType, ObjectType>*/
+public func NSCopyMapTableWithZone(table: NSMapTable/*<KeyType, ObjectType>*/, zone: CPointer<NSZone>): NSMapTable/*<KeyType, ObjectType>*/
 
 @ObjCMirror
-func NSMapMember(table: NSMapTable/*<KeyType, ObjectType>*/, key: CPointer<Unit>, originalKey: CPointer<CPointer<Unit>>, value: CPointer<CPointer<Unit>>): Bool
+public func NSMapMember(table: NSMapTable/*<KeyType, ObjectType>*/, key: CPointer<Unit>, originalKey: CPointer<CPointer<Unit>>, value: CPointer<CPointer<Unit>>): Bool
 
 @ObjCMirror
-func NSMapGet(table: NSMapTable/*<KeyType, ObjectType>*/, key: CPointer<Unit>): CPointer<Unit>
+public func NSMapGet(table: NSMapTable/*<KeyType, ObjectType>*/, key: CPointer<Unit>): CPointer<Unit>
 
 @ObjCMirror
-func NSMapInsert(table: NSMapTable/*<KeyType, ObjectType>*/, key: CPointer<Unit>, value: CPointer<Unit>): Unit
+public func NSMapInsert(table: NSMapTable/*<KeyType, ObjectType>*/, key: CPointer<Unit>, value: CPointer<Unit>): Unit
 
 @ObjCMirror
-func NSMapInsertKnownAbsent(table: NSMapTable/*<KeyType, ObjectType>*/, key: CPointer<Unit>, value: CPointer<Unit>): Unit
+public func NSMapInsertKnownAbsent(table: NSMapTable/*<KeyType, ObjectType>*/, key: CPointer<Unit>, value: CPointer<Unit>): Unit
 
 @ObjCMirror
-func NSMapInsertIfAbsent(table: NSMapTable/*<KeyType, ObjectType>*/, key: CPointer<Unit>, value: CPointer<Unit>): CPointer<Unit>
+public func NSMapInsertIfAbsent(table: NSMapTable/*<KeyType, ObjectType>*/, key: CPointer<Unit>, value: CPointer<Unit>): CPointer<Unit>
 
 @ObjCMirror
-func NSMapRemove(table: NSMapTable/*<KeyType, ObjectType>*/, key: CPointer<Unit>): Unit
+public func NSMapRemove(table: NSMapTable/*<KeyType, ObjectType>*/, key: CPointer<Unit>): Unit
 
 @ObjCMirror
-func NSEnumerateMapTable(table: NSMapTable/*<KeyType, ObjectType>*/): NSMapEnumerator
+public func NSEnumerateMapTable(table: NSMapTable/*<KeyType, ObjectType>*/): NSMapEnumerator
 
 foreign func NSNextMapEnumeratorPair(enumerator: CPointer<NSMapEnumerator>, key: CPointer<CPointer<Unit>>, value: CPointer<CPointer<Unit>>): Bool
 
 foreign func NSEndMapTableEnumeration(enumerator: CPointer<NSMapEnumerator>): Unit
 
 @ObjCMirror
-func NSCountMapTable(table: NSMapTable/*<KeyType, ObjectType>*/): NSUInteger
+public func NSCountMapTable(table: NSMapTable/*<KeyType, ObjectType>*/): NSUInteger
 
 @ObjCMirror
-func NSStringFromMapTable(table: NSMapTable/*<KeyType, ObjectType>*/): NSString
+public func NSStringFromMapTable(table: NSMapTable/*<KeyType, ObjectType>*/): NSString
 
 @ObjCMirror
-func NSAllMapTableKeys(table: NSMapTable/*<KeyType, ObjectType>*/): NSArray/*<ObjectType>*/
+public func NSAllMapTableKeys(table: NSMapTable/*<KeyType, ObjectType>*/): NSArray/*<ObjectType>*/
 
 @ObjCMirror
-func NSAllMapTableValues(table: NSMapTable/*<KeyType, ObjectType>*/): NSArray/*<ObjectType>*/
+public func NSAllMapTableValues(table: NSMapTable/*<KeyType, ObjectType>*/): NSArray/*<ObjectType>*/
 
 @ObjCMirror
 public struct NSMapTableKeyCallBacks {
@@ -106,8 +106,8 @@ public struct NSMapTableValueCallBacks {
 }
 
 @ObjCMirror
-func NSCreateMapTableWithZone(keyCallBacks: NSMapTableKeyCallBacks, valueCallBacks: NSMapTableValueCallBacks, capacity: NSUInteger, zone: CPointer<NSZone>): NSMapTable/*<KeyType, ObjectType>*/
+public func NSCreateMapTableWithZone(keyCallBacks: NSMapTableKeyCallBacks, valueCallBacks: NSMapTableValueCallBacks, capacity: NSUInteger, zone: CPointer<NSZone>): NSMapTable/*<KeyType, ObjectType>*/
 
 @ObjCMirror
-func NSCreateMapTable(keyCallBacks: NSMapTableKeyCallBacks, valueCallBacks: NSMapTableValueCallBacks, capacity: NSUInteger): NSMapTable/*<KeyType, ObjectType>*/
+public func NSCreateMapTable(keyCallBacks: NSMapTableKeyCallBacks, valueCallBacks: NSMapTableValueCallBacks, capacity: NSUInteger): NSMapTable/*<KeyType, ObjectType>*/
 

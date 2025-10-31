@@ -6,22 +6,22 @@ import interoplib.objc.*
 import objc.lang.*
 
 @ObjCMirror
-func NSUserName(): NSString
+public func NSUserName(): NSString
 
 @ObjCMirror
-func NSFullUserName(): NSString
+public func NSFullUserName(): NSString
 
 @ObjCMirror
-func NSHomeDirectory(): NSString
+public func NSHomeDirectory(): NSString
 
 @ObjCMirror
-func NSHomeDirectoryForUser(userName: ?NSString): ?NSString
+public func NSHomeDirectoryForUser(userName: ?NSString): ?NSString
 
 @ObjCMirror
-func NSTemporaryDirectory(): NSString
+public func NSTemporaryDirectory(): NSString
 
 @ObjCMirror
-func NSOpenStepRootDirectory(): NSString
+public func NSOpenStepRootDirectory(): NSString
 
 public abstract sealed class NSSearchPathDirectory {
     public static const NSApplicationDirectory: NSUInteger = 1
@@ -62,5 +62,5 @@ public abstract sealed class NSSearchPathDomainMask {
 }
 
 @ObjCMirror
-func NSSearchPathForDirectoriesInDomains(directory: Int32 /*NSSearchPathDirectory*/, domainMask: Int32 /*NSSearchPathDomainMask*/, expandTilde: Bool): NSArray/*<NSString>*/
+public func NSSearchPathForDirectoriesInDomains(directory: Int32 /*NSSearchPathDirectory*/, domainMask: Int32 /*NSSearchPathDomainMask*/, expandTilde: Bool): NSArray/*<NSString>*/
 
