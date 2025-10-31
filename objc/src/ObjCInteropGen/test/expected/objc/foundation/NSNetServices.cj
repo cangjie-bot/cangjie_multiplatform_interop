@@ -2,8 +2,8 @@
 
 package objc.foundation
 
-import objc.lang.ObjCPointer
 import interoplib.objc.*
+import objc.lang.*
 
 @ObjCMirror
 public interface NSNetServiceDelegate <: NSObjectProtocol {

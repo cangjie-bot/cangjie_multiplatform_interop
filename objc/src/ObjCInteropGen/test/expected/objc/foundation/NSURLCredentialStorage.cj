@@ -3,6 +3,7 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 @ObjCMirror
 public open class NSURLCredentialStorage <: NSObject {
@@ -11,12 +12,12 @@ public open class NSURLCredentialStorage <: NSObject {
     public open prop allCredentials: NSDictionary/*<NSURLProtectionSpace, NSDictionary<NSString, NSURLCredential>>*/
     @ForeignName["setCredential:forProtectionSpace:"] public open func setCredentialForProtectionSpace(credential: NSURLCredential, space: NSURLProtectionSpace): Unit
     @ForeignName["removeCredential:forProtectionSpace:"] public open func removeCredentialForProtectionSpace(credential: NSURLCredential, space: NSURLProtectionSpace): Unit
-    @ForeignName["removeCredential:forProtectionSpace:options:"] public open func removeCredentialForProtectionSpaceOptions(credential: NSURLCredential, space: NSURLProtectionSpace, options: ?NSDictionary/*<NSString, id>*/): Unit
+    @ForeignName["removeCredential:forProtectionSpace:options:"] public open func removeCredentialForProtectionSpaceOptions(credential: NSURLCredential, space: NSURLProtectionSpace, options: ?NSDictionary/*<NSString, ObjCId>*/): Unit
     @ForeignName["defaultCredentialForProtectionSpace:"] public open func defaultCredentialForProtectionSpace(space: NSURLProtectionSpace): ?NSURLCredential
     @ForeignName["setDefaultCredential:forProtectionSpace:"] public open func setDefaultCredentialForProtectionSpace(credential: NSURLCredential, space: NSURLProtectionSpace): Unit
     @ForeignName["getCredentialsForProtectionSpace:task:completionHandler:"] public open func getCredentialsForProtectionSpaceTaskCompletionHandler(protectionSpace: NSURLProtectionSpace, task: NSURLSessionTask, completionHandler: ObjCBlock<(NSDictionary/*<NSString, NSURLCredential>*/) -> Unit>): Unit
     @ForeignName["setCredential:forProtectionSpace:task:"] public open func setCredentialForProtectionSpaceTask(credential: NSURLCredential, protectionSpace: NSURLProtectionSpace, task: NSURLSessionTask): Unit
-    @ForeignName["removeCredential:forProtectionSpace:options:task:"] public open func removeCredentialForProtectionSpaceOptionsTask(credential: NSURLCredential, protectionSpace: NSURLProtectionSpace, options: ?NSDictionary/*<NSString, id>*/, task: NSURLSessionTask): Unit
+    @ForeignName["removeCredential:forProtectionSpace:options:task:"] public open func removeCredentialForProtectionSpaceOptionsTask(credential: NSURLCredential, protectionSpace: NSURLProtectionSpace, options: ?NSDictionary/*<NSString, ObjCId>*/, task: NSURLSessionTask): Unit
     @ForeignName["getDefaultCredentialForProtectionSpace:task:completionHandler:"] public open func getDefaultCredentialForProtectionSpaceTaskCompletionHandler(space: NSURLProtectionSpace, task: NSURLSessionTask, completionHandler: ObjCBlock<(NSURLCredential) -> Unit>): Unit
     @ForeignName["setDefaultCredential:forProtectionSpace:task:"] public open func setDefaultCredentialForProtectionSpaceTask(credential: NSURLCredential, protectionSpace: NSURLProtectionSpace, task: NSURLSessionTask): Unit
 }

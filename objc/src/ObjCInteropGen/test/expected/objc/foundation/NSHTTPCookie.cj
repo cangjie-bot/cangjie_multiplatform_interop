@@ -3,6 +3,7 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 public type NSHTTPCookiePropertyKey = NSString
 
@@ -10,11 +11,11 @@ public type NSHTTPCookieStringPolicy = NSString
 
 @ObjCMirror
 public open class NSHTTPCookie <: NSObject {
-    @ForeignName["initWithProperties:"] public init(properties: NSDictionary/*<NSHTTPCookiePropertyKey, id>*/)
-    @ForeignName["cookieWithProperties:"] public static func cookieWithProperties(properties: NSDictionary/*<NSHTTPCookiePropertyKey, id>*/): ?NSHTTPCookie
+    @ForeignName["initWithProperties:"] public init(properties: NSDictionary/*<NSHTTPCookiePropertyKey, ObjCId>*/)
+    @ForeignName["cookieWithProperties:"] public static func cookieWithProperties(properties: NSDictionary/*<NSHTTPCookiePropertyKey, ObjCId>*/): ?NSHTTPCookie
     @ForeignName["requestHeaderFieldsWithCookies:"] public static func requestHeaderFieldsWithCookies(cookies: NSArray/*<NSHTTPCookie>*/): NSDictionary/*<NSString, NSString>*/
     @ForeignName["cookiesWithResponseHeaderFields:forURL:"] public static func cookiesWithResponseHeaderFieldsForURL(headerFields: NSDictionary/*<NSString, NSString>*/, URL: NSURL): NSArray/*<NSHTTPCookie>*/
-    public open prop properties: ?NSDictionary/*<NSHTTPCookiePropertyKey, id>*/
+    public open prop properties: ?NSDictionary/*<NSHTTPCookiePropertyKey, ObjCId>*/
     public open prop versionInstance: NSUInteger
     public open prop name: NSString
     public open prop value: NSString

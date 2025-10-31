@@ -205,8 +205,6 @@ static bool is_objc_compatible_type(TypeLikeSymbol& type) noexcept
         }
         case NamedTypeSymbol::Kind::Struct:
             return canonical_type->is_ctype();
-        case NamedTypeSymbol::Kind::Protocol:
-            return false;
         default:
             return true;
     }
@@ -339,7 +337,7 @@ static void print_tricky_default_value(std::ostream& stream, std::string_view ty
 std::ostream& operator<<(std::ostream& stream, const DefaultValuePrinter& op)
 {
     if (dynamic_cast<const TypeParameterSymbol*>(&op.type)) {
-        print_tricky_default_value(stream, "id");
+        print_tricky_default_value(stream, "ObjCId");
         return stream;
     }
     const auto* named_type = dynamic_cast<const NamedTypeSymbol*>(&op.type);
@@ -467,10 +465,10 @@ static bool is_objc_compatible_parameters(NonTypeSymbol& method) noexcept
     return true;
 }
 
-template <class Symbol> void write_result_type(std::ostream& output, const Symbol& symbol, const TypeLikeSymbol& type)
+template <class Symbol> void write_type(std::ostream& output, const Symbol& symbol, const TypeLikeSymbol& type)
 {
     output << ": ";
-    if (!normal_mode() && symbol.is_nullable()) {
+    if (symbol.is_nullable()) {
         output << '?';
     }
     output << emit_cangjie(type);
@@ -489,7 +487,7 @@ static void write_method_parameters(std::ostream& output, const NonTypeSymbol& m
         auto* parameter_type = parameter_symbol.type();
         assert(parameter_type);
         output << escape_keyword(parameter_symbol.name());
-        write_result_type(output, parameter_symbol, *parameter_type);
+        write_type(output, parameter_symbol, *parameter_type);
         collect_import(*parameter_type);
     }
     output << ')';
@@ -639,7 +637,7 @@ static void write_method(IndentingStringStream& output, bool is_interface, NonTy
     }
     output << "func " << name;
     write_method_parameters(output, method);
-    write_result_type(output, method, *return_type);
+    write_type(output, method, *return_type);
     if (generate_definitions_mode()) {
         if (return_type->is_unit()) {
             output << " { }";
@@ -729,13 +727,7 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
     }
     output << "public ";
     if (is_interface) {
-        // The current FE does not support interfaces at all.
-        if (normal_mode()) {
-            is_interface = false;
-            output << "open class /*interface*/";
-        } else {
-            output << "interface";
-        }
+        output << "interface";
     } else if (is_struct_or_union) {
         output << "struct";
     } else if (is_enum) {
@@ -759,51 +751,20 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
     }
     const auto base_count = type->base_count();
     if (base_count) {
-        auto hide_additional_bases = normal_mode();
         output << " <: ";
         auto* base = type->base(0);
         assert(base);
         output << emit_cangjie(base);
         collect_import(*base);
-        if (base_count > 1) {
-            if (hide_additional_bases) {
-                output << " //";
-            }
-            for (std::size_t i = 1; i < base_count; ++i) {
-                output << " & ";
-                auto* base = type->base(i);
-                assert(base);
-                output << emit_cangjie(base);
-                if (!hide_additional_bases) {
-                    collect_import(*base);
-                }
-            }
-            output << (hide_additional_bases ? "\n{\n" : " {\n");
-        } else {
-            output << " {\n";
+        for (std::size_t i = 1; i < base_count; ++i) {
+            output << " & ";
+            auto* base = type->base(i);
+            assert(base);
+            output << emit_cangjie(base);
+            collect_import(*base);
         }
-    } else {
-        // TODO: Can @ObjCMirror classes and interfaces implement `id` implicitly?
-        //  Discuss with FE developers.
-        auto hidden = normal_mode();
-        switch (type->kind()) {
-            case NamedTypeSymbol::Kind::Interface:
-            case NamedTypeSymbol::Kind::Protocol:
-                // All @ObjCMirror classes and interfaces implement `id` (`ObjcId`) (unless in
-                // normal mode, where interfaces are not supported yet)
-                if (hidden) {
-                    output << " /*";
-                }
-                output << " <: id";
-                if (hidden) {
-                    output << " */";
-                }
-                break;
-            default:
-                break;
-        }
-        output << " {\n";
     }
+    output << " {\n";
     output.indent();
     auto any_constructor_exists = false;
     auto default_constructor_exists = false;
@@ -833,7 +794,7 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
                     output << "mut ";
                 }
                 output << "prop " << escape_keyword(name);
-                write_result_type(output, *getter, *return_type);
+                write_type(output, *getter, *return_type);
                 if (generate_definitions_mode()) {
                     output << " {\n";
                     output.indent();
@@ -876,7 +837,7 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
                 auto* return_type = normal_mode() ? type : member.return_type();
                 assert(return_type);
 
-                write_result_type(output, member, *return_type);
+                write_type(output, member, *return_type);
                 if (generate_definitions_mode() && !is_interface) {
                     output << " { " << default_value(*return_type) << " }";
                 }
@@ -917,7 +878,7 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
                 output.set_comment();
             }
             output << (member.is_public() ? "public" : "protected") << " var " << escape_keyword(name);
-            write_result_type(output, member, *return_type);
+            write_type(output, member, *return_type);
             if (generate_definitions_mode()) {
                 output << " = " << default_value(*return_type);
             }
@@ -939,7 +900,7 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
                 output.set_comment();
             }
             output << "public var " << escape_keyword(name);
-            write_result_type(output, member, *return_type);
+            write_type(output, member, *return_type);
             output << " = " << default_value(*return_type);
             if (hidden) {
                 output.reset_comment();
@@ -953,7 +914,7 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
             assert(return_type);
             assert(!return_type->is_unit());
             output << "public static const " << escape_keyword(member.name());
-            write_result_type(output, member, *return_type);
+            write_type(output, member, *return_type);
             output << " = ";
             collect_import(*return_type);
             print_enum_constant_value(output, member);
@@ -1010,7 +971,8 @@ void write_cangjie()
                 file_output << "import " << import << std::endl;
             }
             if (!generate_definitions_mode()) {
-                file_output << "import interoplib.objc.*\n\n";
+                file_output << "import interoplib.objc.*\n"
+                               "import objc.lang.*\n\n";
             }
             file_output << output.str();
 

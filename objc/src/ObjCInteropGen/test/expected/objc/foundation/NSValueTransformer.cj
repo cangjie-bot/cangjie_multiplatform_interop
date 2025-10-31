@@ -3,6 +3,7 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 public type NSValueTransformerName = NSString
 
@@ -13,8 +14,8 @@ public open class NSValueTransformer <: NSObject {
     public static func valueTransformerNames(): NSArray/*<NSValueTransformerName>*/
     public static func transformedValueClass(): Class
     public static func allowsReverseTransformation(): Bool
-    @ForeignName["transformedValue:"] public open func transformedValue(value: id): id
-    @ForeignName["reverseTransformedValue:"] public open func reverseTransformedValue(value: id): id
+    @ForeignName["transformedValue:"] public open func transformedValue(value: ObjCId): ObjCId
+    @ForeignName["reverseTransformedValue:"] public open func reverseTransformedValue(value: ObjCId): ObjCId
 }
 
 @ObjCMirror

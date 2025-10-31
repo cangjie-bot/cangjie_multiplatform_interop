@@ -2,45 +2,45 @@
 
 package objc.foundation
 
-import objc.lang.ObjCPointer
 import interoplib.objc.*
+import objc.lang.*
 
 @ObjCMirror
 public open class NSSet/*<ObjectType>*/ <: NSObject & NSCopying & NSMutableCopying & NSSecureCoding & NSFastEnumeration {
     public open prop count: NSUInteger
-    @ForeignName["member:"] public open func member(object: id /*ObjectType*/): id /*ObjectType*/
+    @ForeignName["member:"] public open func member(object: ObjCId /*ObjectType*/): ObjCId /*ObjectType*/
     public open func objectEnumerator(): NSEnumerator/*<ObjectType>*/
     public init()
-    @ForeignName["initWithObjects:count:"] public init(objects: ObjCPointer<id /*ObjectType*/>, cnt: NSUInteger)
+    @ForeignName["initWithObjects:count:"] public init(objects: ObjCPointer<ObjCId /*ObjectType*/>, cnt: NSUInteger)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
     public open prop allObjects: NSArray/*<ObjectType>*/
-    public open func anyObject(): id /*ObjectType*/
-    @ForeignName["containsObject:"] public open func containsObject(anObject: id /*ObjectType*/): Bool
-    @ForeignName["descriptionWithLocale:"] public open func descriptionWithLocale(locale: id): NSString
+    public open func anyObject(): ObjCId /*ObjectType*/
+    @ForeignName["containsObject:"] public open func containsObject(anObject: ObjCId /*ObjectType*/): Bool
+    @ForeignName["descriptionWithLocale:"] public open func descriptionWithLocale(locale: ObjCId): NSString
     @ForeignName["intersectsSet:"] public open func intersectsSet(otherSet: NSSet/*<ObjectType>*/): Bool
     @ForeignName["isEqualToSet:"] public open func isEqualToSet(otherSet: NSSet/*<ObjectType>*/): Bool
     @ForeignName["isSubsetOfSet:"] public open func isSubsetOfSet(otherSet: NSSet/*<ObjectType>*/): Bool
     @ForeignName["makeObjectsPerformSelector:"] public open func makeObjectsPerformSelector(aSelector: SEL): Unit
-    @ForeignName["makeObjectsPerformSelector:withObject:"] public open func makeObjectsPerformSelectorWithObject(aSelector: SEL, argument: id): Unit
-    @ForeignName["setByAddingObject:"] public open func setByAddingObject(anObject: id /*ObjectType*/): NSSet/*<ObjectType>*/
+    @ForeignName["makeObjectsPerformSelector:withObject:"] public open func makeObjectsPerformSelectorWithObject(aSelector: SEL, argument: ObjCId): Unit
+    @ForeignName["setByAddingObject:"] public open func setByAddingObject(anObject: ObjCId /*ObjectType*/): NSSet/*<ObjectType>*/
     @ForeignName["setByAddingObjectsFromSet:"] public open func setByAddingObjectsFromSet(other: NSSet/*<ObjectType>*/): NSSet/*<ObjectType>*/
     @ForeignName["setByAddingObjectsFromArray:"] public open func setByAddingObjectsFromArray(other: NSArray/*<ObjectType>*/): NSSet/*<ObjectType>*/
-    @ForeignName["enumerateObjectsUsingBlock:"] public open func enumerateObjectsUsingBlock(block: ObjCBlock<(id /*ObjectType*/, CPointer<Bool>) -> Unit>): Unit
-    @ForeignName["enumerateObjectsWithOptions:usingBlock:"] public open func enumerateObjectsWithOptionsUsingBlock(opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(id /*ObjectType*/, CPointer<Bool>) -> Unit>): Unit
-    @ForeignName["objectsPassingTest:"] public open func objectsPassingTest(predicate: ObjCBlock<(id /*ObjectType*/, CPointer<Bool>) -> Bool>): NSSet/*<ObjectType>*/
-    @ForeignName["objectsWithOptions:passingTest:"] public open func objectsWithOptionsPassingTest(opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(id /*ObjectType*/, CPointer<Bool>) -> Bool>): NSSet/*<ObjectType>*/
+    @ForeignName["enumerateObjectsUsingBlock:"] public open func enumerateObjectsUsingBlock(block: ObjCBlock<(ObjCId /*ObjectType*/, CPointer<Bool>) -> Unit>): Unit
+    @ForeignName["enumerateObjectsWithOptions:usingBlock:"] public open func enumerateObjectsWithOptionsUsingBlock(opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(ObjCId /*ObjectType*/, CPointer<Bool>) -> Unit>): Unit
+    @ForeignName["objectsPassingTest:"] public open func objectsPassingTest(predicate: ObjCBlock<(ObjCId /*ObjectType*/, CPointer<Bool>) -> Bool>): NSSet/*<ObjectType>*/
+    @ForeignName["objectsWithOptions:passingTest:"] public open func objectsWithOptionsPassingTest(opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(ObjCId /*ObjectType*/, CPointer<Bool>) -> Bool>): NSSet/*<ObjectType>*/
     public static func set(): NSSet/*<ObjectType>*/
-    @ForeignName["setWithObject:"] public static func setWithObject(object: id /*ObjectType*/): NSSet/*<ObjectType>*/
-    @ForeignName["setWithObjects:count:"] public static func setWithObjectsCount(objects: ObjCPointer<id /*ObjectType*/>, cnt: NSUInteger): NSSet/*<ObjectType>*/
-    @ForeignName["setWithObjects:"] public static func setWithObjects(firstObj: id /*ObjectType*/): NSSet/*<ObjectType>*/
+    @ForeignName["setWithObject:"] public static func setWithObject(object: ObjCId /*ObjectType*/): NSSet/*<ObjectType>*/
+    @ForeignName["setWithObjects:count:"] public static func setWithObjectsCount(objects: ObjCPointer<ObjCId /*ObjectType*/>, cnt: NSUInteger): NSSet/*<ObjectType>*/
+    @ForeignName["setWithObjects:"] public static func setWithObjects(firstObj: ObjCId /*ObjectType*/): NSSet/*<ObjectType>*/
     @ForeignName["setWithSet:"] public static func setWithSet(set: NSSet/*<ObjectType>*/): NSSet/*<ObjectType>*/
     @ForeignName["setWithArray:"] public static func setWithArray(array: NSArray/*<ObjectType>*/): NSSet/*<ObjectType>*/
-    @ForeignName["initWithObjects:"] public init(firstObj: id /*ObjectType*/)
+    @ForeignName["initWithObjects:"] public init(firstObj: ObjCId /*ObjectType*/)
     @ForeignName["initWithSet:"] public init(set: NSSet/*<ObjectType>*/)
     @ForeignName["initWithSet:copyItems:"] public init(set: NSSet/*<ObjectType>*/, flag: Bool)
     @ForeignName["initWithArray:"] public init(array: NSArray/*<ObjectType>*/)
-    @ForeignName["valueForKey:"] public open func valueForKey(key: NSString): id
-    @ForeignName["setValue:forKey:"] public open func setValueForKey(value: id, key: NSString): Unit
+    @ForeignName["valueForKey:"] public open func valueForKey(key: NSString): ObjCId
+    @ForeignName["setValue:forKey:"] public open func setValueForKey(value: ObjCId, key: NSString): Unit
     @ForeignName["addObserver:forKeyPath:options:context:"] public open func addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: NSString, options: Int32 /*NSKeyValueObservingOptions*/, context: CPointer<Unit>): Unit
     @ForeignName["removeObserver:forKeyPath:context:"] public open func removeObserverForKeyPathContext(observer: NSObject, keyPath: NSString, context: CPointer<Unit>): Unit
     @ForeignName["removeObserver:forKeyPath:"] public open func removeObserverForKeyPath(observer: NSObject, keyPath: NSString): Unit
@@ -50,8 +50,8 @@ public open class NSSet/*<ObjectType>*/ <: NSObject & NSCopying & NSMutableCopyi
 
 @ObjCMirror
 public open class NSMutableSet/*<ObjectType>*/ <: NSSet/*<ObjectType>*/ {
-    @ForeignName["addObject:"] public open func addObject(object: id /*ObjectType*/): Unit
-    @ForeignName["removeObject:"] public open func removeObject(object: id /*ObjectType*/): Unit
+    @ForeignName["addObject:"] public open func addObject(object: ObjCId /*ObjectType*/): Unit
+    @ForeignName["removeObject:"] public open func removeObject(object: ObjCId /*ObjectType*/): Unit
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
     public init()
     @ForeignName["initWithCapacity:"] public init(numItems: NSUInteger)
@@ -70,9 +70,9 @@ public open class NSCountedSet/*<ObjectType>*/ <: NSMutableSet/*<ObjectType>*/ {
     @ForeignName["initWithCapacity:"] public init(numItems: NSUInteger)
     @ForeignName["initWithArray:"] public init(array: NSArray/*<ObjectType>*/)
     @ForeignName["initWithSet:"] public init(set: NSSet/*<ObjectType>*/)
-    @ForeignName["countForObject:"] public open func countForObject(object: id /*ObjectType*/): NSUInteger
+    @ForeignName["countForObject:"] public open func countForObject(object: ObjCId /*ObjectType*/): NSUInteger
     public open func objectEnumerator(): NSEnumerator/*<ObjectType>*/
-    @ForeignName["addObject:"] public open func addObject(object: id /*ObjectType*/): Unit
-    @ForeignName["removeObject:"] public open func removeObject(object: id /*ObjectType*/): Unit
+    @ForeignName["addObject:"] public open func addObject(object: ObjCId /*ObjectType*/): Unit
+    @ForeignName["removeObject:"] public open func removeObject(object: ObjCId /*ObjectType*/): Unit
 }
 

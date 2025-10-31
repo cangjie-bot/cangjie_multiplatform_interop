@@ -3,6 +3,7 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 @ObjCMirror
 public open class NSSortDescriptor <: NSObject & NSSecureCoding & NSCopying {
@@ -18,7 +19,7 @@ public open class NSSortDescriptor <: NSObject & NSSecureCoding & NSCopying {
     @ForeignName["sortDescriptorWithKey:ascending:comparator:"] public static func sortDescriptorWithKeyAscendingComparator(key: ?NSString, ascending: Bool, cmptr: NSComparator): NSSortDescriptor
     @ForeignName["initWithKey:ascending:comparator:"] public init(key: ?NSString, ascending: Bool, cmptr: NSComparator)
     public open prop comparator: NSComparator
-    @ForeignName["compareObject:toObject:"] public open func compareObjectToObject(object1: id, object2: id): Int32 /*NSComparisonResult*/
-    public open prop reversedSortDescriptor: id
+    @ForeignName["compareObject:toObject:"] public open func compareObjectToObject(object1: ObjCId, object2: ObjCId): Int32 /*NSComparisonResult*/
+    public open prop reversedSortDescriptor: ObjCId
 }
 

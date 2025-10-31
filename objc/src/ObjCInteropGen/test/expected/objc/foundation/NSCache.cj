@@ -3,20 +3,21 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 @ObjCMirror
 public interface NSCacheDelegate <: NSObjectProtocol {
-    @ForeignName["cache:willEvictObject:"] func cacheWillEvictObject(cache: NSCache/*<KeyType, ObjectType>*/, obj: id): Unit
+    @ForeignName["cache:willEvictObject:"] func cacheWillEvictObject(cache: NSCache/*<KeyType, ObjectType>*/, obj: ObjCId): Unit
 }
 
 @ObjCMirror
 public open class NSCache/*<KeyType, ObjectType>*/ <: NSObject {
     public open mut prop name: NSString
     public open mut prop delegate: ?NSCacheDelegate
-    @ForeignName["objectForKey:"] public open func objectForKey(key: id /*KeyType*/): id /*ObjectType*/
-    @ForeignName["setObject:forKey:"] public open func setObjectForKey(obj: id /*ObjectType*/, key: id /*KeyType*/): Unit
-    @ForeignName["setObject:forKey:cost:"] public open func setObjectForKeyCost(obj: id /*ObjectType*/, key: id /*KeyType*/, g: NSUInteger): Unit
-    @ForeignName["removeObjectForKey:"] public open func removeObjectForKey(key: id /*KeyType*/): Unit
+    @ForeignName["objectForKey:"] public open func objectForKey(key: ObjCId /*KeyType*/): ObjCId /*ObjectType*/
+    @ForeignName["setObject:forKey:"] public open func setObjectForKey(obj: ObjCId /*ObjectType*/, key: ObjCId /*KeyType*/): Unit
+    @ForeignName["setObject:forKey:cost:"] public open func setObjectForKeyCost(obj: ObjCId /*ObjectType*/, key: ObjCId /*KeyType*/, g: NSUInteger): Unit
+    @ForeignName["removeObjectForKey:"] public open func removeObjectForKey(key: ObjCId /*KeyType*/): Unit
     public open func removeAllObjects(): Unit
     public open mut prop totalCostLimit: NSUInteger
     public open mut prop countLimit: NSUInteger

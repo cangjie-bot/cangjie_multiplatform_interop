@@ -3,6 +3,7 @@
 package objc.foundation
 
 import interoplib.objc.*
+import objc.lang.*
 
 public abstract sealed class NSTextCheckingType {
     public static const NSTextCheckingTypeOrthography: uint64_t = 1
@@ -29,7 +30,7 @@ public open class NSTextCheckingResult <: NSObject & NSCopying & NSSecureCoding 
     public open prop resultType: Int32 /*NSTextCheckingType*/
     public open prop range: NSRange
     public open prop orthography: ?NSOrthography
-    public open prop grammarDetails: ?NSArray/*<NSDictionary<NSString, id>>*/
+    public open prop grammarDetails: ?NSArray/*<NSDictionary<NSString, ObjCId>>*/
     public open prop date: ?NSDate
     public open prop timeZone: ?NSTimeZone
     public open prop duration: NSTimeInterval
@@ -46,7 +47,7 @@ public open class NSTextCheckingResult <: NSObject & NSCopying & NSSecureCoding 
     public open prop addressComponents: ?NSDictionary/*<NSTextCheckingKey, NSString>*/
     @ForeignName["orthographyCheckingResultWithRange:orthography:"] public static func orthographyCheckingResultWithRangeOrthography(range: NSRange, orthography: NSOrthography): NSTextCheckingResult
     @ForeignName["spellCheckingResultWithRange:"] public static func spellCheckingResultWithRange(range: NSRange): NSTextCheckingResult
-    @ForeignName["grammarCheckingResultWithRange:details:"] public static func grammarCheckingResultWithRangeDetails(range: NSRange, details: NSArray/*<NSDictionary<NSString, id>>*/): NSTextCheckingResult
+    @ForeignName["grammarCheckingResultWithRange:details:"] public static func grammarCheckingResultWithRangeDetails(range: NSRange, details: NSArray/*<NSDictionary<NSString, ObjCId>>*/): NSTextCheckingResult
     @ForeignName["dateCheckingResultWithRange:date:"] public static func dateCheckingResultWithRangeDate(range: NSRange, date: NSDate): NSTextCheckingResult
     @ForeignName["dateCheckingResultWithRange:date:timeZone:duration:"] public static func dateCheckingResultWithRangeDateTimeZoneDuration(range: NSRange, date: NSDate, timeZone: NSTimeZone, duration: NSTimeInterval): NSTextCheckingResult
     @ForeignName["addressCheckingResultWithRange:components:"] public static func addressCheckingResultWithRangeComponents(range: NSRange, components: NSDictionary/*<NSTextCheckingKey, NSString>*/): NSTextCheckingResult

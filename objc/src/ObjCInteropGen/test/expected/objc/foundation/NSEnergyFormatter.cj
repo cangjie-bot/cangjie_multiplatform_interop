@@ -2,8 +2,8 @@
 
 package objc.foundation
 
-import objc.lang.ObjCPointer
 import interoplib.objc.*
+import objc.lang.*
 
 public abstract sealed class NSEnergyFormatterUnit {
     public static const NSEnergyFormatterUnitJoule: NSInteger = 11
@@ -21,6 +21,6 @@ public open class NSEnergyFormatter <: NSFormatter {
     @ForeignName["stringFromJoules:"] public open func stringFromJoules(numberInJoules: Float64): NSString
     @ForeignName["unitStringFromValue:unit:"] public open func unitStringFromValueUnit(value: Float64, unit: Int32 /*NSEnergyFormatterUnit*/): NSString
     @ForeignName["unitStringFromJoules:usedUnit:"] public open func unitStringFromJoulesUsedUnit(numberInJoules: Float64, unitp: CPointer<Int32 /*NSEnergyFormatterUnit*/>): NSString
-    @ForeignName["getObjectValue:forString:errorDescription:"] public open func getObjectValueForStringErrorDescription(obj: ObjCPointer<id>, string: NSString, error: ObjCPointer<NSString>): Bool
+    @ForeignName["getObjectValue:forString:errorDescription:"] public open func getObjectValueForStringErrorDescription(obj: ObjCPointer<ObjCId>, string: NSString, error: ObjCPointer<NSString>): Bool
 }
 
