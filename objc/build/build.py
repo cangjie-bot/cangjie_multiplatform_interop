@@ -115,7 +115,8 @@ def fetch_tomlplusplus(target_dir):
     if not os.path.exists(tomlplusplus_dir):
         LOG.info('Fetching tomlplusplus from GitHub...\n')
         command(
-            "git", "clone", "--depth=1", "-b", "v3.4.0", "https://gitee.com/marzer/tomlplusplus.git", tomlplusplus_dir
+            "git", "clone", "--depth=1", "-b", "v3.4.0", "https://gitee.com/mirrors_marzer/tomlplusplus.git",
+            tomlplusplus_dir
         )
         LOG.info('Finished fetching tomlplusplus\n')
     else:
