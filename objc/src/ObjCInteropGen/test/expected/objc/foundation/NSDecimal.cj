@@ -30,3 +30,30 @@ public struct NSDecimal {
     public var _mantissa: VArray<UInt16, $8> = [0, 0, 0, 0, 0, 0, 0, 0]
 }
 
+foreign func NSDecimalIsNotANumber(dcm: CPointer<NSDecimal>): Bool
+
+foreign func NSDecimalCopy(destination: CPointer<NSDecimal>, source: CPointer<NSDecimal>): Unit
+
+foreign func NSDecimalCompact(number: CPointer<NSDecimal>): Unit
+
+foreign func NSDecimalCompare(leftOperand: CPointer<NSDecimal>, rightOperand: CPointer<NSDecimal>): Int32 /*NSComparisonResult*/
+
+foreign func NSDecimalRound(result: CPointer<NSDecimal>, number: CPointer<NSDecimal>, scale: NSInteger, roundingMode: Int32 /*NSRoundingMode*/): Unit
+
+foreign func NSDecimalNormalize(number1: CPointer<NSDecimal>, number2: CPointer<NSDecimal>, roundingMode: Int32 /*NSRoundingMode*/): Int32 /*NSCalculationError*/
+
+foreign func NSDecimalAdd(result: CPointer<NSDecimal>, leftOperand: CPointer<NSDecimal>, rightOperand: CPointer<NSDecimal>, roundingMode: Int32 /*NSRoundingMode*/): Int32 /*NSCalculationError*/
+
+foreign func NSDecimalSubtract(result: CPointer<NSDecimal>, leftOperand: CPointer<NSDecimal>, rightOperand: CPointer<NSDecimal>, roundingMode: Int32 /*NSRoundingMode*/): Int32 /*NSCalculationError*/
+
+foreign func NSDecimalMultiply(result: CPointer<NSDecimal>, leftOperand: CPointer<NSDecimal>, rightOperand: CPointer<NSDecimal>, roundingMode: Int32 /*NSRoundingMode*/): Int32 /*NSCalculationError*/
+
+foreign func NSDecimalDivide(result: CPointer<NSDecimal>, leftOperand: CPointer<NSDecimal>, rightOperand: CPointer<NSDecimal>, roundingMode: Int32 /*NSRoundingMode*/): Int32 /*NSCalculationError*/
+
+foreign func NSDecimalPower(result: CPointer<NSDecimal>, number: CPointer<NSDecimal>, power: NSUInteger, roundingMode: Int32 /*NSRoundingMode*/): Int32 /*NSCalculationError*/
+
+foreign func NSDecimalMultiplyByPowerOf10(result: CPointer<NSDecimal>, number: CPointer<NSDecimal>, power: Int16, roundingMode: Int32 /*NSRoundingMode*/): Int32 /*NSCalculationError*/
+
+@ObjCMirror
+func NSDecimalString(dcm: CPointer<NSDecimal>, locale: ObjCId): NSString
+
