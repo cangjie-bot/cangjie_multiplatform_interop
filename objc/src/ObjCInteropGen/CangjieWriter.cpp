@@ -620,10 +620,15 @@ enum class FuncKind { TopLevelFunc, InterfaceMethod, ClassMethod };
 
 static void write_function(IndentingStringStream& output, FuncKind kind, NonTypeSymbol& function)
 {
+    bool is_ctype = false;
     if (kind == FuncKind::TopLevelFunc) {
-        output << (function.is_ctype() ? "foreign " : "@ObjCMirror\n");
+      is_ctype = function.is_ctype();
+        if (is_ctype) {
+            output << "foreign ";
+        } else if (!generate_definitions_mode()) {
+            output << "@ObjCMirror\n";
+        }
     }
-    auto name = escape_keyword(function.name());
     auto* return_type = function.return_type();
     assert(return_type);
     auto hidden =
@@ -632,7 +637,7 @@ static void write_function(IndentingStringStream& output, FuncKind kind, NonType
         output.set_comment();
     }
     write_foreign_name(output, function);
-    if (kind == FuncKind::ClassMethod) {
+    if (kind == FuncKind::ClassMethod || (kind == FuncKind::TopLevelFunc && !is_ctype)) {
         output << "public ";
     }
     if (function.is_static()) {
@@ -640,10 +645,10 @@ static void write_function(IndentingStringStream& output, FuncKind kind, NonType
     } else if (kind == FuncKind::ClassMethod) {
         output << "open ";
     }
-    output << "func " << name;
+    output << "func " << escape_keyword(function.name());
     write_method_parameters(output, function);
     write_type(output, function, *return_type);
-    if (generate_definitions_mode()) {
+    if (generate_definitions_mode() && !is_ctype) {
         if (return_type->is_unit()) {
             output << " { }";
         } else {
