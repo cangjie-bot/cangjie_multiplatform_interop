@@ -620,21 +620,21 @@ enum class FuncKind { TopLevelFunc, InterfaceMethod, ClassMethod };
 
 static void write_function(IndentingStringStream& output, FuncKind kind, NonTypeSymbol& function)
 {
-    bool is_ctype = false;
-    if (kind == FuncKind::TopLevelFunc) {
-      is_ctype = function.is_ctype();
-        if (is_ctype) {
-            output << "foreign ";
-        } else if (!generate_definitions_mode()) {
-            output << "@ObjCMirror\n";
-        }
-    }
     auto* return_type = function.return_type();
     assert(return_type);
     auto hidden =
         normal_mode() && (!is_objc_compatible_parameter_type(*return_type) || !is_objc_compatible_parameters(function));
     if (hidden) {
         output.set_comment();
+    }
+    bool is_ctype = false;
+    if (kind == FuncKind::TopLevelFunc) {
+        is_ctype = function.is_ctype();
+        if (is_ctype) {
+            output << "foreign ";
+        } else if (!generate_definitions_mode()) {
+            output << "@ObjCMirror\n";
+        }
     }
     write_foreign_name(output, function);
     if (kind == FuncKind::ClassMethod || (kind == FuncKind::TopLevelFunc && !is_ctype)) {
