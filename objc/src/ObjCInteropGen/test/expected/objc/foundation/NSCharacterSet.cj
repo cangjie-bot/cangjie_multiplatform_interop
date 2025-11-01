@@ -50,9 +50,9 @@ public open class NSMutableCharacterSet <: NSCharacterSet & NSCopying & NSMutabl
     @ForeignName["formUnionWithCharacterSet:"] public open func formUnionWithCharacterSet(otherSet: NSCharacterSet): Unit
     @ForeignName["formIntersectionWithCharacterSet:"] public open func formIntersectionWithCharacterSet(otherSet: NSCharacterSet): Unit
     public open func invert(): Unit
-    @ForeignName["characterSetWithRange:"] public static func characterSetWithRange(aRange: NSRange): NSMutableCharacterSet
-    @ForeignName["characterSetWithCharactersInString:"] public static func characterSetWithCharactersInString(aString: NSString): NSMutableCharacterSet
-    @ForeignName["characterSetWithBitmapRepresentation:"] public static func characterSetWithBitmapRepresentation(data: NSData): NSMutableCharacterSet
-    @ForeignName["characterSetWithContentsOfFile:"] public static func characterSetWithContentsOfFile(fName: NSString): ?NSCharacterSet
+    public static func characterSetWithRange(aRange: NSRange): NSMutableCharacterSet
+    public static func characterSetWithCharactersInString(aString: NSString): NSMutableCharacterSet
+    public static func characterSetWithBitmapRepresentation(data: NSData): NSMutableCharacterSet
+    public static func characterSetWithContentsOfFile(fName: NSString): ?NSCharacterSet
 }
 

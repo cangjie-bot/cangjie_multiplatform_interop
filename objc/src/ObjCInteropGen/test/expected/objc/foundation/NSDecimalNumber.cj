@@ -18,7 +18,7 @@ public open class NSDecimalNumber <: NSNumber {
     @ForeignName["initWithDecimal:"] public init(dcm: NSDecimal)
     @ForeignName["initWithString:"] public init(numberValue: ?NSString)
     @ForeignName["initWithString:locale:"] public init(numberValue: ?NSString, locale: ObjCId)
-    @ForeignName["descriptionWithLocale:"] public open func descriptionWithLocale(locale: ObjCId): NSString
+    public open func descriptionWithLocale(locale: ObjCId): NSString
     @ForeignName["decimalNumberWithMantissa:exponent:isNegative:"] public static func decimalNumberWithMantissaExponentIsNegative(mantissa: UInt64, exponent: Int16, flag: Bool): NSDecimalNumber
     @ForeignName["decimalNumberWithDecimal:"] public static func decimalNumberWithDecimal(dcm: NSDecimal): NSDecimalNumber
     @ForeignName["decimalNumberWithString:"] public static func decimalNumberWithString(numberValue: ?NSString): NSDecimalNumber
@@ -41,7 +41,7 @@ public open class NSDecimalNumber <: NSNumber {
     @ForeignName["decimalNumberByMultiplyingByPowerOf10:"] public open func decimalNumberByMultiplyingByPowerOf10(power: Int16): NSDecimalNumber
     @ForeignName["decimalNumberByMultiplyingByPowerOf10:withBehavior:"] public open func decimalNumberByMultiplyingByPowerOf10WithBehavior(power: Int16, behavior: ?NSDecimalNumberBehaviors): NSDecimalNumber
     @ForeignName["decimalNumberByRoundingAccordingToBehavior:"] public open func decimalNumberByRoundingAccordingToBehavior(behavior: ?NSDecimalNumberBehaviors): NSDecimalNumber
-    @ForeignName["compare:"] public open func compare(decimalNumber: NSNumber): Int32 /*NSComparisonResult*/
+    public open func compare(decimalNumber: NSNumber): Int32 /*NSComparisonResult*/
     public static mut prop defaultBehavior: NSDecimalNumberBehaviors
 }
 

@@ -39,13 +39,13 @@ public open class NSPort <: NSObject & NSCopying & NSCoding {
 public open class NSMachPort <: NSPort {
     @ForeignName["portWithMachPort:"] public static func portWithMachPort(machPort: uint32_t): NSPort
     @ForeignName["initWithMachPort:"] public init(machPort: uint32_t)
-    @ForeignName["setDelegate:"] public open func setDelegate(anObject: ?NSMachPortDelegate): Unit
+    public open func setDelegate(anObject: ?NSMachPortDelegate): Unit
     public open func delegate(): ?NSPortDelegate
     @ForeignName["portWithMachPort:options:"] public static func portWithMachPortOptions(machPort: uint32_t, f: Int32 /*NSMachPortOptions*/): NSPort
     @ForeignName["initWithMachPort:options:"] public init(machPort: uint32_t, f: Int32 /*NSMachPortOptions*/)
     public open prop machPort: uint32_t
-    @ForeignName["scheduleInRunLoop:forMode:"] public open func scheduleInRunLoopForMode(runLoop: NSRunLoop, mode: NSRunLoopMode): Unit
-    @ForeignName["removeFromRunLoop:forMode:"] public open func removeFromRunLoopForMode(runLoop: NSRunLoop, mode: NSRunLoopMode): Unit
+    public open func scheduleInRunLoopForMode(runLoop: NSRunLoop, mode: NSRunLoopMode): Unit
+    public open func removeFromRunLoopForMode(runLoop: NSRunLoop, mode: NSRunLoopMode): Unit
 }
 
 public abstract sealed class NSMachPortOptions {
