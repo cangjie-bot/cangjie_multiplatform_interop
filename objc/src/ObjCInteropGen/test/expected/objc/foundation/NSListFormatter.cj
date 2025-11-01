@@ -11,6 +11,6 @@ public open class NSListFormatter <: NSFormatter {
     public open mut prop itemFormatter: ?NSFormatter
     @ForeignName["localizedStringByJoiningStrings:"] public static func localizedStringByJoiningStrings(strings: NSArray/*<NSString>*/): NSString
     @ForeignName["stringFromItems:"] public open func stringFromItems(items: NSArray/*<ObjectType>*/): ?NSString
-    @ForeignName["stringForObjectValue:"] public open func stringForObjectValue(obj: ObjCId): ?NSString
+    public open func stringForObjectValue(obj: ObjCId): ?NSString
 }
 

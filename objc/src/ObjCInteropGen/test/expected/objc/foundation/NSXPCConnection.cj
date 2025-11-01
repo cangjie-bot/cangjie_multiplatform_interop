@@ -31,8 +31,8 @@ public open class NSXPCConnection <: NSObject & NSXPCProxyCreating {
     public open mut prop exportedInterface: ?NSXPCInterface
     public open mut prop exportedObject: ObjCId
     public open mut prop remoteObjectInterface: ?NSXPCInterface
-    @ForeignName["remoteObjectProxyWithErrorHandler:"] public open func remoteObjectProxyWithErrorHandler(handler: ObjCBlock<(NSError) -> Unit>): ObjCId
-    @ForeignName["synchronousRemoteObjectProxyWithErrorHandler:"] public open func synchronousRemoteObjectProxyWithErrorHandler(handler: ObjCBlock<(NSError) -> Unit>): ObjCId
+    public open func remoteObjectProxyWithErrorHandler(handler: ObjCBlock<(NSError) -> Unit>): ObjCId
+    public open func synchronousRemoteObjectProxyWithErrorHandler(handler: ObjCBlock<(NSError) -> Unit>): ObjCId
     public open mut prop interruptionHandler: ObjCBlock<() -> Unit>
     public open mut prop invalidationHandler: ObjCBlock<() -> Unit>
     public open func `resume`(): Unit
