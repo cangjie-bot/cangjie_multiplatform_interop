@@ -73,14 +73,14 @@ public open class NSArray/*<ObjectType>*/ <: NSObject & NSCopying & NSMutableCop
     @ForeignName["writeToFile:atomically:"] public open func writeToFileAtomically(path: NSString, useAuxiliaryFile: Bool): Bool
     @ForeignName["writeToURL:atomically:"] public open func writeToURLAtomically(url: NSURL, atomically: Bool): Bool
     @ForeignName["pathsMatchingExtensions:"] public open func pathsMatchingExtensions(filterTypes: NSArray/*<NSString>*/): NSArray/*<NSString>*/
-    @ForeignName["valueForKey:"] public open func valueForKey(key: NSString): ObjCId
-    @ForeignName["setValue:forKey:"] public open func setValueForKey(value: ObjCId, key: NSString): Unit
+    public open func valueForKey(key: NSString): ObjCId
+    public open func setValueForKey(value: ObjCId, key: NSString): Unit
     @ForeignName["addObserver:toObjectsAtIndexes:forKeyPath:options:context:"] public open func addObserverToObjectsAtIndexesForKeyPathOptionsContext(observer: NSObject, indexes: NSIndexSet, keyPath: NSString, options: Int32 /*NSKeyValueObservingOptions*/, context: CPointer<Unit>): Unit
     @ForeignName["removeObserver:fromObjectsAtIndexes:forKeyPath:context:"] public open func removeObserverFromObjectsAtIndexesForKeyPathContext(observer: NSObject, indexes: NSIndexSet, keyPath: NSString, context: CPointer<Unit>): Unit
     @ForeignName["removeObserver:fromObjectsAtIndexes:forKeyPath:"] public open func removeObserverFromObjectsAtIndexesForKeyPath(observer: NSObject, indexes: NSIndexSet, keyPath: NSString): Unit
-    @ForeignName["addObserver:forKeyPath:options:context:"] public open func addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: NSString, options: Int32 /*NSKeyValueObservingOptions*/, context: CPointer<Unit>): Unit
-    @ForeignName["removeObserver:forKeyPath:context:"] public open func removeObserverForKeyPathContext(observer: NSObject, keyPath: NSString, context: CPointer<Unit>): Unit
-    @ForeignName["removeObserver:forKeyPath:"] public open func removeObserverForKeyPath(observer: NSObject, keyPath: NSString): Unit
+    public open func addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: NSString, options: Int32 /*NSKeyValueObservingOptions*/, context: CPointer<Unit>): Unit
+    public open func removeObserverForKeyPathContext(observer: NSObject, keyPath: NSString, context: CPointer<Unit>): Unit
+    public open func removeObserverForKeyPath(observer: NSObject, keyPath: NSString): Unit
     @ForeignName["sortedArrayUsingDescriptors:"] public open func sortedArrayUsingDescriptors(sortDescriptors: NSArray/*<NSSortDescriptor>*/): NSArray/*<ObjectType>*/
     @ForeignName["filteredArrayUsingPredicate:"] public open func filteredArrayUsingPredicate(predicate: NSPredicate): NSArray/*<ObjectType>*/
 }
@@ -123,8 +123,8 @@ public open class NSMutableArray/*<ObjectType>*/ <: NSArray/*<ObjectType>*/ {
     @ForeignName["sortUsingComparator:"] public open func sortUsingComparator(cmptr: NSComparator): Unit
     @ForeignName["sortWithOptions:usingComparator:"] public open func sortWithOptionsUsingComparator(opts: Int32 /*NSSortOptions*/, cmptr: NSComparator): Unit
     @ForeignName["arrayWithCapacity:"] public static func arrayWithCapacity(numItems: NSUInteger): NSMutableArray/*<ObjectType>*/
-    @ForeignName["arrayWithContentsOfFile:"] public static func arrayWithContentsOfFile(path: NSString): ?NSArray/*<ObjectType>*/
-    @ForeignName["arrayWithContentsOfURL:"] public static func arrayWithContentsOfURL(url: NSURL): ?NSArray/*<ObjectType>*/
+    public static func arrayWithContentsOfFile(path: NSString): ?NSArray/*<ObjectType>*/
+    public static func arrayWithContentsOfURL(url: NSURL): ?NSArray/*<ObjectType>*/
     @ForeignName["initWithContentsOfFile:"] public init(path: NSString)
     @ForeignName["initWithContentsOfURL:"] public init(url: NSURL)
     @ForeignName["applyDifference:"] public open func applyDifference(difference: NSOrderedCollectionDifference/*<ObjectType>*/): Unit
