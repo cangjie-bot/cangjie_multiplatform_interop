@@ -9,4 +9,5 @@
 rm -r generated
 ../build/output/ObjCInteropGen test.toml --mode=normal
 cp main.cj generated/objc/foundation
-cjc generated/objc/foundation/*.cj -Woff unused -Woff parser -lobjc.lang -linteroplib.common -linteroplib.objc
+cjc generated/objc/foundation/*.cj -Woff unused -Woff parser -lobjc.lang -linteroplib.common -linteroplib.objc \
+    --link-options "-framework Foundation"
