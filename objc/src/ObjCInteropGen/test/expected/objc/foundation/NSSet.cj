@@ -39,11 +39,11 @@ public open class NSSet/*<ObjectType>*/ <: NSObject & NSCopying & NSMutableCopyi
     @ForeignName["initWithSet:"] public init(set: NSSet/*<ObjectType>*/)
     @ForeignName["initWithSet:copyItems:"] public init(set: NSSet/*<ObjectType>*/, flag: Bool)
     @ForeignName["initWithArray:"] public init(array: NSArray/*<ObjectType>*/)
-    @ForeignName["valueForKey:"] public open func valueForKey(key: NSString): ObjCId
-    @ForeignName["setValue:forKey:"] public open func setValueForKey(value: ObjCId, key: NSString): Unit
-    @ForeignName["addObserver:forKeyPath:options:context:"] public open func addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: NSString, options: Int32 /*NSKeyValueObservingOptions*/, context: CPointer<Unit>): Unit
-    @ForeignName["removeObserver:forKeyPath:context:"] public open func removeObserverForKeyPathContext(observer: NSObject, keyPath: NSString, context: CPointer<Unit>): Unit
-    @ForeignName["removeObserver:forKeyPath:"] public open func removeObserverForKeyPath(observer: NSObject, keyPath: NSString): Unit
+    public open func valueForKey(key: NSString): ObjCId
+    public open func setValueForKey(value: ObjCId, key: NSString): Unit
+    public open func addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: NSString, options: Int32 /*NSKeyValueObservingOptions*/, context: CPointer<Unit>): Unit
+    public open func removeObserverForKeyPathContext(observer: NSObject, keyPath: NSString, context: CPointer<Unit>): Unit
+    public open func removeObserverForKeyPath(observer: NSObject, keyPath: NSString): Unit
     @ForeignName["sortedArrayUsingDescriptors:"] public open func sortedArrayUsingDescriptors(sortDescriptors: NSArray/*<NSSortDescriptor>*/): NSArray/*<ObjectType>*/
     @ForeignName["filteredSetUsingPredicate:"] public open func filteredSetUsingPredicate(predicate: NSPredicate): NSSet/*<ObjectType>*/
 }
@@ -72,7 +72,7 @@ public open class NSCountedSet/*<ObjectType>*/ <: NSMutableSet/*<ObjectType>*/ {
     @ForeignName["initWithSet:"] public init(set: NSSet/*<ObjectType>*/)
     @ForeignName["countForObject:"] public open func countForObject(object: ObjCId /*ObjectType*/): NSUInteger
     public open func objectEnumerator(): NSEnumerator/*<ObjectType>*/
-    @ForeignName["addObject:"] public open func addObject(object: ObjCId /*ObjectType*/): Unit
-    @ForeignName["removeObject:"] public open func removeObject(object: ObjCId /*ObjectType*/): Unit
+    public open func addObject(object: ObjCId /*ObjectType*/): Unit
+    public open func removeObject(object: ObjCId /*ObjectType*/): Unit
 }
 

@@ -67,11 +67,11 @@ public open class NSOrderedSet/*<ObjectType>*/ <: NSObject & NSCopying & NSMutab
     @ForeignName["differenceFromOrderedSet:withOptions:"] public open func differenceFromOrderedSetWithOptions(other: NSOrderedSet/*<ObjectType>*/, options: Int32 /*NSOrderedCollectionDifferenceCalculationOptions*/): NSOrderedCollectionDifference/*<ObjectType>*/
     @ForeignName["differenceFromOrderedSet:"] public open func differenceFromOrderedSet(other: NSOrderedSet/*<ObjectType>*/): NSOrderedCollectionDifference/*<ObjectType>*/
     @ForeignName["orderedSetByApplyingDifference:"] public open func orderedSetByApplyingDifference(difference: NSOrderedCollectionDifference/*<ObjectType>*/): ?NSOrderedSet/*<ObjectType>*/
-    @ForeignName["valueForKey:"] public open func valueForKey(key: NSString): ObjCId
-    @ForeignName["setValue:forKey:"] public open func setValueForKey(value: ObjCId, key: NSString): Unit
-    @ForeignName["addObserver:forKeyPath:options:context:"] public open func addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: NSString, options: Int32 /*NSKeyValueObservingOptions*/, context: CPointer<Unit>): Unit
-    @ForeignName["removeObserver:forKeyPath:context:"] public open func removeObserverForKeyPathContext(observer: NSObject, keyPath: NSString, context: CPointer<Unit>): Unit
-    @ForeignName["removeObserver:forKeyPath:"] public open func removeObserverForKeyPath(observer: NSObject, keyPath: NSString): Unit
+    public open func valueForKey(key: NSString): ObjCId
+    public open func setValueForKey(value: ObjCId, key: NSString): Unit
+    public open func addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: NSString, options: Int32 /*NSKeyValueObservingOptions*/, context: CPointer<Unit>): Unit
+    public open func removeObserverForKeyPathContext(observer: NSObject, keyPath: NSString, context: CPointer<Unit>): Unit
+    public open func removeObserverForKeyPath(observer: NSObject, keyPath: NSString): Unit
     @ForeignName["sortedArrayUsingDescriptors:"] public open func sortedArrayUsingDescriptors(sortDescriptors: NSArray/*<NSSortDescriptor>*/): NSArray/*<ObjectType>*/
     @ForeignName["filteredOrderedSetUsingPredicate:"] public open func filteredOrderedSetUsingPredicate(p: NSPredicate): NSOrderedSet/*<ObjectType>*/
 }
