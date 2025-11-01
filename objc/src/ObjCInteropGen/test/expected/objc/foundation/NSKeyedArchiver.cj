@@ -39,15 +39,15 @@ public open class NSKeyedArchiver <: NSCoder {
     @ForeignName["setClassName:forClass:"] public open func setClassNameForClass(codedName: ?NSString, cls: Class): Unit
     @ForeignName["classNameForClass:"] public static func classNameForClassStatic(cls: Class): ?NSString
     @ForeignName["classNameForClass:"] public open func classNameForClass(cls: Class): ?NSString
-    @ForeignName["encodeObject:forKey:"] public open func encodeObjectForKey(object: ObjCId, key: NSString): Unit
-    @ForeignName["encodeConditionalObject:forKey:"] public open func encodeConditionalObjectForKey(object: ObjCId, key: NSString): Unit
-    @ForeignName["encodeBool:forKey:"] public open func encodeBoolForKey(value: Bool, key: NSString): Unit
-    @ForeignName["encodeInt:forKey:"] public open func encodeIntForKey(value: Int32, key: NSString): Unit
-    @ForeignName["encodeInt32:forKey:"] public open func encodeInt32ForKey(value: int32_t, key: NSString): Unit
-    @ForeignName["encodeInt64:forKey:"] public open func encodeInt64ForKey(value: int64_t, key: NSString): Unit
-    @ForeignName["encodeFloat:forKey:"] public open func encodeFloatForKey(value: Float32, key: NSString): Unit
-    @ForeignName["encodeDouble:forKey:"] public open func encodeDoubleForKey(value: Float64, key: NSString): Unit
-    @ForeignName["encodeBytes:length:forKey:"] public open func encodeBytesLengthForKey(bytes: CPointer<uint8_t>, length: NSUInteger, key: NSString): Unit
+    public open func encodeObjectForKey(object: ObjCId, key: NSString): Unit
+    public open func encodeConditionalObjectForKey(object: ObjCId, key: NSString): Unit
+    public open func encodeBoolForKey(value: Bool, key: NSString): Unit
+    public open func encodeIntForKey(value: Int32, key: NSString): Unit
+    public open func encodeInt32ForKey(value: int32_t, key: NSString): Unit
+    public open func encodeInt64ForKey(value: int64_t, key: NSString): Unit
+    public open func encodeFloatForKey(value: Float32, key: NSString): Unit
+    public open func encodeDoubleForKey(value: Float64, key: NSString): Unit
+    public open func encodeBytesLengthForKey(bytes: CPointer<uint8_t>, length: NSUInteger, key: NSString): Unit
 }
 
 @ObjCMirror
@@ -70,14 +70,14 @@ public open class NSKeyedUnarchiver <: NSCoder {
     @ForeignName["setClass:forClassName:"] public open func setClassForClassName(cls: Class, codedName: NSString): Unit
     @ForeignName["classForClassName:"] public static func classForClassNameStatic(codedName: NSString): Class
     @ForeignName["classForClassName:"] public open func classForClassName(codedName: NSString): Class
-    @ForeignName["containsValueForKey:"] public open func containsValueForKey(key: NSString): Bool
-    @ForeignName["decodeObjectForKey:"] public open func decodeObjectForKey(key: NSString): ObjCId
-    @ForeignName["decodeBoolForKey:"] public open func decodeBoolForKey(key: NSString): Bool
-    @ForeignName["decodeIntForKey:"] public open func decodeIntForKey(key: NSString): Int32
-    @ForeignName["decodeInt32ForKey:"] public open func decodeInt32ForKey(key: NSString): int32_t
-    @ForeignName["decodeInt64ForKey:"] public open func decodeInt64ForKey(key: NSString): int64_t
-    @ForeignName["decodeFloatForKey:"] public open func decodeFloatForKey(key: NSString): Float32
-    @ForeignName["decodeDoubleForKey:"] public open func decodeDoubleForKey(key: NSString): Float64
-    @ForeignName["decodeBytesForKey:returnedLength:"] public open func decodeBytesForKeyReturnedLength(key: NSString, lengthp: CPointer<NSUInteger>): CPointer<uint8_t>
+    public open func containsValueForKey(key: NSString): Bool
+    public open func decodeObjectForKey(key: NSString): ObjCId
+    public open func decodeBoolForKey(key: NSString): Bool
+    public open func decodeIntForKey(key: NSString): Int32
+    public open func decodeInt32ForKey(key: NSString): int32_t
+    public open func decodeInt64ForKey(key: NSString): int64_t
+    public open func decodeFloatForKey(key: NSString): Float32
+    public open func decodeDoubleForKey(key: NSString): Float64
+    public open func decodeBytesForKeyReturnedLength(key: NSString, lengthp: CPointer<NSUInteger>): CPointer<uint8_t>
 }
 

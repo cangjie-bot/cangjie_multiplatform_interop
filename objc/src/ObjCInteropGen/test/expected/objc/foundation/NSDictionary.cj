@@ -52,7 +52,7 @@ public open class NSDictionary/*<KeyType, ObjectType>*/ <: NSObject & NSCopying 
     @ForeignName["initWithContentsOfURL:error:"] public init(url: NSURL, error: ObjCPointer<NSError>)
     @ForeignName["dictionaryWithContentsOfURL:error:"] public static func dictionaryWithContentsOfURLError(url: NSURL, error: ObjCPointer<NSError>): ?NSDictionary/*<NSString, ObjectType>*/
     @ForeignName["sharedKeySetForKeys:"] public static func sharedKeySetForKeys(keys: NSArray/*<KeyType<NSCopying>>*/): ObjCId
-    @ForeignName["countByEnumeratingWithState:objects:count:"] public open func countByEnumeratingWithStateObjectsCount(state: ObjCPointer<NSFastEnumerationState>, buffer: ObjCPointer<ObjCId /*KeyType*/>, len: NSUInteger): NSUInteger
+    public open func countByEnumeratingWithStateObjectsCount(state: ObjCPointer<NSFastEnumerationState>, buffer: ObjCPointer<ObjCId /*KeyType*/>, len: NSUInteger): NSUInteger
     public open func fileSize(): UInt64
     public open func fileModificationDate(): ?NSDate
     public open func fileType(): ?NSString
@@ -69,7 +69,7 @@ public open class NSDictionary/*<KeyType, ObjectType>*/ <: NSObject & NSCopying 
     public open func fileCreationDate(): ?NSDate
     public open func fileOwnerAccountID(): ?NSNumber
     public open func fileGroupOwnerAccountID(): ?NSNumber
-    @ForeignName["valueForKey:"] public open func valueForKey(key: NSString): ObjCId /*ObjectType*/
+    public open func valueForKey(key: NSString): ObjCId /*ObjectType*/
 }
 
 @ObjCMirror
@@ -85,11 +85,11 @@ public open class NSMutableDictionary/*<KeyType, ObjectType>*/ <: NSDictionary/*
     @ForeignName["setDictionary:"] public open func setDictionary(otherDictionary: NSDictionary/*<KeyType, ObjectType>*/): Unit
     @ForeignName["setObject:forKeyedSubscript:"] public open func setObjectForKeyedSubscript(obj: ObjCId /*ObjectType*/, key: NSCopying /*KeyType<NSCopying>*/): Unit
     @ForeignName["dictionaryWithCapacity:"] public static func dictionaryWithCapacity(numItems: NSUInteger): NSMutableDictionary/*<KeyType, ObjectType>*/
-    @ForeignName["dictionaryWithContentsOfFile:"] public static func dictionaryWithContentsOfFile(path: NSString): ?NSDictionary/*<KeyType, ObjectType>*/
-    @ForeignName["dictionaryWithContentsOfURL:"] public static func dictionaryWithContentsOfURL(url: NSURL): ?NSDictionary/*<KeyType, ObjectType>*/
+    public static func dictionaryWithContentsOfFile(path: NSString): ?NSDictionary/*<KeyType, ObjectType>*/
+    public static func dictionaryWithContentsOfURL(url: NSURL): ?NSDictionary/*<KeyType, ObjectType>*/
     @ForeignName["initWithContentsOfFile:"] public init(path: NSString)
     @ForeignName["initWithContentsOfURL:"] public init(url: NSURL)
     @ForeignName["dictionaryWithSharedKeySet:"] public static func dictionaryWithSharedKeySet(keyset: ObjCId): NSMutableDictionary/*<KeyType, ObjectType>*/
-    @ForeignName["setValue:forKey:"] public open func setValueForKey(value: ObjCId /*ObjectType*/, key: NSString): Unit
+    public open func setValueForKey(value: ObjCId /*ObjectType*/, key: NSString): Unit
 }
 
