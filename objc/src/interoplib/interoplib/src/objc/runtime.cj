@@ -314,6 +314,9 @@ public func objCMsgSendSuper(objCSuper: NativeObjCSuperPtr, sel: NativeObjCSel):
     }
 }
 
+/**
+ * Decreases the reference counter by one
+ */
 public func objCRelease(id: NativeObjCId): Unit {
     unsafe {
         objc_release(id)
@@ -338,6 +341,48 @@ private unsafe func getIvar(id: NativeObjCId, fieldName: String): NativeObjCIvar
     LibC.free(fieldCName)
 
     ivar
+}
+
+/**
+ * Checks if a given object is an instance of the given class, including superclasses
+ */
+public func isKindOfClass(id: NativeObjCId, clazz: NativeObjCClass): Bool {
+    unsafe {
+        var realClass = object_getClass(id);
+        while (realClass.isNotNull()) {
+            if (realClass.toUIntNative() == clazz.toUIntNative()) {
+                return true
+            }
+            realClass = class_getSuperclass(realClass)
+        }
+        return false
+    }
+}
+
+/**
+ * Checks if a given object is an instance of the given protocol, including superclasses
+ */
+public func conformsToProtocol(id: NativeObjCId, proto: NativeObjCProtocol): Bool {
+    unsafe {
+        var realClass = object_getClass(id);
+        while (realClass.isNotNull()) {
+            if (class_conformsToProtocol(realClass, proto)) {
+                return true
+            }
+            realClass = class_getSuperclass(realClass)
+        }
+        return false
+    }
+}
+
+/**
+ * Checks if a given object responds to a given selector
+ */
+public func respondsToSelector(id: NativeObjCId, sel: NativeObjCSel): Bool {
+    unsafe {
+        var realClass = object_getClass(id)
+        return class_respondsToSelector(realClass, sel)
+    }
 }
 
 /**
@@ -452,6 +497,20 @@ foreign func class_getName(cls: NativeObjCClass): CString
  * Returns the superclass of the specified class.
  */
 foreign func class_getSuperclass(cls: NativeObjCClass): NativeObjCClass
+
+@FastNative
+/**
+ * Checks if a given class conforms to a given protocol
+ * (does not check superclasses)
+ */
+foreign func class_conformsToProtocol(cls: NativeObjCClass, proto: NativeObjCProtocol): Bool
+
+@FastNative
+/**
+ * Checks if a given class responds to a given selector
+ * (does check superclasses)
+ */
+foreign func class_respondsToSelector(cls: NativeObjCClass, sel: NativeObjCSel): Bool
 
 @FastNative
 /**
