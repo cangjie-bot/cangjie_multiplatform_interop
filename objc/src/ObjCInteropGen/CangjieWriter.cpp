@@ -495,6 +495,11 @@ static void write_method_parameters(std::ostream& output, const NonTypeSymbol& m
 
 static void write_foreign_name(std::ostream& output, const NonTypeSymbol& method)
 {
+    // @ForeignName could not appear on overridden declaration
+    if (method.is_override()) {
+        return;
+    }
+
     const std::string* selector;
     const auto& selector_attribute = method.selector_attribute();
     if (!selector_attribute.empty()) {
@@ -620,15 +625,6 @@ enum class FuncKind { TopLevelFunc, InterfaceMethod, ClassMethod };
 
 static void write_function(IndentingStringStream& output, FuncKind kind, NonTypeSymbol& function)
 {
-    bool is_ctype = false;
-    if (kind == FuncKind::TopLevelFunc) {
-      is_ctype = function.is_ctype();
-        if (is_ctype) {
-            output << "foreign ";
-        } else if (!generate_definitions_mode()) {
-            output << "@ObjCMirror\n";
-        }
-    }
     auto* return_type = function.return_type();
     assert(return_type);
     auto hidden =
@@ -636,14 +632,41 @@ static void write_function(IndentingStringStream& output, FuncKind kind, NonType
     if (hidden) {
         output.set_comment();
     }
+    bool is_ctype = false;
+    if (kind == FuncKind::TopLevelFunc) {
+        is_ctype = function.is_ctype();
+        if (is_ctype) {
+            output << "foreign ";
+        } else if (!generate_definitions_mode()) {
+            output << "@ObjCMirror\n";
+        }
+    }
     write_foreign_name(output, function);
     if (kind == FuncKind::ClassMethod || (kind == FuncKind::TopLevelFunc && !is_ctype)) {
         output << "public ";
     }
     if (function.is_static()) {
+        // In Objective-C, the overridden static method can have different parameter
+        // types (co/contra-variant pointers).  In Cangjie, the types must strictly
+        // match.  Consider printing "redef" at least when it is allowed in Cangjie.
+        if constexpr (false) {
+            if (function.is_override()) {
+                output << "redef ";
+            }
+        }
         output << "static ";
-    } else if (kind == FuncKind::ClassMethod) {
-        output << "open ";
+    } else {
+        if (kind == FuncKind::ClassMethod) {
+            output << "open ";
+        }
+        // In Objective-C, the overridden method can have different parameter types
+        // (co/contra-variant pointers).  In Cangjie, the types must strictly coincide.
+        // Consider printing "override" at least when it is allowed in Cangjie.
+        if constexpr (false) {
+            if (function.is_override()) {
+                output << "override ";
+            }
+        }
     }
     output << "func " << escape_keyword(function.name());
     write_method_parameters(output, function);

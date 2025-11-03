@@ -876,6 +876,11 @@ public:
         return end_;
     }
 
+    [[nodiscard]] bool empty() const noexcept
+    {
+        return overridden_cursors_ == end_;
+    }
+
 private:
     CXCursor* const overridden_cursors_;
     const CXCursor* const end_;
@@ -962,19 +967,23 @@ Symbol* SourceScanner::push_member_method(CXCursor cursor, std::string&& name, b
     if (nullable_overridden_result_type) {
         cx_result_type = *nullable_overridden_result_type;
     }
-    if (cx_result_type.kind == CXType_ObjCId) {
-        for (const auto& overridden_cursor : OverriddenCursors::get(cursor)) {
-            auto overriden_result_type = clang_getCursorResultType(overridden_cursor);
-            if (overriden_result_type.kind != CXType_ObjCId) {
-                // In Objective-C, contravariant return types are allowed. That will not compile
-                // in Cangjie, as `id` is not a subtype of pointer-to-class. To make it
-                // compilable, do not change the result type in such cases.
-                cx_result_type = overriden_result_type;
-                break;
+    uint8_t modifiers = 0;
+    auto overridden_cursors = OverriddenCursors::get(cursor);
+    if (!overridden_cursors.empty()) {
+        modifiers |= ModifierOverride;
+        if (cx_result_type.kind == CXType_ObjCId) {
+            for (const auto& overridden_cursor : overridden_cursors) {
+                auto overridden_result_type = clang_getCursorResultType(overridden_cursor);
+                if (overridden_result_type.kind != CXType_ObjCId) {
+                    // In Objective-C, contravariant return types are allowed. That will not compile
+                    // in Cangjie, as `id` is not a subtype of pointer-to-class. To make it
+                    // compilable, do not change the result type in such cases.
+                    cx_result_type = overridden_result_type;
+                    break;
+                }
             }
         }
     }
-    uint8_t modifiers = 0;
     if (is_static) {
         modifiers |= ModifierStatic;
     }

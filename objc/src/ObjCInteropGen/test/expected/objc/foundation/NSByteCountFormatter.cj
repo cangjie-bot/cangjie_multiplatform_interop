@@ -32,7 +32,7 @@ public open class NSByteCountFormatter <: NSFormatter {
     @ForeignName["stringFromByteCount:"] public open func stringFromByteCount(byteCount: Int64): NSString
     @ForeignName["stringFromMeasurement:countStyle:"] public static func stringFromMeasurementCountStyle(measurement: NSMeasurement/*<NSUnitInformationStorage>*/, countStyle: Int32 /*NSByteCountFormatterCountStyle*/): NSString
     @ForeignName["stringFromMeasurement:"] public open func stringFromMeasurement(measurement: NSMeasurement/*<NSUnitInformationStorage>*/): NSString
-    @ForeignName["stringForObjectValue:"] public open func stringForObjectValue(obj: ObjCId): ?NSString
+    public open func stringForObjectValue(obj: ObjCId): ?NSString
     public open mut prop allowedUnits: Int32 /*NSByteCountFormatterUnits*/
     public open mut prop countStyle: Int32 /*NSByteCountFormatterCountStyle*/
     public open mut prop allowsNonnumericFormatting: Bool
