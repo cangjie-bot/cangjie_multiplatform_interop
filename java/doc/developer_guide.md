@@ -127,5 +127,5 @@ python3 build/build.py build -h
 
 ## 相关仓
 
-- [cangjie 仓](https://gitcode.com/Cangjie/cangjie_compiler)
+- [cangjie](https://gitcode.com/Cangjie/cangjie_compiler)
 - [cangjie SDK](https://gitcode.com/Cangjie/cangjie_build)
