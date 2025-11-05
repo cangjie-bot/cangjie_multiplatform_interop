@@ -234,10 +234,11 @@ def fetch_jdk(target_dir):
         patch_path = os.path.join(JAVA_INTEROP_THIRD_PARTY, "jdk_interop.patch")
         if os.path.exists(patch_path):
             patch_cmd = f"patch -p1 -l -f < {patch_path}"
-            patch_process = subprocess.Popen(patch_cmd, shell=True, stdout=PIPE, cwd=HOME_DIR)
+            LOG.info("CMDPATH: %s", HOME_DIR)
+            patch_process = subprocess.run(patch_cmd, shell=True, stdout=PIPE, cwd=HOME_DIR, check=True)
             LOG.info('Patch applied successfully')
         else:
-            LOG.info('Warning: jdk_interop.patch not found at {HOME_DIR}')
+            LOG.info("Warning: jdk_interop.patch not found at %s", HOME_DIR)
     else:
         LOG.info('jdk directory already exists, skipping fetch\n')
 
@@ -352,6 +353,8 @@ def clean(args):
         cwd=MIRROR_GEN_DIR,
         stdout=PIPE,
     )
+    jdk_dir = os.path.join(JAVA_INTEROP_THIRD_PARTY, "jdk")
+    subprocess.run(f"rm -rf {jdk_dir}", shell=True, check=True)
     log_output(output)
     LOG.info("end clean java-binding-gen\n")
     LOG.info("begin clean interoplib...\n")
