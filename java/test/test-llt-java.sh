@@ -6,15 +6,16 @@
 # See https://cangjie-lang.cn/pages/LICENSE for license information.
 
 BASE="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+FRAMEWORK=${BASE}/../../../cangjie_test_framework
 
 BUILD=${BASE}/LLT/build
 TMP=${BUILD}/test_tmp
 mkdir -p ${TMP}
 cd ${BUILD}
 
-# TODO check ${BASE}/HLT with framework/main.py inside is available
+# TODO check ${FRAMEWORK} with main.py inside is available
 
-python3 ${BASE}/HLT/framework/main.py --fail_exit -pFAIL -pPASS --fail-verbose --debug ../ \
+python3 ${FRAMEWORK}/main.py --fail_exit -pFAIL -pPASS --fail-verbose --debug ../ \
 --temp_dir=${TMP} --json_output=${TMP}/run_result.json -j7 \
 --test_cfg=../interop_test.cfg --test_list=../testlist_java
 
