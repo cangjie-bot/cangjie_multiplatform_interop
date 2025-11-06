@@ -27,7 +27,7 @@ public open class NSUndoManager <: NSObject {
     public open prop isRedoing: Bool
     public open func removeAllActions(): Unit
     @ForeignName["removeAllActionsWithTarget:"] public open func removeAllActionsWithTarget(target: ObjCId): Unit
-    @ForeignName["registerUndoWithTarget:selector:object:"] public open func registerUndoWithTargetSelectorObject(target: ObjCId, selector: SEL, object: ObjCId): Unit
+    @ForeignName["registerUndoWithTarget:selector:object:"] public open func registerUndoWithTargetSelectorObject(target: ObjCId, selector: SEL, object: ?ObjCId): Unit
     @ForeignName["prepareWithInvocationTarget:"] public open func prepareWithInvocationTarget(target: ObjCId): ObjCId
     @ForeignName["registerUndoWithTarget:handler:"] public open func registerUndoWithTargetHandler(target: ObjCId, undoHandler: ObjCBlock<(ObjCId) -> Unit>): Unit
     @ForeignName["setActionIsDiscardable:"] public open func setActionIsDiscardable(discardable: Bool): Unit

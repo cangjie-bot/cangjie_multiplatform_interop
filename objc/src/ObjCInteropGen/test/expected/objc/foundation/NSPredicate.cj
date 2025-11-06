@@ -17,8 +17,8 @@ public open class NSPredicate <: NSObject & NSSecureCoding & NSCopying {
     @ForeignName["predicateWithBlock:"] public static func predicateWithBlock(block: ObjCBlock<(ObjCId, NSDictionary/*<NSString, ObjCId>*/) -> Bool>): NSPredicate
     public open prop predicateFormat: NSString
     @ForeignName["predicateWithSubstitutionVariables:"] public open func predicateWithSubstitutionVariables(variables: NSDictionary/*<NSString, ObjCId>*/): NSPredicate
-    @ForeignName["evaluateWithObject:"] public open func evaluateWithObject(object: ObjCId): Bool
-    @ForeignName["evaluateWithObject:substitutionVariables:"] public open func evaluateWithObjectSubstitutionVariables(object: ObjCId, bindings: ?NSDictionary/*<NSString, ObjCId>*/): Bool
+    @ForeignName["evaluateWithObject:"] public open func evaluateWithObject(object: ?ObjCId): Bool
+    @ForeignName["evaluateWithObject:substitutionVariables:"] public open func evaluateWithObjectSubstitutionVariables(object: ?ObjCId, bindings: ?NSDictionary/*<NSString, ObjCId>*/): Bool
     public open func allowEvaluation(): Unit
 }
 

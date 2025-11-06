@@ -7,17 +7,17 @@ import objc.lang.*
 
 @ObjCMirror
 public interface NSKeyedArchiverDelegate <: NSObjectProtocol {
-    @ForeignName["archiver:willEncodeObject:"] func archiverWillEncodeObject(archiver: NSKeyedArchiver, object: ObjCId): ObjCId
-    @ForeignName["archiver:didEncodeObject:"] func archiverDidEncodeObject(archiver: NSKeyedArchiver, object: ObjCId): Unit
-    @ForeignName["archiver:willReplaceObject:withObject:"] func archiverWillReplaceObjectWithObject(archiver: NSKeyedArchiver, object: ObjCId, newObject: ObjCId): Unit
+    @ForeignName["archiver:willEncodeObject:"] func archiverWillEncodeObject(archiver: NSKeyedArchiver, object: ObjCId): ?ObjCId
+    @ForeignName["archiver:didEncodeObject:"] func archiverDidEncodeObject(archiver: NSKeyedArchiver, object: ?ObjCId): Unit
+    @ForeignName["archiver:willReplaceObject:withObject:"] func archiverWillReplaceObjectWithObject(archiver: NSKeyedArchiver, object: ?ObjCId, newObject: ?ObjCId): Unit
     @ForeignName["archiverWillFinish:"] func archiverWillFinish(archiver: NSKeyedArchiver): Unit
     @ForeignName["archiverDidFinish:"] func archiverDidFinish(archiver: NSKeyedArchiver): Unit
 }
 
 @ObjCMirror
 public interface NSKeyedUnarchiverDelegate <: NSObjectProtocol {
-    @ForeignName["unarchiver:cannotDecodeObjectOfClassName:originalClasses:"] func unarchiverCannotDecodeObjectOfClassNameOriginalClasses(unarchiver: NSKeyedUnarchiver, name: NSString, classNames: NSArray/*<NSString>*/): Class
-    @ForeignName["unarchiver:didDecodeObject:"] func unarchiverDidDecodeObject(unarchiver: NSKeyedUnarchiver, object: ObjCId): ObjCId
+    @ForeignName["unarchiver:cannotDecodeObjectOfClassName:originalClasses:"] func unarchiverCannotDecodeObjectOfClassNameOriginalClasses(unarchiver: NSKeyedUnarchiver, name: NSString, classNames: NSArray/*<NSString>*/): ?Class
+    @ForeignName["unarchiver:didDecodeObject:"] func unarchiverDidDecodeObject(unarchiver: NSKeyedUnarchiver, object: ?ObjCId): ?ObjCId
     @ForeignName["unarchiver:willReplaceObject:withObject:"] func unarchiverWillReplaceObjectWithObject(unarchiver: NSKeyedUnarchiver, object: ObjCId, newObject: ObjCId): Unit
     @ForeignName["unarchiverWillFinish:"] func unarchiverWillFinish(unarchiver: NSKeyedUnarchiver): Unit
     @ForeignName["unarchiverDidFinish:"] func unarchiverDidFinish(unarchiver: NSKeyedUnarchiver): Unit
@@ -39,8 +39,8 @@ public open class NSKeyedArchiver <: NSCoder {
     @ForeignName["setClassName:forClass:"] public open func setClassNameForClass(codedName: ?NSString, cls: Class): Unit
     @ForeignName["classNameForClass:"] public static func classNameForClassStatic(cls: Class): ?NSString
     @ForeignName["classNameForClass:"] public open func classNameForClass(cls: Class): ?NSString
-    public open func encodeObjectForKey(object: ObjCId, key: NSString): Unit
-    public open func encodeConditionalObjectForKey(object: ObjCId, key: NSString): Unit
+    public open func encodeObjectForKey(object: ?ObjCId, key: NSString): Unit
+    public open func encodeConditionalObjectForKey(object: ?ObjCId, key: NSString): Unit
     public open func encodeBoolForKey(value: Bool, key: NSString): Unit
     public open func encodeIntForKey(value: Int32, key: NSString): Unit
     public open func encodeInt32ForKey(value: int32_t, key: NSString): Unit
@@ -53,25 +53,25 @@ public open class NSKeyedArchiver <: NSCoder {
 @ObjCMirror
 public open class NSKeyedUnarchiver <: NSCoder {
     @ForeignName["initForReadingFromData:error:"] public init(data: NSData, error: ObjCPointer<NSError>)
-    @ForeignName["unarchivedObjectOfClass:fromData:error:"] public static func unarchivedObjectOfClassFromDataError(cls: Class, data: NSData, error: ObjCPointer<NSError>): ObjCId
+    @ForeignName["unarchivedObjectOfClass:fromData:error:"] public static func unarchivedObjectOfClassFromDataError(cls: Class, data: NSData, error: ObjCPointer<NSError>): ?ObjCId
     @ForeignName["unarchivedArrayOfObjectsOfClass:fromData:error:"] public static func unarchivedArrayOfObjectsOfClassFromDataError(cls: Class, data: NSData, error: ObjCPointer<NSError>): ?NSArray/*<ObjectType>*/
     @ForeignName["unarchivedDictionaryWithKeysOfClass:objectsOfClass:fromData:error:"] public static func unarchivedDictionaryWithKeysOfClassObjectsOfClassFromDataError(keyCls: Class, valueCls: Class, data: NSData, error: ObjCPointer<NSError>): ?NSDictionary/*<KeyType, ObjectType>*/
-    @ForeignName["unarchivedObjectOfClasses:fromData:error:"] public static func unarchivedObjectOfClassesFromDataError(classes: NSSet/*<Class>*/, data: NSData, error: ObjCPointer<NSError>): ObjCId
+    @ForeignName["unarchivedObjectOfClasses:fromData:error:"] public static func unarchivedObjectOfClassesFromDataError(classes: NSSet/*<Class>*/, data: NSData, error: ObjCPointer<NSError>): ?ObjCId
     @ForeignName["unarchivedArrayOfObjectsOfClasses:fromData:error:"] public static func unarchivedArrayOfObjectsOfClassesFromDataError(classes: NSSet/*<Class>*/, data: NSData, error: ObjCPointer<NSError>): ?NSArray/*<ObjectType>*/
     @ForeignName["unarchivedDictionaryWithKeysOfClasses:objectsOfClasses:fromData:error:"] public static func unarchivedDictionaryWithKeysOfClassesObjectsOfClassesFromDataError(keyClasses: NSSet/*<Class>*/, valueClasses: NSSet/*<Class>*/, data: NSData, error: ObjCPointer<NSError>): ?NSDictionary/*<KeyType, ObjectType>*/
     public init()
     @ForeignName["initForReadingWithData:"] public init(data: NSData)
-    @ForeignName["unarchiveObjectWithData:"] public static func unarchiveObjectWithData(data: NSData): ObjCId
-    @ForeignName["unarchiveTopLevelObjectWithData:error:"] public static func unarchiveTopLevelObjectWithDataError(data: NSData, error: ObjCPointer<NSError>): ObjCId
-    @ForeignName["unarchiveObjectWithFile:"] public static func unarchiveObjectWithFile(path: NSString): ObjCId
+    @ForeignName["unarchiveObjectWithData:"] public static func unarchiveObjectWithData(data: NSData): ?ObjCId
+    @ForeignName["unarchiveTopLevelObjectWithData:error:"] public static func unarchiveTopLevelObjectWithDataError(data: NSData, error: ObjCPointer<NSError>): ?ObjCId
+    @ForeignName["unarchiveObjectWithFile:"] public static func unarchiveObjectWithFile(path: NSString): ?ObjCId
     public open mut prop delegate: ?NSKeyedUnarchiverDelegate
     public open func finishDecoding(): Unit
-    @ForeignName["setClass:forClassName:"] public static func setClassForClassNameStatic(cls: Class, codedName: NSString): Unit
-    @ForeignName["setClass:forClassName:"] public open func setClassForClassName(cls: Class, codedName: NSString): Unit
-    @ForeignName["classForClassName:"] public static func classForClassNameStatic(codedName: NSString): Class
-    @ForeignName["classForClassName:"] public open func classForClassName(codedName: NSString): Class
+    @ForeignName["setClass:forClassName:"] public static func setClassForClassNameStatic(cls: ?Class, codedName: NSString): Unit
+    @ForeignName["setClass:forClassName:"] public open func setClassForClassName(cls: ?Class, codedName: NSString): Unit
+    @ForeignName["classForClassName:"] public static func classForClassNameStatic(codedName: NSString): ?Class
+    @ForeignName["classForClassName:"] public open func classForClassName(codedName: NSString): ?Class
     public open func containsValueForKey(key: NSString): Bool
-    public open func decodeObjectForKey(key: NSString): ObjCId
+    public open func decodeObjectForKey(key: NSString): ?ObjCId
     public open func decodeBoolForKey(key: NSString): Bool
     public open func decodeIntForKey(key: NSString): Int32
     public open func decodeInt32ForKey(key: NSString): int32_t

@@ -8,13 +8,13 @@ import objc.lang.*
 @ObjCMirror
 public open class NSSortDescriptor <: NSObject & NSSecureCoding & NSCopying {
     @ForeignName["sortDescriptorWithKey:ascending:"] public static func sortDescriptorWithKeyAscending(key: ?NSString, ascending: Bool): NSSortDescriptor
-    @ForeignName["sortDescriptorWithKey:ascending:selector:"] public static func sortDescriptorWithKeyAscendingSelector(key: ?NSString, ascending: Bool, selector: SEL): NSSortDescriptor
+    @ForeignName["sortDescriptorWithKey:ascending:selector:"] public static func sortDescriptorWithKeyAscendingSelector(key: ?NSString, ascending: Bool, selector: ?SEL): NSSortDescriptor
     @ForeignName["initWithKey:ascending:"] public init(key: ?NSString, ascending: Bool)
-    @ForeignName["initWithKey:ascending:selector:"] public init(key: ?NSString, ascending: Bool, selector: SEL)
+    @ForeignName["initWithKey:ascending:selector:"] public init(key: ?NSString, ascending: Bool, selector: ?SEL)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
     public open prop key: ?NSString
     public open prop ascending: Bool
-    public open prop selector: SEL
+    public open prop selector: ?SEL
     public open func allowEvaluation(): Unit
     @ForeignName["sortDescriptorWithKey:ascending:comparator:"] public static func sortDescriptorWithKeyAscendingComparator(key: ?NSString, ascending: Bool, cmptr: NSComparator): NSSortDescriptor
     @ForeignName["initWithKey:ascending:comparator:"] public init(key: ?NSString, ascending: Bool, cmptr: NSComparator)

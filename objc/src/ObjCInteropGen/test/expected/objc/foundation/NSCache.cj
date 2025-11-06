@@ -14,7 +14,7 @@ public interface NSCacheDelegate <: NSObjectProtocol {
 public open class NSCache/*<KeyType, ObjectType>*/ <: NSObject {
     public open mut prop name: NSString
     public open mut prop delegate: ?NSCacheDelegate
-    @ForeignName["objectForKey:"] public open func objectForKey(key: ObjCId /*KeyType*/): ObjCId /*ObjectType*/
+    @ForeignName["objectForKey:"] public open func objectForKey(key: ObjCId /*KeyType*/): ?ObjCId /*ObjectType*/
     @ForeignName["setObject:forKey:"] public open func setObjectForKey(obj: ObjCId /*ObjectType*/, key: ObjCId /*KeyType*/): Unit
     @ForeignName["setObject:forKey:cost:"] public open func setObjectForKeyCost(obj: ObjCId /*ObjectType*/, key: ObjCId /*KeyType*/, g: NSUInteger): Unit
     @ForeignName["removeObjectForKey:"] public open func removeObjectForKey(key: ObjCId /*KeyType*/): Unit

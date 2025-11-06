@@ -37,13 +37,13 @@ public open class NSMetadataQuery <: NSObject {
     @ForeignName["indexOfResult:"] public open func indexOfResult(result: ObjCId): NSUInteger
     public open prop valueLists: NSDictionary/*<NSString, NSArray<NSMetadataQueryAttributeValueTuple>>*/
     public open prop groupedResults: NSArray/*<NSMetadataQueryResultGroup>*/
-    @ForeignName["valueOfAttribute:forResultAtIndex:"] public open func valueOfAttributeForResultAtIndex(attrName: NSString, idx: NSUInteger): ObjCId
+    @ForeignName["valueOfAttribute:forResultAtIndex:"] public open func valueOfAttributeForResultAtIndex(attrName: NSString, idx: NSUInteger): ?ObjCId
 }
 
 @ObjCMirror
 public open class NSMetadataItem <: NSObject {
     @ForeignName["initWithURL:"] public init(url: NSURL)
-    @ForeignName["valueForAttribute:"] public open func valueForAttribute(key: NSString): ObjCId
+    @ForeignName["valueForAttribute:"] public open func valueForAttribute(key: NSString): ?ObjCId
     @ForeignName["valuesForAttributes:"] public open func valuesForAttributes(keys: NSArray/*<NSString>*/): ?NSDictionary/*<NSString, ObjCId>*/
     public open prop attributes: NSArray/*<NSString>*/
 }
@@ -51,7 +51,7 @@ public open class NSMetadataItem <: NSObject {
 @ObjCMirror
 public open class NSMetadataQueryAttributeValueTuple <: NSObject {
     public open prop attribute: NSString
-    public open prop value: ObjCId
+    public open prop value: ?ObjCId
     public open prop count: NSUInteger
 }
 

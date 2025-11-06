@@ -29,7 +29,7 @@ public open class NSXPCConnection <: NSObject & NSXPCProxyCreating {
     @ForeignName["initWithListenerEndpoint:"] public init(endpoint: NSXPCListenerEndpoint)
     public open prop endpoint: NSXPCListenerEndpoint
     public open mut prop exportedInterface: ?NSXPCInterface
-    public open mut prop exportedObject: ObjCId
+    public open mut prop exportedObject: ?ObjCId
     public open mut prop remoteObjectInterface: ?NSXPCInterface
     public open func remoteObjectProxyWithErrorHandler(handler: ObjCBlock<(NSError) -> Unit>): ObjCId
     public open func synchronousRemoteObjectProxyWithErrorHandler(handler: ObjCBlock<(NSError) -> Unit>): ObjCId

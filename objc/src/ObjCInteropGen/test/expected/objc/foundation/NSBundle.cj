@@ -57,9 +57,9 @@ public open class NSBundle <: NSObject {
     public open prop bundleIdentifier: ?NSString
     public open prop infoDictionary: ?NSDictionary/*<NSString, ObjCId>*/
     public open prop localizedInfoDictionary: ?NSDictionary/*<NSString, ObjCId>*/
-    @ForeignName["objectForInfoDictionaryKey:"] public open func objectForInfoDictionaryKey(key: NSString): ObjCId
-    @ForeignName["classNamed:"] public open func classNamed(className: NSString): Class
-    public open prop principalClass: Class
+    @ForeignName["objectForInfoDictionaryKey:"] public open func objectForInfoDictionaryKey(key: NSString): ?ObjCId
+    @ForeignName["classNamed:"] public open func classNamed(className: NSString): ?Class
+    public open prop principalClass: ?Class
     public open prop preferredLocalizations: NSArray/*<NSString>*/
     public open prop localizations: NSArray/*<NSString>*/
     public open prop developmentLocalization: ?NSString

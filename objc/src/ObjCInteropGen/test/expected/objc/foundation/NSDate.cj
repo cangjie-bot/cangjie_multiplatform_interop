@@ -22,7 +22,7 @@ public open class NSDate <: NSObject & NSCopying & NSSecureCoding {
     @ForeignName["laterDate:"] public open func laterDate(anotherDate: NSDate): NSDate
     @ForeignName["compare:"] public open func compare(other: NSDate): Int32 /*NSComparisonResult*/
     @ForeignName["isEqualToDate:"] public open func isEqualToDate(otherDate: NSDate): Bool
-    @ForeignName["descriptionWithLocale:"] public open func descriptionWithLocale(locale: ObjCId): NSString
+    @ForeignName["descriptionWithLocale:"] public open func descriptionWithLocale(locale: ?ObjCId): NSString
     public static prop timeIntervalSinceReferenceDateStatic: NSTimeInterval
     public static func date(): NSDate
     @ForeignName["dateWithTimeIntervalSinceNow:"] public static func dateWithTimeIntervalSinceNow(secs: NSTimeInterval): NSDate

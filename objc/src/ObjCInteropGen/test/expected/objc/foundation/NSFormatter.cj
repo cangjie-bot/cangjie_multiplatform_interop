@@ -22,7 +22,7 @@ public abstract sealed class NSFormattingUnitStyle {
 
 @ObjCMirror
 public open class NSFormatter <: NSObject & NSCopying & NSCoding {
-    @ForeignName["stringForObjectValue:"] public open func stringForObjectValue(obj: ObjCId): ?NSString
+    @ForeignName["stringForObjectValue:"] public open func stringForObjectValue(obj: ?ObjCId): ?NSString
     @ForeignName["attributedStringForObjectValue:withDefaultAttributes:"] public open func attributedStringForObjectValueWithDefaultAttributes(obj: ObjCId, attrs: ?NSDictionary/*<NSAttributedStringKey, ObjCId>*/): ?NSAttributedString
     @ForeignName["editingStringForObjectValue:"] public open func editingStringForObjectValue(obj: ObjCId): ?NSString
     @ForeignName["getObjectValue:forString:errorDescription:"] public open func getObjectValueForStringErrorDescription(obj: ObjCPointer<ObjCId>, string: NSString, error: ObjCPointer<NSString>): Bool

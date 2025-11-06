@@ -12,8 +12,8 @@ public open class NSUserDefaults <: NSObject {
     public init()
     @ObjCInit @ForeignName["initWithSuiteName:"] public static func initWithSuiteName(suitename: ?NSString): NSUserDefaults
     @ObjCInit @ForeignName["initWithUser:"] public static func initWithUser(username: NSString): ObjCId
-    @ForeignName["objectForKey:"] public open func objectForKey(defaultName: NSString): ObjCId
-    @ForeignName["setObject:forKey:"] public open func setObjectForKey(value: ObjCId, defaultName: NSString): Unit
+    @ForeignName["objectForKey:"] public open func objectForKey(defaultName: NSString): ?ObjCId
+    @ForeignName["setObject:forKey:"] public open func setObjectForKey(value: ?ObjCId, defaultName: NSString): Unit
     @ForeignName["removeObjectForKey:"] public open func removeObjectForKey(defaultName: NSString): Unit
     @ForeignName["stringForKey:"] public open func stringForKey(defaultName: NSString): ?NSString
     @ForeignName["arrayForKey:"] public open func arrayForKey(defaultName: NSString): ?NSArray/*<ObjectType>*/
