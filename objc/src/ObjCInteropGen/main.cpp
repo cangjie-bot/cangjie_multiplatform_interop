@@ -22,9 +22,10 @@
 
 // clang -fobjc-runtime=gnustep `gnustep-config --objc-flags` -Xclang -ast-dump -c M.m -o M.o -v > ast.txt
 
-void show_help(std::string_view executable)
+static void show_help(const char* executable)
 {
-    std::cout << "Usage: " << executable << " [-v] config-file.toml\n";
+    std::cout << "Usage: " << (executable ? std::filesystem::path(executable).filename().string() : "ObjCInteropGen")
+              << " [-v] config-file.toml\n";
     std::cout << "    -v\n";
     std::cout << "        increase logging verbosity level (can be applied multiple times)\n";
 }
@@ -54,11 +55,17 @@ int main(int argc, char* argv[])
     std::string_view stage = "Parsing command line options";
 
     try {
-        if (argc == 1) {
+        if (argc <= 1) {
             show_help(argv[0]);
             return 1;
         }
+        if (argc == 2) {
+            show_help(argv[0]);
+            std::string_view arg = argv[1];
+            return arg == "--help" || arg == "-?" || arg == "-h" ? 0 : 1;
+        }
         std::size_t verbosityVal = 0;
+        bool config_specified = false;
         for (int i = 1; i < argc; i++) {
             std::string_view arg = argv[i];
             if (starts_with(arg, "-v")) {
@@ -88,12 +95,22 @@ int main(int argc, char* argv[])
             }
 
             if (ends_with(arg, ".toml")) {
+                if (config_specified) {
+                    std::cerr << "Multiple .toml files specified\n";
+                    return 1;
+                }
+                config_specified = true;
                 parse_toml_config_file(arg);
                 continue;
             }
 
             show_help(argv[0]);
-            return arg == "--help" || arg == "-?" || arg == "-h" ? 0 : 1;
+            return 1;
+        }
+
+        if (!config_specified) {
+            show_help(argv[0]);
+            return 1;
         }
 
         stage = "Adding built-in types";
