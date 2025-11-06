@@ -26,7 +26,7 @@ public abstract sealed class NSDateComponentsFormatterZeroFormattingBehavior {
 
 @ObjCMirror
 public open class NSDateComponentsFormatter <: NSFormatter {
-    public open func stringForObjectValue(obj: ObjCId): ?NSString
+    public open func stringForObjectValue(obj: ?ObjCId): ?NSString
     @ForeignName["stringFromDateComponents:"] public open func stringFromDateComponents(components: NSDateComponents): ?NSString
     @ForeignName["stringFromDate:toDate:"] public open func stringFromDateToDate(startDate: NSDate, endDate: NSDate): ?NSString
     @ForeignName["stringFromTimeInterval:"] public open func stringFromTimeInterval(ti: NSTimeInterval): ?NSString

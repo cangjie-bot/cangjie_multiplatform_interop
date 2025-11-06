@@ -61,46 +61,46 @@ public open class NSObject <: NSObjectProtocol {
     public static func version(): NSInteger
     @ForeignName["setVersion:"] public static func setVersion(aVersion: NSInteger): Unit
     public open prop classForCoder: Class
-    @ForeignName["replacementObjectForCoder:"] public open func replacementObjectForCoder(coder: NSCoder): ObjCId
-    @ForeignName["awakeAfterUsingCoder:"] public open func awakeAfterUsingCoder(coder: NSCoder): ObjCId
+    @ForeignName["replacementObjectForCoder:"] public open func replacementObjectForCoder(coder: NSCoder): ?ObjCId
+    @ForeignName["awakeAfterUsingCoder:"] public open func awakeAfterUsingCoder(coder: NSCoder): ?ObjCId
     public open prop autoContentAccessingProxy: ObjCId
-    @ForeignName["attemptRecoveryFromError:optionIndex:delegate:didRecoverSelector:contextInfo:"] public open func attemptRecoveryFromErrorOptionIndexDelegateDidRecoverSelectorContextInfo(error: NSError, recoveryOptionIndex: NSUInteger, delegate: ObjCId, didRecoverSelector: SEL, contextInfo: CPointer<Unit>): Unit
+    @ForeignName["attemptRecoveryFromError:optionIndex:delegate:didRecoverSelector:contextInfo:"] public open func attemptRecoveryFromErrorOptionIndexDelegateDidRecoverSelectorContextInfo(error: NSError, recoveryOptionIndex: NSUInteger, delegate: ?ObjCId, didRecoverSelector: ?SEL, contextInfo: CPointer<Unit>): Unit
     @ForeignName["attemptRecoveryFromError:optionIndex:"] public open func attemptRecoveryFromErrorOptionIndex(error: NSError, recoveryOptionIndex: NSUInteger): Bool
-    @ForeignName["performSelector:withObject:afterDelay:inModes:"] public open func performSelectorWithObjectAfterDelayInModes(aSelector: SEL, anArgument: ObjCId, delay: NSTimeInterval, modes: NSArray/*<NSRunLoopMode>*/): Unit
-    @ForeignName["performSelector:withObject:afterDelay:"] public open func performSelectorWithObjectAfterDelay(aSelector: SEL, anArgument: ObjCId, delay: NSTimeInterval): Unit
-    @ForeignName["cancelPreviousPerformRequestsWithTarget:selector:object:"] public static func cancelPreviousPerformRequestsWithTargetSelectorObject(aTarget: ObjCId, aSelector: SEL, anArgument: ObjCId): Unit
+    @ForeignName["performSelector:withObject:afterDelay:inModes:"] public open func performSelectorWithObjectAfterDelayInModes(aSelector: SEL, anArgument: ?ObjCId, delay: NSTimeInterval, modes: NSArray/*<NSRunLoopMode>*/): Unit
+    @ForeignName["performSelector:withObject:afterDelay:"] public open func performSelectorWithObjectAfterDelay(aSelector: SEL, anArgument: ?ObjCId, delay: NSTimeInterval): Unit
+    @ForeignName["cancelPreviousPerformRequestsWithTarget:selector:object:"] public static func cancelPreviousPerformRequestsWithTargetSelectorObject(aTarget: ObjCId, aSelector: SEL, anArgument: ?ObjCId): Unit
     @ForeignName["cancelPreviousPerformRequestsWithTarget:"] public static func cancelPreviousPerformRequestsWithTarget(aTarget: ObjCId): Unit
     @ForeignName["fileManager:shouldProceedAfterError:"] public open func fileManagerShouldProceedAfterError(fm: NSFileManager, errorInfo: NSDictionary/*<KeyType, ObjectType>*/): Bool
     @ForeignName["fileManager:willProcessPath:"] public open func fileManagerWillProcessPath(fm: NSFileManager, path: NSString): Unit
     public static prop accessInstanceVariablesDirectly: Bool
-    @ForeignName["valueForKey:"] public open func valueForKey(key: NSString): ObjCId
-    @ForeignName["setValue:forKey:"] public open func setValueForKey(value: ObjCId, key: NSString): Unit
+    @ForeignName["valueForKey:"] public open func valueForKey(key: NSString): ?ObjCId
+    @ForeignName["setValue:forKey:"] public open func setValueForKey(value: ?ObjCId, key: NSString): Unit
     @ForeignName["validateValue:forKey:error:"] public open func validateValueForKeyError(ioValue: ObjCPointer<ObjCId>, inKey: NSString, outError: ObjCPointer<NSError>): Bool
     @ForeignName["mutableArrayValueForKey:"] public open func mutableArrayValueForKey(key: NSString): NSMutableArray/*<ObjectType>*/
     @ForeignName["mutableOrderedSetValueForKey:"] public open func mutableOrderedSetValueForKey(key: NSString): NSMutableOrderedSet/*<ObjectType>*/
     @ForeignName["mutableSetValueForKey:"] public open func mutableSetValueForKey(key: NSString): NSMutableSet/*<ObjectType>*/
-    @ForeignName["valueForKeyPath:"] public open func valueForKeyPath(keyPath: NSString): ObjCId
-    @ForeignName["setValue:forKeyPath:"] public open func setValueForKeyPath(value: ObjCId, keyPath: NSString): Unit
+    @ForeignName["valueForKeyPath:"] public open func valueForKeyPath(keyPath: NSString): ?ObjCId
+    @ForeignName["setValue:forKeyPath:"] public open func setValueForKeyPath(value: ?ObjCId, keyPath: NSString): Unit
     @ForeignName["validateValue:forKeyPath:error:"] public open func validateValueForKeyPathError(ioValue: ObjCPointer<ObjCId>, inKeyPath: NSString, outError: ObjCPointer<NSError>): Bool
     @ForeignName["mutableArrayValueForKeyPath:"] public open func mutableArrayValueForKeyPath(keyPath: NSString): NSMutableArray/*<ObjectType>*/
     @ForeignName["mutableOrderedSetValueForKeyPath:"] public open func mutableOrderedSetValueForKeyPath(keyPath: NSString): NSMutableOrderedSet/*<ObjectType>*/
     @ForeignName["mutableSetValueForKeyPath:"] public open func mutableSetValueForKeyPath(keyPath: NSString): NSMutableSet/*<ObjectType>*/
-    @ForeignName["valueForUndefinedKey:"] public open func valueForUndefinedKey(key: NSString): ObjCId
-    @ForeignName["setValue:forUndefinedKey:"] public open func setValueForUndefinedKey(value: ObjCId, key: NSString): Unit
+    @ForeignName["valueForUndefinedKey:"] public open func valueForUndefinedKey(key: NSString): ?ObjCId
+    @ForeignName["setValue:forUndefinedKey:"] public open func setValueForUndefinedKey(value: ?ObjCId, key: NSString): Unit
     @ForeignName["setNilValueForKey:"] public open func setNilValueForKey(key: NSString): Unit
     @ForeignName["dictionaryWithValuesForKeys:"] public open func dictionaryWithValuesForKeys(keys: NSArray/*<NSString>*/): NSDictionary/*<NSString, ObjCId>*/
     @ForeignName["setValuesForKeysWithDictionary:"] public open func setValuesForKeysWithDictionary(keyedValues: NSDictionary/*<NSString, ObjCId>*/): Unit
     public static func useStoredAccessor(): Bool
-    @ForeignName["storedValueForKey:"] public open func storedValueForKey(key: NSString): ObjCId
-    @ForeignName["takeStoredValue:forKey:"] public open func takeStoredValueForKey(value: ObjCId, key: NSString): Unit
-    @ForeignName["takeValue:forKey:"] public open func takeValueForKey(value: ObjCId, key: NSString): Unit
-    @ForeignName["takeValue:forKeyPath:"] public open func takeValueForKeyPath(value: ObjCId, keyPath: NSString): Unit
-    @ForeignName["handleQueryWithUnboundKey:"] public open func handleQueryWithUnboundKey(key: NSString): ObjCId
-    @ForeignName["handleTakeValue:forUnboundKey:"] public open func handleTakeValueForUnboundKey(value: ObjCId, key: NSString): Unit
+    @ForeignName["storedValueForKey:"] public open func storedValueForKey(key: NSString): ?ObjCId
+    @ForeignName["takeStoredValue:forKey:"] public open func takeStoredValueForKey(value: ?ObjCId, key: NSString): Unit
+    @ForeignName["takeValue:forKey:"] public open func takeValueForKey(value: ?ObjCId, key: NSString): Unit
+    @ForeignName["takeValue:forKeyPath:"] public open func takeValueForKeyPath(value: ?ObjCId, keyPath: NSString): Unit
+    @ForeignName["handleQueryWithUnboundKey:"] public open func handleQueryWithUnboundKey(key: NSString): ?ObjCId
+    @ForeignName["handleTakeValue:forUnboundKey:"] public open func handleTakeValueForUnboundKey(value: ?ObjCId, key: NSString): Unit
     @ForeignName["unableToSetNilForKey:"] public open func unableToSetNilForKey(key: NSString): Unit
     @ForeignName["valuesForKeys:"] public open func valuesForKeys(keys: NSArray/*<ObjectType>*/): NSDictionary/*<KeyType, ObjectType>*/
     @ForeignName["takeValuesFromDictionary:"] public open func takeValuesFromDictionary(properties: NSDictionary/*<KeyType, ObjectType>*/): Unit
-    @ForeignName["observeValueForKeyPath:ofObject:change:context:"] public open func observeValueForKeyPathOfObjectChangeContext(keyPath: ?NSString, object: ObjCId, change: ?NSDictionary/*<NSKeyValueChangeKey, ObjCId>*/, context: CPointer<Unit>): Unit
+    @ForeignName["observeValueForKeyPath:ofObject:change:context:"] public open func observeValueForKeyPathOfObjectChangeContext(keyPath: ?NSString, object: ?ObjCId, change: ?NSDictionary/*<NSKeyValueChangeKey, ObjCId>*/, context: CPointer<Unit>): Unit
     @ForeignName["addObserver:forKeyPath:options:context:"] public open func addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: NSString, options: Int32 /*NSKeyValueObservingOptions*/, context: CPointer<Unit>): Unit
     @ForeignName["removeObserver:forKeyPath:context:"] public open func removeObserverForKeyPathContext(observer: NSObject, keyPath: NSString, context: CPointer<Unit>): Unit
     @ForeignName["removeObserver:forKeyPath:"] public open func removeObserverForKeyPath(observer: NSObject, keyPath: NSString): Unit
@@ -113,15 +113,15 @@ public open class NSObject <: NSObjectProtocol {
     @ForeignName["keyPathsForValuesAffectingValueForKey:"] public static func keyPathsForValuesAffectingValueForKey(key: NSString): NSSet/*<NSString>*/
     @ForeignName["automaticallyNotifiesObserversForKey:"] public static func automaticallyNotifiesObserversForKey(key: NSString): Bool
     public open mut prop observationInfo: CPointer<Unit>
-    public open prop classForKeyedArchiver: Class
-    @ForeignName["replacementObjectForKeyedArchiver:"] public open func replacementObjectForKeyedArchiver(archiver: NSKeyedArchiver): ObjCId
+    public open prop classForKeyedArchiver: ?Class
+    @ForeignName["replacementObjectForKeyedArchiver:"] public open func replacementObjectForKeyedArchiver(archiver: NSKeyedArchiver): ?ObjCId
     public static func classFallbacksForKeyedArchiver(): NSArray/*<NSString>*/
     public static func classForKeyedUnarchiver(): Class
-    @ForeignName["performSelectorOnMainThread:withObject:waitUntilDone:modes:"] public open func performSelectorOnMainThreadWithObjectWaitUntilDoneModes(aSelector: SEL, arg: ObjCId, wait: Bool, array: ?NSArray/*<NSString>*/): Unit
-    @ForeignName["performSelectorOnMainThread:withObject:waitUntilDone:"] public open func performSelectorOnMainThreadWithObjectWaitUntilDone(aSelector: SEL, arg: ObjCId, wait: Bool): Unit
-    @ForeignName["performSelector:onThread:withObject:waitUntilDone:modes:"] public open func performSelectorOnThreadWithObjectWaitUntilDoneModes(aSelector: SEL, thr: NSThread, arg: ObjCId, wait: Bool, array: ?NSArray/*<NSString>*/): Unit
-    @ForeignName["performSelector:onThread:withObject:waitUntilDone:"] public open func performSelectorOnThreadWithObjectWaitUntilDone(aSelector: SEL, thr: NSThread, arg: ObjCId, wait: Bool): Unit
-    @ForeignName["performSelectorInBackground:withObject:"] public open func performSelectorInBackgroundWithObject(aSelector: SEL, arg: ObjCId): Unit
+    @ForeignName["performSelectorOnMainThread:withObject:waitUntilDone:modes:"] public open func performSelectorOnMainThreadWithObjectWaitUntilDoneModes(aSelector: SEL, arg: ?ObjCId, wait: Bool, array: ?NSArray/*<NSString>*/): Unit
+    @ForeignName["performSelectorOnMainThread:withObject:waitUntilDone:"] public open func performSelectorOnMainThreadWithObjectWaitUntilDone(aSelector: SEL, arg: ?ObjCId, wait: Bool): Unit
+    @ForeignName["performSelector:onThread:withObject:waitUntilDone:modes:"] public open func performSelectorOnThreadWithObjectWaitUntilDoneModes(aSelector: SEL, thr: NSThread, arg: ?ObjCId, wait: Bool, array: ?NSArray/*<NSString>*/): Unit
+    @ForeignName["performSelector:onThread:withObject:waitUntilDone:"] public open func performSelectorOnThreadWithObjectWaitUntilDone(aSelector: SEL, thr: NSThread, arg: ?ObjCId, wait: Bool): Unit
+    @ForeignName["performSelectorInBackground:withObject:"] public open func performSelectorInBackgroundWithObject(aSelector: SEL, arg: ?ObjCId): Unit
 }
 
 @ObjCMirror

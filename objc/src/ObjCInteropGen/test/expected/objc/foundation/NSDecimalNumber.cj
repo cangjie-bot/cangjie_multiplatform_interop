@@ -17,12 +17,12 @@ public open class NSDecimalNumber <: NSNumber {
     @ForeignName["initWithMantissa:exponent:isNegative:"] public init(mantissa: UInt64, exponent: Int16, flag: Bool)
     @ForeignName["initWithDecimal:"] public init(dcm: NSDecimal)
     @ForeignName["initWithString:"] public init(numberValue: ?NSString)
-    @ForeignName["initWithString:locale:"] public init(numberValue: ?NSString, locale: ObjCId)
-    public open func descriptionWithLocale(locale: ObjCId): NSString
+    @ForeignName["initWithString:locale:"] public init(numberValue: ?NSString, locale: ?ObjCId)
+    public open func descriptionWithLocale(locale: ?ObjCId): NSString
     @ForeignName["decimalNumberWithMantissa:exponent:isNegative:"] public static func decimalNumberWithMantissaExponentIsNegative(mantissa: UInt64, exponent: Int16, flag: Bool): NSDecimalNumber
     @ForeignName["decimalNumberWithDecimal:"] public static func decimalNumberWithDecimal(dcm: NSDecimal): NSDecimalNumber
     @ForeignName["decimalNumberWithString:"] public static func decimalNumberWithString(numberValue: ?NSString): NSDecimalNumber
-    @ForeignName["decimalNumberWithString:locale:"] public static func decimalNumberWithStringLocale(numberValue: ?NSString, locale: ObjCId): NSDecimalNumber
+    @ForeignName["decimalNumberWithString:locale:"] public static func decimalNumberWithStringLocale(numberValue: ?NSString, locale: ?ObjCId): NSDecimalNumber
     public static prop zero: NSDecimalNumber
     public static prop one: NSDecimalNumber
     public static prop minimumDecimalNumber: NSDecimalNumber

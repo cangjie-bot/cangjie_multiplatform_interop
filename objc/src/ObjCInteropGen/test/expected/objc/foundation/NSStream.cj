@@ -37,8 +37,8 @@ public open class NSStream <: NSObject {
     public open func open(): Unit
     public open func close(): Unit
     public open mut prop delegate: ?NSStreamDelegate
-    @ForeignName["propertyForKey:"] public open func propertyForKey(key: NSStreamPropertyKey): ObjCId
-    @ForeignName["setProperty:forKey:"] public open func setPropertyForKey(property: ObjCId, key: NSStreamPropertyKey): Bool
+    @ForeignName["propertyForKey:"] public open func propertyForKey(key: NSStreamPropertyKey): ?ObjCId
+    @ForeignName["setProperty:forKey:"] public open func setPropertyForKey(property: ?ObjCId, key: NSStreamPropertyKey): Bool
     @ForeignName["scheduleInRunLoop:forMode:"] public open func scheduleInRunLoopForMode(aRunLoop: NSRunLoop, mode: NSRunLoopMode): Unit
     @ForeignName["removeFromRunLoop:forMode:"] public open func removeFromRunLoopForMode(aRunLoop: NSRunLoop, mode: NSRunLoopMode): Unit
     public open prop streamStatus: Int32 /*NSStreamStatus*/

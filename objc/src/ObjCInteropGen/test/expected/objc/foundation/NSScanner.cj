@@ -11,7 +11,7 @@ public open class NSScanner <: NSObject & NSCopying {
     public open mut prop scanLocation: NSUInteger
     public open mut prop charactersToBeSkipped: ?NSCharacterSet
     public open mut prop caseSensitive: Bool
-    public open mut prop locale: ObjCId
+    public open mut prop locale: ?ObjCId
     @ForeignName["initWithString:"] public init(string: NSString)
     @ForeignName["scanInt:"] public open func scanInt(result: CPointer<Int32>): Bool
     @ForeignName["scanInteger:"] public open func scanInteger(result: CPointer<NSInteger>): Bool

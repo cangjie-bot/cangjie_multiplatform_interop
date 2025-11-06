@@ -23,7 +23,7 @@ public func NSSelectorFromString(aSelectorName: NSString): SEL
 public func NSStringFromClass(aClass: Class): NSString
 
 @ObjCMirror
-public func NSClassFromString(aClassName: NSString): Class
+public func NSClassFromString(aClassName: NSString): ?Class
 
 @ObjCMirror
 public func NSStringFromProtocol(proto: Protocol): NSString

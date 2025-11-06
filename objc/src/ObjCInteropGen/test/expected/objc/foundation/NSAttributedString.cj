@@ -14,10 +14,10 @@ public open class NSAttributedString <: NSObject & NSCopying & NSMutableCopying 
     public open prop string: NSString
     @ForeignName["attributesAtIndex:effectiveRange:"] public open func attributesAtIndexEffectiveRange(location: NSUInteger, range: NSRangePointer): NSDictionary/*<NSAttributedStringKey, ObjCId>*/
     public open prop length: NSUInteger
-    @ForeignName["attribute:atIndex:effectiveRange:"] public open func attributeAtIndexEffectiveRange(attrName: NSAttributedStringKey, location: NSUInteger, range: NSRangePointer): ObjCId
+    @ForeignName["attribute:atIndex:effectiveRange:"] public open func attributeAtIndexEffectiveRange(attrName: NSAttributedStringKey, location: NSUInteger, range: NSRangePointer): ?ObjCId
     @ForeignName["attributedSubstringFromRange:"] public open func attributedSubstringFromRange(range: NSRange): NSAttributedString
     @ForeignName["attributesAtIndex:longestEffectiveRange:inRange:"] public open func attributesAtIndexLongestEffectiveRangeInRange(location: NSUInteger, range: NSRangePointer, rangeLimit: NSRange): NSDictionary/*<NSAttributedStringKey, ObjCId>*/
-    @ForeignName["attribute:atIndex:longestEffectiveRange:inRange:"] public open func attributeAtIndexLongestEffectiveRangeInRange(attrName: NSAttributedStringKey, location: NSUInteger, range: NSRangePointer, rangeLimit: NSRange): ObjCId
+    @ForeignName["attribute:atIndex:longestEffectiveRange:inRange:"] public open func attributeAtIndexLongestEffectiveRangeInRange(attrName: NSAttributedStringKey, location: NSUInteger, range: NSRangePointer, rangeLimit: NSRange): ?ObjCId
     @ForeignName["isEqualToAttributedString:"] public open func isEqualToAttributedString(other: NSAttributedString): Bool
     @ForeignName["initWithString:"] public init(str: NSString)
     @ForeignName["initWithString:attributes:"] public init(str: NSString, attrs: ?NSDictionary/*<NSAttributedStringKey, ObjCId>*/)

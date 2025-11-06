@@ -55,5 +55,5 @@ foreign func NSDecimalPower(result: CPointer<NSDecimal>, number: CPointer<NSDeci
 foreign func NSDecimalMultiplyByPowerOf10(result: CPointer<NSDecimal>, number: CPointer<NSDecimal>, power: Int16, roundingMode: Int32 /*NSRoundingMode*/): Int32 /*NSCalculationError*/
 
 @ObjCMirror
-public func NSDecimalString(dcm: CPointer<NSDecimal>, locale: ObjCId): NSString
+public func NSDecimalString(dcm: CPointer<NSDecimal>, locale: ?ObjCId): NSString
 

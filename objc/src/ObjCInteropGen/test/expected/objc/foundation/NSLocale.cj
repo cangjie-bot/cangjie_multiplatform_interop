@@ -9,7 +9,7 @@ public type NSLocaleKey = NSString
 
 @ObjCMirror
 public open class NSLocale <: NSObject & NSCopying & NSSecureCoding {
-    @ForeignName["objectForKey:"] public open func objectForKey(key: NSLocaleKey): ObjCId
+    @ForeignName["objectForKey:"] public open func objectForKey(key: NSLocaleKey): ?ObjCId
     @ForeignName["displayNameForKey:value:"] public open func displayNameForKeyValue(key: NSLocaleKey, value: ObjCId): ?NSString
     @ForeignName["initWithLocaleIdentifier:"] public init(string: NSString)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)

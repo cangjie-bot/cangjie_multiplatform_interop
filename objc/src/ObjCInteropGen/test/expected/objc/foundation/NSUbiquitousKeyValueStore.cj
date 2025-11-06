@@ -8,8 +8,8 @@ import objc.lang.*
 @ObjCMirror
 public open class NSUbiquitousKeyValueStore <: NSObject {
     public static prop defaultStore: NSUbiquitousKeyValueStore
-    @ForeignName["objectForKey:"] public open func objectForKey(aKey: NSString): ObjCId
-    @ForeignName["setObject:forKey:"] public open func setObjectForKey(anObject: ObjCId, aKey: NSString): Unit
+    @ForeignName["objectForKey:"] public open func objectForKey(aKey: NSString): ?ObjCId
+    @ForeignName["setObject:forKey:"] public open func setObjectForKey(anObject: ?ObjCId, aKey: NSString): Unit
     @ForeignName["removeObjectForKey:"] public open func removeObjectForKey(aKey: NSString): Unit
     @ForeignName["stringForKey:"] public open func stringForKey(aKey: NSString): ?NSString
     @ForeignName["arrayForKey:"] public open func arrayForKey(aKey: NSString): ?NSArray/*<ObjectType>*/

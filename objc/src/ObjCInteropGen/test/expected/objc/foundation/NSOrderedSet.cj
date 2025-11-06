@@ -15,8 +15,8 @@ public open class NSOrderedSet/*<ObjectType>*/ <: NSObject & NSCopying & NSMutab
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
     @ForeignName["getObjects:range:"] public open func getObjectsRange(objects: ObjCPointer<ObjCId /*ObjectType*/>, range: NSRange): Unit
     @ForeignName["objectsAtIndexes:"] public open func objectsAtIndexes(indexes: NSIndexSet): NSArray/*<ObjectType>*/
-    public open prop firstObject: ObjCId /*ObjectType*/
-    public open prop lastObject: ObjCId /*ObjectType*/
+    public open prop firstObject: ?ObjCId /*ObjectType*/
+    public open prop lastObject: ?ObjCId /*ObjectType*/
     @ForeignName["isEqualToOrderedSet:"] public open func isEqualToOrderedSet(other: NSOrderedSet/*<ObjectType>*/): Bool
     @ForeignName["containsObject:"] public open func containsObject(object: ObjCId /*ObjectType*/): Bool
     @ForeignName["intersectsOrderedSet:"] public open func intersectsOrderedSet(other: NSOrderedSet/*<ObjectType>*/): Bool
@@ -41,8 +41,8 @@ public open class NSOrderedSet/*<ObjectType>*/ <: NSObject & NSCopying & NSMutab
     @ForeignName["indexOfObject:inSortedRange:options:usingComparator:"] public open func indexOfObjectInSortedRangeOptionsUsingComparator(object: ObjCId /*ObjectType*/, range: NSRange, opts: Int32 /*NSBinarySearchingOptions*/, cmp: NSComparator): NSUInteger
     @ForeignName["sortedArrayUsingComparator:"] public open func sortedArrayUsingComparator(cmptr: NSComparator): NSArray/*<ObjectType>*/
     @ForeignName["sortedArrayWithOptions:usingComparator:"] public open func sortedArrayWithOptionsUsingComparator(opts: Int32 /*NSSortOptions*/, cmptr: NSComparator): NSArray/*<ObjectType>*/
-    @ForeignName["descriptionWithLocale:"] public open func descriptionWithLocale(locale: ObjCId): NSString
-    @ForeignName["descriptionWithLocale:indent:"] public open func descriptionWithLocaleIndent(locale: ObjCId, level: NSUInteger): NSString
+    @ForeignName["descriptionWithLocale:"] public open func descriptionWithLocale(locale: ?ObjCId): NSString
+    @ForeignName["descriptionWithLocale:indent:"] public open func descriptionWithLocaleIndent(locale: ?ObjCId, level: NSUInteger): NSString
     public static func orderedSet(): NSOrderedSet/*<ObjectType>*/
     @ForeignName["orderedSetWithObject:"] public static func orderedSetWithObject(object: ObjCId /*ObjectType*/): NSOrderedSet/*<ObjectType>*/
     @ForeignName["orderedSetWithObjects:count:"] public static func orderedSetWithObjectsCount(objects: ObjCPointer<ObjCId /*ObjectType*/>, cnt: NSUInteger): NSOrderedSet/*<ObjectType>*/
@@ -67,8 +67,8 @@ public open class NSOrderedSet/*<ObjectType>*/ <: NSObject & NSCopying & NSMutab
     @ForeignName["differenceFromOrderedSet:withOptions:"] public open func differenceFromOrderedSetWithOptions(other: NSOrderedSet/*<ObjectType>*/, options: Int32 /*NSOrderedCollectionDifferenceCalculationOptions*/): NSOrderedCollectionDifference/*<ObjectType>*/
     @ForeignName["differenceFromOrderedSet:"] public open func differenceFromOrderedSet(other: NSOrderedSet/*<ObjectType>*/): NSOrderedCollectionDifference/*<ObjectType>*/
     @ForeignName["orderedSetByApplyingDifference:"] public open func orderedSetByApplyingDifference(difference: NSOrderedCollectionDifference/*<ObjectType>*/): ?NSOrderedSet/*<ObjectType>*/
-    public open func valueForKey(key: NSString): ObjCId
-    public open func setValueForKey(value: ObjCId, key: NSString): Unit
+    public open func valueForKey(key: NSString): ?ObjCId
+    public open func setValueForKey(value: ?ObjCId, key: NSString): Unit
     public open func addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: NSString, options: Int32 /*NSKeyValueObservingOptions*/, context: CPointer<Unit>): Unit
     public open func removeObserverForKeyPathContext(observer: NSObject, keyPath: NSString, context: CPointer<Unit>): Unit
     public open func removeObserverForKeyPath(observer: NSObject, keyPath: NSString): Unit

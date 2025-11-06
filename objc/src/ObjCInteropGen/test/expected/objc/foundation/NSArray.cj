@@ -16,17 +16,17 @@ public open class NSArray/*<ObjectType>*/ <: NSObject & NSCopying & NSMutableCop
     @ForeignName["arrayByAddingObjectsFromArray:"] public open func arrayByAddingObjectsFromArray(otherArray: NSArray/*<ObjectType>*/): NSArray/*<ObjectType>*/
     @ForeignName["componentsJoinedByString:"] public open func componentsJoinedByString(separator: NSString): NSString
     @ForeignName["containsObject:"] public open func containsObject(anObject: ObjCId /*ObjectType*/): Bool
-    @ForeignName["descriptionWithLocale:"] public open func descriptionWithLocale(locale: ObjCId): NSString
-    @ForeignName["descriptionWithLocale:indent:"] public open func descriptionWithLocaleIndent(locale: ObjCId, level: NSUInteger): NSString
-    @ForeignName["firstObjectCommonWithArray:"] public open func firstObjectCommonWithArray(otherArray: NSArray/*<ObjectType>*/): ObjCId /*ObjectType*/
+    @ForeignName["descriptionWithLocale:"] public open func descriptionWithLocale(locale: ?ObjCId): NSString
+    @ForeignName["descriptionWithLocale:indent:"] public open func descriptionWithLocaleIndent(locale: ?ObjCId, level: NSUInteger): NSString
+    @ForeignName["firstObjectCommonWithArray:"] public open func firstObjectCommonWithArray(otherArray: NSArray/*<ObjectType>*/): ?ObjCId /*ObjectType*/
     @ForeignName["getObjects:range:"] public open func getObjectsRange(objects: ObjCPointer<ObjCId /*ObjectType*/>, range: NSRange): Unit
     @ForeignName["indexOfObject:"] public open func indexOfObject(anObject: ObjCId /*ObjectType*/): NSUInteger
     @ForeignName["indexOfObject:inRange:"] public open func indexOfObjectInRange(anObject: ObjCId /*ObjectType*/, range: NSRange): NSUInteger
     @ForeignName["indexOfObjectIdenticalTo:"] public open func indexOfObjectIdenticalTo(anObject: ObjCId /*ObjectType*/): NSUInteger
     @ForeignName["indexOfObjectIdenticalTo:inRange:"] public open func indexOfObjectIdenticalToInRange(anObject: ObjCId /*ObjectType*/, range: NSRange): NSUInteger
     @ForeignName["isEqualToArray:"] public open func isEqualToArray(otherArray: NSArray/*<ObjectType>*/): Bool
-    public open prop firstObject: ObjCId /*ObjectType*/
-    public open prop lastObject: ObjCId /*ObjectType*/
+    public open prop firstObject: ?ObjCId /*ObjectType*/
+    public open prop lastObject: ?ObjCId /*ObjectType*/
     public open func objectEnumerator(): NSEnumerator/*<ObjectType>*/
     public open func reverseObjectEnumerator(): NSEnumerator/*<ObjectType>*/
     public open prop sortedArrayHint: NSData
@@ -36,7 +36,7 @@ public open class NSArray/*<ObjectType>*/ <: NSObject & NSCopying & NSMutableCop
     @ForeignName["subarrayWithRange:"] public open func subarrayWithRange(range: NSRange): NSArray/*<ObjectType>*/
     @ForeignName["writeToURL:error:"] public open func writeToURLError(url: NSURL, error: ObjCPointer<NSError>): Bool
     @ForeignName["makeObjectsPerformSelector:"] public open func makeObjectsPerformSelector(aSelector: SEL): Unit
-    @ForeignName["makeObjectsPerformSelector:withObject:"] public open func makeObjectsPerformSelectorWithObject(aSelector: SEL, argument: ObjCId): Unit
+    @ForeignName["makeObjectsPerformSelector:withObject:"] public open func makeObjectsPerformSelectorWithObject(aSelector: SEL, argument: ?ObjCId): Unit
     @ForeignName["objectsAtIndexes:"] public open func objectsAtIndexes(indexes: NSIndexSet): NSArray/*<ObjectType>*/
     @ForeignName["objectAtIndexedSubscript:"] public open func objectAtIndexedSubscript(idx: NSUInteger): ObjCId /*ObjectType*/
     @ForeignName["enumerateObjectsUsingBlock:"] public open func enumerateObjectsUsingBlock(block: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Unit>): Unit
@@ -73,8 +73,8 @@ public open class NSArray/*<ObjectType>*/ <: NSObject & NSCopying & NSMutableCop
     @ForeignName["writeToFile:atomically:"] public open func writeToFileAtomically(path: NSString, useAuxiliaryFile: Bool): Bool
     @ForeignName["writeToURL:atomically:"] public open func writeToURLAtomically(url: NSURL, atomically: Bool): Bool
     @ForeignName["pathsMatchingExtensions:"] public open func pathsMatchingExtensions(filterTypes: NSArray/*<NSString>*/): NSArray/*<NSString>*/
-    public open func valueForKey(key: NSString): ObjCId
-    public open func setValueForKey(value: ObjCId, key: NSString): Unit
+    public open func valueForKey(key: NSString): ?ObjCId
+    public open func setValueForKey(value: ?ObjCId, key: NSString): Unit
     @ForeignName["addObserver:toObjectsAtIndexes:forKeyPath:options:context:"] public open func addObserverToObjectsAtIndexesForKeyPathOptionsContext(observer: NSObject, indexes: NSIndexSet, keyPath: NSString, options: Int32 /*NSKeyValueObservingOptions*/, context: CPointer<Unit>): Unit
     @ForeignName["removeObserver:fromObjectsAtIndexes:forKeyPath:context:"] public open func removeObserverFromObjectsAtIndexesForKeyPathContext(observer: NSObject, indexes: NSIndexSet, keyPath: NSString, context: CPointer<Unit>): Unit
     @ForeignName["removeObserver:fromObjectsAtIndexes:forKeyPath:"] public open func removeObserverFromObjectsAtIndexesForKeyPath(observer: NSObject, indexes: NSIndexSet, keyPath: NSString): Unit

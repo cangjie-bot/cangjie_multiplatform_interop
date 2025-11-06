@@ -28,7 +28,7 @@ public open class NSURLProtocol <: NSObject {
     @ForeignName["requestIsCacheEquivalent:toRequest:"] public static func requestIsCacheEquivalentToRequest(a: NSURLRequest, b: NSURLRequest): Bool
     public open func startLoading(): Unit
     public open func stopLoading(): Unit
-    @ForeignName["propertyForKey:inRequest:"] public static func propertyForKeyInRequest(key: NSString, request: NSURLRequest): ObjCId
+    @ForeignName["propertyForKey:inRequest:"] public static func propertyForKeyInRequest(key: NSString, request: NSURLRequest): ?ObjCId
     @ForeignName["setProperty:forKey:inRequest:"] public static func setPropertyForKeyInRequest(value: ObjCId, key: NSString, request: NSMutableURLRequest): Unit
     @ForeignName["removePropertyForKey:inRequest:"] public static func removePropertyForKeyInRequest(key: NSString, request: NSMutableURLRequest): Unit
     @ForeignName["registerClass:"] public static func registerClass(protocolClass: Class): Bool
