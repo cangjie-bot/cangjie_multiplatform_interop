@@ -314,19 +314,21 @@ static bool write_type_alias(IndentingStringStream& output, TypeAliasSymbol& ali
 
 class DefaultValuePrinter {
 public:
-    explicit DefaultValuePrinter(const TypeLikeSymbol& type) noexcept : type(type)
+    explicit DefaultValuePrinter(const NonTypeSymbol& symbol, const TypeLikeSymbol& type) noexcept
+        : symbol(symbol), type(type)
     {
     }
 
     friend std::ostream& operator<<(std::ostream& stream, const DefaultValuePrinter& op);
 
 private:
+    const NonTypeSymbol& symbol;
     const TypeLikeSymbol& type;
 };
 
-static DefaultValuePrinter default_value(const TypeLikeSymbol& symbol)
+static DefaultValuePrinter default_value(const NonTypeSymbol& symbol, const TypeLikeSymbol& type)
 {
-    return DefaultValuePrinter(symbol);
+    return DefaultValuePrinter(symbol, type);
 }
 
 static bool is_integer_type(std::string_view type_name)
@@ -335,18 +337,22 @@ static bool is_integer_type(std::string_view type_name)
         type_name == "Int16" || type_name == "UInt16" || type_name == "Int8" || type_name == "UInt8";
 }
 
-// The dirty trick is applied for printing default values of:
-// - Interface types -- instances of the interface type cannot be created.
-// - @ObjCMirror classes -- they do not have a primary constructor.
-static void print_tricky_default_value(std::ostream& stream, std::string_view type_name)
+static void print_tricky_default_value(std::ostream& stream, std::string_view type_name, bool is_nullable)
 {
-    stream << "Option<" << type_name << ">.None.getOrThrow()";
+    if (is_nullable) {
+        stream << "None";
+    } else {
+        // The dirty trick is applied for printing default values of:
+        // - Interface types -- instances of the interface type cannot be created.
+        // - @ObjCMirror classes -- they do not have a primary constructor.
+        stream << "Option<" << type_name << ">.None.getOrThrow()";
+    }
 }
 
 std::ostream& operator<<(std::ostream& stream, const DefaultValuePrinter& op)
 {
     if (dynamic_cast<const TypeParameterSymbol*>(&op.type)) {
-        print_tricky_default_value(stream, "ObjCId");
+        print_tricky_default_value(stream, "ObjCId", op.symbol.is_nullable());
         return stream;
     }
     const auto* named_type = dynamic_cast<const NamedTypeSymbol*>(&op.type);
@@ -386,13 +392,13 @@ std::ostream& operator<<(std::ostream& stream, const DefaultValuePrinter& op)
                 }
                 const auto* target = alias->target();
                 assert(target);
-                return stream << default_value(*target);
+                return stream << default_value(op.symbol, *target);
             }
             case NamedTypeSymbol::Kind::Enum:
                 return stream << '0';
             case NamedTypeSymbol::Kind::Interface:
             case NamedTypeSymbol::Kind::Protocol:
-                print_tricky_default_value(stream, named_type->name());
+                print_tricky_default_value(stream, named_type->name(), op.symbol.is_nullable());
                 return stream;
             case NamedTypeSymbol::Kind::Struct:
                 if (named_type->name() == "ObjCPointer") {
@@ -407,7 +413,7 @@ std::ostream& operator<<(std::ostream& stream, const DefaultValuePrinter& op)
         if (varray) {
             stream << '[';
             if (varray->size_) {
-                auto value = default_value(*varray->element_type_);
+                auto value = default_value(op.symbol, *varray->element_type_);
                 stream << value;
                 for (size_t i = 1; i < varray->size_; ++i) {
                     stream << ", " << value;
@@ -684,7 +690,7 @@ static void write_function(IndentingStringStream& output, FuncKind kind, NonType
         if (return_type->is_unit()) {
             output << " { }";
         } else {
-            output << " { " << default_value(*return_type) << " }";
+            output << " { " << default_value(function, *return_type) << " }";
         }
     }
     if (hidden) {
@@ -840,7 +846,7 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
                 if (generate_definitions_mode()) {
                     output << " {\n";
                     output.indent();
-                    output << "get() { " << default_value(*return_type) << " }\n";
+                    output << "get() { " << default_value(*getter, *return_type) << " }\n";
                     if (!member.is_readonly()) {
                         output << "set(v) { }\n";
                     }
@@ -881,7 +887,7 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
 
                 write_type(output, member, *return_type);
                 if (generate_definitions_mode() && !is_interface) {
-                    output << " { " << default_value(*return_type) << " }";
+                    output << " { " << default_value(member, *return_type) << " }";
                 }
                 if (hidden) {
                     output.reset_comment();
@@ -922,7 +928,7 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
             output << (member.is_public() ? "public" : "protected") << " var " << escape_keyword(name);
             write_type(output, member, *return_type);
             if (generate_definitions_mode()) {
-                output << " = " << default_value(*return_type);
+                output << " = " << default_value(member, *return_type);
             }
             if (hidden) {
                 output.reset_comment();
@@ -943,7 +949,7 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
             }
             output << "public var " << escape_keyword(name);
             write_type(output, member, *return_type);
-            output << " = " << default_value(*return_type);
+            output << " = " << default_value(member, *return_type);
             if (hidden) {
                 output.reset_comment();
             } else {
