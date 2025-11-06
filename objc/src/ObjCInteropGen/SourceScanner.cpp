@@ -905,19 +905,25 @@ static bool is_nullable(CXType type)
             auto modified_type_kind = clang_Type_getModifiedType(type).kind;
             assert(modified_type_kind != CXType_Invalid);
 
-            if (modified_type_kind == CXType_ObjCObjectPointer) {
-                return clang_Type_getNullability(type) != CXTypeNullability_NonNull;
+            switch (modified_type_kind) {
+                case CXType_ObjCObjectPointer:
+                case CXType_ObjCId:
+                case CXType_ObjCClass:
+                case CXType_ObjCSel:
+                case CXType_ObjCTypeParam:
+                    return clang_Type_getNullability(type) != CXTypeNullability_NonNull;
+                default:
+                    // This will be most probably converted to CPointer.  In Objective-C, C pointer
+                    // can be annotated as nullable/nonnull.  But in Cangjie, CPointer is always
+                    // nullable, there is no sense to make it optional.
+                    return false;
             }
-
-            // This will be most probably converted to CPointer.  In Objective-C, C pointer
-            // can be annotated as nullable/nonnull.  But in Cangjie, CPointer is always
-            // nullable, there is no sense to make it optional.
-            return false;
         }
         case CXType_ObjCObjectPointer:
         case CXType_ObjCId:
         case CXType_ObjCClass:
         case CXType_ObjCSel:
+        case CXType_ObjCTypeParam:
             return true;
         default:
             return false;
