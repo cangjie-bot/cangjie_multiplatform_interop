@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
 
             if (ends_with(arg, ".toml")) {
                 if (config_specified) {
-                    show_help(argv[0]);
+                    std::cerr << "Multiple .toml files specified\n";
                     return 1;
                 }
                 config_specified = true;
