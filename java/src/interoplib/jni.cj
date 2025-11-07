@@ -2097,6 +2097,7 @@ public func Java_CFFI_newGlobalReference(env: JNIEnv_ptr, obj: Java_CFFI_JavaEnt
 public func Java_CFFI_newJavaArray(env: JNIEnv_ptr, elementType: String, size: jsize): Java_CFFI_JavaEntity {
     let elementTypeSignature = Java_CFFI_parseComponentSignature(elementType)
     Java_CFFI_newJavaArray(env, elementTypeSignature, size)
+    Java_CFFI_JavaEntityJobjectNull()
 }
 
 public func Java_CFFI_newJavaArray(env: JNIEnv_ptr, elementType: Java_CFFI_ComponentSignature, size: jsize): Java_CFFI_JavaEntity {
@@ -2120,6 +2121,7 @@ public func Java_CFFI_newJavaArray(env: JNIEnv_ptr, elementType: Java_CFFI_Compo
     }
     handlePendingException(env)
     res
+    Java_CFFI_JavaEntityJobjectNull()
 }
 
 public func Java_CFFI_arrayGetLength(env: JNIEnv_ptr, array: Java_CFFI_JavaEntity): jsize {
@@ -2194,7 +2196,7 @@ public func Java_CFFI_putToRegistry(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, 
         let envCJ : JNINativeInterface_ = env.read().read()
         let objClass = envCJ.GetObjectClass(env, obj.asJObject())
         let fieldId = envCJ.GetFieldID(env, objClass, cstrSelf, cstrJ)
-        envCJ.SetLongField(env, obj.asJObject(), fieldId, id)
+        //envCJ.SetLongField(env, obj.asJObject(), fieldId, id)
     }
 }
 
@@ -2267,7 +2269,8 @@ public func Java_CFFI_get_env(): JNIEnv_ptr {
 }
 
 public func Java_CFFI_JavaEntityJobject(jobject: CPointer<Unit>): Java_CFFI_JavaEntity {
-    Java_CFFI_JavaEntity(JOBJECT, jobject)
+    //Java_CFFI_JavaEntity(JOBJECT, jobject)
+    Java_CFFI_JavaEntityJobjectNull()
 }
 
 public func Java_CFFI_JavaEntityJobjectNull(): Java_CFFI_JavaEntity {
@@ -2275,7 +2278,9 @@ public func Java_CFFI_JavaEntityJobjectNull(): Java_CFFI_JavaEntity {
 }
 
 public func Java_CFFI_put_to_registry_1(any: Any): Int64 {
-    registry.put(any)
+    //registry.put(any)
+    println(any is Any)
+    return 0
 }
 
 public func Java_CFFI_getFromRegistryByObjOption<T>(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity): ?T {
@@ -2293,7 +2298,8 @@ public func Java_CFFI_getFromRegistryByObjOption<T>(env: JNIEnv_ptr, obj: Java_C
         }
  
         let id = envCJ.GetLongField(env, obj.asJObject(), fieldId)
-        Java_CFFI_getFromRegistryOption<T>(id)
+        //Java_CFFI_getFromRegistryOption<T>(id)
+        None
     }
 }
 
@@ -2302,11 +2308,11 @@ public func Java_CFFI_getFromRegistryByObj<T>(env: JNIEnv_ptr, obj: Java_CFFI_Ja
 }
 
 public func Java_CFFI_getFromRegistry<T>(env: JNIEnv_ptr, self: jlong): T {
-    if (let Some(v) <- registry.get<T>(self)) {
-        v
-    } else {
+    //if (let Some(v) <- registry.get<T>(self)) {
+    //    v
+    //} else {
         throw InteropLibException("CJ object ${self} does not exist")
-    }
+    //}
 }
 
 public func Java_CFFI_getFromRegistryOption<T>(self: jlong): Option<T> {
