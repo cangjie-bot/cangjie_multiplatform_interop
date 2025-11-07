@@ -664,7 +664,7 @@ static void write_function(IndentingStringStream& output, FuncKind kind, NonType
         // In Objective-C, the overridden static method can have different parameter
         // types (co/contra-variant pointers).  In Cangjie, the types must strictly
         // match.  Consider printing "redef" at least when it is allowed in Cangjie.
-        if constexpr (false) {
+        if constexpr ((false)) {
             if (function.is_override()) {
                 output << "redef ";
             }
@@ -677,7 +677,7 @@ static void write_function(IndentingStringStream& output, FuncKind kind, NonType
         // In Objective-C, the overridden method can have different parameter types
         // (co/contra-variant pointers).  In Cangjie, the types must strictly coincide.
         // Consider printing "override" at least when it is allowed in Cangjie.
-        if constexpr (false) {
+        if constexpr ((false)) {
             if (function.is_override()) {
                 output << "override ";
             }
