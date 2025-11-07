@@ -752,11 +752,16 @@ public class Java_CFFI_Class <: ToString {
     }
 
     public init(env: JNIEnv_ptr, name: String) {
-        this.name = name
+        let size = name.size
+        this.name = if (size > 2 && name[0] == b'L' && name[size-1] == b';') {
+            name[1..(size - 1)]
+        } else {
+            name
+        }
 
         unsafe {
             let envCJ = env.read().read()
-            let cName = LibC.mallocCString(name)
+            let cName = LibC.mallocCString(this.name)
             obj = envCJ.FindClass(env, cName)
             LibC.free(cName)
         }
