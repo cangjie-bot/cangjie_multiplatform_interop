@@ -111,7 +111,7 @@ public struct JNINativeInterface_ {
     var CallObjectMethod = CFunc<(JNIEnv_ptr, jobject, jmethodID) -> jobject>(CPointer<Unit>())
     private var CallObjectMethodV = CPointer<Unit>()
     var CallObjectMethodA = CFunc<(JNIEnv_ptr, jobject, jmethodID, CPointer<jvalue>) -> jobject>(CPointer<Unit>())
-    
+
     var CallBooleanMethod = CFunc<(JNIEnv_ptr, jobject, jmethodID) -> jboolean>(CPointer<Unit>())
     private var CallBooleanMethodV = CPointer<Unit>()
     var CallBooleanMethodA = CFunc<(JNIEnv_ptr, jobject, jmethodID, CPointer<jvalue>) -> jboolean>(CPointer<Unit>())
@@ -456,29 +456,7 @@ public enum Java_CFFI_ObjectSignature {
 }
 
 private func checkObjectSignature(signature: String, parsed: Java_CFFI_ComponentSignature, obj: Java_CFFI_ObjectSignature) : Unit {
-    match (obj) {
-        case REFERENCE(className) =>
-            if (className.size + 2 != signature.size /*L and ;*/) {
-                throw InteropLibException("Cannot parse object signature ${signature}")
-            }
-        case ARRAY(_) => { =>
-            let innerClass = Java_CFFI_innermostClass(parsed)
-            let innerClassName = Java_CFFI_className(innerClass)
-            let dimensions = Java_CFFI_arrayDimensions(parsed)
-            
-            let correction = match(innerClass) {
-                case PRIMITIVE(_) => -innerClassName.size + 1
-                case OBJECT(obj) => match(obj) {
-                    case REFERENCE(_) => 2
-                    case ARRAY(_) => assert(false); -123456
-                }
-            }
-
-            if (dimensions + innerClassName.size + correction != signature.size) {
-                throw InteropLibException("Cannot parse array signature ${signature}")
-            }
-        }()
-    }
+    throw Exception("### BAD BAD BAD BAD ###")
 }
 
 public enum Java_CFFI_ComponentSignature {
@@ -486,6 +464,7 @@ public enum Java_CFFI_ComponentSignature {
     | OBJECT(Java_CFFI_ObjectSignature)
 
     public func toString(): String {
+        throw Exception("### BAD BAD BAD BAD ###")
         match (this) {
             case PRIMITIVE(base) => "PRIMITIVE(${base.toString()})"
             case OBJECT(obj) => "OBJECT(${obj.toString()})"
@@ -493,6 +472,7 @@ public enum Java_CFFI_ComponentSignature {
     }
 
     func forJNI(): String {
+        throw Exception("### BAD BAD BAD BAD ###")
         match (this) {
             case PRIMITIVE(base) => base.forJNI()
             case OBJECT(obj) => obj.forJNI()
@@ -507,10 +487,12 @@ public class Java_CFFI_MethodSignature {
     init(params: Array<Java_CFFI_ComponentSignature>, ret: Java_CFFI_ComponentSignature) {
         this.params = params
         this.ret = ret
+        throw Exception("### BAD BAD BAD BAD ###")
     }
 
     public func toString(): String {
         let buffer = StringBuilder()
+        throw Exception("### BAD BAD BAD BAD ###")
 
         buffer.append("(")
         for (i in 0..params.size) {
@@ -527,6 +509,7 @@ public class Java_CFFI_MethodSignature {
     }
 
     func forJNI(): String {
+        throw Exception("### BAD BAD BAD BAD ###")
         let buffer = StringBuilder()
 
         buffer.append("(")
@@ -545,6 +528,7 @@ public enum Java_CFFI_EntitySignature {
     | METHOD(Java_CFFI_MethodSignature)
 
     public func toString(): String {
+        throw Exception("### BAD BAD BAD BAD ###")
         match (this) {
             case FIELD(component) => "FIELD(${component.toString()})"
             case METHOD(method) => "METHOD(${method.toString()})"
@@ -552,6 +536,7 @@ public enum Java_CFFI_EntitySignature {
     }
 
     func forJNI(): String {
+        throw Exception("### BAD BAD BAD BAD ###")
         match (this) {
             case FIELD(component) => component.forJNI()
             case METHOD(method) => method.forJNI()
@@ -589,8 +574,8 @@ private func Java_CFFI_className(obj: Java_CFFI_ComponentSignature): String {
         }
     }
     buffer.append(innerName)
-    
-    for (_ in 0..Java_CFFI_arrayDimensions(obj)) { 
+
+    for (_ in 0..Java_CFFI_arrayDimensions(obj)) {
         buffer.append("[]")
     }
 
@@ -614,13 +599,13 @@ private func signatureBaseCheck(signature: String) {
 
 public func Java_CFFI_parseComponentSignature(signature: String): Java_CFFI_ComponentSignature {
     signatureBaseCheck(signature)
-    
+
     let parsed = Java_CFFI_parseComponentSignatureImpl(unsafe { signature.rawData() }, 0)
 
     // check that parsed all string
     match (parsed) {
         case OBJECT(obj) => checkObjectSignature(signature, parsed, obj)
-        case PRIMITIVE(_) => 
+        case PRIMITIVE(_) =>
             if (signature.size != 1) {
                 throw InteropLibException("Cannot parse primitive signature ${signature}")
             }
@@ -655,7 +640,7 @@ private func arrayCopy<T>(dst: Array<T>, dstBegIdx: Int64, src: Array<T>, srcBeg
 private func Java_CFFI_parseComponentSignatureImpl(signature: Array<Byte>, begin: Int64): Java_CFFI_ComponentSignature {
     let remainSize = signature.size - begin
     assert(remainSize > 0)
-    
+
     match (signature[begin]) {
         case b'B' => PRIMITIVE(BYTE)
         case b'C' => PRIMITIVE(CHAR)
@@ -669,7 +654,7 @@ private func Java_CFFI_parseComponentSignatureImpl(signature: Array<Byte>, begin
         case b'L' => { =>
             let classNameBegin = begin + 1
             let classNameEnd = classNameBorder(signature, begin)
-                
+
             let classNameLength = classNameEnd - classNameBegin
             let classNameBytes = Array<Byte>(classNameLength, repeat: 0)
             arrayCopy(classNameBytes, 0, signature, classNameBegin, classNameEnd)
@@ -686,7 +671,7 @@ private func restoreObjectSignatureSize(signature: Java_CFFI_ComponentSignature,
         case ARRAY(_) => { =>
             let dimensions = Java_CFFI_arrayDimensions(signature)
             let innerClass = Java_CFFI_innermostClass(signature)
-            
+
             let innerClassCorrection = match (innerClass) {
                 case PRIMITIVE(_) => 1
                 case OBJECT(obj) => match(obj) {
@@ -708,33 +693,8 @@ private func restoreComponentSignatureSize(signature: Java_CFFI_ComponentSignatu
 }
 
 public func Java_CFFI_parseMethodSignature(signature: String): Java_CFFI_MethodSignature {
-    signatureBaseCheck(signature)
-    if (signature.size < 3) {
-        throw InteropLibException("Cannot parse method signature ${signature}")
-    }
-
-    var pos = 1
-    
-    let buffer = ArrayQueue<Java_CFFI_ComponentSignature>()
-    while (signature[pos] != b')') {
-        let argument = Java_CFFI_parseComponentSignatureImpl(unsafe { signature.rawData() }, pos)
-        pos += restoreComponentSignatureSize(argument)
-        buffer.add(argument)
-    }
-    
-    pos += 1
-    if (signature.size - pos <= 0) {
-        throw InteropLibException("Cannot parse method return type for signature ${signature}")
-    }
-    let ret = Java_CFFI_parseComponentSignatureImpl(unsafe { signature.rawData() }, pos)
-
-    let args = Array<Java_CFFI_ComponentSignature>(buffer.size, repeat: PRIMITIVE(VOID))
-    let size = buffer.size
-    for (i in 0..size) {
-        args[i] = buffer.remove().getOrThrow()
-    }
-
-    Java_CFFI_MethodSignature(args, ret)
+    throw Exception("### BAD BAD BAD BAD ###")
+    throw Exception("BAD")
 }
 
 public class Java_CFFI_Class <: ToString {
@@ -749,6 +709,7 @@ public class Java_CFFI_Class <: ToString {
                 this.obj = envCJ.GetObjectClass(env, localRef)
             }
         }
+        throw Exception("BAD")
     }
 
     public init(env: JNIEnv_ptr, name: String) {
@@ -769,11 +730,13 @@ public class Java_CFFI_Class <: ToString {
         if (obj.isNull()) {
             throw InteropLibException("Cannot find class ${name}")
         }
+        throw Exception("BAD")
     }
 
     init(obj: jclass, name: String) {
         this.name = name
         this.obj = obj
+        throw Exception("BAD")
     }
 
     public func toString(): String {
@@ -798,48 +761,20 @@ public open class Java_CFFI_EntityID {
     protected init(signature: Java_CFFI_EntitySignature, `static`: Bool) {
         this.signature = signature
         this.`static` = `static`
+        throw Exception("BAD")
+        throw Exception("### BAD BAD BAD BAD ###")
+
     }
 
     static func constr(env: JNIEnv_ptr, clazz: Java_CFFI_Class, entityName: String, signature: Java_CFFI_EntitySignature, `static`: Bool): Java_CFFI_EntityID {
-        let envCJ = unsafe { env.read().read() }
-        var id = CPointer<Unit>()
-        unsafe {
-            let cSignature = LibC.mallocCString(signature.forJNI())
-            let cEntityName = LibC.mallocCString(entityName)
-            match (signature) {
-                case FIELD(_) => if (!`static`) {
-                    id = envCJ.GetFieldID(env, clazz.obj, cEntityName, cSignature)
-                } else {
-                    id = envCJ.GetStaticFieldID(env, clazz.obj, cEntityName, cSignature)
-                }
-                case METHOD(_) => if (!`static`) {
-                    id = envCJ.GetMethodID(env, clazz.obj, cEntityName, cSignature)
-                } else {
-                    id = envCJ.GetStaticMethodID(env, clazz.obj, cEntityName, cSignature)
-                }
-            }
-            LibC.free(cSignature)
-            LibC.free(cEntityName)
-        }
-
-        if (id.isNull()) {
-            if (!`static`) {
-                throw InteropLibException("Cannot find entity ${entityName} with signature ${signature.toString()} in class ${clazz.name}")
-            } else {
-                throw InteropLibException("Cannot find static entity ${entityName} with signature ${signature.toString()} in class ${clazz.name}")
-            }
-        }
-
-        match (signature) {
-            case FIELD(_) => Java_CFFI_FieldID(signature, id, `static`)
-            case METHOD(_) => Java_CFFI_MethodID(signature, id, `static`)
-        }
+        throw Exception("BAD")
+        throw Exception("### BAD BAD BAD BAD ###")
     }
 }
 
 public class Java_CFFI_FieldID <: Java_CFFI_EntityID {
     let id: jfieldID
-    
+
     init(signature: Java_CFFI_EntitySignature, id: jfieldID, `static`: Bool) {
         super(signature, `static`)
         this.id = id
@@ -880,20 +815,16 @@ public class Java_CFFI_MethodID <: Java_CFFI_EntityID {
     init(signature: Java_CFFI_EntitySignature, id: jmethodID, `static`: Bool) {
         super(signature, `static`)
         this.id = id
+        throw Exception("BAD")
     }
 
-    public static func constrStatic(env: JNIEnv_ptr, clazz: Java_CFFI_Class, methodName: String, signature: Java_CFFI_MethodSignature): Java_CFFI_MethodID {
-        match (Java_CFFI_EntityID.constr(env, clazz, methodName, METHOD(signature), true)) {
-            case method: Java_CFFI_MethodID => method
-            case _ => throw Java_CFFI_InvariantFailed()
-        }
+
+   public static func constrStatic(env: JNIEnv_ptr, clazz: Java_CFFI_Class, methodName: String, signature: Java_CFFI_MethodSignature): Java_CFFI_MethodID {
+    throw Exception("### BAD BAD BAD BAD ###")
     }
 
     public static func constr(env: JNIEnv_ptr, clazz: Java_CFFI_Class, methodName: String, signature: Java_CFFI_MethodSignature): Java_CFFI_MethodID {
-        match (Java_CFFI_EntityID.constr(env, clazz, methodName, METHOD(signature), false)) {
-            case method: Java_CFFI_MethodID => method
-            case _ => throw Java_CFFI_InvariantFailed()
-        }
+        throw Exception("### BAD BAD BAD BAD ###")
     }
 }
 
@@ -910,18 +841,11 @@ private func withLocalRef<R>(env: JNIEnv_ptr, obj: jobject, action: (ref: jobjec
 }
 
 public func getLocalRef(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity): Java_CFFI_JavaEntity {
-    unsafe {
-        let envCJ = env.read().read()
-        let localRef = envCJ.NewLocalRef(env, obj.asJObject())
-        Java_CFFI_JavaEntity(JOBJECT, localRef)
-    }
+    throw Exception("### BAD BAD BAD BAD ###")
 }
 
 public func deleteLocalRef(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity): Unit {
-    unsafe {
-        let envCJ = env.read().read()
-        let localRef = envCJ.DeleteLocalRef(env, obj.asJObject())
-    }
+    throw Exception("### BAD BAD BAD BAD ###")
 }
 
 private func withPinnedArray<T, R>(array: Array<T>, action: (array: CPointer<T>) -> R): R where T <: CType {
@@ -999,88 +923,107 @@ public struct Java_CFFI_JavaEntity {
     public init() {
         this.kind = JVOID
         this.value = 0
+        throw Exception("BAD")
     }
-    
+
     public init(kind: Java_CFFI_JavaEntityKind, value: CPointer<Unit>) {
         this.kind = kind
         this.value = UInt64(value.toUIntNative())
+        throw Exception("BAD")
     }
 
     public init(kind: Java_CFFI_JavaEntityKind, value: UInt64) {
         this.kind = kind
         this.value = value
+        throw Exception("BAD")
     }
 
     public init(kind: Java_CFFI_JavaEntityKind, value: Int64) {
         this.kind = kind
         this.value = UInt64(value)
+        throw Exception("BAD")
     }
 
     public init(kind: Java_CFFI_JavaEntityKind, value: Int32) {
         this.kind = kind
         this.value = UInt64(value)
+        throw Exception("BAD")
     }
 
     public init(kind: Java_CFFI_JavaEntityKind, value: Int16) {
         this.kind = kind
         this.value = UInt64(value)
+        throw Exception("BAD")
     }
 
     public init(kind: Java_CFFI_JavaEntityKind, value: UInt16) {
         this.kind = kind
         this.value = UInt64(value)
+        throw Exception("BAD")
     }
 
     public init(kind: Java_CFFI_JavaEntityKind, value: Int8) {
         this.kind = kind
         this.value = UInt64(value)
+        throw Exception("BAD")
     }
 
     public init(kind: Java_CFFI_JavaEntityKind, value: UInt8) {
         this.kind = kind
         this.value = UInt64(value)
+        throw Exception("BAD")
     }
 
     public init(kind: Java_CFFI_JavaEntityKind, value: Float32) {
         this.kind = kind
         this.value = UInt64(reinterpret_cast<UInt32, Float32>(value))
+        throw Exception("BAD")
     }
 
     public init(kind: Java_CFFI_JavaEntityKind, value: Float64) {
         this.kind = kind
         this.value = reinterpret_cast<UInt64, Float64>(value)
+        throw Exception("BAD")
     }
 
     public init(value: Int64) {
         this(JLONG, value)
+        throw Exception("BAD")
     }
 
     public init(value: Int32) {
         this(JINT, value)
+        throw Exception("BAD")
     }
 
     public init(value: Int16) {
         this(JSHORT, value)
+        throw Exception("BAD")
     }
 
     public init(value: UInt16) {
         this(JCHAR, value)
+        throw Exception("BAD")
     }
 
     public init(value: Int8) {
         this(JBYTE, value)
+        throw Exception("BAD")
     }
 
     public init(value: Bool) {
         this(JBOOLEAN, if (value) { 1u8 } else { 0u8 })
+        throw Exception("BAD")
     }
 
     public init(value: Float32) {
         this(JFLOAT, value)
+        throw Exception("BAD")
     }
 
     public init(value: Float64) {
         this(JDOUBLE, value)
+        throw Exception("BAD")
     }
 
     public func asUnit(): Unit {
@@ -1091,14 +1034,7 @@ public struct Java_CFFI_JavaEntity {
     }
 
     public func asJObject(): jobject {
-        match (kind) {
-            case JVALUE => jobject(ptrFromInt(value))
-            case JOBJECT => jobject(ptrFromInt(value))
-            case JSTRING => jobject(ptrFromInt(value))
-            case JWEAK => jobject(ptrFromInt(value))
-            case JSTRONG => jobject(ptrFromInt(value))
-            case _ => throw InteropLibException("Cannot get jobject from ${kind.toString()}")
-        }
+        throw Exception("### BAD BAD BAD BAD ###")
     }
 
     public func asJWeak(): jobject {
@@ -1115,7 +1051,7 @@ public struct Java_CFFI_JavaEntity {
         }
     }
 
-    public func asJLong(): jlong { 
+    public func asJLong(): jlong {
         match (kind) {
             case JVALUE => Int64(value)
             case JLONG => Int64(value)
@@ -1212,371 +1148,29 @@ public class Java_CFFI_JavaCallNest {
     public init(n: Int64) {
         array = Array<jvalue>(n, repeat: 0)
         size = array.size
+        throw Exception("### BAD BAD BAD BAD ###")
     }
 }
 
 private unsafe func noParamsCallMethod(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, method: Java_CFFI_MethodID, signature: Java_CFFI_MethodSignature): Java_CFFI_JavaEntity {
-    match (signature.ret) {
-        case PRIMITIVE(base) => match (base) {
-            case BYTE =>
-                withLocalRef(env, obj.asJObject()) { localRef =>
-                    let envCJ = env.read().read()
-                    let jResult = envCJ.CallNonvirtualByteMethod(env, localRef, envCJ.GetObjectClass(env, localRef), method.id)
-                    Java_CFFI_JavaEntity(JBYTE, jResult)
-                }
-            case CHAR =>
-                withLocalRef(env, obj.asJObject()) { localRef =>
-                    let envCJ = env.read().read()
-                    let jResult = envCJ.CallNonvirtualCharMethod(env, localRef, envCJ.GetObjectClass(env, localRef), method.id)
-                    Java_CFFI_JavaEntity(JCHAR, jResult)
-                }
-            case DOUBLE =>
-                withLocalRef(env, obj.asJObject()) { localRef =>
-                    let envCJ = env.read().read()
-                    let jResult = envCJ.CallNonvirtualDoubleMethod(env, localRef, envCJ.GetObjectClass(env, localRef), method.id)
-                    Java_CFFI_JavaEntity(JDOUBLE, jResult)
-                }
-            case FLOAT =>
-                withLocalRef(env, obj.asJObject()) { localRef =>
-                    let envCJ = env.read().read()
-                    let jResult = envCJ.CallNonvirtualFloatMethod(env, localRef, envCJ.GetObjectClass(env, localRef), method.id)
-                    Java_CFFI_JavaEntity(JFLOAT, jResult)
-                }
-            case INT =>
-                withLocalRef(env, obj.asJObject()) { localRef =>
-                    let envCJ = env.read().read()
-                    let jResult = envCJ.CallNonvirtualIntMethod(env, localRef, envCJ.GetObjectClass(env, localRef), method.id)
-                    Java_CFFI_JavaEntity(JINT, jResult)
-                }
-            case LONG =>
-                withLocalRef(env, obj.asJObject()) { localRef =>
-                    let envCJ = env.read().read()
-                    let jResult = envCJ.CallNonvirtualLongMethod(env, localRef, envCJ.GetObjectClass(env, localRef), method.id)
-                    Java_CFFI_JavaEntity(JLONG, jResult)
-                }
-            case SHORT =>
-                withLocalRef(env, obj.asJObject()) { localRef =>
-                    let envCJ = env.read().read()
-                    let jResult = envCJ.CallNonvirtualShortMethod(env, localRef, envCJ.GetObjectClass(env, localRef), method.id)
-                    Java_CFFI_JavaEntity(JSHORT, jResult)
-                }
-            case BOOLEAN =>
-                withLocalRef(env, obj.asJObject()) { localRef =>
-                    let envCJ = env.read().read()
-                    let jResult = envCJ.CallNonvirtualBooleanMethod(env, localRef, envCJ.GetObjectClass(env, localRef), method.id)
-                    Java_CFFI_JavaEntity(JBOOLEAN, jResult)
-                }
-            case VOID =>
-                withLocalRef(env, obj.asJObject()) { localRef =>
-                    let envCJ = env.read().read()
-                    envCJ.CallNonvirtualVoidMethod(env, localRef, envCJ.GetObjectClass(env, localRef), method.id)
-                }
-                Java_CFFI_JavaEntity()
-        }
-        case OBJECT(object) => 
-            withLocalRef(env, obj.asJObject()) { localRef =>
-                let envCJ = env.read().read()
-                let jResult = envCJ.CallNonvirtualObjectMethod(env, localRef, envCJ.GetObjectClass(env, localRef), method.id)
-                Java_CFFI_JavaEntity(JOBJECT, jResult)
-            }
-    }
+    throw Exception("### BAD BAD BAD BAD ###")
 }
 
 private unsafe func withParamsCallMethod(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, method: Java_CFFI_MethodID, signature: Java_CFFI_MethodSignature, argsCallNest: Java_CFFI_JavaCallNest): Java_CFFI_JavaEntity {
-    match (signature.ret) {
-        case PRIMITIVE(base) => match (base) {
-            case BYTE =>
-                withLocalRef(env, obj.asJObject()) { localRef => 
-                    withPinnedArray(argsCallNest.array) { argsPtr => 
-                        let envCJ = env.read().read()
-                        let jResult = envCJ.CallNonvirtualByteMethodA(env, localRef, envCJ.GetObjectClass(env, localRef), method.id, argsPtr)
-                        Java_CFFI_JavaEntity(JBYTE, jResult)
-                    }
-                }
-            case CHAR =>
-                withLocalRef(env, obj.asJObject()) { localRef => 
-                    withPinnedArray(argsCallNest.array) { argsPtr =>
-                        let envCJ = env.read().read()
-                        let jResult = envCJ.CallNonvirtualCharMethodA(env, localRef, envCJ.GetObjectClass(env, localRef), method.id, argsPtr)
-                        Java_CFFI_JavaEntity(JCHAR, jResult)
-                    }
-                }
-            case DOUBLE =>
-                withLocalRef(env, obj.asJObject()) { localRef => 
-                    withPinnedArray(argsCallNest.array) { argsPtr =>
-                        let envCJ = env.read().read()
-                        let jResult = envCJ.CallNonvirtualDoubleMethodA(env, localRef, envCJ.GetObjectClass(env, localRef), method.id, argsPtr)
-                        Java_CFFI_JavaEntity(JDOUBLE, jResult)
-                    }
-                }
-            case FLOAT =>
-                withLocalRef(env, obj.asJObject()) { localRef => 
-                    withPinnedArray(argsCallNest.array) { argsPtr =>
-                        let envCJ = env.read().read()
-                        let jResult = envCJ.CallNonvirtualFloatMethodA(env, localRef, envCJ.GetObjectClass(env, localRef), method.id, argsPtr)
-                        Java_CFFI_JavaEntity(JFLOAT, jResult)
-                    }
-                }
-            case INT =>
-                withLocalRef(env, obj.asJObject()) { localRef => 
-                    withPinnedArray(argsCallNest.array) { argsPtr =>
-                        let envCJ = env.read().read()
-                        let jResult = envCJ.CallNonvirtualIntMethodA(env, localRef, envCJ.GetObjectClass(env, localRef), method.id, argsPtr)
-                        Java_CFFI_JavaEntity(JINT, jResult)
-                    }
-                }
-            case LONG =>
-                withLocalRef(env, obj.asJObject()) { localRef => 
-                    withPinnedArray(argsCallNest.array) { argsPtr =>
-                        let envCJ = env.read().read()
-                        let jResult = envCJ.CallNonvirtualLongMethodA(env, localRef, envCJ.GetObjectClass(env, localRef), method.id, argsPtr)
-                        Java_CFFI_JavaEntity(JLONG, jResult)
-                    }
-                }
-            case SHORT =>
-                withLocalRef(env, obj.asJObject()) { localRef => 
-                    withPinnedArray(argsCallNest.array) { argsPtr =>
-                        let envCJ = env.read().read()
-                        let jResult = envCJ.CallNonvirtualShortMethodA(env, localRef, envCJ.GetObjectClass(env, localRef), method.id, argsPtr)
-                        Java_CFFI_JavaEntity(JSHORT, jResult)
-                    }
-                }
-            case BOOLEAN =>
-                withLocalRef(env, obj.asJObject()) { localRef => 
-                    withPinnedArray(argsCallNest.array) { argsPtr =>
-                        let envCJ = env.read().read()
-                        let jResult = envCJ.CallNonvirtualBooleanMethodA(env, localRef, envCJ.GetObjectClass(env, localRef), method.id, argsPtr)
-                        Java_CFFI_JavaEntity(JBOOLEAN, jResult)
-                    }
-                }
-            case VOID =>
-                withLocalRef(env, obj.asJObject()) { localRef => 
-                    withPinnedArray(argsCallNest.array) { argsPtr =>
-                        let envCJ = env.read().read()
-                        envCJ.CallNonvirtualVoidMethodA(env, localRef, envCJ.GetObjectClass(env, localRef), method.id, argsPtr)
-                    }
-                }
-                Java_CFFI_JavaEntity()
-        }
-        case OBJECT(object) =>
-            withLocalRef(env, obj.asJObject()) { localRef => 
-                withPinnedArray(argsCallNest.array) { argsPtr =>
-                    let envCJ = env.read().read()
-                    let jResult = envCJ.CallNonvirtualObjectMethodA(env, localRef, envCJ.GetObjectClass(env, localRef), method.id, argsPtr)
-                    Java_CFFI_JavaEntity(JOBJECT, jResult)
-                }
-            }
-    }
+    throw Exception("### BAD BAD BAD BAD ###")
 }
 
 public func Java_CFFI_callMethod(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, method: Java_CFFI_MethodID, args: Array<Java_CFFI_JavaEntity>, argsCallNest: Java_CFFI_JavaCallNest): Java_CFFI_JavaEntity {
-    if (args.size > argsCallNest.array.size) {
-        throw InteropLibException("Cannot perform call, too small argsCallNest.array (${argsCallNest.size}, required at least ${args.size})")
-    }
-    if (method.`static`) {
-        throw InteropLibException("Cannot perform non-static call to static entity")
-    }
-    let signature = match(method.signature) {
-        case METHOD(methodSignature) => methodSignature
-        case FIELD(_) => throw Java_CFFI_InvariantFailed()
-    }
-    
-    if (args.size != signature.params.size) {
-        throw InteropLibException("Given ${args.size} arguments for ${signature.params.size} arguments method")
-    }
-
-    let res = unsafe {
-        if (signature.params.size == 0) {
-            noParamsCallMethod(env, obj, method, signature)
-        } else {
-            for (i in 0..args.size) {
-                argsCallNest.array[i] = args[i].asJValue()
-            }
-            withParamsCallMethod(env, obj, method, signature, argsCallNest)
-        }
-    }
-    handlePendingException(env)
-    res
+    throw Exception("### BAD BAD BAD BAD ###")
+    throw Exception("BAD")
 }
 
 public func Java_CFFI_callVirtualMethod(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, method: Java_CFFI_MethodID, args: Array<Java_CFFI_JavaEntity>, argsCallNest: Java_CFFI_JavaCallNest): Java_CFFI_JavaEntity {
-    let res = Java_CFFI_callVirtualMethod_no_exception_handling(env, obj, method, args, argsCallNest)
-    handlePendingException(env)
-    res
+    throw Exception("BAD")
 }
 
 private func Java_CFFI_callVirtualMethod_no_exception_handling(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, method: Java_CFFI_MethodID, args: Array<Java_CFFI_JavaEntity>, argsCallNest: Java_CFFI_JavaCallNest): Java_CFFI_JavaEntity {
-    if (args.size > argsCallNest.array.size) {
-        throw InteropLibException("Cannot perform call, too small argsCallNest.array (${argsCallNest.size}, required at least ${args.size})")
-    }
-    if (method.`static`) {
-        throw InteropLibException("Cannot perform non-static call to static entity")
-    }
-    let signature = match(method.signature) {
-        case METHOD(methodSignature) => methodSignature
-        case FIELD(_) => throw Java_CFFI_InvariantFailed()
-    }
-    
-    if (args.size != signature.params.size) {
-        throw InteropLibException("Given ${args.size} arguments for ${signature.params.size} arguments method")
-    }
-
-    unsafe {
-        if (signature.params.size == 0) {
-            match (signature.ret) {
-                case PRIMITIVE(base) => match (base) {
-                    case BYTE =>
-                        withLocalRef(env, obj.asJObject()) { localRef =>
-                            let envCJ = env.read().read()
-                            let jResult = envCJ.CallByteMethod(env, localRef, method.id)
-                            Java_CFFI_JavaEntity(JBYTE, jResult)
-                        }
-                    case CHAR =>
-                        withLocalRef(env, obj.asJObject()) { localRef =>
-                            let envCJ = env.read().read()
-                            let jResult = envCJ.CallCharMethod(env, localRef, method.id)
-                            Java_CFFI_JavaEntity(JCHAR, jResult)
-                        }
-                    case DOUBLE =>
-                        withLocalRef(env, obj.asJObject()) { localRef =>
-                            let envCJ = env.read().read()
-                            let jResult = envCJ.CallDoubleMethod(env, localRef, method.id)
-                            Java_CFFI_JavaEntity(JDOUBLE, jResult)
-                        }
-                    case FLOAT =>
-                        withLocalRef(env, obj.asJObject()) { localRef =>
-                            let envCJ = env.read().read()
-                            let jResult = envCJ.CallFloatMethod(env, localRef, method.id)
-                            Java_CFFI_JavaEntity(JFLOAT, jResult)
-                        }
-                    case INT =>
-                        withLocalRef(env, obj.asJObject()) { localRef =>
-                            let envCJ = env.read().read()
-                            let jResult = envCJ.CallIntMethod(env, localRef, method.id)
-                            Java_CFFI_JavaEntity(JINT, jResult)
-                        }
-                    case LONG =>
-                        withLocalRef(env, obj.asJObject()) { localRef =>
-                            let envCJ = env.read().read()
-                            let jResult = envCJ.CallLongMethod(env, localRef, method.id)
-                            Java_CFFI_JavaEntity(JLONG, jResult)
-                        }
-                    case SHORT =>
-                        withLocalRef(env, obj.asJObject()) { localRef =>
-                            let envCJ = env.read().read()
-                            let jResult = envCJ.CallShortMethod(env, localRef, method.id)
-                            Java_CFFI_JavaEntity(JSHORT, jResult)
-                        }
-                    case BOOLEAN =>
-                        withLocalRef(env, obj.asJObject()) { localRef =>
-                            let envCJ = env.read().read()
-                            let jResult = envCJ.CallBooleanMethod(env, localRef, method.id)
-                            Java_CFFI_JavaEntity(JBOOLEAN, jResult)
-                        }
-                    case VOID =>
-                        withLocalRef(env, obj.asJObject()) { localRef =>
-                            let envCJ = env.read().read()
-                            envCJ.CallVoidMethod(env, localRef, method.id)
-                        }
-                        Java_CFFI_JavaEntity()
-                }
-                case OBJECT(object) => 
-                    withLocalRef(env, obj.asJObject()) { localRef =>
-                        let envCJ = env.read().read()
-                        let jResult = envCJ.CallObjectMethod(env, localRef, method.id)
-                        Java_CFFI_JavaEntity(JOBJECT, jResult)
-                    }
-            }
-        } else {
-            for (i in 0..args.size) {
-                argsCallNest.array[i] = args[i].asJValue()
-            }
-            match (signature.ret) {
-                case PRIMITIVE(base) => match (base) {
-                    case BYTE =>
-                        withLocalRef(env, obj.asJObject()) { localRef => 
-                            withPinnedArray(argsCallNest.array) { argsPtr => 
-                                let envCJ = env.read().read()
-                                let jResult = envCJ.CallByteMethodA(env, localRef, method.id, argsPtr)
-                                Java_CFFI_JavaEntity(JBYTE, jResult)
-                            }
-                        }
-                    case CHAR =>
-                        withLocalRef(env, obj.asJObject()) { localRef => 
-                            withPinnedArray(argsCallNest.array) { argsPtr =>
-                                let envCJ = env.read().read()
-                                let jResult = envCJ.CallCharMethodA(env, localRef, method.id, argsPtr)
-                                Java_CFFI_JavaEntity(JCHAR, jResult)
-                            }
-                        }
-                    case DOUBLE =>
-                        withLocalRef(env, obj.asJObject()) { localRef => 
-                            withPinnedArray(argsCallNest.array) { argsPtr =>
-                                let envCJ = env.read().read()
-                                let jResult = envCJ.CallDoubleMethodA(env, localRef, method.id, argsPtr)
-                                Java_CFFI_JavaEntity(JDOUBLE, jResult)
-                            }
-                        }
-                    case FLOAT =>
-                        withLocalRef(env, obj.asJObject()) { localRef => 
-                            withPinnedArray(argsCallNest.array) { argsPtr =>
-                                let envCJ = env.read().read()
-                                let jResult = envCJ.CallFloatMethodA(env, localRef, method.id, argsPtr)
-                                Java_CFFI_JavaEntity(JFLOAT, jResult)
-                            }
-                        }
-                    case INT =>
-                        withLocalRef(env, obj.asJObject()) { localRef => 
-                            withPinnedArray(argsCallNest.array) { argsPtr =>
-                                let envCJ = env.read().read()
-                                let jResult = envCJ.CallIntMethodA(env, localRef, method.id, argsPtr)
-                                Java_CFFI_JavaEntity(JINT, jResult)
-                            }
-                        }
-                    case LONG =>
-                        withLocalRef(env, obj.asJObject()) { localRef => 
-                            withPinnedArray(argsCallNest.array) { argsPtr =>
-                                let envCJ = env.read().read()
-                                let jResult = envCJ.CallLongMethodA(env, localRef, method.id, argsPtr)
-                                Java_CFFI_JavaEntity(JLONG, jResult)
-                            }
-                        }
-                    case SHORT =>
-                        withLocalRef(env, obj.asJObject()) { localRef => 
-                            withPinnedArray(argsCallNest.array) { argsPtr =>
-                                let envCJ = env.read().read()
-                                let jResult = envCJ.CallShortMethodA(env, localRef, method.id, argsPtr)
-                                Java_CFFI_JavaEntity(JSHORT, jResult)
-                            }
-                        }
-                    case BOOLEAN =>
-                        withLocalRef(env, obj.asJObject()) { localRef => 
-                            withPinnedArray(argsCallNest.array) { argsPtr =>
-                                let envCJ = env.read().read()
-                                let jResult = envCJ.CallBooleanMethodA(env, localRef, method.id, argsPtr)
-                                Java_CFFI_JavaEntity(JBOOLEAN, jResult)
-                            }
-                        }
-                    case VOID =>
-                        withLocalRef(env, obj.asJObject()) { localRef => 
-                            withPinnedArray(argsCallNest.array) { argsPtr =>
-                                let envCJ = env.read().read()
-                                envCJ.CallVoidMethodA(env, localRef, method.id, argsPtr)
-                            }
-                        }
-                        Java_CFFI_JavaEntity()
-                }
-                case OBJECT(object) =>
-                    withLocalRef(env, obj.asJObject()) { localRef => 
-                        withPinnedArray(argsCallNest.array) { argsPtr =>
-                            let envCJ = env.read().read()
-                            let jResult = envCJ.CallObjectMethodA(env, localRef, method.id, argsPtr)
-                            Java_CFFI_JavaEntity(JOBJECT, jResult)
-                        }
-                    }
-            }
-        }
-    }
+    throw Exception("BAD")
 }
 
 private func Java_CFFI_callStaticMethod(env: JNIEnv_ptr, clazz: Java_CFFI_Class, methodName: String, methodSignature: String, args: Array<Java_CFFI_JavaEntity>): Java_CFFI_JavaEntity {
@@ -1588,401 +1182,47 @@ private func Java_CFFI_callStaticMethod(env: JNIEnv_ptr, clazz: Java_CFFI_Class,
 }
 
 public func Java_CFFI_callStaticMethod(env: JNIEnv_ptr, clazz: Java_CFFI_Class, method: Java_CFFI_MethodID, args: Array<Java_CFFI_JavaEntity>, argsCallNest: Java_CFFI_JavaCallNest): Java_CFFI_JavaEntity {
-    if (args.size > argsCallNest.array.size) {
-        throw InteropLibException("Cannot perform call, too small argsCallNest.array (${argsCallNest.size}, required at least ${args.size})")
-    }
-    if (!method.`static`) {
-        throw InteropLibException("Cannot perform static call to non-static entity")
-    }
-    let signature = match(method.signature) {
-        case METHOD(methodSignature) => methodSignature
-        case FIELD(_) => throw Java_CFFI_InvariantFailed()
-    }
-    
-    if (args.size != signature.params.size) {
-        throw InteropLibException("Given ${args.size} arguments for ${signature.params.size} arguments method")
-    }
-
-    let res = unsafe {
-        if (signature.params.size == 0) {
-            match (signature.ret) {
-                case PRIMITIVE(base) => match (base) {
-                    case BYTE =>
-                        let envCJ = env.read().read()
-                        let jResult = envCJ.CallStaticByteMethod(env, clazz.obj, method.id)
-                        Java_CFFI_JavaEntity(JBYTE, jResult)
-                    case CHAR =>
-                        let envCJ = env.read().read()
-                        let jResult = envCJ.CallStaticCharMethod(env, clazz.obj, method.id)
-                        Java_CFFI_JavaEntity(JCHAR, jResult)
-                    case DOUBLE =>
-                        let envCJ = env.read().read()
-                        let jResult = envCJ.CallStaticDoubleMethod(env, clazz.obj, method.id)
-                        Java_CFFI_JavaEntity(JDOUBLE, jResult)
-                    case FLOAT =>
-                        let envCJ = env.read().read()
-                        let jResult = envCJ.CallStaticFloatMethod(env, clazz.obj, method.id)
-                        Java_CFFI_JavaEntity(JFLOAT, jResult)
-                    case INT =>
-                        let envCJ = env.read().read()
-                        let jResult = envCJ.CallStaticIntMethod(env, clazz.obj, method.id)
-                        Java_CFFI_JavaEntity(JINT, jResult)
-                    case LONG =>
-                        let envCJ = env.read().read()
-                        let jResult = envCJ.CallStaticLongMethod(env, clazz.obj, method.id)
-                        Java_CFFI_JavaEntity(JLONG, jResult)
-                    case SHORT =>
-                        let envCJ = env.read().read()
-                        let jResult = envCJ.CallStaticShortMethod(env, clazz.obj, method.id)
-                        Java_CFFI_JavaEntity(JSHORT, jResult)
-                    case BOOLEAN =>
-                        let envCJ = env.read().read()
-                        let jResult = envCJ.CallStaticBooleanMethod(env, clazz.obj, method.id)
-                        Java_CFFI_JavaEntity(JBOOLEAN, jResult)
-                    case VOID =>
-                        let envCJ = env.read().read()
-                        envCJ.CallStaticVoidMethod(env, clazz.obj, method.id)
-                        Java_CFFI_JavaEntity()
-                }
-                case OBJECT(object) =>
-                    let envCJ = env.read().read()
-                    let jResult = envCJ.CallStaticObjectMethod(env, clazz.obj, method.id)
-                    Java_CFFI_JavaEntity(JOBJECT, jResult)
-            }
-        } else {
-            for (i in 0..args.size) {
-                argsCallNest.array[i] = args[i].asJValue()
-            }
-            match (signature.ret) {
-                case PRIMITIVE(base) => match (base) {
-                    case BYTE =>
-                        withPinnedArray(argsCallNest.array) { argsPtr => 
-                            let envCJ = env.read().read()
-                            let jResult = envCJ.CallStaticByteMethodA(env, clazz.obj, method.id, argsPtr)
-                            Java_CFFI_JavaEntity(JBYTE, jResult)
-                        }
-                    case CHAR =>
-                        withPinnedArray(argsCallNest.array) { argsPtr =>
-                            let envCJ = env.read().read()
-                            let jResult = envCJ.CallStaticCharMethodA(env, clazz.obj, method.id, argsPtr)
-                            Java_CFFI_JavaEntity(JCHAR, jResult)
-                        }
-                    case DOUBLE =>
-                        withPinnedArray(argsCallNest.array) { argsPtr =>
-                            let envCJ = env.read().read()
-                            let jResult = envCJ.CallStaticDoubleMethodA(env, clazz.obj, method.id, argsPtr)
-                            Java_CFFI_JavaEntity(JDOUBLE, jResult)
-                        }
-                    case FLOAT =>
-                        withPinnedArray(argsCallNest.array) { argsPtr =>
-                            let envCJ = env.read().read()
-                            let jResult = envCJ.CallStaticFloatMethodA(env, clazz.obj, method.id, argsPtr)
-                            Java_CFFI_JavaEntity(JFLOAT, jResult)
-                        }
-                    case INT =>
-                        withPinnedArray(argsCallNest.array) { argsPtr =>
-                            let envCJ = env.read().read()
-                            let jResult = envCJ.CallStaticIntMethodA(env, clazz.obj, method.id, argsPtr)
-                            Java_CFFI_JavaEntity(JINT, jResult)
-                        }
-                    case LONG =>
-                        withPinnedArray(argsCallNest.array) { argsPtr =>
-                            let envCJ = env.read().read()
-                            let jResult = envCJ.CallStaticLongMethodA(env, clazz.obj, method.id, argsPtr)
-                            Java_CFFI_JavaEntity(JLONG, jResult)
-                        }
-                    case SHORT =>
-                        withPinnedArray(argsCallNest.array) { argsPtr =>
-                            let envCJ = env.read().read()
-                            let jResult = envCJ.CallStaticShortMethodA(env, clazz.obj, method.id, argsPtr)
-                            Java_CFFI_JavaEntity(JSHORT, jResult)
-                        }
-                    case BOOLEAN =>
-                        withPinnedArray(argsCallNest.array) { argsPtr =>
-                            let envCJ = env.read().read()
-                            let jResult = envCJ.CallStaticBooleanMethodA(env, clazz.obj, method.id, argsPtr)
-                            Java_CFFI_JavaEntity(JBOOLEAN, jResult)
-                        }
-                    case VOID =>
-                        withPinnedArray(argsCallNest.array) { argsPtr =>
-                            let envCJ = env.read().read()
-                            envCJ.CallStaticVoidMethodA(env, clazz.obj, method.id, argsPtr)
-                        }
-                        Java_CFFI_JavaEntity()
-                }
-                case OBJECT(object) =>
-                    withPinnedArray(argsCallNest.array) { argsPtr =>
-                        let envCJ = env.read().read()
-                        let jResult = envCJ.CallStaticObjectMethodA(env, clazz.obj, method.id, argsPtr)
-                        Java_CFFI_JavaEntity(JOBJECT, jResult)
-                    }
-            }
-        }
-    }
-    handlePendingException(env)
-    res
+    throw Exception("BAD")
 }
 
 private unsafe func getPrimitiveFieldJavaEntity(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity,
     base: Java_CFFI_BaseSignature, id: jfieldID): Java_CFFI_JavaEntity {
-    match (base) {
-        case BYTE =>
-            withLocalRef(env, obj.asJObject()) { localRef =>
-                let envCJ = env.read().read()
-                let jResult = envCJ.GetByteField(env, localRef, id)
-                Java_CFFI_JavaEntity(JBYTE, jResult)
-            }
-        case CHAR =>
-            withLocalRef(env, obj.asJObject()) { localRef =>
-                let envCJ = env.read().read()
-                let jResult = envCJ.GetCharField(env, localRef, id)
-                Java_CFFI_JavaEntity(JCHAR, jResult)
-            }
-        case DOUBLE =>
-            withLocalRef(env, obj.asJObject()) { localRef =>
-                let envCJ = env.read().read()
-                let jResult = envCJ.GetDoubleField(env, localRef, id)
-                Java_CFFI_JavaEntity(JDOUBLE, jResult)
-            }
-        case FLOAT =>
-            withLocalRef(env, obj.asJObject()) { localRef =>
-                let envCJ = env.read().read()
-                let jResult = envCJ.GetFloatField(env, localRef, id)
-                Java_CFFI_JavaEntity(JFLOAT, jResult)
-            }
-        case INT =>
-            withLocalRef(env, obj.asJObject()) { localRef =>
-                let envCJ = env.read().read()
-                let jResult = envCJ.GetIntField(env, localRef, id)
-                Java_CFFI_JavaEntity(JINT, jResult)
-            }
-        case LONG =>
-            withLocalRef(env, obj.asJObject()) { localRef =>
-                let envCJ = env.read().read()
-                let jResult = envCJ.GetLongField(env, localRef, id)
-                Java_CFFI_JavaEntity(JLONG, jResult)
-            }
-        case SHORT =>
-            withLocalRef(env, obj.asJObject()) { localRef =>
-                let envCJ = env.read().read()
-                let jResult = envCJ.GetShortField(env, localRef, id)
-                Java_CFFI_JavaEntity(JSHORT, jResult)
-            }
-        case BOOLEAN =>
-            withLocalRef(env, obj.asJObject()) { localRef =>
-                let envCJ = env.read().read()
-                let jResult = envCJ.GetBooleanField(env, localRef, id)
-                Java_CFFI_JavaEntity(JBOOLEAN, jResult)
-            }
-        case VOID => throw Java_CFFI_InvariantFailed()
-    }
+    throw Exception("BAD")
 }
 
 private unsafe func getFieldJavaEntity(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity,
     signature: Java_CFFI_ComponentSignature, id: jfieldID): Java_CFFI_JavaEntity {
-    match (signature) {
-        case PRIMITIVE(base) => getPrimitiveFieldJavaEntity(env, obj, base, id)
-        case OBJECT(object) =>
-            withLocalRef(env, obj.asJObject()) { localRef =>
-                let envCJ = env.read().read()
-                let jResult = envCJ.GetObjectField(env, localRef, id)
-                Java_CFFI_JavaEntity(JOBJECT, jResult)
-            }
-    }
+    throw Exception("BAD")
 }
 
 public func Java_CFFI_getField(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, field: Java_CFFI_FieldID): Java_CFFI_JavaEntity {
-    if (field.`static`) {
-        throw InteropLibException("Cannot get static entity from non-static obj")
-    }
-    let signature = match(field.signature) {
-        case METHOD(_) => throw Java_CFFI_InvariantFailed()
-        case FIELD(fieldSignature) => fieldSignature
-    }
-    let res = unsafe { getFieldJavaEntity(env, obj, signature, field.id) }
-    handlePendingException(env)
-    res
+    throw Exception("BAD")
 }
 
 public func Java_CFFI_getStaticField(env: JNIEnv_ptr, clazz: Java_CFFI_Class, field: Java_CFFI_FieldID): Java_CFFI_JavaEntity {
-    if (!field.`static`) {
-        throw InteropLibException("Cannot get non-static entity from class")
-    }
-    let signature = match(field.signature) {
-        case METHOD(_) => throw Java_CFFI_InvariantFailed()
-        case FIELD(fieldSignature) => fieldSignature
-    }
-
-    let res = unsafe {
-        match (signature) {
-            case PRIMITIVE(base) => match (base) {
-                case BYTE =>
-                    let envCJ = env.read().read()
-                    let jResult = envCJ.GetStaticByteField(env, clazz.obj, field.id)
-                    Java_CFFI_JavaEntity(JBYTE, jResult)
-                case CHAR =>
-                    let envCJ = env.read().read()
-                    let jResult = envCJ.GetStaticCharField(env, clazz.obj, field.id)
-                    Java_CFFI_JavaEntity(JCHAR, jResult)
-                case DOUBLE =>
-                    let envCJ = env.read().read()
-                    let jResult = envCJ.GetStaticDoubleField(env, clazz.obj, field.id)
-                    Java_CFFI_JavaEntity(JDOUBLE, jResult)
-                case FLOAT =>
-                    let envCJ = env.read().read()
-                    let jResult = envCJ.GetStaticFloatField(env, clazz.obj, field.id)
-                    Java_CFFI_JavaEntity(JFLOAT, jResult)
-                case INT =>
-                    let envCJ = env.read().read()
-                    let jResult = envCJ.GetStaticIntField(env, clazz.obj, field.id)
-                    Java_CFFI_JavaEntity(JINT, jResult)
-                case LONG =>
-                    let envCJ = env.read().read()
-                    let jResult = envCJ.GetStaticLongField(env, clazz.obj, field.id)
-                    Java_CFFI_JavaEntity(JLONG, jResult)
-                case SHORT =>
-                    let envCJ = env.read().read()
-                    let jResult = envCJ.GetStaticShortField(env, clazz.obj, field.id)
-                    Java_CFFI_JavaEntity(JSHORT, jResult)
-                case BOOLEAN =>
-                    let envCJ = env.read().read()
-                    let jResult = envCJ.GetStaticBooleanField(env, clazz.obj, field.id)
-                    Java_CFFI_JavaEntity(JBOOLEAN, jResult)
-                case VOID => throw Java_CFFI_InvariantFailed()
-            }
-            case OBJECT(object) =>
-                let envCJ = env.read().read()
-                let jResult = envCJ.GetStaticObjectField(env, clazz.obj, field.id)
-                Java_CFFI_JavaEntity(JOBJECT, jResult)
-        }
-    }
-    handlePendingException(env)
-    res
+    throw Exception("BAD")
 }
 
 private func Java_CFFI_setField(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, fieldName: String, fieldSignature: String, value: Java_CFFI_JavaEntity): Unit {
-    let clazz = Java_CFFI_Class(obj.asJObject(), "<UNNAMED>")
-    let signature = Java_CFFI_parseComponentSignature(fieldSignature)
-    let id = Java_CFFI_FieldID.constr(env, clazz, fieldName, signature)
-
-    Java_CFFI_setField(env, obj, id, value)
+    throw Exception("BAD")
 }
 
 private unsafe func setPrimitiveFieldJavaEntity(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity,
     base: Java_CFFI_BaseSignature, id: jfieldID, value: Java_CFFI_JavaEntity): Unit {
-    match (base) {
-        case BYTE =>
-            withLocalRef(env, obj.asJObject()) { localRef =>
-                let envCJ = env.read().read()
-                envCJ.SetByteField(env, localRef, id, value.asJByte())
-            }
-        case CHAR =>
-            withLocalRef(env, obj.asJObject()) { localRef =>
-                let envCJ = env.read().read()
-                envCJ.SetCharField(env, localRef, id, value.asJChar())
-            }
-        case DOUBLE =>
-            withLocalRef(env, obj.asJObject()) { localRef =>
-                let envCJ = env.read().read()
-                envCJ.SetDoubleField(env, localRef, id, value.asJDouble())
-            }
-        case FLOAT =>
-            withLocalRef(env, obj.asJObject()) { localRef =>
-                let envCJ = env.read().read()
-                envCJ.SetFloatField(env, localRef, id, value.asJFloat())
-            }
-        case INT =>
-            withLocalRef(env, obj.asJObject()) { localRef =>
-                let envCJ = env.read().read()
-                envCJ.SetIntField(env, localRef, id, value.asJInt())
-            }
-        case LONG =>
-            withLocalRef(env, obj.asJObject()) { localRef =>
-                let envCJ = env.read().read()
-                envCJ.SetLongField(env, localRef, id, value.asJLong())
-            }
-        case SHORT =>
-            withLocalRef(env, obj.asJObject()) { localRef =>
-                let envCJ = env.read().read()
-                envCJ.SetShortField(env, localRef, id, value.asJShort())
-            }
-        case BOOLEAN =>
-            withLocalRef(env, obj.asJObject()) { localRef =>
-                let envCJ = env.read().read()
-                envCJ.SetBooleanField(env, localRef, id, value.asJBoolean())
-            }
-        case VOID => throw Java_CFFI_InvariantFailed()
-    }
+    throw Exception("BAD")
 }
 
 private unsafe func setFieldJavaEntity(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity,
     signature: Java_CFFI_ComponentSignature, id: jfieldID, value: Java_CFFI_JavaEntity): Unit {
-    match (signature) {
-        case PRIMITIVE(base) => setPrimitiveFieldJavaEntity(env, obj, base, id, value)
-        case OBJECT(object) =>
-            withLocalRef(env, obj.asJObject()) { localRef => 
-                let envCJ = env.read().read()
-                envCJ.SetObjectField(env, localRef, id, value.asJObject())
-            }
-    }
+    throw Exception("BAD")
 }
 
 public func Java_CFFI_setField(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, field: Java_CFFI_FieldID, value: Java_CFFI_JavaEntity): Unit {
-    if (field.`static`) {
-        throw InteropLibException("Cannot set static entity to non-static obj")
-    }
-    let signature = match(field.signature) {
-        case METHOD(_) => throw Java_CFFI_InvariantFailed()
-        case FIELD(fieldSignature) => fieldSignature
-    }
-    unsafe { setFieldJavaEntity(env, obj, signature, field.id, value)}
-    handlePendingException(env)
+    throw Exception("BAD")
 }
 
 public func Java_CFFI_setStaticField(env: JNIEnv_ptr, clazz: Java_CFFI_Class, field: Java_CFFI_FieldID, value: Java_CFFI_JavaEntity): Unit {
-    if (!field.`static`) {
-        throw InteropLibException("Cannot set non-static entity to class")
-    }
-    let signature = match(field.signature) {
-        case METHOD(_) => throw Java_CFFI_InvariantFailed()
-        case FIELD(fieldSignature) => fieldSignature
-    }
-
-    unsafe {
-        match (signature) {
-            case PRIMITIVE(base) => match (base) {
-                case BYTE =>
-                    let envCJ = env.read().read()
-                    envCJ.SetStaticByteField(env, clazz.obj, field.id, value.asJByte())
-                case CHAR =>
-                    let envCJ = env.read().read()
-                    envCJ.SetStaticCharField(env, clazz.obj, field.id, value.asJChar())
-                case DOUBLE =>
-                    let envCJ = env.read().read()
-                    envCJ.SetStaticDoubleField(env, clazz.obj, field.id, value.asJDouble())
-                case FLOAT =>
-                    let envCJ = env.read().read()
-                    envCJ.SetStaticFloatField(env, clazz.obj, field.id, value.asJFloat())
-                case INT =>
-                    let envCJ = env.read().read()
-                    envCJ.SetStaticIntField(env, clazz.obj, field.id, value.asJInt())
-                case LONG =>
-                    let envCJ = env.read().read()
-                    envCJ.SetStaticLongField(env, clazz.obj, field.id, value.asJLong())
-                case SHORT =>
-                    let envCJ = env.read().read()
-                    envCJ.SetStaticShortField(env, clazz.obj, field.id, value.asJShort())
-                case BOOLEAN =>
-                    let envCJ = env.read().read()
-                    envCJ.SetStaticBooleanField(env, clazz.obj, field.id, value.asJBoolean())
-                case VOID => throw Java_CFFI_InvariantFailed()
-            }
-            case OBJECT(object) =>
-                let envCJ = env.read().read()
-                envCJ.SetStaticObjectField(env, clazz.obj, field.id, value.asJObject())
-        }
-    }
-    handlePendingException(env)
+    throw Exception("BAD")
 }
 
 public abstract class Java_CFFI_SafeInteropPreparationMixin {
@@ -1990,21 +1230,7 @@ public abstract class Java_CFFI_SafeInteropPreparationMixin {
     private static var JavaInteropPrepared = AtomicBool(false)
 
     public static func prepareForJavaInterop(env: JNIEnv_ptr, prepareForJavaInteropImpl: (JNIEnv_ptr) -> Unit) {
-        if (!JavaInteropPrepared.load()) {
-            if (JavaInteropPreparationLock.compareAndSwap(false, true)) {
-                prepareForJavaInteropImpl(env)
-
-                if (JavaInteropPrepared.swap(true)) {
-                    throw Java_CFFI_InvariantFailed()
-                }
-
-                if (!JavaInteropPreparationLock.swap(false)) {
-                    throw Java_CFFI_InvariantFailed()
-                }
-            } else {
-                while (!JavaInteropPrepared.load()) { }
-            }
-        }
+        throw Exception("BAD")
     }
 }
 
@@ -2038,55 +1264,12 @@ public func Java_CFFI_CangjieStringToJava(env: JNIEnv_ptr, str: String): Java_CF
 }
 
 public func Java_CFFI_newJavaObject(env: JNIEnv_ptr, clazz: Java_CFFI_Class, constructor: Java_CFFI_MethodID, args: Array<Java_CFFI_JavaEntity>, argsCallNest: Java_CFFI_JavaCallNest): Java_CFFI_JavaEntity {
-    if (args.size > argsCallNest.size) {
-        throw InteropLibException("Cannot perform call, too small argsCallNest (${argsCallNest.size}, required at least ${args.size})")
-    }
-    if (constructor.`static`) {
-        throw InteropLibException("Constructor cannot be static")
-    }
-    let signature = match(constructor.signature) {
-        case METHOD(constructorSignature) => constructorSignature
-        case FIELD(_) => throw Java_CFFI_InvariantFailed()
-    }
-
-    match (signature.ret) {
-        case PRIMITIVE(base) => match (base) {
-            case VOID => ()
-            case _ => throw InteropLibException("Java constructor return type should be void")
-        }
-        case OBJECT(_) => throw InteropLibException("Java constructor return type should be void")
-    }
-    
-    if (args.size != signature.params.size) {
-        throw InteropLibException("Given ${args.size} arguments for ${signature.params.size} arguments constructor")
-    }
-
-    let res = if (signature.params.size == 0) {
-        unsafe {
-            let envCJ = env.read().read()
-            let jResult = envCJ.NewObject(env, clazz.obj, constructor.id)
-            Java_CFFI_JavaEntity(JOBJECT, jResult)
-        }
-    } else {
-        for (i in 0..args.size) {
-            argsCallNest.array[i] = args[i].asJValue()
-        }
-        let result = Box(Java_CFFI_JavaEntity())
-        withPinnedArray(argsCallNest.array) { argsPtr: CPointer<jvalue> => 
-            unsafe {
-                let envCJ = env.read().read()
-                let jResult = envCJ.NewObjectA(env, clazz.obj, constructor.id, argsPtr)
-                result.value = Java_CFFI_JavaEntity(JOBJECT, jResult)
-            }
-        }
-        result.value
-    }
-    handlePendingException(env)
-    res
+    throw Exception("BAD")
+    throw Exception("### BAD BAD BAD BAD ###")
 }
 
 // The constructor of the proxy class for structTy contains a special parameter, whereas EnumTy
-// does not require it. 
+// does not require it.
 public func Java_CFFI_newJavaProxyObjectForCJMapping(env: JNIEnv_ptr, entity: Object, name: String,
     withMarkerParam: Bool): jobject {
     let id = Java_CFFI_put_to_registry_1(entity)
@@ -2146,6 +1329,7 @@ public func Java_CFFI_newJavaArray(env: JNIEnv_ptr, elementType: Java_CFFI_Compo
 public func Java_CFFI_arrayGetLength(env: JNIEnv_ptr, array: Java_CFFI_JavaEntity): jsize {
     unsafe {
         let envCJ = env.read().read()
+        throw Exception("BAD")
         envCJ.GetArrayLength(env, array.asJObject())
     }
 }
@@ -2162,46 +1346,8 @@ public func Java_CFFI_deleteGlobalReference(env: JNIEnv_ptr, ref: Java_CFFI_Java
 }
 
 public func Java_CFFI_arrayGet(env: JNIEnv_ptr, elementType: Java_CFFI_JavaEntityKind, array: Java_CFFI_JavaEntity, index: jint): Java_CFFI_JavaEntity {
-    unsafe {
-        let envCJ = env.read().read()
-        match (elementType) {
-            case JBYTE =>
-                var value: jbyte = 0
-                envCJ.GetByteArrayRegion(env, array.asJObject(), index, 1, inout value)
-                Java_CFFI_JavaEntity(elementType, value)
-            case JCHAR =>
-                var value: jchar = 0
-                envCJ.GetCharArrayRegion(env, array.asJObject(), index, 1, inout value)
-                Java_CFFI_JavaEntity(elementType, value)
-            case JDOUBLE =>
-                var value: jdouble = 0.0
-                envCJ.GetDoubleArrayRegion(env, array.asJObject(), index, 1, inout value)
-                Java_CFFI_JavaEntity(elementType, value)
-            case JFLOAT =>
-                var value: jfloat = 0.0
-                envCJ.GetFloatArrayRegion(env, array.asJObject(), index, 1, inout value)
-                Java_CFFI_JavaEntity(elementType, value)
-            case JINT =>
-                var value: jint = 0
-                envCJ.GetIntArrayRegion(env, array.asJObject(), index, 1, inout value)
-                Java_CFFI_JavaEntity(elementType, value)
-            case JLONG =>
-                var value: jlong = 0
-                envCJ.GetLongArrayRegion(env, array.asJObject(), index, 1, inout value)
-                Java_CFFI_JavaEntity(elementType, value)
-            case JSHORT =>
-                var value: jshort = 0
-                envCJ.GetShortArrayRegion(env, array.asJObject(), index, 1, inout value)
-                Java_CFFI_JavaEntity(elementType, value)
-            case JBOOLEAN =>
-                var value: jboolean = 0
-                envCJ.GetBooleanArrayRegion(env, array.asJObject(), index, 1, inout value)
-                Java_CFFI_JavaEntity(elementType, value)
-            case JOBJECT =>
-                Java_CFFI_JavaEntity(elementType, envCJ.GetObjectArrayElement(env, array.asJObject(), index))
-            case _ => throw Java_CFFI_InvariantFailed()
-        }
-    }
+    throw Exception("BAD")
+    throw Exception("### BAD BAD BAD BAD ###")
 }
 
 private let cstrSelf = unsafe { LibC.mallocCString("self") }
@@ -2214,42 +1360,13 @@ public func Java_CFFI_putToRegistry(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, 
         let objClass = envCJ.GetObjectClass(env, obj.asJObject())
         let fieldId = envCJ.GetFieldID(env, objClass, cstrSelf, cstrJ)
         envCJ.SetLongField(env, obj.asJObject(), fieldId, id)
+        throw Exception("BAD")
     }
 }
 
 public func Java_CFFI_arraySet(env: JNIEnv_ptr, elementType: Java_CFFI_JavaEntityKind, array: Java_CFFI_JavaEntity, index: jint, valueEntity: Java_CFFI_JavaEntity): Unit {
-    unsafe {
-        let envCJ = env.read().read()
-        match (elementType) {
-            case JBYTE =>
-                var value: jbyte = valueEntity.asJByte()
-                envCJ.SetByteArrayRegion(env, array.asJObject(), index, 1, inout value)
-            case JCHAR =>
-                var value: jchar = valueEntity.asJChar()
-                envCJ.SetCharArrayRegion(env, array.asJObject(), index, 1, inout value)
-            case JDOUBLE =>
-                var value: jdouble = valueEntity.asJDouble()
-                envCJ.SetDoubleArrayRegion(env, array.asJObject(), index, 1, inout value)
-            case JFLOAT =>
-                var value: jfloat = valueEntity.asJFloat()
-                envCJ.SetFloatArrayRegion(env, array.asJObject(), index, 1, inout value)
-            case JINT =>
-                var value: jint = valueEntity.asJInt()
-                envCJ.SetIntArrayRegion(env, array.asJObject(), index, 1, inout value)
-            case JLONG =>
-                var value: jlong = valueEntity.asJLong()
-                envCJ.SetLongArrayRegion(env, array.asJObject(), index, 1, inout value)
-            case JSHORT =>
-                var value: jshort = valueEntity.asJShort()
-                envCJ.SetShortArrayRegion(env, array.asJObject(), index, 1, inout value)
-            case JBOOLEAN =>
-                var value: jboolean = valueEntity.asJBoolean()
-                envCJ.SetBooleanArrayRegion(env, array.asJObject(), index, 1, inout value)
-            case JOBJECT =>
-                envCJ.SetObjectArrayElement(env, array.asJObject(), index, valueEntity.asJObject())
-            case _ => throw Java_CFFI_InvariantFailed()
-        }
-    }
+    throw Exception("BAD")
+    throw Exception("### BAD BAD BAD BAD ###")
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2267,20 +1384,8 @@ private func to_jstring(env: JNIEnv_ptr, str: String): jstring {
 }
 
 public func Java_CFFI_get_env(): JNIEnv_ptr {
-    unsafe {
-        let envPtr = CPointer<JNIEnv_ptr>(LibC.malloc<JNIEnv_ptr>(count: 1))
-        let javaVM: JNIInvokeInterface_ = jvm.read().read()
-        /*
-            Thread should be attached as daemon skip waiting for cangjie threads.
-            Since cangjie runtime thread is registered (for example, during objects finalization),
-            it causes blocking java program finishing.
-
-            Better solution should inclue cangjie thread deattaching from JVM,
-        */
-        javaVM.AttachCurrentThreadAsDaemon(jvm, envPtr, CPointer<Unit>())
-
-        envPtr.read()
-    }
+        throw Exception("BAD")
+        throw Exception("### BAD BAD BAD BAD ###")
 }
 
 public func Java_CFFI_JavaEntityJobject(jobject: CPointer<Unit>): Java_CFFI_JavaEntity {
@@ -2296,22 +1401,7 @@ public func Java_CFFI_put_to_registry_1(any: Any): Int64 {
 }
 
 public func Java_CFFI_getFromRegistryByObjOption<T>(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity): ?T {
-    unsafe {
-        let envCJ : JNINativeInterface_ = env.read().read()
-        let jobj = obj.asJObject()
-        if (jobj.isNull()) {
-            return None
-        }
- 
-        let objClass = envCJ.GetObjectClass(env, jobj)
-        let fieldId = envCJ.GetFieldID(env, objClass, cstrSelf, cstrJ)
-        if (fieldId.isNull()) {
-            return None
-        }
- 
-        let id = envCJ.GetLongField(env, obj.asJObject(), fieldId)
-        Java_CFFI_getFromRegistryOption<T>(id)
-    }
+    throw Exception("### BAD BAD BAD BAD ###")
 }
 
 public func Java_CFFI_getFromRegistryByObj<T>(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity): T {
@@ -2346,20 +1436,7 @@ public func Java_CFFI_deleteCJObjectOneWay<T>(env: JNIEnv_ptr, self: jlong): Uni
 }
 
 public func Java_CFFI_unwrapJavaEntityAsValue<T>(entity: Java_CFFI_JavaEntity): T {
-    match (entity.kind) {
-        case JVOID where entity.asUnit() is T => (entity.asUnit() as T).getOrThrow()
-        case JVALUE | JOBJECT | JWEAK | JSTRONG where entity.asJObject() is T => (entity.asJObject() as T).getOrThrow()
-        case JVALUE | JLONG where entity.asJLong() is T => (entity.asJLong() as T).getOrThrow()
-        case JVALUE | JINT where entity.asJInt() is T => (entity.asJInt() as T).getOrThrow()
-        case JVALUE | JSTRING where entity.asJString() is T => (entity.asJString() as T).getOrThrow()
-        case JVALUE | JBOOLEAN where entity.asJBoolean().asBool() is T => (entity.asJBoolean().asBool() as T).getOrThrow()
-        case JVALUE | JSHORT where entity.asJShort() is T => (entity.asJShort() as T).getOrThrow()
-        case JVALUE | JCHAR where entity.asJChar() is T => (entity.asJChar() as T).getOrThrow()
-        case JVALUE | JBYTE where entity.asJByte() is T => (entity.asJByte() as T).getOrThrow()
-        case JVALUE | JFLOAT where entity.asJFloat() is T => (entity.asJFloat() as T).getOrThrow()
-        case JVALUE | JDOUBLE where entity.asJDouble() is T => (entity.asJDouble() as T).getOrThrow()
-        case _ => throw InteropLibException("Cannot get value of expected type from ${entity.kind.toString()}")
-    }
+    throw Exception("### BAD BAD BAD BAD ###")
 }
 
 public func Java_CFFI_ensure_not_null(entity: Java_CFFI_JavaEntity): Java_CFFI_JavaEntity {
@@ -2416,30 +1493,7 @@ private func Java_CFFI_throw_exception(env: JNIEnv_ptr, exception: jthrowable) {
 }
 
 private func handlePendingException(env: JNIEnv_ptr) {
-    unsafe {
-        let envCJ : JNINativeInterface_ = env.read().read()
-        let pendingException = envCJ.ExceptionOccurred(env)
-        if (!pendingException.isNull()) {
-            envCJ.ExceptionClear(env)
-
-            let clazz = Java_CFFI_Class(env, "java/lang/Throwable")
-            let signature = Java_CFFI_parseMethodSignature("()Ljava/lang/String;")
-            let id = Java_CFFI_MethodID.constr(env, clazz, "toString", signature)
-            let jMessage = Java_CFFI_callVirtualMethod_no_exception_handling(env, Java_CFFI_JavaEntity(JOBJECT, pendingException),
-                id, [], Java_CFFI_JavaCallNest())
-
-            let getMessageException = envCJ.ExceptionOccurred(env)
-            var cjMessage: String
-            if (getMessageException.isNull()) {
-                cjMessage = Java_CFFI_JavaStringToCangjie(env, jMessage)
-            } else {
-                cjMessage = "<Java Throwable.getMessage() has thrown an exception>"
-                envCJ.ExceptionClear(env)
-            }
-
-            throw JNIException(cjMessage, pendingException)
-        }
-    }
+    throw Exception("### BAD BAD BAD BAD ###")
 }
 
 private func Java_CFFI_wrap_cj_exception(env: JNIEnv_ptr, ex: Exception): JNIException {
@@ -2581,4 +1635,10 @@ public class JavaObjectController<T> {
         let env = Java_CFFI_get_env()
         Java_CFFI_deleteGlobalReference(env, obj)
     }
+}
+
+
+func BAD(): Unit {
+    throw Exception("BAD")
+    throw Exception("### BAD BAD BAD BAD ###")
 }

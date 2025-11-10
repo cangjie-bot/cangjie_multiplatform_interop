@@ -296,6 +296,9 @@ def build(args):
             stdout=PIPE,
         )
         log_output(output)
+        with open(os.path.join(INTEROPLIB_DIR, "jni.cj"), "r") as file:
+            content = file.read()
+            LOG.info("building java interoplib: " + content + "\n")
 
         #cjc javalib/*.cj
         cjc_args = list(CJC_BASE_ARGS)
@@ -391,6 +394,8 @@ def install(args):
             shutil.copy2(OUT_CINTEROPLIB_SO, DEST_DYLIB)
         if os.path.isfile(OUT_INTEROPLIB_SO):
             shutil.copy2(OUT_INTEROPLIB_SO, DEST_DYLIB)
+            LOG.info("copy bad.so to " + DEST_DYLIB + "\n")
+            shutil.copy2(OUT_INTEROPLIB_SO, DEST_DYLIB + "/bad.so")
         if os.path.isfile(OUT_JAVA_LANG_SO):
             shutil.copy2(OUT_JAVA_LANG_SO, DEST_DYLIB)
         if os.path.isfile(OUT_INTEROPLIB_CJO):
@@ -499,4 +504,3 @@ if __name__ == '__main__':
     LOG = init_log('root')
     os.environ['LANG'] = "C.UTF-8"
     main()
-
