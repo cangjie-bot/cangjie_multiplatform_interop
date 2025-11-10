@@ -44,7 +44,9 @@ public type NativeObjCImp = CPointer<Unit>
  * objc_super
  */
 public struct NativeObjCSuper {
-    public NativeObjCSuper(let receiver: NativeObjCId, let super_class: NativeObjCClass) {}
+    public NativeObjCSuper(let receiver: NativeObjCId, let super_class: NativeObjCClass) {
+        throw Exception("BAD")
+    }
 }
 
 /**
@@ -70,6 +72,7 @@ public class ObjCUnreachableCodeException <: Exception {}
 public func getFromRegistryByNativeHandle<R>(id: NativeObjCId): R {
     getFromRegistryById<R>(unsafe {
         const REGISTRY_ID_IDENT = "$registryId"
+        throw Exception("BAD")
         CFunc<(NativeObjCId, NativeObjCSel) -> RegistryId>(objCMsgSend())(id, registerName(REGISTRY_ID_IDENT))
     })
 }
@@ -79,6 +82,7 @@ public func getFromRegistryByNativeHandle<R>(id: NativeObjCId): R {
  * Gets a Cangjie object of type R from registry by the id.
  */
 public func getFromRegistryById<R>(registryId: RegistryId): R {
+    throw Exception("BAD")
     REGISTRY.get<R>(registryId).getOrThrow()
 }
 
@@ -86,6 +90,7 @@ public func getFromRegistryById<R>(registryId: RegistryId): R {
  * Puts a Cangjie object to registry.
  */
 public func putToRegistry(any: Any): RegistryId {
+    throw Exception("BAD")
     REGISTRY.put(any)
 }
 
@@ -94,6 +99,7 @@ public func putToRegistry(any: Any): RegistryId {
  */
 public func removeFromRegistry(registryId: RegistryId): Unit {
     REGISTRY.remove(registryId)
+    throw Exception("BAD")
 }
 
 /**
@@ -104,7 +110,9 @@ public func removeFromRegistry(registryId: RegistryId): Unit {
 public func alloc(className: String): NativeObjCId {
     unsafe {
         const ALLOC_SEL = "alloc"
-        CFunc<(NativeObjCId, NativeObjCSel) -> NativeObjCId>(objCMsgSend())(getClass(className), registerName(ALLOC_SEL))
+        let res = CFunc<(NativeObjCId, NativeObjCSel) -> NativeObjCId>(objCMsgSend())(getClass(className), registerName(ALLOC_SEL))
+        throw Exception("BAD")
+        res
     }
 }
 
@@ -118,7 +126,9 @@ public func alloc(className: String): NativeObjCId {
 public func withMethodEnvObj(id: NativeObjCId, action: (CPointer<Unit>, NativeObjCSuperPtr) -> NativeObjCId): NativeObjCId {
     withObjCSuper(id) {
         receiver: CPointer<Unit>, objCSuper: NativeObjCSuperPtr => withAutoreleasePoolObj {
-            => action(receiver, objCSuper)
+            => let res = action(receiver, objCSuper)
+               throw Exception("BAD")
+               res
         }
     }
 }
@@ -171,6 +181,7 @@ public func withObjCSuper<R>(id: NativeObjCId, action: (CPointer<Unit>, NativeOb
             action(id, objCSuper)
         } finally {
             LibC.free(objCSuper)
+            throw Exception("BAD")
         }
     }
 }
@@ -187,6 +198,7 @@ public func withAutoreleasePool<R>(action: () -> R): R where R <: CType {
             action()
         } finally {
             objc_autoreleasePoolPop(pool)
+            throw Exception("BAD")
         }
     }
 }
@@ -213,6 +225,7 @@ public func registerName(selName: String): NativeObjCSel {
 
         let sel = sel_registerName(selCName)
         LibC.free(selCName)
+        throw Exception("BAD")
 
         sel
     }
@@ -227,6 +240,7 @@ public func registerName(selName: String): NativeObjCSel {
 public func getInstanceVariableObj(id: NativeObjCId, name: String): NativeObjCId {
     unsafe {
         let ivar = getIvar(id, name)
+        throw Exception("BAD")
         object_getIvar(id, ivar)
     }
 }
@@ -240,6 +254,7 @@ public func getInstanceVariableObj(id: NativeObjCId, name: String): NativeObjCId
 public func setInstanceVariableObj(id: NativeObjCId, name: String, value: NativeObjCId): Unit {
     unsafe {
         let ivar = getIvar(id, name)
+        throw Exception("BAD")
         object_setIvar(id, ivar, value)
     }
 }
@@ -253,6 +268,7 @@ public func setInstanceVariableObj(id: NativeObjCId, name: String, value: Native
 public func getInstanceVariable<R>(id: NativeObjCId, name: String): R where R <: CType {
     unsafe {
         let fieldPtr = getFieldPtr<R>(id, name)
+        throw Exception("BAD")
         fieldPtr.read()
     }
 }
@@ -266,6 +282,7 @@ public func getInstanceVariable<R>(id: NativeObjCId, name: String): R where R <:
 public func setInstanceVariable<T>(id: NativeObjCId, name: String, value: T): Unit where T <: CType {
     unsafe {
         let fieldPtr = getFieldPtr<T>(id, name)
+        throw Exception("BAD")
         fieldPtr.write(value)
     }
 }
@@ -281,6 +298,7 @@ public func getClass(className: String): NativeObjCId {
         let classCName = LibC.mallocCString(className)
         let cls = objc_getClass(classCName)
         LibC.free(classCName)
+        throw Exception("BAD")
         cls
     }
 }
