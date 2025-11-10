@@ -290,7 +290,7 @@ public func getClass(className: String): NativeObjCId {
  * The result should be cast to proper CFunc<(NativeObjCId, NativeObjCSel, ...ArgTypes) -> RetType>(...) type before use.
  */
 public func objCMsgSend(): CPointer<Unit> {
-    CPointer<Unit>(objc_msgSend)
+    return CPointer<Unit>()
 }
 
 @When[os == "macOS" || os == "iOS"]
