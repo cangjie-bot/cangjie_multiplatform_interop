@@ -44,10 +44,10 @@ public open class NSBlockOperation <: NSOperation {
 
 @ObjCMirror
 public open class NSInvocationOperation <: NSOperation {
-    @ForeignName["initWithTarget:selector:object:"] public init(target: ObjCId, sel: SEL, arg: ObjCId)
+    @ForeignName["initWithTarget:selector:object:"] public init(target: ObjCId, sel: SEL, arg: ?ObjCId)
     @ForeignName["initWithInvocation:"] public init(inv: NSInvocation)
     public open prop invocation: NSInvocation
-    public open prop result: ObjCId
+    public open prop result: ?ObjCId
 }
 
 @ObjCMirror

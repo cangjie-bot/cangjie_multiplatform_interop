@@ -33,7 +33,7 @@ public open class NSProgress <: NSObject {
     public open mut prop cancellationHandler: ObjCBlock<() -> Unit>
     public open mut prop pausingHandler: ObjCBlock<() -> Unit>
     public open mut prop resumingHandler: ObjCBlock<() -> Unit>
-    @ForeignName["setUserInfoObject:forKey:"] public open func setUserInfoObjectForKey(objectOrNil: ObjCId, key: NSProgressUserInfoKey): Unit
+    @ForeignName["setUserInfoObject:forKey:"] public open func setUserInfoObjectForKey(objectOrNil: ?ObjCId, key: NSProgressUserInfoKey): Unit
     public open prop isIndeterminate: Bool
     public open prop fractionCompleted: Float64
     public open prop isFinished: Bool

@@ -8,7 +8,7 @@ import objc.lang.*
 @ObjCMirror
 public open class NSDictionary/*<KeyType, ObjectType>*/ <: NSObject & NSCopying & NSMutableCopying & NSSecureCoding & NSFastEnumeration {
     public open prop count: NSUInteger
-    @ForeignName["objectForKey:"] public open func objectForKey(aKey: ObjCId /*KeyType*/): ObjCId /*ObjectType*/
+    @ForeignName["objectForKey:"] public open func objectForKey(aKey: ObjCId /*KeyType*/): ?ObjCId /*ObjectType*/
     public open func keyEnumerator(): NSEnumerator/*<KeyType>*/
     public init()
     @ForeignName["initWithObjects:forKeys:count:"] public init(objects: ObjCPointer<ObjCId /*ObjectType*/>, keys: ObjCPointer<NSCopying /*KeyType<NSCopying>*/>, cnt: NSUInteger)
@@ -17,15 +17,15 @@ public open class NSDictionary/*<KeyType, ObjectType>*/ <: NSObject & NSCopying 
     @ForeignName["allKeysForObject:"] public open func allKeysForObject(anObject: ObjCId /*ObjectType*/): NSArray/*<KeyType>*/
     public open prop allValues: NSArray/*<ObjectType>*/
     public open prop descriptionInStringsFileFormat: NSString
-    @ForeignName["descriptionWithLocale:"] public open func descriptionWithLocale(locale: ObjCId): NSString
-    @ForeignName["descriptionWithLocale:indent:"] public open func descriptionWithLocaleIndent(locale: ObjCId, level: NSUInteger): NSString
+    @ForeignName["descriptionWithLocale:"] public open func descriptionWithLocale(locale: ?ObjCId): NSString
+    @ForeignName["descriptionWithLocale:indent:"] public open func descriptionWithLocaleIndent(locale: ?ObjCId, level: NSUInteger): NSString
     @ForeignName["isEqualToDictionary:"] public open func isEqualToDictionary(otherDictionary: NSDictionary/*<KeyType, ObjectType>*/): Bool
     public open func objectEnumerator(): NSEnumerator/*<ObjectType>*/
     @ForeignName["objectsForKeys:notFoundMarker:"] public open func objectsForKeysNotFoundMarker(keys: NSArray/*<KeyType>*/, marker: ObjCId /*ObjectType*/): NSArray/*<ObjectType>*/
     @ForeignName["writeToURL:error:"] public open func writeToURLError(url: NSURL, error: ObjCPointer<NSError>): Bool
     @ForeignName["keysSortedByValueUsingSelector:"] public open func keysSortedByValueUsingSelector(comparator: SEL): NSArray/*<KeyType>*/
     @ForeignName["getObjects:andKeys:count:"] public open func getObjectsAndKeysCount(objects: ObjCPointer<ObjCId /*ObjectType*/>, keys: ObjCPointer<ObjCId /*KeyType*/>, count: NSUInteger): Unit
-    @ForeignName["objectForKeyedSubscript:"] public open func objectForKeyedSubscript(key: ObjCId /*KeyType*/): ObjCId /*ObjectType*/
+    @ForeignName["objectForKeyedSubscript:"] public open func objectForKeyedSubscript(key: ObjCId /*KeyType*/): ?ObjCId /*ObjectType*/
     @ForeignName["enumerateKeysAndObjectsUsingBlock:"] public open func enumerateKeysAndObjectsUsingBlock(block: ObjCBlock<(ObjCId /*KeyType*/, ObjCId /*ObjectType*/, CPointer<Bool>) -> Unit>): Unit
     @ForeignName["enumerateKeysAndObjectsWithOptions:usingBlock:"] public open func enumerateKeysAndObjectsWithOptionsUsingBlock(opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(ObjCId /*KeyType*/, ObjCId /*ObjectType*/, CPointer<Bool>) -> Unit>): Unit
     @ForeignName["keysSortedByValueUsingComparator:"] public open func keysSortedByValueUsingComparator(cmptr: NSComparator): NSArray/*<KeyType>*/
@@ -69,7 +69,7 @@ public open class NSDictionary/*<KeyType, ObjectType>*/ <: NSObject & NSCopying 
     public open func fileCreationDate(): ?NSDate
     public open func fileOwnerAccountID(): ?NSNumber
     public open func fileGroupOwnerAccountID(): ?NSNumber
-    public open func valueForKey(key: NSString): ObjCId /*ObjectType*/
+    public open func valueForKey(key: NSString): ?ObjCId
 }
 
 @ObjCMirror
@@ -83,13 +83,13 @@ public open class NSMutableDictionary/*<KeyType, ObjectType>*/ <: NSDictionary/*
     public open func removeAllObjects(): Unit
     @ForeignName["removeObjectsForKeys:"] public open func removeObjectsForKeys(keyArray: NSArray/*<KeyType>*/): Unit
     @ForeignName["setDictionary:"] public open func setDictionary(otherDictionary: NSDictionary/*<KeyType, ObjectType>*/): Unit
-    @ForeignName["setObject:forKeyedSubscript:"] public open func setObjectForKeyedSubscript(obj: ObjCId /*ObjectType*/, key: NSCopying /*KeyType<NSCopying>*/): Unit
+    @ForeignName["setObject:forKeyedSubscript:"] public open func setObjectForKeyedSubscript(obj: ?ObjCId /*ObjectType*/, key: NSCopying /*KeyType<NSCopying>*/): Unit
     @ForeignName["dictionaryWithCapacity:"] public static func dictionaryWithCapacity(numItems: NSUInteger): NSMutableDictionary/*<KeyType, ObjectType>*/
     public static func dictionaryWithContentsOfFile(path: NSString): ?NSDictionary/*<KeyType, ObjectType>*/
     public static func dictionaryWithContentsOfURL(url: NSURL): ?NSDictionary/*<KeyType, ObjectType>*/
     @ForeignName["initWithContentsOfFile:"] public init(path: NSString)
     @ForeignName["initWithContentsOfURL:"] public init(url: NSURL)
     @ForeignName["dictionaryWithSharedKeySet:"] public static func dictionaryWithSharedKeySet(keyset: ObjCId): NSMutableDictionary/*<KeyType, ObjectType>*/
-    public open func setValueForKey(value: ObjCId /*ObjectType*/, key: NSString): Unit
+    public open func setValueForKey(value: ?ObjCId /*ObjectType*/, key: NSString): Unit
 }
 

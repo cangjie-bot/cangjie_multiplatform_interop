@@ -39,7 +39,7 @@ public open class NSString <: NSObject & NSCopying & NSMutableCopying & NSSecure
     @ForeignName["compare:"] public open func compare(string: NSString): Int32 /*NSComparisonResult*/
     @ForeignName["compare:options:"] public open func compareOptions(string: NSString, mask: Int32 /*NSStringCompareOptions*/): Int32 /*NSComparisonResult*/
     @ForeignName["compare:options:range:"] public open func compareOptionsRange(string: NSString, mask: Int32 /*NSStringCompareOptions*/, rangeOfReceiverToCompare: NSRange): Int32 /*NSComparisonResult*/
-    @ForeignName["compare:options:range:locale:"] public open func compareOptionsRangeLocale(string: NSString, mask: Int32 /*NSStringCompareOptions*/, rangeOfReceiverToCompare: NSRange, locale: ObjCId): Int32 /*NSComparisonResult*/
+    @ForeignName["compare:options:range:locale:"] public open func compareOptionsRangeLocale(string: NSString, mask: Int32 /*NSStringCompareOptions*/, rangeOfReceiverToCompare: NSRange, locale: ?ObjCId): Int32 /*NSComparisonResult*/
     @ForeignName["caseInsensitiveCompare:"] public open func caseInsensitiveCompare(string: NSString): Int32 /*NSComparisonResult*/
     @ForeignName["localizedCompare:"] public open func localizedCompare(string: NSString): Int32 /*NSComparisonResult*/
     @ForeignName["localizedCaseInsensitiveCompare:"] public open func localizedCaseInsensitiveCompare(string: NSString): Int32 /*NSComparisonResult*/
@@ -120,12 +120,12 @@ public open class NSString <: NSObject & NSCopying & NSMutableCopying & NSSecure
     @ObjCInit @ForeignName["initWithString:"] public static func initWithString(aString: NSString): NSString
     @ObjCInit @ForeignName["initWithFormat:"] public static func initWithFormat(format: NSString): NSString
     @ForeignName["initWithFormat:arguments:"] public init(format: NSString, argList: va_list)
-    @ForeignName["initWithFormat:locale:"] public init(format: NSString, locale: ObjCId)
-    @ForeignName["initWithFormat:locale:arguments:"] public init(format: NSString, locale: ObjCId, argList: va_list)
+    @ForeignName["initWithFormat:locale:"] public init(format: NSString, locale: ?ObjCId)
+    @ForeignName["initWithFormat:locale:arguments:"] public init(format: NSString, locale: ?ObjCId, argList: va_list)
     @ForeignName["initWithValidatedFormat:validFormatSpecifiers:error:"] public init(format: NSString, validFormatSpecifiers: NSString, error: ObjCPointer<NSError>)
-    @ForeignName["initWithValidatedFormat:validFormatSpecifiers:locale:error:"] public init(format: NSString, validFormatSpecifiers: NSString, locale: ObjCId, error: ObjCPointer<NSError>)
+    @ForeignName["initWithValidatedFormat:validFormatSpecifiers:locale:error:"] public init(format: NSString, validFormatSpecifiers: NSString, locale: ?ObjCId, error: ObjCPointer<NSError>)
     @ForeignName["initWithValidatedFormat:validFormatSpecifiers:arguments:error:"] public init(format: NSString, validFormatSpecifiers: NSString, argList: va_list, error: ObjCPointer<NSError>)
-    @ForeignName["initWithValidatedFormat:validFormatSpecifiers:locale:arguments:error:"] public init(format: NSString, validFormatSpecifiers: NSString, locale: ObjCId, argList: va_list, error: ObjCPointer<NSError>)
+    @ForeignName["initWithValidatedFormat:validFormatSpecifiers:locale:arguments:error:"] public init(format: NSString, validFormatSpecifiers: NSString, locale: ?ObjCId, argList: va_list, error: ObjCPointer<NSError>)
     @ForeignName["initWithData:encoding:"] public init(data: NSData, encoding: NSStringEncoding)
     @ForeignName["initWithBytes:length:encoding:"] public init(bytes: CPointer<Unit>, len: NSUInteger, encoding: NSStringEncoding)
     @ForeignName["initWithBytesNoCopy:length:encoding:freeWhenDone:"] public init(bytes: CPointer<Unit>, len: NSUInteger, encoding: NSStringEncoding, freeBuffer: Bool)
@@ -161,13 +161,13 @@ public open class NSString <: NSObject & NSCopying & NSMutableCopying & NSSecure
     @ForeignName["writeToURL:atomically:"] public open func writeToURLAtomically(url: NSURL, atomically: Bool): Bool
     @ObjCInit @ForeignName["initWithContentsOfFile:"] public static func initWithContentsOfFile(path: NSString): ObjCId
     @ForeignName["initWithContentsOfURL:"] public init(url: NSURL)
-    @ForeignName["stringWithContentsOfFile:"] public static func stringWithContentsOfFile(path: NSString): ObjCId
-    @ForeignName["stringWithContentsOfURL:"] public static func stringWithContentsOfURL(url: NSURL): ObjCId
+    @ForeignName["stringWithContentsOfFile:"] public static func stringWithContentsOfFile(path: NSString): ?ObjCId
+    @ForeignName["stringWithContentsOfURL:"] public static func stringWithContentsOfURL(url: NSURL): ?ObjCId
     @ObjCInit @ForeignName["initWithCStringNoCopy:length:freeWhenDone:"] public static func initWithCStringNoCopyLengthFreeWhenDone(bytes: CPointer<Int8>, length: NSUInteger, freeBuffer: Bool): ObjCId
     @ObjCInit @ForeignName["initWithCString:length:"] public static func initWithCStringLength(bytes: CPointer<Int8>, length: NSUInteger): ObjCId
     @ObjCInit @ForeignName["initWithCString:"] public static func initWithCString(bytes: CPointer<Int8>): ObjCId
-    @ForeignName["stringWithCString:length:"] public static func stringWithCStringLength(bytes: CPointer<Int8>, length: NSUInteger): ObjCId
-    @ForeignName["stringWithCString:"] public static func stringWithCString(bytes: CPointer<Int8>): ObjCId
+    @ForeignName["stringWithCString:length:"] public static func stringWithCStringLength(bytes: CPointer<Int8>, length: NSUInteger): ?ObjCId
+    @ForeignName["stringWithCString:"] public static func stringWithCString(bytes: CPointer<Int8>): ?ObjCId
     @ForeignName["getCharacters:"] public open func getCharacters(buffer: CPointer<unichar>): Unit
     @ForeignName["variantFittingPresentationWidth:"] public open func variantFittingPresentationWidth(width: NSInteger): NSString
     @ForeignName["pathWithComponents:"] public static func pathWithComponents(components: NSArray/*<NSString>*/): NSString

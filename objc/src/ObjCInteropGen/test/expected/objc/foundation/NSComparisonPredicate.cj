@@ -45,7 +45,7 @@ public open class NSComparisonPredicate <: NSPredicate {
     public open prop comparisonPredicateModifier: Int32 /*NSComparisonPredicateModifier*/
     public open prop leftExpression: NSExpression
     public open prop rightExpression: NSExpression
-    public open prop customSelector: SEL
+    public open prop customSelector: ?SEL
     public open prop options: Int32 /*NSComparisonPredicateOptions*/
 }
 

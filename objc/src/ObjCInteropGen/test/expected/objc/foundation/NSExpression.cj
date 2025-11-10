@@ -26,7 +26,7 @@ public open class NSExpression <: NSObject & NSSecureCoding & NSCopying {
     @ForeignName["expressionWithFormat:argumentArray:"] public static func expressionWithFormatArgumentArray(expressionFormat: NSString, arguments: NSArray/*<ObjectType>*/): NSExpression
     @ForeignName["expressionWithFormat:"] public static func expressionWithFormat(expressionFormat: NSString): NSExpression
     @ForeignName["expressionWithFormat:arguments:"] public static func expressionWithFormatArguments(expressionFormat: NSString, argList: va_list): NSExpression
-    @ForeignName["expressionForConstantValue:"] public static func expressionForConstantValue(obj: ObjCId): NSExpression
+    @ForeignName["expressionForConstantValue:"] public static func expressionForConstantValue(obj: ?ObjCId): NSExpression
     public static func expressionForEvaluatedObject(): NSExpression
     @ForeignName["expressionForVariable:"] public static func expressionForVariable(string: NSString): NSExpression
     @ForeignName["expressionForKeyPath:"] public static func expressionForKeyPath(keyPath: NSString): NSExpression
@@ -43,7 +43,7 @@ public open class NSExpression <: NSObject & NSSecureCoding & NSCopying {
     @ForeignName["initWithExpressionType:"] public init(`type`: Int32 /*NSExpressionType*/)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
     public open prop expressionType: Int32 /*NSExpressionType*/
-    public open prop constantValue: ObjCId
+    public open prop constantValue: ?ObjCId
     public open prop keyPath: NSString
     public open prop function: NSString
     public open prop variable: NSString
@@ -56,7 +56,7 @@ public open class NSExpression <: NSObject & NSSecureCoding & NSCopying {
     public open prop trueExpression: NSExpression
     public open prop falseExpression: NSExpression
     public open prop expressionBlock: ObjCBlock<(ObjCId, NSArray/*<NSExpression>*/, NSMutableDictionary/*<KeyType, ObjectType>*/) -> ObjCId>
-    @ForeignName["expressionValueWithObject:context:"] public open func expressionValueWithObjectContext(object: ObjCId, context: ?NSMutableDictionary/*<KeyType, ObjectType>*/): ObjCId
+    @ForeignName["expressionValueWithObject:context:"] public open func expressionValueWithObjectContext(object: ?ObjCId, context: ?NSMutableDictionary/*<KeyType, ObjectType>*/): ?ObjCId
     public open func allowEvaluation(): Unit
 }
 

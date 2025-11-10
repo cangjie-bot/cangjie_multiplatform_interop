@@ -8,20 +8,20 @@ import objc.lang.*
 @ObjCMirror
 public open class NSSet/*<ObjectType>*/ <: NSObject & NSCopying & NSMutableCopying & NSSecureCoding & NSFastEnumeration {
     public open prop count: NSUInteger
-    @ForeignName["member:"] public open func member(object: ObjCId /*ObjectType*/): ObjCId /*ObjectType*/
+    @ForeignName["member:"] public open func member(object: ObjCId /*ObjectType*/): ?ObjCId /*ObjectType*/
     public open func objectEnumerator(): NSEnumerator/*<ObjectType>*/
     public init()
     @ForeignName["initWithObjects:count:"] public init(objects: ObjCPointer<ObjCId /*ObjectType*/>, cnt: NSUInteger)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
     public open prop allObjects: NSArray/*<ObjectType>*/
-    public open func anyObject(): ObjCId /*ObjectType*/
+    public open func anyObject(): ?ObjCId /*ObjectType*/
     @ForeignName["containsObject:"] public open func containsObject(anObject: ObjCId /*ObjectType*/): Bool
-    @ForeignName["descriptionWithLocale:"] public open func descriptionWithLocale(locale: ObjCId): NSString
+    @ForeignName["descriptionWithLocale:"] public open func descriptionWithLocale(locale: ?ObjCId): NSString
     @ForeignName["intersectsSet:"] public open func intersectsSet(otherSet: NSSet/*<ObjectType>*/): Bool
     @ForeignName["isEqualToSet:"] public open func isEqualToSet(otherSet: NSSet/*<ObjectType>*/): Bool
     @ForeignName["isSubsetOfSet:"] public open func isSubsetOfSet(otherSet: NSSet/*<ObjectType>*/): Bool
     @ForeignName["makeObjectsPerformSelector:"] public open func makeObjectsPerformSelector(aSelector: SEL): Unit
-    @ForeignName["makeObjectsPerformSelector:withObject:"] public open func makeObjectsPerformSelectorWithObject(aSelector: SEL, argument: ObjCId): Unit
+    @ForeignName["makeObjectsPerformSelector:withObject:"] public open func makeObjectsPerformSelectorWithObject(aSelector: SEL, argument: ?ObjCId): Unit
     @ForeignName["setByAddingObject:"] public open func setByAddingObject(anObject: ObjCId /*ObjectType*/): NSSet/*<ObjectType>*/
     @ForeignName["setByAddingObjectsFromSet:"] public open func setByAddingObjectsFromSet(other: NSSet/*<ObjectType>*/): NSSet/*<ObjectType>*/
     @ForeignName["setByAddingObjectsFromArray:"] public open func setByAddingObjectsFromArray(other: NSArray/*<ObjectType>*/): NSSet/*<ObjectType>*/
@@ -39,8 +39,8 @@ public open class NSSet/*<ObjectType>*/ <: NSObject & NSCopying & NSMutableCopyi
     @ForeignName["initWithSet:"] public init(set: NSSet/*<ObjectType>*/)
     @ForeignName["initWithSet:copyItems:"] public init(set: NSSet/*<ObjectType>*/, flag: Bool)
     @ForeignName["initWithArray:"] public init(array: NSArray/*<ObjectType>*/)
-    public open func valueForKey(key: NSString): ObjCId
-    public open func setValueForKey(value: ObjCId, key: NSString): Unit
+    public open func valueForKey(key: NSString): ?ObjCId
+    public open func setValueForKey(value: ?ObjCId, key: NSString): Unit
     public open func addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: NSString, options: Int32 /*NSKeyValueObservingOptions*/, context: CPointer<Unit>): Unit
     public open func removeObserverForKeyPathContext(observer: NSObject, keyPath: NSString, context: CPointer<Unit>): Unit
     public open func removeObserverForKeyPath(observer: NSObject, keyPath: NSString): Unit

@@ -11,7 +11,7 @@ public open class NSInvocation <: NSObject {
     public open prop methodSignature: NSMethodSignature
     public open func retainArguments(): Unit
     public open prop argumentsRetained: Bool
-    public open mut prop target: ObjCId
+    public open mut prop target: ?ObjCId
     public open mut prop selector: SEL
     @ForeignName["getReturnValue:"] public open func getReturnValue(retLoc: CPointer<Unit>): Unit
     @ForeignName["setReturnValue:"] public open func setReturnValue(retLoc: CPointer<Unit>): Unit
