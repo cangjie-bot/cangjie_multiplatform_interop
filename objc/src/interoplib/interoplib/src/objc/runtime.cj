@@ -324,6 +324,15 @@ public func objCAutorelease(id: NativeObjCId): NativeObjCId {
 }
 
 /**
+ * Autoreleases the argument by objc_autoreleaseReturnValue call.
+ */
+public func objCAutoreleaseReturnValue(id: NativeObjCId): NativeObjCId {
+    unsafe {
+        objc_autoreleaseReturnValue(id)
+    }
+}
+
+/**
  * Decreases the reference counter by one.
  */
 public func objCRelease(id: NativeObjCId): Unit {
@@ -338,6 +347,15 @@ public func objCRelease(id: NativeObjCId): Unit {
 public func objCRetain(id: NativeObjCId): NativeObjCId {
     unsafe {
         objc_retain(id)
+    }
+}
+
+/**
+ * Autoreleases and retains the argument by objc_retainAutoreleaseReturnValue call.
+ */
+public func objCRetainAutoreleaseReturnValue(id: NativeObjCId): NativeObjCId {
+    unsafe {
+        objc_retainAutoreleaseReturnValue(id)
     }
 }
 
