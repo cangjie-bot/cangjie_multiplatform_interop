@@ -290,9 +290,29 @@ def build(args):
         if args.target_toolchain:
             cjc_args += ["-B", args.target_toolchain]
 
+        with open(os.path.join(INTEROPLIB_DIR, "jni.cj"), "r") as file:
+            content = file.read()
+            LOG.info("building java interoplib: " + content + "\n")
+
         output = subprocess.Popen(
             ["cjc"] + cjc_args,
             cwd=INTEROPLIB_DIR,
+            stdout=PIPE,
+        )
+        log_output(output)
+
+        LOG.info("String in libinteroplib.interop.so:")
+        output = subprocess.Popen(
+            ["strings", "-f", "libinteroplib.interop.so"],
+            cwd=DIST_DIR,
+            stdout=PIPE,
+        )
+        log_output(output)
+
+        LOG.info("size of libinteroplib.interop.so:")
+        output = subprocess.Popen(
+            ["ls", "-la", "libinteroplib.interop.so"],
+            cwd=DIST_DIR,
             stdout=PIPE,
         )
         log_output(output)
@@ -391,6 +411,8 @@ def install(args):
             shutil.copy2(OUT_CINTEROPLIB_SO, DEST_DYLIB)
         if os.path.isfile(OUT_INTEROPLIB_SO):
             shutil.copy2(OUT_INTEROPLIB_SO, DEST_DYLIB)
+            LOG.info("copy bad.so to " + DEST_DYLIB + "\n")
+            shutil.copy2(OUT_INTEROPLIB_SO, DEST_DYLIB + "/bad.so")
         if os.path.isfile(OUT_JAVA_LANG_SO):
             shutil.copy2(OUT_JAVA_LANG_SO, DEST_DYLIB)
         if os.path.isfile(OUT_INTEROPLIB_CJO):
@@ -499,4 +521,3 @@ if __name__ == '__main__':
     LOG = init_log('root')
     os.environ['LANG'] = "C.UTF-8"
     main()
-
