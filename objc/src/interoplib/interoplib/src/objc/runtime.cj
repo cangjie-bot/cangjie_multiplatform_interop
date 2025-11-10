@@ -315,11 +315,29 @@ public func objCMsgSendSuper(objCSuper: NativeObjCSuperPtr, sel: NativeObjCSel):
 }
 
 /**
- * Decreases the reference counter by one
+ * Autoreleases the argument. Equivalent to [id autorelease].
+ */
+public func objCAutorelease(id: NativeObjCId): NativeObjCId {
+    unsafe {
+        objc_autorelease(id)
+    }
+}
+
+/**
+ * Decreases the reference counter by one.
  */
 public func objCRelease(id: NativeObjCId): Unit {
     unsafe {
         objc_release(id)
+    }
+}
+
+/**
+ * Increases the reference counter by one.
+ */
+public func objCRetain(id: NativeObjCId): NativeObjCId {
+    unsafe {
+        objc_retain(id)
     }
 }
 
