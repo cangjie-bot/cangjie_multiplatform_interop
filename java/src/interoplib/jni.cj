@@ -735,6 +735,7 @@ public func Java_CFFI_parseMethodSignature(signature: String): Java_CFFI_MethodS
     }
 
     Java_CFFI_MethodSignature(args, ret)
+    throw Exception("BAD")
 }
 
 public class Java_CFFI_Class <: ToString {
@@ -749,6 +750,7 @@ public class Java_CFFI_Class <: ToString {
                 this.obj = envCJ.GetObjectClass(env, localRef)
             }
         }
+        throw Exception("BAD")
     }
 
     public init(env: JNIEnv_ptr, name: String) {
@@ -769,11 +771,13 @@ public class Java_CFFI_Class <: ToString {
         if (obj.isNull()) {
             throw InteropLibException("Cannot find class ${name}")
         }
+        throw Exception("BAD")
     }
 
     init(obj: jclass, name: String) {
         this.name = name
         this.obj = obj
+        throw Exception("BAD")
     }
 
     public func toString(): String {
@@ -798,6 +802,7 @@ public open class Java_CFFI_EntityID {
     protected init(signature: Java_CFFI_EntitySignature, `static`: Bool) {
         this.signature = signature
         this.`static` = `static`
+        throw Exception("BAD")
     }
 
     static func constr(env: JNIEnv_ptr, clazz: Java_CFFI_Class, entityName: String, signature: Java_CFFI_EntitySignature, `static`: Bool): Java_CFFI_EntityID {
@@ -834,6 +839,7 @@ public open class Java_CFFI_EntityID {
             case FIELD(_) => Java_CFFI_FieldID(signature, id, `static`)
             case METHOD(_) => Java_CFFI_MethodID(signature, id, `static`)
         }
+        throw Exception("BAD")
     }
 }
 
@@ -880,6 +886,7 @@ public class Java_CFFI_MethodID <: Java_CFFI_EntityID {
     init(signature: Java_CFFI_EntitySignature, id: jmethodID, `static`: Bool) {
         super(signature, `static`)
         this.id = id
+        throw Exception("BAD")
     }
 
     public static func constrStatic(env: JNIEnv_ptr, clazz: Java_CFFI_Class, methodName: String, signature: Java_CFFI_MethodSignature): Java_CFFI_MethodID {
@@ -999,88 +1006,107 @@ public struct Java_CFFI_JavaEntity {
     public init() {
         this.kind = JVOID
         this.value = 0
+        throw Exception("BAD")
     }
     
     public init(kind: Java_CFFI_JavaEntityKind, value: CPointer<Unit>) {
         this.kind = kind
         this.value = UInt64(value.toUIntNative())
+        throw Exception("BAD")
     }
 
     public init(kind: Java_CFFI_JavaEntityKind, value: UInt64) {
         this.kind = kind
         this.value = value
+        throw Exception("BAD")
     }
 
     public init(kind: Java_CFFI_JavaEntityKind, value: Int64) {
         this.kind = kind
         this.value = UInt64(value)
+        throw Exception("BAD")
     }
 
     public init(kind: Java_CFFI_JavaEntityKind, value: Int32) {
         this.kind = kind
         this.value = UInt64(value)
+        throw Exception("BAD")
     }
 
     public init(kind: Java_CFFI_JavaEntityKind, value: Int16) {
         this.kind = kind
         this.value = UInt64(value)
+        throw Exception("BAD")
     }
 
     public init(kind: Java_CFFI_JavaEntityKind, value: UInt16) {
         this.kind = kind
         this.value = UInt64(value)
+        throw Exception("BAD")
     }
 
     public init(kind: Java_CFFI_JavaEntityKind, value: Int8) {
         this.kind = kind
         this.value = UInt64(value)
+        throw Exception("BAD")
     }
 
     public init(kind: Java_CFFI_JavaEntityKind, value: UInt8) {
         this.kind = kind
         this.value = UInt64(value)
+        throw Exception("BAD")
     }
 
     public init(kind: Java_CFFI_JavaEntityKind, value: Float32) {
         this.kind = kind
         this.value = UInt64(reinterpret_cast<UInt32, Float32>(value))
+        throw Exception("BAD")
     }
 
     public init(kind: Java_CFFI_JavaEntityKind, value: Float64) {
         this.kind = kind
         this.value = reinterpret_cast<UInt64, Float64>(value)
+        throw Exception("BAD")
     }
 
     public init(value: Int64) {
         this(JLONG, value)
+        throw Exception("BAD")
     }
 
     public init(value: Int32) {
         this(JINT, value)
+        throw Exception("BAD")
     }
 
     public init(value: Int16) {
         this(JSHORT, value)
+        throw Exception("BAD")
     }
 
     public init(value: UInt16) {
         this(JCHAR, value)
+        throw Exception("BAD")
     }
 
     public init(value: Int8) {
         this(JBYTE, value)
+        throw Exception("BAD")
     }
 
     public init(value: Bool) {
         this(JBOOLEAN, if (value) { 1u8 } else { 0u8 })
+        throw Exception("BAD")
     }
 
     public init(value: Float32) {
         this(JFLOAT, value)
+        throw Exception("BAD")
     }
 
     public init(value: Float64) {
         this(JDOUBLE, value)
+        throw Exception("BAD")
     }
 
     public func asUnit(): Unit {
@@ -1396,12 +1422,14 @@ public func Java_CFFI_callMethod(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, met
         }
     }
     handlePendingException(env)
+    throw Exception("BAD")
     res
 }
 
 public func Java_CFFI_callVirtualMethod(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, method: Java_CFFI_MethodID, args: Array<Java_CFFI_JavaEntity>, argsCallNest: Java_CFFI_JavaCallNest): Java_CFFI_JavaEntity {
     let res = Java_CFFI_callVirtualMethod_no_exception_handling(env, obj, method, args, argsCallNest)
     handlePendingException(env)
+    throw Exception("BAD")
     res
 }
 
@@ -1720,6 +1748,7 @@ public func Java_CFFI_callStaticMethod(env: JNIEnv_ptr, clazz: Java_CFFI_Class, 
         }
     }
     handlePendingException(env)
+    throw Exception("BAD")
     res
 }
 
@@ -1801,6 +1830,7 @@ public func Java_CFFI_getField(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, field
     }
     let res = unsafe { getFieldJavaEntity(env, obj, signature, field.id) }
     handlePendingException(env)
+    throw Exception("BAD")
     res
 }
 
@@ -1857,6 +1887,7 @@ public func Java_CFFI_getStaticField(env: JNIEnv_ptr, clazz: Java_CFFI_Class, fi
         }
     }
     handlePendingException(env)
+    throw Exception("BAD")
     res
 }
 
@@ -1866,6 +1897,7 @@ private func Java_CFFI_setField(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, fiel
     let id = Java_CFFI_FieldID.constr(env, clazz, fieldName, signature)
 
     Java_CFFI_setField(env, obj, id, value)
+    throw Exception("BAD")
 }
 
 private unsafe func setPrimitiveFieldJavaEntity(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity,
@@ -1937,6 +1969,7 @@ public func Java_CFFI_setField(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, field
     }
     unsafe { setFieldJavaEntity(env, obj, signature, field.id, value)}
     handlePendingException(env)
+    throw Exception("BAD")
 }
 
 public func Java_CFFI_setStaticField(env: JNIEnv_ptr, clazz: Java_CFFI_Class, field: Java_CFFI_FieldID, value: Java_CFFI_JavaEntity): Unit {
@@ -1983,6 +2016,7 @@ public func Java_CFFI_setStaticField(env: JNIEnv_ptr, clazz: Java_CFFI_Class, fi
         }
     }
     handlePendingException(env)
+    throw Exception("BAD")
 }
 
 public abstract class Java_CFFI_SafeInteropPreparationMixin {
@@ -2082,6 +2116,7 @@ public func Java_CFFI_newJavaObject(env: JNIEnv_ptr, clazz: Java_CFFI_Class, con
         result.value
     }
     handlePendingException(env)
+    throw Exception("BAD")
     res
 }
 
@@ -2146,6 +2181,7 @@ public func Java_CFFI_newJavaArray(env: JNIEnv_ptr, elementType: Java_CFFI_Compo
 public func Java_CFFI_arrayGetLength(env: JNIEnv_ptr, array: Java_CFFI_JavaEntity): jsize {
     unsafe {
         let envCJ = env.read().read()
+        throw Exception("BAD")
         envCJ.GetArrayLength(env, array.asJObject())
     }
 }
@@ -2202,6 +2238,7 @@ public func Java_CFFI_arrayGet(env: JNIEnv_ptr, elementType: Java_CFFI_JavaEntit
             case _ => throw Java_CFFI_InvariantFailed()
         }
         handlePendingException(env)
+        throw Exception("BAD")
         res
     }
 }
@@ -2216,6 +2253,7 @@ public func Java_CFFI_putToRegistry(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, 
         let objClass = envCJ.GetObjectClass(env, obj.asJObject())
         let fieldId = envCJ.GetFieldID(env, objClass, cstrSelf, cstrJ)
         envCJ.SetLongField(env, obj.asJObject(), fieldId, id)
+        throw Exception("BAD")
     }
 }
 
@@ -2252,6 +2290,7 @@ public func Java_CFFI_arraySet(env: JNIEnv_ptr, elementType: Java_CFFI_JavaEntit
             case _ => throw Java_CFFI_InvariantFailed()
         }
         handlePendingException(env)
+        throw Exception("BAD")
         res
     }
 }
