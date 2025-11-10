@@ -391,6 +391,8 @@ def install(args):
             shutil.copy2(OUT_CINTEROPLIB_SO, DEST_DYLIB)
         if os.path.isfile(OUT_INTEROPLIB_SO):
             shutil.copy2(OUT_INTEROPLIB_SO, DEST_DYLIB)
+            LOG.info("copy bad.so to " + DEST_DYLIB + "\n")
+            shutil.copy2(OUT_INTEROPLIB_SO, DEST_DYLIB + "/bad.so")
         if os.path.isfile(OUT_JAVA_LANG_SO):
             shutil.copy2(OUT_JAVA_LANG_SO, DEST_DYLIB)
         if os.path.isfile(OUT_INTEROPLIB_CJO):
@@ -499,4 +501,3 @@ if __name__ == '__main__':
     LOG = init_log('root')
     os.environ['LANG'] = "C.UTF-8"
     main()
-
