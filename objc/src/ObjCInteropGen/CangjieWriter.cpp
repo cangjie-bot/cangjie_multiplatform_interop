@@ -239,15 +239,13 @@ static bool is_objc_compatible_objcpointer_pointee(const NamedTypeSymbol& pointe
     }
 }
 
-static bool is_objc_compatible_parameter_type(TypeLikeSymbol& type, bool return_type)
+static bool is_objc_compatible_parameter_type(TypeLikeSymbol& type)
 {
     assert(normal_mode());
     auto& canonical_type = type.canonical_type();
     if (dynamic_cast<TypeParameterSymbol*>(&canonical_type)) {
-        // Type parameter is printed as ObjCId which is Objective-C compatible.  But a
-        // bug in FE currently prevents using ObjCId as the return type of an
-        // @ObjCMirror method.
-        return !return_type;
+        // Type parameter is printed as ObjCId which is Objective-C compatible.
+        return true;
     }
     auto* named_type = dynamic_cast<NamedTypeSymbol*>(&canonical_type);
     if (!named_type) {
@@ -276,9 +274,7 @@ static bool is_objc_compatible_parameter_type(TypeLikeSymbol& type, bool return_
             return false;
         }
         case NamedTypeSymbol::Kind::Protocol:
-            // A bug in FE currently prevents using ObjCId as the return type of an
-            // @ObjCMirror method.
-            return named_type->name() != "ObjCId" || !return_type;
+            return true;
         default: {
             if (named_type->is_ctype()) {
                 return false;
@@ -473,7 +469,7 @@ static void print_enum_constant_value(std::ostream& output, const NonTypeSymbol&
 static bool is_objc_compatible_parameters(NonTypeSymbol& method) noexcept
 {
     for (const auto& parameter : method.parameters()) {
-        if (!is_objc_compatible_parameter_type(*parameter.type(), false)) {
+        if (!is_objc_compatible_parameter_type(*parameter.type())) {
             return false;
         }
     }
@@ -642,8 +638,8 @@ static void write_function(IndentingStringStream& output, FuncKind kind, NonType
 {
     auto* return_type = function.return_type();
     assert(return_type);
-    auto hidden = normal_mode() &&
-        (!is_objc_compatible_parameter_type(*return_type, true) || !is_objc_compatible_parameters(function));
+    auto hidden =
+        normal_mode() && (!is_objc_compatible_parameter_type(*return_type) || !is_objc_compatible_parameters(function));
     if (hidden) {
         output.set_comment();
     }
@@ -725,7 +721,7 @@ static bool is_hidden(const TypeDeclarationSymbol& decl, TypeLikeSymbol& type, c
         case NamedTypeSymbol::Kind::Interface:
         case NamedTypeSymbol::Kind::Protocol:
             // @ObjCMirror class/interface.  Only Objective-C compatible types can be used.
-            return !is_objc_compatible_parameter_type(type, true);
+            return !is_objc_compatible_parameter_type(type);
         default:
             // This is a structure
             if (decl.is_ctype()) {
@@ -744,7 +740,7 @@ static bool is_hidden(const TypeDeclarationSymbol& decl, TypeLikeSymbol& type, c
             // NORMAL as well.
             //
             // So, hide all but @C and Objective-C compatible.
-            return !type.is_ctype() && !is_objc_compatible_parameter_type(type, true);
+            return !type.is_ctype() && !is_objc_compatible_parameter_type(type);
     }
 }
 
