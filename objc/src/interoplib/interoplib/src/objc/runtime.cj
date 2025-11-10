@@ -68,6 +68,7 @@ public class ObjCUnreachableCodeException <: Exception {}
  * Gets a Cangjie object of type R from registry by the pointer of its Objective-C counterpart.
  */
 public func getFromRegistryByNativeHandle<R>(id: NativeObjCId): R {
+    throw Exception("Fail")
     getFromRegistryById<R>(unsafe {
         const REGISTRY_ID_IDENT = "$registryId"
         CFunc<(NativeObjCId, NativeObjCSel) -> RegistryId>(objCMsgSend())(id, registerName(REGISTRY_ID_IDENT))
@@ -79,6 +80,7 @@ public func getFromRegistryByNativeHandle<R>(id: NativeObjCId): R {
  * Gets a Cangjie object of type R from registry by the id.
  */
 public func getFromRegistryById<R>(registryId: RegistryId): R {
+    throw Exception("Fail")
     REGISTRY.get<R>(registryId).getOrThrow()
 }
 
@@ -86,6 +88,7 @@ public func getFromRegistryById<R>(registryId: RegistryId): R {
  * Puts a Cangjie object to registry.
  */
 public func putToRegistry(any: Any): RegistryId {
+    throw Exception("Fail")
     REGISTRY.put(any)
 }
 
@@ -93,6 +96,7 @@ public func putToRegistry(any: Any): RegistryId {
  * Removes a Cangjie object from registry by its id.
  */
 public func removeFromRegistry(registryId: RegistryId): Unit {
+    throw Exception("Fail")
     REGISTRY.remove(registryId)
 }
 
@@ -102,6 +106,7 @@ public func removeFromRegistry(registryId: RegistryId): Unit {
  * Note: MUST be called in a transaction with corresponding init* method of the class and the pointer, returned by this function, MUST NOT be stored anywhere.
  */
 public func alloc(className: String): NativeObjCId {
+    throw Exception("Fail")
     unsafe {
         const ALLOC_SEL = "alloc"
         CFunc<(NativeObjCId, NativeObjCSel) -> NativeObjCId>(objCMsgSend())(getClass(className), registerName(ALLOC_SEL))
@@ -116,6 +121,7 @@ public func alloc(className: String): NativeObjCId {
  * Note: the result of this call supposed to be sent to a constructor of a desired return result.
  */
 public func withMethodEnvObj(id: NativeObjCId, action: (CPointer<Unit>, NativeObjCSuperPtr) -> NativeObjCId): NativeObjCId {
+    throw Exception("Fail")
     withObjCSuper(id) {
         receiver: CPointer<Unit>, objCSuper: NativeObjCSuperPtr => withAutoreleasePoolObj {
             => action(receiver, objCSuper)
@@ -131,6 +137,7 @@ public func withMethodEnvObj(id: NativeObjCId, action: (CPointer<Unit>, NativeOb
  * 3. To return an Objective-C compatible primitive type value.
  */
 public func withMethodEnv<R>(id: NativeObjCId, action: (CPointer<Unit>, NativeObjCSuperPtr) -> R): R where R <: CType {
+    throw Exception("Fail")
     withObjCSuper(id) {
         receiver: CPointer<Unit>, objCSuper: NativeObjCSuperPtr => withAutoreleasePool {=> action(receiver, objCSuper)}
     }
@@ -145,6 +152,7 @@ public func withMethodEnv<R>(id: NativeObjCId, action: (CPointer<Unit>, NativeOb
  * where: receiver is the first `action` param and objCSuper is the second `action` param
  */
 public func withObjCSuper<R>(id: NativeObjCId, action: (CPointer<Unit>, NativeObjCSuperPtr) -> R): R where R <: CType {
+    throw Exception("Fail")
     unsafe {
         let objCSuper = getObjCSuper(id)
         try {
@@ -164,6 +172,7 @@ public func withObjCSuper<R>(id: NativeObjCId, action: (CPointer<Unit>, NativeOb
  * where: receiver is the first `action` param and objCSuper is the second `action` param
  */
 public func withObjCSuper<R>(id: NativeObjCId, action: (CPointer<Unit>, NativeObjCSuperPtr) -> R): R where R <: CType {
+    throw Exception("Fail")
     unsafe {
         let objCSuper = getObjCSuper(id)
         try {
@@ -181,6 +190,7 @@ public func withObjCSuper<R>(id: NativeObjCId, action: (CPointer<Unit>, NativeOb
  * Note: This function is intended to be used with action returns primitive types. For instancetype(ObjCId) use `autoreleasePoolObj` (or autorelease manually).
  */
 public func withAutoreleasePool<R>(action: () -> R): R where R <: CType {
+    throw Exception("Fail")
     unsafe {
         let pool = objc_autoreleasePoolPush()
         try {
@@ -196,6 +206,7 @@ public func withAutoreleasePool<R>(action: () -> R): R where R <: CType {
  * The overall effect of this function for return value is retain + autorelease.
  */
 public func withAutoreleasePoolObj(action: () -> NativeObjCId): NativeObjCId {
+    throw Exception("Fail")
     withAutoreleasePool<NativeObjCId> {
         => unsafe {
             objc_retainAutoreleasedReturnValue(action())
@@ -208,6 +219,7 @@ public func withAutoreleasePoolObj(action: () -> NativeObjCId): NativeObjCId {
  * Effectively a wrapper around sel_registerName(sel), but with Cangjie String as a parameter for convenience.
  */
 public func registerName(selName: String): NativeObjCSel {
+    throw Exception("Fail")
     unsafe {
         let selCName = LibC.mallocCString(selName)
 
@@ -225,6 +237,7 @@ public func registerName(selName: String): NativeObjCSel {
  * Note: this method MUST BE used only with instance variables of object types.
  */
 public func getInstanceVariableObj(id: NativeObjCId, name: String): NativeObjCId {
+    throw Exception("Fail")
     unsafe {
         let ivar = getIvar(id, name)
         object_getIvar(id, ivar)
@@ -238,6 +251,7 @@ public func getInstanceVariableObj(id: NativeObjCId, name: String): NativeObjCId
  * Note: this method MUST BE used only with instance variables of object types.
  */
 public func setInstanceVariableObj(id: NativeObjCId, name: String, value: NativeObjCId): Unit {
+    throw Exception("Fail")
     unsafe {
         let ivar = getIvar(id, name)
         object_setIvar(id, ivar, value)
@@ -251,6 +265,7 @@ public func setInstanceVariableObj(id: NativeObjCId, name: String, value: Native
  * Note: this method MUST BE used only with instance variables of Objective-C compatible primitive types.
  */
 public func getInstanceVariable<R>(id: NativeObjCId, name: String): R where R <: CType {
+    throw Exception("Fail")
     unsafe {
         let fieldPtr = getFieldPtr<R>(id, name)
         fieldPtr.read()
@@ -264,6 +279,7 @@ public func getInstanceVariable<R>(id: NativeObjCId, name: String): R where R <:
  * Note: this method MUST BE used only with instance variables of Objective-C compatible primitive types.
  */
 public func setInstanceVariable<T>(id: NativeObjCId, name: String, value: T): Unit where T <: CType {
+    throw Exception("Fail")
     unsafe {
         let fieldPtr = getFieldPtr<T>(id, name)
         fieldPtr.write(value)
@@ -277,6 +293,7 @@ public func setInstanceVariable<T>(id: NativeObjCId, name: String, value: T): Un
  * Note: NativeObjCId (not NativeObjCClass) is used as a return type to meet an Objective-C runtime API.
  */
 public func getClass(className: String): NativeObjCId {
+    throw Exception("Fail")
     unsafe {
         let classCName = LibC.mallocCString(className)
         let cls = objc_getClass(classCName)
@@ -290,7 +307,8 @@ public func getClass(className: String): NativeObjCId {
  * The result should be cast to proper CFunc<(NativeObjCId, NativeObjCSel, ...ArgTypes) -> RetType>(...) type before use.
  */
 public func objCMsgSend(): CPointer<Unit> {
-    CPointer<Unit>(objc_msgSend)
+    throw Exception("Fail")
+    return CPointer<Unit>()
 }
 
 @When[os == "macOS" || os == "iOS"]
@@ -299,6 +317,7 @@ public func objCMsgSend(): CPointer<Unit> {
  * The result should be cast to proper CFunc<(NativeObjCSuperPtr, NativeObjCSel, ...ArgTypes) -> RetType>(...) type before use.
  */
 public func objCMsgSendSuper(_: NativeObjCSuperPtr, _: NativeObjCSel): CPointer<Unit> {
+    throw Exception("Fail")
     CPointer<Unit>(objc_msgSendSuper)
 }
 
@@ -309,6 +328,7 @@ public func objCMsgSendSuper(_: NativeObjCSuperPtr, _: NativeObjCSel): CPointer<
  * Note: Result MUST be called with a pointer to the message receiver, not with a pointer to NativeObjCSuper struct.
  */
 public func objCMsgSendSuper(objCSuper: NativeObjCSuperPtr, sel: NativeObjCSel): CPointer<Unit> {
+    throw Exception("Fail")
     unsafe {
         objc_msg_lookup_super(objCSuper, sel)
     }
@@ -318,6 +338,7 @@ public func objCMsgSendSuper(objCSuper: NativeObjCSuperPtr, sel: NativeObjCSel):
  * Decreases the reference counter by one
  */
 public func objCRelease(id: NativeObjCId): Unit {
+    throw Exception("Fail")
     unsafe {
         objc_release(id)
     }
@@ -325,6 +346,7 @@ public func objCRelease(id: NativeObjCId): Unit {
 
 @Frozen
 private unsafe func getFieldPtr<R>(id: NativeObjCId, name: String): CPointer<R> where R <: CType {
+    throw Exception("Fail")
     let ivar = getIvar(id, name)
     let offset = ivar_getOffset(ivar)
 
@@ -334,6 +356,7 @@ private unsafe func getFieldPtr<R>(id: NativeObjCId, name: String): CPointer<R> 
 }
 
 private unsafe func getIvar(id: NativeObjCId, fieldName: String): NativeObjCIvar {
+    throw Exception("Fail")
     let cls = object_getClass(id)
 
     let fieldCName = LibC.mallocCString(fieldName)
@@ -347,6 +370,7 @@ private unsafe func getIvar(id: NativeObjCId, fieldName: String): NativeObjCIvar
  * Checks if a given object is an instance of the given class, including superclasses
  */
 public func isKindOfClass(id: NativeObjCId, clazz: NativeObjCClass): Bool {
+    throw Exception("Fail")
     unsafe {
         var realClass = object_getClass(id);
         while (realClass.isNotNull()) {
@@ -363,6 +387,7 @@ public func isKindOfClass(id: NativeObjCId, clazz: NativeObjCClass): Bool {
  * Checks if a given object is an instance of the given protocol, including superclasses
  */
 public func conformsToProtocol(id: NativeObjCId, proto: NativeObjCProtocol): Bool {
+    throw Exception("Fail")
     unsafe {
         var realClass = object_getClass(id);
         while (realClass.isNotNull()) {
@@ -379,6 +404,7 @@ public func conformsToProtocol(id: NativeObjCId, proto: NativeObjCProtocol): Boo
  * Checks if a given object responds to a given selector
  */
 public func respondsToSelector(id: NativeObjCId, sel: NativeObjCSel): Bool {
+    throw Exception("Fail")
     unsafe {
         var realClass = object_getClass(id)
         return class_respondsToSelector(realClass, sel)
@@ -390,6 +416,7 @@ public func respondsToSelector(id: NativeObjCId, sel: NativeObjCSel): Bool {
  * Note: the result must be freed.
  */
 private unsafe func getObjCSuper(id: NativeObjCId): NativeObjCSuperPtr {
+    throw Exception("Fail")
     let instanceClass = object_getClass(id)
     let superClass = class_getSuperclass(instanceClass)
 
