@@ -6,7 +6,7 @@
 
 package cjworld
 
-import interoplib.objc.*
+import objc.lang.*
 
 public class CjAnimalAccessor {
     public func fooWithDefault(a: Animal): Unit {

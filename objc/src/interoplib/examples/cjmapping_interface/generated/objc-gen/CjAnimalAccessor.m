@@ -52,11 +52,11 @@ static struct RuntimeParam defaultCJRuntimeParams = {0};
 }
 
 - (void)fooWithDefault:(id<Animal>) animal {
-    CJImpl_ObjC_cjworld_CjAnimalAccessor_fooWithDefault(self.$registryId, (__bridge void*)animal);
+    CJImpl_ObjC_cjworld_CjAnimalAccessor_fooWithDefault(self.$registryId, (void*)[animal retain]);
 }
 
 - (void)foo:(id<Animal>) animal {
-    CJImpl_ObjC_cjworld_CjAnimalAccessor_foo(self.$registryId, (__bridge void*)animal);
+    CJImpl_ObjC_cjworld_CjAnimalAccessor_foo(self.$registryId, (void*)[animal retain]);
 }
 
 @end

@@ -41,15 +41,15 @@ static struct RuntimeParam defaultCJRuntimeParams = {0};
 }
 
 - (void)Say {
-    CJImpl_ObjC_cjworld_AnimalImpl_SayImpl((__bridge void*)self);
+    CJImpl_ObjC_cjworld_AnimalImpl_SayImpl((void*)[self retain]);
 }
 
 - (void)Eat {
-    CJImpl_ObjC_cjworld_AnimalImpl_EatImpl((__bridge void*)self);
+    CJImpl_ObjC_cjworld_AnimalImpl_EatImpl((void*)[self retain]);
 }
 
 + (void)staticTest:(id<Animal>) animal {
-    CJImpl_ObjC_cjworld_AnimalImpl_staticTest((__bridge void*)animal);
+    CJImpl_ObjC_cjworld_AnimalImpl_staticTest((void*)[animal retain]);
 }
 
 @end
