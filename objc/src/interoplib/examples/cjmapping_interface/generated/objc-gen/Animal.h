@@ -12,6 +12,7 @@
 - (void)Say;
 - (void)Eat;
 - (int32_t)Weight;
+- (instancetype) retain; // to supress warning
 @end
 
 // the default implementation of Animal interface

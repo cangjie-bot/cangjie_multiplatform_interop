@@ -7,7 +7,7 @@
 package cjworld
 
 import api.*
-import interoplib.objc.*
+import objc.lang.*
 
 // to make accessible the default implementation of Animal interface
 abstract class AnimalImpl <: Animal {}
@@ -16,28 +16,28 @@ class Animal_fwd <: AnimalImpl {
     let obj: NativeObjCId
 
     init(obj: NativeObjCId) {
-        this.obj = unsafe { ObjCRuntime.retain(obj) }
+        this.obj = obj
     }
 
     ~init() {
-        unsafe { ObjCRuntime.release(obj) }
+        unsafe { objCRelease(obj) }
     }
 
     public func Say(): Unit {
         unsafe {
-            CFunc<(NativeObjCId, NativeObjCSel) -> Unit>(ObjCRuntime.msgSend)(obj, registerName("Say"))
+            CFunc<(NativeObjCId, NativeObjCSel) -> Unit>(objCMsgSend())(obj, registerName("Say"))
         }
     }
  
     public func Eat(): Unit {
         unsafe {
-            CFunc<(NativeObjCId, NativeObjCSel) -> Unit>(ObjCRuntime.msgSend)(obj, registerName("Eat"))
+            CFunc<(NativeObjCId, NativeObjCSel) -> Unit>(objCMsgSend())(obj, registerName("Eat"))
         }
     }
 
     public func Weight(): Int32 {
         unsafe {
-            CFunc<(NativeObjCId, NativeObjCSel) -> Int32>(ObjCRuntime.msgSend)(obj, registerName("Weight"))
+            CFunc<(NativeObjCId, NativeObjCSel) -> Int32>(objCMsgSend())(obj, registerName("Weight"))
         }
     }
 
