@@ -177,17 +177,19 @@ def fetch_jdk(target_dir):
     jdk_tools_dir = os.path.join(target_dir, "jdk", "make", "langtools", "tools")
     clone_dir = os.path.join(target_dir, "bishengjdk-21")
 
-    # Download the BishengJDK
-    LOG.info(f'Cloning bishengjdk-21 repository (tag: {tag_name})...\n')
-
-    if not os.path.exists(jdk_src_dir):
+    if not os.path.exists(clone_dir) and not os.path.exists(jdk_src_dir):
+        # Download the BishengJDK
+        LOG.info(f'Cloning bishengjdk-21 repository (tag: {tag_name})...\n')
         output = subprocess.run(
             ["git", "clone", "--depth=1", "-b", tag_name, repo_url, clone_dir],
             stdout=PIPE,
         )
+
+    if not os.path.exists(jdk_src_dir):
         # Source directory exists
         if not os.path.exists(clone_dir):
             LOG.error(f"Source directory does not exist: {clone_dir}")
+
         # Target durectory exists
         os.makedirs(jdk_src_dir, exist_ok=True)
         LOG.info(f"The target directory has been created: {jdk_src_dir}")
