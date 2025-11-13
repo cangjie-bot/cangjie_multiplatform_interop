@@ -10,7 +10,7 @@
 
 - (id)init {
     if (self = [super init]) {
-        NSLog(@"objc: M init()");
+        printf("objc: M init()\n");
     }
 
     return self;

@@ -10,7 +10,7 @@
 
 - (id)init {
     if (self = [super init]) {
-        NSLog(@"objc: A.init()");
+        printf("objc: A.init()\n");
 
         M* m = [[M alloc] init];
     }
