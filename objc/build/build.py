@@ -239,10 +239,10 @@ def install(args):
     else:
         LOG.info("begin install objc-interop-gen...")
 
-        install_dir = prepare_dir(install_path, "tools", "bin");
-        install_file(install_dir, os.path.join(CMAKE_BUILD_DIR, "ObjCInteropGen"))
+        tools_bin_dir = prepare_dir(install_path, "tools", "bin");
+        install_file(tools_bin_dir, os.path.join(CMAKE_BUILD_DIR, "ObjCInteropGen"))
         if IS_DARWIN:
-            INSTALLED_OBJC_INTEROP_GEN = os.path.join(install_dir, "ObjCInteropGen")
+            INSTALLED_OBJC_INTEROP_GEN = os.path.join(tools_bin_dir, "ObjCInteropGen")
             otool_output = subprocess.run(
                 ["otool", "-l", INSTALLED_OBJC_INTEROP_GEN],
                 capture_output=True
