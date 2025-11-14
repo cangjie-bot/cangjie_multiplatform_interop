@@ -67,9 +67,7 @@ static uint64_t calcMask(Class baseCls, Class selfCls, SEL* methods, int len) {
     for (int i = 0; i < max; i++) {
         SEL m = methods[i];
         bool override = method_getImplementation(class_getInstanceMethod(baseCls, m)) != method_getImplementation(class_getInstanceMethod(selfCls, m));
-        char* over = "false";
         if (override) {
-            over = "true";
             mask |= (UINT64_C(1) << i);
         }
     }

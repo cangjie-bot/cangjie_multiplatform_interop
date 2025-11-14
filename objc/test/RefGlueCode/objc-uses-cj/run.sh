@@ -76,11 +76,14 @@ build_example() {
     cjc --output-type=dylib --int-overflow=wrapping generated/*.cj --import-path out -Lout -lapi -o out/ \
         -linteroplib.common -lobjc.lang -linteroplib.objc
 
+    # RefGlueCode/_common/*.cj => out/libinteroptest.dylib
+    cjc --output-type=dylib --int-overflow=wrapping ../../_common/*.cj -o out/libinteroptest.dylib
+
     # crutch to replace *.dylib to *.so when loading cj libraries
     touch out/KEEP_DIR
     [ "$OS_FAMILY" = "linux" ] && sed -i "s/\.dylib/\.so/g" out/*
 
-    # app/*.m + generated/*.m + libapi + libcjworld => out/main
+    # app/*.m + generated/*.m + libinteroptest + libapi + libcjworld => out/main
     if [ "$OS_FAMILY" = "darwin" ]; then
         # ARC is always OFF for glue-code
         # use ARC_MACRO to setup if [super dealloc] should be called in CJMirror classes
@@ -89,7 +92,7 @@ build_example() {
 
         # for app code ARC is ON by default, export ARCOFF with some value to turn it OFF
         [ "test$ARCOFF" != "test" ] && ARC="" || ARC="-fobjc-arc"
-        clang -fmodules $ARC app/*.m -o out/main -I"$CANGJIE_RUNTIME_INCLUDE_PATH" -Iapp -Igenerated -Lout -lcangjie-runtime -lapi -lcjworld -lgluecode -L"$CANGJIE_RUNTIME_LIB_PATH"
+        clang -fmodules $ARC app/*.m -o out/main -I"$CANGJIE_RUNTIME_INCLUDE_PATH" -Iapp -Igenerated -Lout -lcangjie-runtime -linteroptest -lapi -lcjworld -lgluecode -L"$CANGJIE_RUNTIME_LIB_PATH"
     else
         # shellcheck disable=SC2046
         clang-10 $(gnustep-config --objc-flags) $(gnustep-config --base-libs) app/*.m generated/*.m -o out/main -I"$CANGJIE_RUNTIME_INCLUDE_PATH" -Iapp -Igenerated -Lout -ldl -lcangjie-runtime -lapi -lcjworld -L"$CANGJIE_RUNTIME_LIB_PATH"

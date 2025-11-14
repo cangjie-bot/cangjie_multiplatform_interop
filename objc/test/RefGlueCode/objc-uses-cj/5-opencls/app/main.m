@@ -8,7 +8,7 @@
 #import "A.h"
 #import "AA.h"
 
-extern void CJImpl_ObjC_cjworld_cjGC();
+extern void Interoptest_cjworld_GC(); // provided by _common/interoptest.cj
 
 void TestFooI32() {
  // @autoreleasepool { // uncomment to try with ARCOFF=true
@@ -69,13 +69,13 @@ int main(int argc, char** argv) {
     TestFooI32();
 
     printf("\nObjC: after TestFooI32 call cjGC, 1 TransitionIV is expected:\n");
-    CJImpl_ObjC_cjworld_cjGC();
+    Interoptest_cjworld_GC();
     printf("ObjC: cjGC COMPLETED\n");
 
     TestCallVirtual();
 
     printf("\nObjC: after TestCallVirtual call cjGC, 1 TransitionIV is expected:\n");
-    CJImpl_ObjC_cjworld_cjGC();
+    Interoptest_cjworld_GC();
     printf("ObjC: cjGC COMPLETED\n");
 
     return 0;

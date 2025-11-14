@@ -7,23 +7,7 @@
 package cjworld
 
 import api.*
-import std.runtime.* // not a reference glue-code, just a debug utility
-import std.sync.Mutex
 import objc.lang.*
-
-// not a reference glue-code, just a debug utility
-func cjGC(): Unit {
-    gc(heavy: true)
-    sleep(5*Duration.millisecond)
-    gc(heavy: true)
-    sleep(5*Duration.millisecond)
-}
-
-// not a reference glue-code, just a debug utility
-@C
-public func CJImpl_ObjC_cjworld_cjGC(): Unit {
-    cjGC();
-}
 
 // When pure CJ object (A instance) needs to be passed to ObjC side the pure object itself is put into registry
 // and the CJMirror is created using initWithRegistryId constructor.
@@ -35,22 +19,9 @@ func objcObjForPureCJ(cjA: A): NativeObjCId {
     }
 }
 
-class A_fwdDestructor {
+class A_fwd <: A {
+    let mtx = ForwarderMutex()
     var obj: NativeObjCId
-
-    init(obj: NativeObjCId) {
-        this.obj = obj
-    }
-
-    ~init() {
-        println("[CJ]: A_fwd.~init happened (TransitionIV)")
-        unsafe { objCRelease(obj) } // TransitionIV
-    }
-}
-
-open class A_fwd <: A {
-    let mtx = Mutex()
-    var fwd: A_fwdDestructor
     var cjFinalizable = false
 
     let overrideMask: UInt64
@@ -58,22 +29,26 @@ open class A_fwd <: A {
     // When twin-objects creation starts at ObjC side, the forwarder has ObjC obj available before the constructor call.
     init(obj: NativeObjCId, overrideMask: UInt64) {
         super()
-        fwd = A_fwdDestructor(obj)
+        this.obj = obj
         this.overrideMask = overrideMask
+    }
+
+    ~init() {
+        println("[CJ]: A_fwd.~init happened (TransitionIV)")
+        unsafe { objCRelease(obj) } // TransitionIV
     }
 
     // Returns objcObj of retainable object pointer type that holds RC++ by extra retain, any call-site should care about it.
     func objcObj(): NativeObjCId {
         synchronized(mtx) {
-            let ocObj = fwd.obj
             if (cjFinalizable) { // backOnTrack also known as TransitionIII
                 cjFinalizable = false
                 let id = putToRegistry(this)
                 unsafe {
-                    CFunc<(NativeObjCId, NativeObjCSel, RegistryId) -> NativeObjCId>(objCMsgSend())(ocObj, registerName("reinitWithRegistryId:"), id)
+                    CFunc<(NativeObjCId, NativeObjCSel, RegistryId) -> NativeObjCId>(objCMsgSend())(obj, registerName("reinitWithRegistryId:"), id)
                 }
             } else {
-                unsafe { objCRetain(ocObj) }
+                unsafe { objCRetain(obj) }
             }
         }
     }
@@ -879,72 +854,72 @@ open class A_fwd <: A {
         }
     }
 
-    protected open func foo0Impl(): Unit { println("[CJ]: foo0Impl called"); super.foo0() }
-    protected open func foo1Impl(): Unit { super.foo1() }
-    protected open func foo2Impl(): Unit { super.foo2() }
-    protected open func foo3Impl(): Unit { super.foo3() }
-    protected open func foo4Impl(): Unit { super.foo4() }
-    protected open func foo5Impl(): Unit { super.foo5() }
-    protected open func foo6Impl(): Unit { super.foo6() }
-    protected open func foo7Impl(): Unit { super.foo7() }
-    protected open func foo8Impl(): Unit { super.foo8() }
-    protected open func foo9Impl(): Unit { super.foo9() }
-    protected open func foo10Impl(): Unit { super.foo10() }
-    protected open func foo11Impl(): Unit { super.foo11() }
-    protected open func foo12Impl(): Unit { super.foo12() }
-    protected open func foo13Impl(): Unit { super.foo13() }
-    protected open func foo14Impl(): Unit { super.foo14() }
-    protected open func foo15Impl(): Unit { super.foo15() }
-    protected open func foo16Impl(): Unit { super.foo16() }
-    protected open func foo17Impl(): Unit { super.foo17() }
-    protected open func foo18Impl(): Unit { super.foo18() }
-    protected open func foo19Impl(): Unit { super.foo19() }
-    protected open func foo20Impl(): Unit { super.foo20() }
-    protected open func foo21Impl(): Unit { super.foo21() }
-    protected open func foo22Impl(): Unit { super.foo22() }
-    protected open func foo23Impl(): Unit { super.foo23() }
-    protected open func foo24Impl(): Unit { super.foo24() }
-    protected open func foo25Impl(): Unit { super.foo25() }
-    protected open func foo26Impl(): Unit { super.foo26() }
-    protected open func foo27Impl(): Unit { super.foo27() }
-    protected open func foo28Impl(): Unit { super.foo28() }
-    protected open func foo29Impl(): Unit { super.foo29() }
-    protected open func foo30Impl(): Unit { super.foo30() }
-    protected open func foo31Impl(): Unit { super.foo31() }
-    protected open func foo32Impl(): Unit { super.foo32() }
-    protected open func foo33Impl(): Unit { super.foo33() }
-    protected open func foo34Impl(): Unit { super.foo34() }
-    protected open func foo35Impl(): Unit { super.foo35() }
-    protected open func foo36Impl(): Unit { super.foo36() }
-    protected open func foo37Impl(): Unit { super.foo37() }
-    protected open func foo38Impl(): Unit { super.foo38() }
-    protected open func foo39Impl(): Unit { super.foo39() }
-    protected open func foo40Impl(): Unit { super.foo40() }
-    protected open func foo41Impl(): Unit { super.foo41() }
-    protected open func foo42Impl(): Unit { println("[CJ]: foo42Impl called"); super.foo42() }
-    protected open func foo43Impl(): Unit { super.foo43() }
-    protected open func foo44Impl(): Unit { super.foo44() }
-    protected open func foo45Impl(): Unit { super.foo45() }
-    protected open func foo46Impl(): Unit { super.foo46() }
-    protected open func foo47Impl(): Unit { super.foo47() }
-    protected open func foo48Impl(): Unit { super.foo48() }
-    protected open func foo49Impl(): Unit { super.foo49() }
-    protected open func foo50Impl(): Unit { super.foo50() }
-    protected open func foo51Impl(): Unit { super.foo51() }
-    protected open func foo52Impl(): Unit { super.foo52() }
-    protected open func foo53Impl(): Unit { super.foo53() }
-    protected open func foo54Impl(): Unit { super.foo54() }
-    protected open func foo55Impl(): Unit { super.foo55() }
-    protected open func foo56Impl(): Unit { super.foo56() }
-    protected open func foo57Impl(): Unit { super.foo57() }
-    protected open func foo58Impl(): Unit { super.foo58() }
-    protected open func foo59Impl(): Unit { super.foo59() }
-    protected open func foo60Impl(): Unit { super.foo60() }
-    protected open func foo61Impl(): Unit { super.foo61() }
-    protected open func foo62Impl(): Unit { println("[CJ]: foo62Impl called"); super.foo62() }
-    protected open func foo63Impl(): Unit { println("[CJ]: foo63Impl called"); super.foo63() }
-    protected open func foo64Impl(): Unit { println("[CJ]: foo64Impl called"); super.foo64() }
-    protected open func foo65Impl(): Unit { println("[CJ]: foo65Impl called"); super.foo65() }
+    func foo0Impl(): Unit { println("[CJ]: foo0Impl called"); super.foo0() }
+    func foo1Impl(): Unit { super.foo1() }
+    func foo2Impl(): Unit { super.foo2() }
+    func foo3Impl(): Unit { super.foo3() }
+    func foo4Impl(): Unit { super.foo4() }
+    func foo5Impl(): Unit { super.foo5() }
+    func foo6Impl(): Unit { super.foo6() }
+    func foo7Impl(): Unit { super.foo7() }
+    func foo8Impl(): Unit { super.foo8() }
+    func foo9Impl(): Unit { super.foo9() }
+    func foo10Impl(): Unit { super.foo10() }
+    func foo11Impl(): Unit { super.foo11() }
+    func foo12Impl(): Unit { super.foo12() }
+    func foo13Impl(): Unit { super.foo13() }
+    func foo14Impl(): Unit { super.foo14() }
+    func foo15Impl(): Unit { super.foo15() }
+    func foo16Impl(): Unit { super.foo16() }
+    func foo17Impl(): Unit { super.foo17() }
+    func foo18Impl(): Unit { super.foo18() }
+    func foo19Impl(): Unit { super.foo19() }
+    func foo20Impl(): Unit { super.foo20() }
+    func foo21Impl(): Unit { super.foo21() }
+    func foo22Impl(): Unit { super.foo22() }
+    func foo23Impl(): Unit { super.foo23() }
+    func foo24Impl(): Unit { super.foo24() }
+    func foo25Impl(): Unit { super.foo25() }
+    func foo26Impl(): Unit { super.foo26() }
+    func foo27Impl(): Unit { super.foo27() }
+    func foo28Impl(): Unit { super.foo28() }
+    func foo29Impl(): Unit { super.foo29() }
+    func foo30Impl(): Unit { super.foo30() }
+    func foo31Impl(): Unit { super.foo31() }
+    func foo32Impl(): Unit { super.foo32() }
+    func foo33Impl(): Unit { super.foo33() }
+    func foo34Impl(): Unit { super.foo34() }
+    func foo35Impl(): Unit { super.foo35() }
+    func foo36Impl(): Unit { super.foo36() }
+    func foo37Impl(): Unit { super.foo37() }
+    func foo38Impl(): Unit { super.foo38() }
+    func foo39Impl(): Unit { super.foo39() }
+    func foo40Impl(): Unit { super.foo40() }
+    func foo41Impl(): Unit { super.foo41() }
+    func foo42Impl(): Unit { println("[CJ]: foo42Impl called"); super.foo42() }
+    func foo43Impl(): Unit { super.foo43() }
+    func foo44Impl(): Unit { super.foo44() }
+    func foo45Impl(): Unit { super.foo45() }
+    func foo46Impl(): Unit { super.foo46() }
+    func foo47Impl(): Unit { super.foo47() }
+    func foo48Impl(): Unit { super.foo48() }
+    func foo49Impl(): Unit { super.foo49() }
+    func foo50Impl(): Unit { super.foo50() }
+    func foo51Impl(): Unit { super.foo51() }
+    func foo52Impl(): Unit { super.foo52() }
+    func foo53Impl(): Unit { super.foo53() }
+    func foo54Impl(): Unit { super.foo54() }
+    func foo55Impl(): Unit { super.foo55() }
+    func foo56Impl(): Unit { super.foo56() }
+    func foo57Impl(): Unit { super.foo57() }
+    func foo58Impl(): Unit { super.foo58() }
+    func foo59Impl(): Unit { super.foo59() }
+    func foo60Impl(): Unit { super.foo60() }
+    func foo61Impl(): Unit { super.foo61() }
+    func foo62Impl(): Unit { println("[CJ]: foo62Impl called"); super.foo62() }
+    func foo63Impl(): Unit { println("[CJ]: foo63Impl called"); super.foo63() }
+    func foo64Impl(): Unit { println("[CJ]: foo64Impl called"); super.foo64() }
+    func foo65Impl(): Unit { println("[CJ]: foo65Impl called"); super.foo65() }
 }
 
 @C
