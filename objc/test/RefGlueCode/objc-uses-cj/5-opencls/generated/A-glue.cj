@@ -7,23 +7,7 @@
 package cjworld
 
 import api.*
-import std.runtime.* // not a reference glue-code, just a debug utility
-import std.sync.Mutex
 import objc.lang.*
-
-// not a reference glue-code, just a debug utility
-func cjGC(): Unit {
-    gc(heavy: true)
-    sleep(5*Duration.millisecond)
-    gc(heavy: true)
-    sleep(5*Duration.millisecond)
-}
-
-// not a reference glue-code, just a debug utility
-@C
-public func CJImpl_ObjC_cjworld_cjGC(): Unit {
-    cjGC();
-}
 
 // When pure CJ object (A instance) needs to be passed to ObjC side the pure object itself is put into registry
 // and the CJMirror is created using initWithRegistryId constructor.
@@ -35,22 +19,9 @@ func objcObjForPureCJ(cjA: A): NativeObjCId {
     }
 }
 
-class A_fwdDestructor {
+class A_fwd <: A {
+    let mtx = ForwarderMutex()
     var obj: NativeObjCId
-
-    init(obj: NativeObjCId) {
-        this.obj = obj
-    }
-
-    ~init() {
-        println("[CJ]: A_fwd.~init happened (TransitionIV)")
-        unsafe { objCRelease(obj) } // TransitionIV
-    }
-}
-
-open class A_fwd <: A {
-    let mtx = Mutex()
-    var fwd: A_fwdDestructor
     var cjFinalizable = false
 
     // The order of bits in the mask from 0 to 4: fooVirtual, callFooVirtual, fooI32, fooA, paramA.
@@ -60,22 +31,26 @@ open class A_fwd <: A {
     // When twin-objects creation starts at ObjC side, the forwarder has ObjC obj available before the constructor call.
     init(obj: NativeObjCId, overrideMask: UInt64) {
         super()
-        fwd = A_fwdDestructor(obj)
+        this.obj = obj
         this.overrideMask = overrideMask
+    }
+
+    ~init() {
+        println("[CJ]: A_fwd.~init happened (TransitionIV)")
+        unsafe { objCRelease(obj) } // TransitionIV
     }
 
     // Returns objcObj of retainable object pointer type that holds RC++ by extra retain, any call-site should care about it.
     func objcObj(): NativeObjCId {
         synchronized(mtx) {
-            let ocObj = fwd.obj
             if (cjFinalizable) { // backOnTrack also known as TransitionIII
                 cjFinalizable = false
                 let id = putToRegistry(this)
                 unsafe {
-                    CFunc<(NativeObjCId, NativeObjCSel, RegistryId) -> NativeObjCId>(objCMsgSend())(ocObj, registerName("reinitWithRegistryId:"), id)
+                    CFunc<(NativeObjCId, NativeObjCSel, RegistryId) -> NativeObjCId>(objCMsgSend())(obj, registerName("reinitWithRegistryId:"), id)
                 }
             } else {
-                unsafe { objCRetain(ocObj) }
+                unsafe { objCRetain(obj) }
             }
         }
     }
@@ -146,23 +121,23 @@ open class A_fwd <: A {
         }
     }
 
-    protected open func fooVirtualImpl(): Unit {
+    func fooVirtualImpl(): Unit {
         super.fooVirtual()
     }
 
-    protected open func callFooVirtualImpl(): Unit {
+    func callFooVirtualImpl(): Unit {
         super.callFooVirtual()
     }
 
-    protected open func fooI32Impl(): Int32 {
+    func fooI32Impl(): Int32 {
         super.fooI32()
     }
 
-    protected open func fooAImpl(): A {
+    func fooAImpl(): A {
         super.fooA()
     }
 
-    protected open func paramAImpl(a: A): Unit {
+    func paramAImpl(a: A): Unit {
         super.paramA(a)
     }
 }

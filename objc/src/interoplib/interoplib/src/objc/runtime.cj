@@ -7,6 +7,12 @@
 package interoplib.objc
 
 import interoplib.common.REGISTRY
+import std.sync.Mutex
+
+/**
+ * To avoid std.sync.Mutex dependency at objc glue-code.
+ */
+public type ForwarderMutex = Mutex
 
 /**
  * id or Instance Method Pointer type.

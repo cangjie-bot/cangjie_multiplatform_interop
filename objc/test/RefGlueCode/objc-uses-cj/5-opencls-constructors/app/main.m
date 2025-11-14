@@ -8,7 +8,7 @@
 #import "A.h"
 #import "AA.h"
 
-extern void CJImpl_ObjC_cjworld_cjGC();
+extern void Interoptest_cjworld_GC(); // provided by _common/interoptest.cj
 
 void TestFooI64() {
  // @autoreleasepool { // uncomment to try with ARCOFF=true
@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
     TestFooI64();
 
     printf("\nObjC: after TestFooI64 call cjGC, 4 TransitionIV are expected:\n");
-    CJImpl_ObjC_cjworld_cjGC();
+    Interoptest_cjworld_GC();
     printf("ObjC: cjGC COMPLETED\n");
 
     return 0;
