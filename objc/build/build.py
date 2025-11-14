@@ -42,15 +42,12 @@ INTEROPLIB_OUT_PREFIX = os.path.join(INTEROPLIB_OUT, RELEASE, INTEROPLIB_NAME_IN
 OBJC_OUT_PREFIX = os.path.join(INTEROPLIB_OUT, RELEASE, OBJC_NAME_IN_TOML)
 
 OUT_INTEROPLIB_COMMON_DYLIB = os.path.join(INTEROPLIB_OUT_PREFIX, f"libinteroplib.common.{DYLIB_EXT}")
-OUT_INTEROPLIB_COMMON_A     = os.path.join(INTEROPLIB_OUT_PREFIX, "libinteroplib.common.a")
 OUT_INTEROPLIB_COMMON_CJO   = os.path.join(INTEROPLIB_OUT_PREFIX, "interoplib.common.cjo")
 
 OUT_INTEROPLIB_OBJC_DYLIB = os.path.join(INTEROPLIB_OUT_PREFIX, f"libinteroplib.objc.{DYLIB_EXT}")
-OUT_INTEROPLIB_OBJC_A     = os.path.join(INTEROPLIB_OUT_PREFIX, "libinteroplib.objc.a")
 OUT_INTEROPLIB_OBJC_CJO   = os.path.join(INTEROPLIB_OUT_PREFIX, "interoplib.objc.cjo")
 
 OUT_OBJC_LANG_DYLIB = os.path.join(OBJC_OUT_PREFIX, f"libobjc.lang.{DYLIB_EXT}")
-OUT_OBJC_LANG_A     = os.path.join(OBJC_OUT_PREFIX, "libobjc.lang.a")
 OUT_OBJC_LANG_CJO   = os.path.join(OBJC_OUT_PREFIX, "objc.lang.cjo")
 
 LOG_DIR = os.path.join(BUILD_DIR, 'logs')
@@ -184,7 +181,7 @@ def install_file(install_dir, file):
     if os.path.isfile(file):
         shutil.copy2(file, install_dir)
     else:
-        fatal("Cannot find \"%s\" for installing to \"%s\"", file, install_dir)
+        fatal("Cannot find \"" + file + "\" for installing to \"" + install_dir + "\"")
 
 def install_files(install_dir, *files):
     for file in files:
@@ -230,11 +227,6 @@ def install(args):
             OUT_INTEROPLIB_COMMON_DYLIB,
             OUT_INTEROPLIB_OBJC_DYLIB,
             OUT_OBJC_LANG_DYLIB
-        )
-        install_files(prepare_dir(install_path, "lib", runtime),
-            OUT_INTEROPLIB_COMMON_A,
-            OUT_INTEROPLIB_OBJC_A,
-            OUT_OBJC_LANG_A
         )
         install_files(
             prepare_dir(install_path, "modules", runtime),
