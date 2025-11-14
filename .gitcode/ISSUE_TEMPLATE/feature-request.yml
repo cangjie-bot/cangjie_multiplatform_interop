@@ -1,0 +1,21 @@
+name: New Feature submit
+description: This template is for new feature submit
+title: "[new feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+         Thank you for your contribution!
+  - type: textarea
+    attributes:
+      label: Feature description
+      description: What is the functionality/improvement in this feature：
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: what is the targeting user case for this new feature？
+      description: Value / User Case description of this new feature：
+    validations:
+      required: false
