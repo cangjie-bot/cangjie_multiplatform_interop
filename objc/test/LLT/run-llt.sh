@@ -15,7 +15,7 @@ TMP=${BUILD}/test_tmp
 mkdir -p ${TMP}
 cd ${BUILD}
 
-# TODO check ${FRAMEWORK} with framework/main.py inside is available
+# TODO check ${FRAMEWORK} with main.py inside is available
 
 python3 ${FRAMEWORK}/main.py --fail_exit -pFAIL -pPASS --fail-verbose --debug ../ \
 --temp_dir=${TMP} --json_output=${TMP}/run_result.json -j7 \
