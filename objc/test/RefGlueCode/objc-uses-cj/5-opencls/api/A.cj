@@ -7,6 +7,7 @@
 package api
 
 public open class A {
+    // Overridden at ObjC side in AA
     public open func fooVirtual(): Unit {
         println("[CJ]: A.fooVirtual()")
     }
@@ -14,6 +15,7 @@ public open class A {
         println("[CJ]: A.callFooVirtual()")
         fooVirtual()
     }
+    // Overridden at ObjC side in AA
     public open func fooI32(): Int32 {
         println("[CJ]: A.fooI32()")
         Int32(32)
@@ -22,6 +24,7 @@ public open class A {
         println("[CJ]: A.fooA() returns new A()")
         A()
     }
+    // Overridden at ObjC side in AA
     public open func paramA(a: A): Unit {
         let resI32 = a.fooI32()
         println("[CJ]: A.paramA gets arg (a.fooI32 == ${resI32})")
