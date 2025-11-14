@@ -20,6 +20,7 @@ public open class A {
         this.y = y
     }
 
+    // Overridden at ObjC side in AA
     public open func fooI64(): Int64 {
         println("[CJ]: A.fooI64()")
         x + y

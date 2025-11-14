@@ -7,6 +7,7 @@
 package api
 
 public open class A {
+    // Overridden at ObjC side in AA
     public open func foo0(): Unit {
         println("[CJ]: A.foo0()")
     }
@@ -139,6 +140,7 @@ public open class A {
     public open func foo41(): Unit {
         println("[CJ]: A.foo41()")
     }
+    // Overridden at ObjC side in AA
     public open func foo42(): Unit {
         println("[CJ]: A.foo42()")
     }
@@ -202,9 +204,11 @@ public open class A {
     public open func foo62(): Unit {
         println("[CJ]: A.foo62()")
     }
+    // Overridden at ObjC side in AA
     public open func foo63(): Unit {
         println("[CJ]: A.foo63()")
     }
+    // Overridden at ObjC side in AA
     public open func foo64(): Unit {
         println("[CJ]: A.foo64()")
     }
