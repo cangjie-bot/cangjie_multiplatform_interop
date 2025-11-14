@@ -1,0 +1,15 @@
+name: Question
+description: This template is for Questions.
+title: "[Qustions]: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Welcome to ask questions.
+  - type: textarea
+    attributes:
+      label: What is the question
+      description: Detailed question description
+    validations:
+      required: true
