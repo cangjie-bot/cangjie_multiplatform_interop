@@ -949,6 +949,12 @@ public func CJImpl_ObjC_cjworld_A_deleteCJObjectFwd(registryId: RegistryId): Uni
 }
 
 @C
+public func CJImpl_ObjC_cjworld_A_deleteCJObject(registryId: RegistryId): Unit {
+    //println("[CJ]: A.deleteCJObject(${registryId})")
+    removeFromRegistry(registryId)
+}
+
+@C
 public func CJImpl_ObjC_cjworld_A_foo0(registryId: RegistryId): Unit {
     getFromRegistryById<A>(registryId).foo0()
 }
