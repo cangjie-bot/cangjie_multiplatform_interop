@@ -35,6 +35,8 @@ INTEROPLIB_OUT = os.path.join(INTEROPLIB_DIR, 'output')
 DYLIB_EXT = "dylib" if IS_DARWIN else "so"
 OBJC_INTEROP_THIRD_PARTY = os.path.join(HOME_DIR, 'third_party')
 
+INTEROPLIB_OBJCLIB_DIR = os.path.join(INTEROPLIB_DIR, 'src', 'objclib')
+
 RELEASE = "release"
 INTEROPLIB_NAME_IN_TOML = "interoplib"
 OBJC_NAME_IN_TOML = "objc"
@@ -49,6 +51,8 @@ OUT_INTEROPLIB_OBJC_CJO   = os.path.join(INTEROPLIB_OUT_PREFIX, "interoplib.objc
 
 OUT_OBJC_LANG_DYLIB = os.path.join(OBJC_OUT_PREFIX, f"libobjc.lang.{DYLIB_EXT}")
 OUT_OBJC_LANG_CJO   = os.path.join(OBJC_OUT_PREFIX, "objc.lang.cjo")
+
+OUT_INTEROPLIB_OBJCLIB_DYLIB = os.path.join(INTEROPLIB_OUT_PREFIX, f"libinteroplib.objclib.{DYLIB_EXT}")
 
 LOG_DIR = os.path.join(BUILD_DIR, 'logs')
 LOG_FILE = os.path.join(LOG_DIR, 'ObjCInteropGen.log')
@@ -125,6 +129,7 @@ def build(args):
         runtime = runtime_name(args.target)
         LOG.info('begin build interoplib for ' + runtime + '\n')
 
+        # cj-code of interoplib is built by cjpm
         CJPM_CONFIG = "--cfg_darwin_objc" if IS_DARWIN else "--cfg_linux_objc"
 
         cjpm_env = os.environ.copy()
@@ -141,6 +146,23 @@ def build(args):
         # target_toolchain is not used for now
 
         command("cjpm", "build", "--target-dir=" + INTEROPLIB_OUT, CJPM_CONFIG, cwd=INTEROPLIB_DIR, env=cjpm_env)
+
+        # objc-code of interoplib is built by clang
+        CANGJIE_HOME=os.environ['CANGJIE_HOME']
+        CANGJIE_RUNTIME_INCLUDE_PATH=f"{CANGJIE_HOME}/include"
+        CANGJIE_RUNTIME_LIB_PATH=f"{CANGJIE_HOME}/runtime/lib/{runtime}"
+
+        clang_command = ["clang", "-fmodules", "-shared"]
+        clang_command += [f"-I{CANGJIE_RUNTIME_INCLUDE_PATH}", f"-L{CANGJIE_RUNTIME_LIB_PATH}", "-lcangjie-runtime"]
+        clang_command += ["-I.", "cjinterop.m", f"-o{OUT_INTEROPLIB_OBJCLIB_DYLIB}"]
+
+        output = subprocess.Popen(
+            clang_command.copy(),
+            env=os.environ.copy(),
+            cwd=INTEROPLIB_OBJCLIB_DIR,
+            stdout=PIPE,
+        )
+        log_output(output)
 
         LOG.info('end build interoplib for ' + runtime + '\n')
     else:
@@ -261,6 +283,9 @@ def install(args):
             OUT_INTEROPLIB_OBJC_CJO,
             OUT_OBJC_LANG_CJO
         )
+
+        if os.path.isfile(OUT_INTEROPLIB_OBJCLIB_DYLIB):
+            shutil.copy2(OUT_INTEROPLIB_OBJCLIB_DYLIB, DEST_DYLIB)
 
         LOG.info("end install interoplib for " + runtime + "\n")
     else:

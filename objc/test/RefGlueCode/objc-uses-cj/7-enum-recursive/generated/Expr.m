@@ -4,11 +4,10 @@
 //
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
-// NOTE: Uses CJNative-specific API declared in LLVMGC/Signal/Cangjie.h
-
-#import "Cangjie.h"
-#import <dlfcn.h>
 #import "Expr.h"
+
+// Interoplib objc common code (libinterop.objclib.dylib)
+extern bool initCJRuntime(const char*);
 
 extern void CJImpl_ObjC_api_Expr_deleteCJObject(int64_t);
 
@@ -18,29 +17,12 @@ extern int64_t CJImpl_ObjC_api_Expr_SubInitCJObject(int64_t, int64_t);
 
 extern int64_t CJImpl_ObjC_api_CJEval(int64_t);
 
-static void* CJWorldDLHandle = NULL;
-
-static struct RuntimeParam defaultCJRuntimeParams = {0};
-
 // @CJMirror
 @implementation Expr
 
 + (void)initialize {
     if (self == [Expr class]) {
-        defaultCJRuntimeParams.logParam.logLevel = RTLOG_ERROR;
-        if (InitCJRuntime(&defaultCJRuntimeParams) != E_OK) {
-            NSLog(@"ERROR: Failed to initialize Cangjie runtime");
-            exit(1);
-        }
-
-        if (LoadCJLibraryWithInit("libcjworld.dylib")) {
-            NSLog(@"ERROR: Failed to init cjworld library");
-            exit(1);
-        }
-
-        if ((CJWorldDLHandle = dlopen("libcjworld.dylib", RTLD_LAZY)) == NULL) {
-            NSLog(@"ERROR: Failed to open cjworld library");
-            NSLog(@"%s", dlerror());
+        if (!initCJRuntime("libcjworld.dylib")) {
             exit(1);
         }
     }

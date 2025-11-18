@@ -27,10 +27,10 @@ int main(int argc, char** argv) {
         CJPrintMonthCount(tuMonth);
 
         printf("\n");
-        printf("main: Year(3) has %lld months\n", [[TimeUnit Year:3] CalcMonth]);
+        printf("main: Year(3) has %lld months\n", (long long) [[TimeUnit Year:3] CalcMonth]);
 
         printf("\n");
-        printf("main: TenYear() has %lld months\n", [[TimeUnit TenYear] CalcMonth]);
+        printf("main: TenYear() has %lld months\n", (long long) [[TimeUnit TenYear] CalcMonth]);
     }
     return 0;
 }
