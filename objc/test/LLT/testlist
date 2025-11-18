@@ -6,5 +6,6 @@
 
 [ALL-TEST-CASE]
 cj-uses-objc
+objc-uses-cj
 
 [EXCLUDE-TEST-CASE]
