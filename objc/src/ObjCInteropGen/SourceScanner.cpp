@@ -84,6 +84,18 @@ class SourceScanner final : public ClangVisitor {
     // It doesn't appear there is a way around it, other than to keep track of what we already visited.
     std::unordered_set<CXCursor> visited_;
 
+    // When a function is processed, and the function return a function pointer
+    // defined in-place, then the visitor visits the return type parameters as
+    // direct children of the function, before the parameters of the function.  That
+    // is, when visiting
+    //     -(int(*)(int x))f:(int y);
+    // two direct children are visited, first `x`, then `y`.
+    //
+    // This index is reset to zero before visiting function children and incremented
+    // on each parameter.  That makes it possible to distinguish between parameters
+    // of the function and its result type.
+    size_t func_parameter_index_ = 0;
+
     [[nodiscard]] NamedTypeSymbol* current_type() const
     {
         for (auto it = current_.crbegin(); it != current_.crend(); ++it) {
@@ -192,13 +204,12 @@ class SourceScanner final : public ClangVisitor {
 
     [[nodiscard]] TypeDeclarationSymbol* type_symbol(CXType type);
 
-    [[nodiscard]] NamedTypeSymbol* func(FuncTypeSymbol* func_type) const;
-
-    [[nodiscard]] NamedTypeSymbol* block(CXType type);
-
     [[nodiscard]] std::string new_anonymous_name(CXCursor decl);
 
-    [[nodiscard]] NamedTypeSymbol* add_type(NamedTypeSymbol::Kind kind, const std::string& name, const CXType& type);
+    [[nodiscard]] TypeLikeSymbol* add_type(NamedTypeSymbol::Kind kind, const std::string& name, const CXType& type);
+
+    template <class FuncLikeTypeSymbol>
+    [[nodiscard]] FuncLikeTypeSymbol* create_func_like_type_symbol(const CXType& type);
 
     [[nodiscard]] TypeLikeSymbol* type_like_symbol(CXType type);
 
@@ -439,19 +450,17 @@ TypeDeclarationSymbol* SourceScanner::type_symbol(CXType type)
     return result;
 }
 
-[[nodiscard]] NamedTypeSymbol* SourceScanner::func(FuncTypeSymbol* func_type) const
+template <class FuncLikeTypeSymbol> FuncLikeTypeSymbol* SourceScanner::create_func_like_type_symbol(const CXType& type)
 {
-    return func_type->is_ctype() ? cfunc(func_type) : objc_func(func_type);
-}
-
-NamedTypeSymbol* SourceScanner::block(CXType type)
-{
-    const auto* pointee = type_like_symbol(type);
-    assert(pointee->name() == "CFunc" || pointee->name() == "ObjCFunc");
-    assert(dynamic_cast<const ConstructedTypeSymbol*>(pointee));
-    const auto* constructedPointee = static_cast<const ConstructedTypeSymbol*>(pointee);
-    assert(constructedPointee->parameter_count() == 1);
-    return universe.type(NamedTypeSymbol::Kind::Struct, "ObjCBlock")->construct({constructedPointee->parameter(0)});
+    assert(type.kind == CXType_FunctionProto);
+    auto* parameters = new TupleTypeSymbol();
+    auto num_arg_types = clang_getNumArgTypes(type);
+    assert(num_arg_types >= 0);
+    for (auto i = 0; i < num_arg_types; ++i) {
+        parameters->add_item(type_like_symbol(clang_getArgType(type, static_cast<unsigned>(i))));
+    }
+    auto* return_type = type_like_symbol(clang_getResultType(type));
+    return new FuncLikeTypeSymbol(parameters, return_type);
 }
 
 std::string SourceScanner::new_anonymous_name(CXCursor decl)
@@ -469,7 +478,7 @@ std::string SourceScanner::new_anonymous_name(CXCursor decl)
     return type_name;
 }
 
-NamedTypeSymbol* SourceScanner::add_type(const NamedTypeSymbol::Kind kind, const std::string& name, const CXType& type)
+TypeLikeSymbol* SourceScanner::add_type(const NamedTypeSymbol::Kind kind, const std::string& name, const CXType& type)
 {
     NamedTypeSymbol* symbol;
     if (kind == NamedTypeSymbol::Kind::TypeDef) {
@@ -511,12 +520,12 @@ NamedTypeSymbol* SourceScanner::add_type(const NamedTypeSymbol::Kind kind, const
             // type obtained via libclang API.
             //
             // `instancetype` is a special case.  It will be replaced by the actual type
-            // (not just `id`) at later stages.
+            // (not just `ObjCId`) at later stages.
             auto cx_target = clang_getTypedefDeclUnderlyingType(decl);
             if (cx_target.kind != CXType_Invalid) {
                 auto* target = type_like_symbol(cx_target);
-                assert(dynamic_cast<NamedTypeSymbol*>(target));
-                return static_cast<NamedTypeSymbol*>(target);
+                assert(target);
+                return target;
             }
         }
     }
@@ -641,7 +650,7 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
             return &pointer(*type_like_symbol(clang_getPointeeType(type)));
 
         case CXType_BlockPointer:
-            return block(clang_getPointeeType(type));
+            return create_func_like_type_symbol<BlockTypeSymbol>(clang_getPointeeType(type));
 
         case CXType_Elaborated:
             return type_like_symbol(clang_Type_getNamedType(type));
@@ -707,16 +716,8 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
             return nullptr;
         }
 
-        case CXType_FunctionProto: {
-            auto* parameters = new TupleTypeSymbol();
-            const auto num_arg_types = clang_getNumArgTypes(type);
-            assert(num_arg_types >= 0);
-            for (int i = 0; i < num_arg_types; ++i) {
-                parameters->add_item(type_like_symbol(clang_getArgType(type, i)));
-            }
-            auto* return_type = type_like_symbol(clang_getResultType(type));
-            return func(new FuncTypeSymbol(parameters, return_type));
-        }
+        case CXType_FunctionProto:
+            return create_func_like_type_symbol<FuncTypeSymbol>(type);
 
         case CXType_IncompleteArray:
             return new VArraySymbol(*type_like_symbol(clang_getArrayElementType(type)), 0);
@@ -1237,10 +1238,12 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
         case CXCursor_ObjCInstanceMethodDecl: {
             pushed = is_init_method(cursor) ? push_constructor(cursor, std::move(name))
                                             : push_member_method(cursor, std::move(name), false);
+            this->func_parameter_index_ = 0;
             break;
         }
         case CXCursor_ObjCClassMethodDecl: {
             pushed = push_member_method(cursor, std::move(name), true);
+            this->func_parameter_index_ = 0;
             break;
         }
         case CXCursor_ObjCPropertyDecl: {
@@ -1305,14 +1308,26 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
             if (current_top_is_non_type()) {
                 auto& non_type = *current_non_type();
                 if (non_type.is_method()) {
-                    // Top-level function parameters can be nameless
+                    recurse = false;
+
+                    // Omit return func type parameters.  See comments for
+                    // `SourceScanner::func_parameter_index_`.
+                    auto param_index = this->func_parameter_index_++;
+                    const auto* return_func_type = dynamic_cast<const FuncTypeSymbol*>(non_type.return_type());
+                    if (return_func_type) {
+                        auto number_of_parameters_in_return_func_type = return_func_type->parameters()->item_count();
+                        if (param_index < number_of_parameters_in_return_func_type) {
+                            break;
+                        }
+                        param_index -= number_of_parameters_in_return_func_type;
+                    }
+
                     if (name.empty()) {
-                        assert(non_type.kind() == NonTypeSymbol::Kind::GlobalFunction || !name.empty());
-                        auto n = non_type.parameter_count();
-                        name = n ? "x" + std::to_string(n) : "x";
+                        // Objective-C function parameters can be nameless.  Synthesize a name (needed in
+                        // Cangjie).
+                        name = non_type.parameter_count() ? 'x' + std::to_string(param_index) : "x";
                     }
                     non_type.add_parameter(std::move(name), type_like_symbol(type), is_nullable(type));
-                    recurse = false;
                 } else if (non_type.is_property()) {
                     recurse = false;
                 }
@@ -1321,6 +1336,7 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
         }
         case CXCursor_FunctionDecl:
             pushed = push_top_level_function(cursor, std::move(name));
+            this->func_parameter_index_ = 0;
             break;
         case CXCursor_VarDecl: {
             // We don't support variables (generic C interop) at the moment.

@@ -61,11 +61,7 @@ void Symbol::print(std::ostream& stream, [[maybe_unused]] SymbolPrintFormat form
 
 std::ostream& operator<<(std::ostream& stream, const SymbolPrinter& symbolPrinter)
 {
-    if (symbolPrinter.symbol) {
-        symbolPrinter.symbol->print(stream, symbolPrinter.format);
-    } else {
-        stream << "<null>";
-    }
+    symbolPrinter.symbol_.print(stream, symbolPrinter.format_);
     return stream;
 }
 
@@ -113,76 +109,48 @@ void NamedTypeSymbol::print(std::ostream& stream, SymbolPrintFormat format) cons
     auto name = this->name();
     switch (kind_) {
         case Kind::Enum:
-            if (format.emit_cangjie()) {
+            if (format == SymbolPrintFormat::Raw) {
+                stream << name;
+            } else {
                 // TODO: print real underlying type instead of hardcoded Int32
                 stream << "Int32 /*" << name << "*/";
-            } else {
-                stream << name;
             }
             break;
         case Kind::TargetPrimitive:
             stream << name;
-            if (name == "CPointer") {
-                assert(parameter_count() == 1);
-                const auto* parameter = this->parameter(0);
-                assert(parameter);
-                stream << '<';
-                parameter->print(stream, format);
-                stream << '>';
-            } else if (name == "CFunc") {
-                assert(parameter_count() == 1);
-                const auto* parameter = this->parameter(0);
-                assert(parameter);
-                stream << '<' << (format.emit_cangjie() ? emit_cangjie(parameter) : raw(parameter)) << '>';
-            }
             break;
         default:
-            if (kind_ == Kind::Struct && name == "ObjCPointer") {
-                stream << name;
-                assert(parameter_count() == 1);
-                const auto* parameter = this->parameter(0);
-                assert(parameter);
-                stream << '<';
-                parameter->print(stream, format);
-                stream << '>';
-            } else if (kind_ == Kind::Struct && (name == "ObjCFunc" || name == "ObjCBlock")) {
-                stream << name;
-                assert(parameter_count() == 1);
-                const auto* parameter = this->parameter(0);
-                assert(parameter);
-                stream << '<' << (format.emit_cangjie() ? emit_cangjie(parameter) : raw(parameter)) << '>';
-            } else {
-                if (kind_ == Kind::TypeDef) {
-                    assert(dynamic_cast<const TypeAliasSymbol*>(this));
-                    const auto* target = static_cast<const TypeAliasSymbol*>(this)->target();
-                    if (target && name == target->name()) {
-                        // typedef struct S S;
-                        target->print(stream, format);
-                        return;
-                    }
-                }
-                stream << escape_keyword(name);
-                if (const auto count = parameter_count(); count != 0) {
-                    auto no_type_arguments = format.emit_cangjie();
-                    if (no_type_arguments) {
-                        stream << "/*";
-                    }
-                    stream << "<";
-                    for (std::size_t i = 0; i < count; ++i) {
-                        if (i != 0) {
-                            stream << ", ";
-                        }
-
-                        const auto* parameter = this->parameter(i);
-                        assert(parameter);
-                        stream << raw(parameter);
-                    }
-                    stream << '>';
-                    if (no_type_arguments) {
-                        stream << "*/";
-                    }
+            if (kind_ == Kind::TypeDef) {
+                assert(dynamic_cast<const TypeAliasSymbol*>(this));
+                const auto* target = static_cast<const TypeAliasSymbol*>(this)->target();
+                if (target && name == target->name()) {
+                    // typedef struct S S;
+                    target->print(stream, format);
+                    return;
                 }
             }
+            stream << escape_keyword(name);
+            if (const auto count = parameter_count(); count != 0) {
+                auto no_type_arguments = format != SymbolPrintFormat::Raw;
+                if (no_type_arguments) {
+                    stream << "/*";
+                }
+                stream << "<";
+                for (std::size_t i = 0; i < count; ++i) {
+                    if (i != 0) {
+                        stream << ", ";
+                    }
+
+                    const auto* parameter = this->parameter(i);
+                    assert(parameter);
+                    stream << raw(*parameter);
+                }
+                stream << '>';
+                if (no_type_arguments) {
+                    stream << "*/";
+                }
+            }
+            break;
     }
 }
 
@@ -286,6 +254,8 @@ void TypeDeclarationSymbol::member_remove(size_t index)
                 if (!removing_ctype) {
                     is_ctype_ = all_of_members([](const auto& member) { return member.return_type()->is_ctype(); });
                 }
+                contains_pointer_or_func_ =
+                    any_of_members([](const auto& member) { return member.return_type()->contains_pointer_or_func(); });
             }
             break;
         default:
@@ -298,6 +268,12 @@ template <class Pred>
 bool TypeDeclarationSymbol::all_of_members(Pred cond) const noexcept(noexcept(cond(std::declval<NonTypeSymbol>())))
 {
     return std::all_of(members_.cbegin(), members_.cend(), [cond](const auto& member) { return cond(member); });
+}
+
+template <class Pred>
+bool TypeDeclarationSymbol::any_of_members(Pred cond) const noexcept(noexcept(cond(std::declval<NonTypeSymbol>())))
+{
+    return std::any_of(members_.cbegin(), members_.cend(), [cond](const auto& member) { return cond(member); });
 }
 
 void TypeDeclarationSymbol::add_parameter(std::string name)
@@ -336,6 +312,9 @@ NonTypeSymbol& TypeDeclarationSymbol::add_field(std::string name, TypeLikeSymbol
     if (is_ctype_ && !member.return_type()->is_ctype()) {
         is_ctype_ = false;
     }
+    if (member.return_type()->contains_pointer_or_func()) {
+        contains_pointer_or_func_ = true;
+    }
     return member;
 }
 
@@ -348,6 +327,9 @@ NonTypeSymbol& TypeDeclarationSymbol::add_instance_variable(std::string name, Ty
         NonTypeSymbol::Private(), std::move(name), NonTypeSymbol::Kind::InstanceVariable, type, modifiers);
     if (is_ctype_ && !ivar.return_type()->is_ctype()) {
         is_ctype_ = false;
+    }
+    if (ivar.return_type()->contains_pointer_or_func()) {
+        contains_pointer_or_func_ = true;
     }
     return ivar;
 }
@@ -436,20 +418,38 @@ TypeParameterSymbol::TypeParameterSymbol(Private, std::string name) : TypeLikeSy
 
 void TypeParameterSymbol::print(std::ostream& stream, SymbolPrintFormat format) const
 {
-    if (format.emit_cangjie()) {
-        stream << "ObjCId /*" << name() << "*/";
-    } else {
+    if (format == SymbolPrintFormat::Raw) {
         stream << name();
+    } else {
+        stream << "ObjCId /*" << name() << "*/";
     }
 }
 
 void NarrowedTypeParameterSymbol::print(std::ostream& stream, SymbolPrintFormat format) const
 {
-    if (format.emit_cangjie()) {
-        stream << protocol_name_ << " /*" << name() << '<' << protocol_name_ << ">*/";
-    } else {
+    if (format == SymbolPrintFormat::Raw) {
         stream << name() << '<' << protocol_name_ << '>';
+    } else {
+        stream << protocol_name_ << " /*" << name() << '<' << protocol_name_ << ">*/";
     }
+}
+
+void PointerTypeSymbol::print(std::ostream& stream, SymbolPrintFormat format) const
+{
+    if (!is_ctype() || format == SymbolPrintFormat::EmitCangjieStrict) {
+        stream << "ObjCPointer<";
+        pointee_->print(stream, SymbolPrintFormat::EmitCangjieStrict);
+    } else {
+        stream << "CPointer<";
+        pointee_->print(stream, format);
+    }
+    stream << '>';
+}
+
+[[nodiscard]] PointerTypeSymbol* PointerTypeSymbol::map()
+{
+    auto* new_pointee = pointee_->map();
+    return new_pointee == pointee_ ? this : new PointerTypeSymbol(*new_pointee);
 }
 
 void VArraySymbol::print(std::ostream& stream, SymbolPrintFormat format) const
@@ -485,14 +485,16 @@ void TypeDeclarationSymbol::visit_impl(SymbolVisitor& visitor)
     }
 }
 
-TupleTypeSymbol::TupleTypeSymbol() : TypeLikeSymbol(""), is_ctype_(true)
+TupleTypeSymbol::TupleTypeSymbol() : TypeLikeSymbol(""), is_ctype_(true), contains_pointer_or_func_(false)
 {
 }
 
 TupleTypeSymbol::TupleTypeSymbol(std::vector<TypeLikeSymbol*> items)
     : TypeLikeSymbol(""),
       items_(std::move(items)),
-      is_ctype_(std::all_of(items_.cbegin(), items_.cend(), [](auto item) { return item->is_ctype(); }))
+      is_ctype_(std::all_of(items_.cbegin(), items_.cend(), [](const auto* item) { return item->is_ctype(); })),
+      contains_pointer_or_func_(
+          std::any_of(items.cbegin(), items.cend(), [](const auto* item) { return item->contains_pointer_or_func(); }))
 {
 }
 
@@ -513,7 +515,7 @@ void TupleTypeSymbol::print(std::ostream& stream, SymbolPrintFormat format) cons
     stream << ')';
 }
 
-TypeLikeSymbol* TupleTypeSymbol::map()
+TupleTypeSymbol* TupleTypeSymbol::map()
 {
     std::vector<TypeLikeSymbol*> new_items;
     auto changed = false;
@@ -536,33 +538,59 @@ void TupleTypeSymbol::visit_impl(SymbolVisitor& visitor)
     }
 }
 
-FuncTypeSymbol::FuncTypeSymbol() : TypeLikeSymbol("")
+FuncLikeTypeSymbol::FuncLikeTypeSymbol() : TypeLikeSymbol("")
 {
 }
 
-FuncTypeSymbol::FuncTypeSymbol(TupleTypeSymbol* parameters, TypeLikeSymbol* return_type)
+FuncLikeTypeSymbol::FuncLikeTypeSymbol(TupleTypeSymbol* parameters, TypeLikeSymbol* return_type)
     : TypeLikeSymbol(""), parameters_(parameters), return_type_(return_type)
 {
 }
 
-void FuncTypeSymbol::print(std::ostream& stream, SymbolPrintFormat format) const
+void FuncLikeTypeSymbol::do_print(std::ostream& stream, std::string_view name, SymbolPrintFormat format) const
 {
+    stream << name << '<';
     parameters_->print(stream, format);
     stream << " -> ";
     return_type_->print(stream, format);
+    stream << '>';
 }
 
-TypeLikeSymbol* FuncTypeSymbol::map()
+void FuncTypeSymbol::print(std::ostream& stream, SymbolPrintFormat format) const
+{
+    if (!is_ctype() || format == SymbolPrintFormat::EmitCangjieStrict) {
+        do_print(stream, "ObjCFunc", SymbolPrintFormat::EmitCangjieStrict);
+    } else {
+        do_print(stream, "CFunc", format);
+    }
+}
+
+void BlockTypeSymbol::print(std::ostream& stream, SymbolPrintFormat) const
+{
+    do_print(stream, "ObjCBlock", SymbolPrintFormat::EmitCangjieStrict);
+}
+
+FuncTypeSymbol* FuncTypeSymbol::map()
 {
     auto* parameters = this->parameters();
     auto* return_type = this->return_type();
     auto* new_parameters = parameters->map();
     auto* new_return_type = return_type->map();
     const auto changed = parameters != new_parameters || return_type != new_return_type;
-    return changed ? new FuncTypeSymbol(dynamic_cast<TupleTypeSymbol*>(new_parameters), new_return_type) : this;
+    return changed ? new FuncTypeSymbol(new_parameters, new_return_type) : this;
 }
 
-void FuncTypeSymbol::visit_impl(SymbolVisitor& visitor)
+BlockTypeSymbol* BlockTypeSymbol::map()
+{
+    auto* parameters = this->parameters();
+    auto* return_type = this->return_type();
+    auto* new_parameters = parameters->map();
+    auto* new_return_type = return_type->map();
+    const auto changed = parameters != new_parameters || return_type != new_return_type;
+    return changed ? new BlockTypeSymbol(new_parameters, new_return_type) : this;
+}
+
+void FuncLikeTypeSymbol::visit_impl(SymbolVisitor& visitor)
 {
     visitor.visit(this, this->parameters(), SymbolProperty::FunctionParametersTuple);
     visitor.visit(this, this->return_type(), SymbolProperty::FunctionReturnType);
@@ -603,7 +631,7 @@ TypeLikeSymbol* TypeAliasSymbol::root_target() const
     return target ? target->root_target() : target_;
 }
 
-TypeLikeSymbol& TypeAliasSymbol::canonical_type()
+const TypeLikeSymbol& TypeAliasSymbol::canonical_type() const
 {
     auto* target = this->target();
     assert(target);
@@ -633,44 +661,15 @@ void NonTypeSymbol::visit_impl(SymbolVisitor& visitor)
     visitor.visit(this, this->return_type(), SymbolProperty::ReturnType);
 }
 
-static NamedTypeSymbol* construct_symbol(NamedTypeSymbol::Kind kind, const std::string& name, TypeLikeSymbol* parameter)
+TypeLikeSymbol& pointer(TypeLikeSymbol& pointee)
 {
-    return universe.type(kind, name)->construct({parameter});
-}
-
-NamedTypeSymbol* cpointer(TypeLikeSymbol* symbol)
-{
-    return construct_symbol(NamedTypeSymbol::Kind::TargetPrimitive, "CPointer", symbol);
-}
-
-NamedTypeSymbol* objc_pointer(TypeLikeSymbol* symbol)
-{
-    return construct_symbol(NamedTypeSymbol::Kind::Struct, "ObjCPointer", symbol);
-}
-
-NamedTypeSymbol* cfunc(FuncTypeSymbol* symbol)
-{
-    return construct_symbol(NamedTypeSymbol::Kind::TargetPrimitive, "CFunc", symbol);
-}
-
-NamedTypeSymbol* objc_func(FuncTypeSymbol* symbol)
-{
-    return construct_symbol(NamedTypeSymbol::Kind::Struct, "ObjCFunc", symbol);
-}
-
-NamedTypeSymbol& pointer(TypeLikeSymbol& pointee)
-{
-    // C pointer to anything other than function is converted `CPointer` or
-    // `ObjCPointer`.  Pointer-to-function is converted to `CFunc` or `ObjCFunc`.
-    auto* named_pointee = dynamic_cast<NamedTypeSymbol*>(&pointee);
-    if (dynamic_cast<const ConstructedTypeSymbol*>(&pointee)) {
-        auto name = pointee.name();
-        if (name == "ObjCFunc" || name == "CFunc") {
-            assert(named_pointee);
-            return *named_pointee;
-        }
+    // C pointer to anything other than function is converted to PointerTypeSymbol.
+    // Pointer-to-function is converted to FuncTypeSymbol.
+    auto* func = dynamic_cast<FuncTypeSymbol*>(&pointee);
+    if (func) {
+        return *func;
     }
-    return *(named_pointee && named_pointee->is_ctype() ? cpointer(&pointee) : objc_pointer(&pointee));
+    return *new PointerTypeSymbol(pointee);
 }
 
 static TypeDeclarationSymbol& add_cangjie_primitive(const std::string& name)
@@ -686,11 +685,6 @@ static TypeDeclarationSymbol& add_cangjie_type_declaration(NamedTypeSymbol::Kind
     auto* symbol = new TypeDeclarationSymbol(kind, std::move(name));
     universe.register_type(symbol);
     return *symbol;
-}
-
-static TypeDeclarationSymbol& add_cangjie_struct(std::string&& name)
-{
-    return add_cangjie_type_declaration(NamedTypeSymbol::Kind::Struct, std::move(name));
 }
 
 static void add_cangjie_interface(std::string&& name)
@@ -718,12 +712,6 @@ void add_builtin_types()
     add_cangjie_primitive("Float16");
     add_cangjie_primitive("Float32");
     add_cangjie_primitive("Float64");
-    add_cangjie_primitive("CString");
-    add_cangjie_primitive("CPointer").add_parameter("T");
-    add_cangjie_primitive("CFunc").add_parameter("T");
-    add_cangjie_struct("ObjCPointer").add_parameter("T");
-    add_cangjie_struct("ObjCFunc").add_parameter("T");
-    add_cangjie_struct("ObjCBlock").add_parameter("T");
     add_cangjie_class("Class" /* "ObjCClass" */);
     add_cangjie_interface("ObjCId");
     add_cangjie_class("SEL" /* "ObjCSelector" */);
