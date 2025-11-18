@@ -10,14 +10,14 @@
 
 - (id)init :(int64_t)x {
     if (self = [super init:x]) {
-        printf("ObjC: AA.init(%lld)\n", x);
+        printf("ObjC: AA.init(%lld)\n", (long long) x);
     }
     return self;
 }
 
 - (id)init :(int64_t)x :(int64_t)y {
     if (self = [super init:x:y]) {
-        printf("ObjC: AA.init(%lld, %lld)\n", x, y);
+        printf("ObjC: AA.init(%lld, %lld)\n", (long long) x, (long long) y);
     }
     return self;
 }
