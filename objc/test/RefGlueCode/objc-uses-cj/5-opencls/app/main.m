@@ -11,7 +11,9 @@
 extern void Interoptest_cjworld_GC(); // provided by _common/interoptest.cj
 
 void TestFooI32() {
- // @autoreleasepool { // uncomment to try with ARCOFF=true
+#if !__has_feature(objc_arc)
+@autoreleasepool {
+#endif
     printf("\nObjC: TestFooI32 STARTED\n");
 
     A* aa = [[AA alloc] init];
@@ -27,13 +29,17 @@ void TestFooI32() {
     printf("ObjC: TestFooI32 got pureA.fooI32 result (expected 32):%d\n", [pureA fooI32]);
 
     printf("\nObjC: TestFooI32 is finished, after return - the autoreleasepool (by ARC) is closed so 1 TransitionII is expected for aa, and simple deallocation for pureA:\n");
-// [aa autorelease]; // uncomment to try with ARCOFF=true
-// [pureA autorelease]; // uncomment to try with ARCOFF=true
-// }
+#if !__has_feature(objc_arc)
+    [aa autorelease];
+    [pureA autorelease];
+}
+#endif
 }
 
 void TestCallVirtual() {
- // @autoreleasepool { // uncomment to try with ARCOFF=true
+#if !__has_feature(objc_arc)
+@autoreleasepool {
+#endif
     printf("\nObjC: TestCallVirtual STARTED\n");
 
     A* aa = [[AA alloc] init];
@@ -59,9 +65,11 @@ void TestCallVirtual() {
     [pureA paramA:aa];
 
     printf("\nObjC: TestCallVirtual is finished, after return - the autoreleasepool (by ARC) is closed so 1 TransitionII is expected for aa, and simple deallocation for pureA:\n");
-// [aa autorelease]; // uncomment to try with ARCOFF=true
-// [pureA autorelease]; // uncomment to try with ARCOFF=true
-// }
+#if !__has_feature(objc_arc)
+    [aa autorelease];
+    [pureA autorelease];
+}
+#endif
 }
 
 int main(int argc, char** argv) {

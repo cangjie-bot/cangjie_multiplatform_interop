@@ -11,7 +11,9 @@
 extern void Interoptest_cjworld_GC(); // provided by _common/interoptest.cj
 
 void TestFooI64() {
- // @autoreleasepool { // uncomment to try with ARCOFF=true
+#if !__has_feature(objc_arc)
+@autoreleasepool {
+#endif
     printf("\nObjC: TestFooI64 STARTED");
 
     A* aL = [[A alloc] init :2];
@@ -35,9 +37,13 @@ void TestFooI64() {
     printf("ObjC: TestFooI64 got aaLL.fooI64 result (expected 42):%lld\n", [aaLL fooI64]);
 
     printf("\nObjC: TestFooI64 is finished, after return - the autoreleasepool (by ARC) is closed so 4 TransitionII are expected for aL, aLL, aaL and aaLL:\n");
-// [aa autorelease]; // uncomment to try with ARCOFF=true
-// [pureA autorelease]; // uncomment to try with ARCOFF=true
-// }
+#if !__has_feature(objc_arc)
+    [aL autorelease];
+    [aLL autorelease];
+    [aaL autorelease];
+    [aaLL autorelease];
+}
+#endif
 }
 
 int main(int argc, char** argv) {
