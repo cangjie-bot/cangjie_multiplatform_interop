@@ -4,7 +4,6 @@
 //
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
-#import <dlfcn.h>
 #import "Cangjie.h"
 #import "cjinterop.h"
 
@@ -14,7 +13,6 @@ extern IMP method_getImplementation(Method m);
 extern Method class_getInstanceMethod(Class cls, SEL name);
 extern id objc_getClass(const char * name);
 
-static void* CJWorldDLHandle = NULL;
 static struct RuntimeParam defaultCJRuntimeParams = {0};
 
 bool initCJRuntime(const char* cj_gluecode_lib_name) {
@@ -27,12 +25,6 @@ bool initCJRuntime(const char* cj_gluecode_lib_name) {
     if (LoadCJLibraryWithInit(cj_gluecode_lib_name)) {
         NSLog(@"ERROR: Failed to init cjworld library");
             return false;
-    }
-
-    if ((CJWorldDLHandle = dlopen(cj_gluecode_lib_name, RTLD_LAZY)) == NULL) {
-        NSLog(@"ERROR: Failed to open cj glue-code library");
-        NSLog(@"%s", dlerror());
-        return false;
     }
 
     return true;
