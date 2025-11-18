@@ -23,7 +23,13 @@ public open class ObjCPointer<T> {
 }
 
 public open class ObjCFunc<T> {
+    public ObjCFunc(let ptr: CPointer<CFunc<() -> Unit>>) {}
+}
+
+@C
+public struct NativeBlockABI {
 }
 
 public struct ObjCBlock<T> {
+    public ObjCBlock(let ptr: CPointer<NativeBlockABI>) {}
 }
