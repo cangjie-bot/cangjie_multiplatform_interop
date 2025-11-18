@@ -4,21 +4,16 @@
 //
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
-// NOTE: Uses CJNative-specific API declared in LLVMGC/Signal/Cangjie.h
-
-#import "Cangjie.h"
-#import <dlfcn.h>
 #import "SimpleEnum.h"
+
+// Interoplib objc common code (libinterop.objclib.dylib)
+extern bool initCJRuntime(const char*);
 
 extern int64_t CJImpl_ObjC_api_SimpleEnum_OneInitCJObject();
 extern int64_t CJImpl_ObjC_api_SimpleEnum_TwoInitCJObject();
 extern int64_t CJImpl_ObjC_api_SimpleEnum_ThreeInitCJObject();
 
 extern void CJImpl_ObjC_api_CJPrint(int64_t);
-
-static void* CJWorldDLHandle = NULL;
-
-static struct RuntimeParam defaultCJRuntimeParams = {0};
 
 static SimpleEnum* LET_One = NULL;
 static SimpleEnum* LET_Two = NULL;
@@ -29,20 +24,7 @@ static SimpleEnum* LET_Three = NULL;
 
 + (void)initialize {
     if (self == [SimpleEnum class]) {
-        defaultCJRuntimeParams.logParam.logLevel = RTLOG_ERROR;
-        if (InitCJRuntime(&defaultCJRuntimeParams) != E_OK) {
-            NSLog(@"ERROR: Failed to initialize Cangjie runtime");
-            exit(1);
-        }
-
-        if (LoadCJLibraryWithInit("libcjworld.dylib")) {
-            NSLog(@"ERROR: Failed to init cjworld library");
-            exit(1);
-        }
-
-        if ((CJWorldDLHandle = dlopen("libcjworld.dylib", RTLD_LAZY)) == NULL) {
-            NSLog(@"ERROR: Failed to open cjworld library");
-            NSLog(@"%s", dlerror());
+        if (!initCJRuntime("libcjworld.dylib")) {
             exit(1);
         }
 

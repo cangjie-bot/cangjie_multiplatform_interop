@@ -48,7 +48,6 @@ get_hwarch() {
 HWARCH=$(get_hwarch)
 
 CANGJIE_RUNTIME_LIB_PATH="$CANGJIE_HOME"/runtime/lib/"$OS_FAMILY"_"$HWARCH"_cjnative
-CANGJIE_RUNTIME_INCLUDE_PATH="$CANGJIE_HOME"/include
 
 clean_example() {
     printf "Cleaning \"%s\" example old artifacts...\n" "$1"
@@ -82,10 +81,10 @@ build_example() {
 
     # app/*.m + generated/*.m + libapi + libcjworld => out/main
     if [ "$OS_FAMILY" = "darwin" ]; then
-        clang -fmodules -fobjc-arc app/*.m generated/*.m -o out/main -I"$CANGJIE_RUNTIME_INCLUDE_PATH" -Iapp -Igenerated -Lout -lcangjie-runtime -lapi -lcjworld -L"$CANGJIE_RUNTIME_LIB_PATH"
+        clang -fmodules -fobjc-arc app/*.m generated/*.m -o out/main -Iapp -Igenerated -Lout -linteroplib.objclib -lapi -lcjworld -L"$CANGJIE_RUNTIME_LIB_PATH"
     else
         # shellcheck disable=SC2046
-        clang-10 $(gnustep-config --objc-flags) $(gnustep-config --base-libs) app/*.m generated/*.m -o out/main -I"$CANGJIE_RUNTIME_INCLUDE_PATH" -Iapp -Igenerated -Lout -ldl -lcangjie-runtime -lapi -lcjworld -L"$CANGJIE_RUNTIME_LIB_PATH"
+        clang-10 $(gnustep-config --objc-flags) $(gnustep-config --base-libs) app/*.m generated/*.m -o out/main -Iapp -Igenerated -Lout -ldl -linteroplib.objclib -lapi -lcjworld -L"$CANGJIE_RUNTIME_LIB_PATH"
     fi
 
     cd ../ > /dev/null

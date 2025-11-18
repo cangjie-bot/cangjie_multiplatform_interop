@@ -4,16 +4,14 @@
 //
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
-#import <dlfcn.h>
-#import "Cangjie.h"
 #import "Animal.h"
+
+// Interoplib objc common code (libinterop.objclib.dylib)
+extern bool initCJRuntime(const char*);
 
 extern void CJImpl_ObjC_cjworld_AnimalImpl_SayImpl(void*);
 extern void CJImpl_ObjC_cjworld_AnimalImpl_EatImpl(void*);
 extern void CJImpl_ObjC_cjworld_AnimalImpl_staticTest(void*);
-
-static void* CJWorldDLHandle = NULL;
-static struct RuntimeParam defaultCJRuntimeParams = {0};
 
 // the default implementation of Animal interface
 //@CJMirror
@@ -21,20 +19,7 @@ static struct RuntimeParam defaultCJRuntimeParams = {0};
 
 + (void)initialize {
     if (self == [AnimalImpl class]) {
-        defaultCJRuntimeParams.logParam.logLevel = RTLOG_ERROR;
-        if (InitCJRuntime(&defaultCJRuntimeParams) != E_OK) {
-            NSLog(@"ERROR: Failed to initialize Cangjie runtime");
-            exit(1);
-        }
-
-        if (LoadCJLibraryWithInit("libcjworld.dylib")) {
-            NSLog(@"ERROR: Failed to init cjworld library");
-            exit(1);
-        }
-
-        if ((CJWorldDLHandle = dlopen("libcjworld.dylib", RTLD_LAZY)) == NULL) {
-            NSLog(@"ERROR: Failed to open cjworld library");
-            NSLog(@"%s", dlerror());
+        if (!initCJRuntime("libcjworld.dylib")) {
             exit(1);
         }
     }
