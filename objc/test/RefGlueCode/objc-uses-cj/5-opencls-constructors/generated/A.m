@@ -121,8 +121,8 @@ static uint64_t calcMask(Class baseCls, Class selfCls, SEL* methods, int len) {
 
 // for backOnTrack also known as TransitionIII
 - (id)reinitWithRegistryId:(int64_t)registryId {
-    // verify self.$registryId == -1 ???
-    // verify self.$initedFromObjC == true ???
+    assert(self.$registryId == -1); // not a part of reference glue-code, do not generate it
+    assert(self.$initedFromObjC == true); // not a part of reference glue-code, do not generate it
     self.$registryId = registryId;
     [self retain]; // do RC++ by extra retain for Distributed-GC protocol
     printf("ObjC: A.reinitWithRegistryId -1 => %lld self after +1 RC2: %ld (with RC++ by extra retain)\n", registryId, CFGetRetainCount((__bridge CFTypeRef)self));
