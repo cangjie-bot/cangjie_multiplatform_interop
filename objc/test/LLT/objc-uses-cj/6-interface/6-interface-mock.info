@@ -1,0 +1,59 @@
+// DEPENDENCE: ../../../RefGlueCode/objc-uses-cj/6-interface/api ../../../RefGlueCode/objc-uses-cj/6-interface/app ../../../RefGlueCode/objc-uses-cj/6-interface/generated
+// RUN-EXEC-0: %compiler %compile_shared_lib_opt api/*.cj -o libapi.dylib
+// RUN-EXEC-0: %compiler %compile_shared_lib_opt generated/*.cj %cjc_link_interoplib -L. -lapi -o libcjworld.dylib
+// RUN-EXEC-0: %clang %clang_interop_objc_NOARC generated/*.m -Igenerated -lcjworld -shared -o libgluecode.dylib
+// RUN-EXEC-0: %clang %clang_interop_objc app/*.m -Iapp -Igenerated -lapi -lcjworld -lgluecode -o main
+// RUN-EXEC-0: %run_rpath ./main 2>&1 | sed 's/.* main\[[0-9]*:[0-9]*\] //g' | compare ./%f
+
+/* SCAN-IN
+
+ObjC: main cat.Say:
+ObjC: Cat.Say()
+
+ObjC: main cat.Eat:
+ObjC: Cat.Eat()
+
+ObjC: Cat.Weight()
+main: cat.Weight = 5
+
+[CJ]: Animal.staticTest Say:
+ObjC: Cat.Say()
+[CJ]: Animal.staticTest Eat:
+ObjC: Cat.Eat()
+[CJ]: Animal.staticTest Weight:
+ObjC: Cat.Weight()
+
+ObjC: main impl.Say:
+[CJ] Animal.Say()
+
+ObjC: main impl.Eat:
+[CJ]: Animal.Eat() ENTER
+[CJ] Animal.Say()
+[CJ]: Animal.Eat() EXIT
+
+ObjC: main dog.Say:
+ObjC: Dog.Say(); now call super.Say()
+[CJ] Animal.Say()
+
+ObjC: main dog.Eat:
+ObjC: Dog.Eat(); now call super.Eat()
+[CJ]: Animal.Eat() ENTER
+ObjC: Dog.Say(); now call super.Say()
+[CJ] Animal.Say()
+[CJ]: Animal.Eat() EXIT
+
+ObjC: Dog.Weight()
+main: dog.Weight = 10
+
+[CJ]: Animal.staticTest Say:
+ObjC: Dog.Say(); now call super.Say()
+[CJ] Animal.Say()
+[CJ]: Animal.staticTest Eat:
+ObjC: Dog.Eat(); now call super.Eat()
+[CJ]: Animal.Eat() ENTER
+ObjC: Dog.Say(); now call super.Say()
+[CJ] Animal.Say()
+[CJ]: Animal.Eat() EXIT
+[CJ]: Animal.staticTest Weight:
+ObjC: Dog.Weight()
+*/

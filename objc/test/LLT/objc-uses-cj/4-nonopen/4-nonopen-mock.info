@@ -1,0 +1,15 @@
+// DEPENDENCE: ../../../RefGlueCode/objc-uses-cj/4-nonopen/api ../../../RefGlueCode/objc-uses-cj/4-nonopen/app ../../../RefGlueCode/objc-uses-cj/4-nonopen/generated
+// RUN-EXEC-0: %compiler %compile_shared_lib_opt api/*.cj -o libapi.dylib
+// RUN-EXEC-0: %compiler %compile_shared_lib_opt generated/*.cj %cjc_link_interoplib -L. -lapi -o libcjworld.dylib
+// RUN-EXEC-0: %clang %clang_interop_objc_NOARC generated/*.m -Igenerated -lcjworld -shared -o libgluecode.dylib
+// RUN-EXEC-0: %clang %clang_interop_objc app/*.m -Iapp -Igenerated -lapi -lcjworld -lgluecode -o main
+// RUN-EXEC-0: %run_rpath ./main 2>&1 | sed 's/.* main\[[0-9]*:[0-9]*\] //g' | compare ./%f
+
+/* SCAN-IN
+ObjC: main creates instance and calls [nonOpen Foo] implemented in Cangjie:
+[CJ]: NonOpen.Foo()
+
+ObjC: main calls [restrictedHeir CallParentFoo] that should call super.Foo implemented in Cangjie:
+ObjC: RestrictedHeir.CallParentFoo()
+[CJ]: NonOpen.Foo()
+*/
