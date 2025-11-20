@@ -76,11 +76,10 @@ build_example() {
         -linteroplib.common -lobjc.lang -linteroplib.objc
 
     # RefGlueCode/_common/*.cj => out/libinteroptest.dylib
-    cjc --output-type=dylib --int-overflow=wrapping ../../_common/*.cj -o out/libinteroptest.dylib
+    cjc --output-type=dylib --int-overflow=wrapping ../../_common/*.cj -o out
 
-    # crutch to replace *.dylib to *.so when loading cj libraries
-    touch out/KEEP_DIR
-    [ "$OS_FAMILY" = "linux" ] && sed -i "s/\.dylib/\.so/g" out/*
+    # for app code ARC is ON by default, export ARCOFF with some value to turn it OFF
+    [ "test$ARCOFF" != "test" ] && ARC="" || ARC="-fobjc-arc"
 
     # app/*.m + generated/*.m + libinteroptest + libapi + libcjworld => out/main
     if [ "$OS_FAMILY" = "darwin" ]; then
@@ -89,12 +88,17 @@ build_example() {
         [ "test$ARCOFF" != "test" ] && ARC_MACRO="-D CALL_SUPER_DEALLOC=1" || ARC_MACRO=""
         clang -fmodules $ARC_MACRO -shared -undefined dynamic_lookup generated/*.m -o out/libgluecode.dylib -Igenerated -linteroplib.objclib -L"$CANGJIE_RUNTIME_LIB_PATH"
 
-        # for app code ARC is ON by default, export ARCOFF with some value to turn it OFF
-        [ "test$ARCOFF" != "test" ] && ARC="" || ARC="-fobjc-arc"
         clang -fmodules $ARC app/*.m -o out/main -Iapp -Igenerated -Lout -linteroptest -lapi -lcjworld -lgluecode -L"$CANGJIE_RUNTIME_LIB_PATH"
     else
+        # ARC is always OFF for glue-code
         # shellcheck disable=SC2046
-        clang-10 $(gnustep-config --objc-flags) $(gnustep-config --base-libs) app/*.m generated/*.m -o out/main -Iapp -Igenerated -Lout -ldl -linteroplib.objclib -lapi -lcjworld -L"$CANGJIE_RUNTIME_LIB_PATH"
+        clang $(gnustep-config --objc-flags) $(gnustep-config --base-libs) -shared \
+            generated/*.m -o out/libgluecode.so -Igenerated -linteroplib.objclib -L"$CANGJIE_RUNTIME_LIB_PATH"
+
+        # -lgnustep-corebase is not produced by gnustep-config, set it explicitly
+        # shellcheck disable=SC2046
+        clang $(gnustep-config --objc-flags) $(gnustep-config --base-libs) $ARC app/*.m -o out/main -Iapp -Igenerated -Lout -L"$CANGJIE_RUNTIME_LIB_PATH" \
+            -ldl -lgnustep-corebase -linteroptest -lapi -lcjworld -lgluecode
     fi
 
     cd ../ > /dev/null
@@ -105,6 +109,10 @@ run_example() {
     printf "Running \"%s\" example...\n" "$1"
 
     cd "$1"/out
+
+    # as we load cjworld lib using full name, make a copy if needed
+    [ "$OS_FAMILY" = "linux" ] && cp libcjworld.so libcjworld.dylib
+
     DYLD_LIBRARY_PATH="./:$CANGJIE_RUNTIME_LIB_PATH:$DYLD_LIBRARY_PATH" LD_LIBRARY_PATH="./:$CANGJIE_RUNTIME_LIB_PATH:$LD_LIBRARY_PATH" ./main
     cd - > /dev/null
 
