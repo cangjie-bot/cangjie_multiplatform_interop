@@ -84,7 +84,7 @@ build_example() {
         clang -fmodules -fobjc-arc app/*.m generated/*.m -o out/main -Iapp -Igenerated -Lout -linteroplib.objclib -lapi -lcjworld -L"$CANGJIE_RUNTIME_LIB_PATH"
     else
         # shellcheck disable=SC2046
-        clang-10 $(gnustep-config --objc-flags) $(gnustep-config --base-libs) app/*.m generated/*.m -o out/main -Iapp -Igenerated -Lout -ldl -linteroplib.objclib -lapi -lcjworld -L"$CANGJIE_RUNTIME_LIB_PATH"
+        clang $(gnustep-config --objc-flags) $(gnustep-config --base-libs) app/*.m generated/*.m -o out/main -Iapp -Igenerated -Lout -ldl -linteroplib.objclib -lapi -lcjworld -L"$CANGJIE_RUNTIME_LIB_PATH"
     fi
 
     cd ../ > /dev/null
@@ -95,6 +95,10 @@ run_example() {
     printf "Running \"%s\" example...\n" "$1"
 
     cd "$1"/out
+
+    # as we load cjworld lib using full name, make a copy if needed
+    [ "$OS_FAMILY" = "linux" ] && cp libcjworld.so libcjworld.dylib
+
     DYLD_LIBRARY_PATH="./:$CANGJIE_RUNTIME_LIB_PATH:$DYLD_LIBRARY_PATH" LD_LIBRARY_PATH="./:$CANGJIE_RUNTIME_LIB_PATH:$LD_LIBRARY_PATH" ./main
     cd - > /dev/null
 
