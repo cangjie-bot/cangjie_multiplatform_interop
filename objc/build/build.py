@@ -153,6 +153,10 @@ def build(args):
         CANGJIE_RUNTIME_LIB_PATH=f"{CANGJIE_HOME}/runtime/lib/{runtime}"
 
         clang_command = ["clang", "-fmodules", "-shared"]
+        if not IS_DARWIN:
+            clang_command += subprocess.run(['gnustep-config', '--objc-flags'], capture_output=True).stdout.decode().split()
+            clang_command += subprocess.run(['gnustep-config', '--objc-libs'], capture_output=True).stdout.decode().split()
+
         clang_command += [f"-I{CANGJIE_RUNTIME_INCLUDE_PATH}", f"-L{CANGJIE_RUNTIME_LIB_PATH}", "-lcangjie-runtime"]
         clang_command += ["-I.", "cjinterop.m", f"-o{OUT_INTEROPLIB_OBJCLIB_DYLIB}"]
 
@@ -248,7 +252,8 @@ def install(args):
             prepare_dir(install_path, "runtime", "lib", runtime),
             OUT_INTEROPLIB_COMMON_DYLIB,
             OUT_INTEROPLIB_OBJC_DYLIB,
-            OUT_OBJC_LANG_DYLIB
+            OUT_OBJC_LANG_DYLIB,
+            OUT_INTEROPLIB_OBJCLIB_DYLIB
         )
         install_files(
             prepare_dir(install_path, "modules", runtime),
@@ -256,9 +261,6 @@ def install(args):
             OUT_INTEROPLIB_OBJC_CJO,
             OUT_OBJC_LANG_CJO
         )
-
-        if os.path.isfile(OUT_INTEROPLIB_OBJCLIB_DYLIB):
-            shutil.copy2(OUT_INTEROPLIB_OBJCLIB_DYLIB, DEST_DYLIB)
 
         LOG.info("end install interoplib for " + runtime + "\n")
     else:
