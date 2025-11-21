@@ -40,7 +40,7 @@ enum class SymbolPrintFormat {
     //           - (ObjCId /*ElementT*/) firstObject;
     EmitCangjie,
 
-    // Same as `emit_cangjie` plus the following additional formatting is applied:
+    // Same as EmitCangjie plus the following additional formatting is applied:
     //     - CPointer is printed as ObjCPointer
     //     - CFunc is printed as ObjCFunc
     EmitCangjieStrict,
@@ -427,7 +427,7 @@ public:
     {
     }
 
-    const auto& pointee() const noexcept
+    const TypeLikeSymbol& pointee() const noexcept
     {
         return *pointee_;
     }

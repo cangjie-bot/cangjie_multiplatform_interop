@@ -454,9 +454,9 @@ template <class FuncLikeTypeSymbol> FuncLikeTypeSymbol* SourceScanner::create_fu
 {
     assert(type.kind == CXType_FunctionProto);
     auto* parameters = new TupleTypeSymbol();
-    auto num_arg_types = clang_getNumArgTypes(type);
+    int num_arg_types = clang_getNumArgTypes(type);
     assert(num_arg_types >= 0);
-    for (auto i = 0; i < num_arg_types; ++i) {
+    for (int i = 0; i < num_arg_types; ++i) {
         parameters->add_item(type_like_symbol(clang_getArgType(type, static_cast<unsigned>(i))));
     }
     auto* return_type = type_like_symbol(clang_getResultType(type));

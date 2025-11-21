@@ -452,8 +452,7 @@ void write_type(std::ostream& output, const Symbol& symbol, TypeLikeSymbol& type
         if (alias) {
             const auto& canonical_type = alias->canonical_type();
             if (canonical_type.is_ctype() && canonical_type.contains_pointer_or_func()) {
-                output << SymbolPrinter(canonical_type, format) << " /*"
-                       << SymbolPrinter(type, SymbolPrintFormat::EmitCangjie) << "*/";
+                output << SymbolPrinter(canonical_type, format) << " /*" << emit_cangjie(type) << "*/";
                 return;
             }
         }
