@@ -25,10 +25,10 @@ public open class NSSet/*<ObjectType>*/ <: NSObject & NSCopying & NSMutableCopyi
     @ForeignName["setByAddingObject:"] public open func setByAddingObject(anObject: ObjCId /*ObjectType*/): NSSet/*<ObjectType>*/
     @ForeignName["setByAddingObjectsFromSet:"] public open func setByAddingObjectsFromSet(other: NSSet/*<ObjectType>*/): NSSet/*<ObjectType>*/
     @ForeignName["setByAddingObjectsFromArray:"] public open func setByAddingObjectsFromArray(other: NSArray/*<ObjectType>*/): NSSet/*<ObjectType>*/
-    @ForeignName["enumerateObjectsUsingBlock:"] public open func enumerateObjectsUsingBlock(block: ObjCBlock<(ObjCId /*ObjectType*/, CPointer<Bool>) -> Unit>): Unit
-    @ForeignName["enumerateObjectsWithOptions:usingBlock:"] public open func enumerateObjectsWithOptionsUsingBlock(opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(ObjCId /*ObjectType*/, CPointer<Bool>) -> Unit>): Unit
-    @ForeignName["objectsPassingTest:"] public open func objectsPassingTest(predicate: ObjCBlock<(ObjCId /*ObjectType*/, CPointer<Bool>) -> Bool>): NSSet/*<ObjectType>*/
-    @ForeignName["objectsWithOptions:passingTest:"] public open func objectsWithOptionsPassingTest(opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(ObjCId /*ObjectType*/, CPointer<Bool>) -> Bool>): NSSet/*<ObjectType>*/
+    @ForeignName["enumerateObjectsUsingBlock:"] public open func enumerateObjectsUsingBlock(block: ObjCBlock<(ObjCId /*ObjectType*/, ObjCPointer<Bool>) -> Unit>): Unit
+    @ForeignName["enumerateObjectsWithOptions:usingBlock:"] public open func enumerateObjectsWithOptionsUsingBlock(opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(ObjCId /*ObjectType*/, ObjCPointer<Bool>) -> Unit>): Unit
+    @ForeignName["objectsPassingTest:"] public open func objectsPassingTest(predicate: ObjCBlock<(ObjCId /*ObjectType*/, ObjCPointer<Bool>) -> Bool>): NSSet/*<ObjectType>*/
+    @ForeignName["objectsWithOptions:passingTest:"] public open func objectsWithOptionsPassingTest(opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(ObjCId /*ObjectType*/, ObjCPointer<Bool>) -> Bool>): NSSet/*<ObjectType>*/
     public static func set(): NSSet/*<ObjectType>*/
     @ForeignName["setWithObject:"] public static func setWithObject(object: ObjCId /*ObjectType*/): NSSet/*<ObjectType>*/
     @ForeignName["setWithObjects:count:"] public static func setWithObjectsCount(objects: ObjCPointer<ObjCId /*ObjectType*/>, cnt: NSUInteger): NSSet/*<ObjectType>*/
@@ -41,8 +41,8 @@ public open class NSSet/*<ObjectType>*/ <: NSObject & NSCopying & NSMutableCopyi
     @ForeignName["initWithArray:"] public init(array: NSArray/*<ObjectType>*/)
     public open func valueForKey(key: NSString): ?ObjCId
     public open func setValueForKey(value: ?ObjCId, key: NSString): Unit
-    public open func addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: NSString, options: Int32 /*NSKeyValueObservingOptions*/, context: CPointer<Unit>): Unit
-    public open func removeObserverForKeyPathContext(observer: NSObject, keyPath: NSString, context: CPointer<Unit>): Unit
+    public open func addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: NSString, options: Int32 /*NSKeyValueObservingOptions*/, context: ObjCPointer<Unit>): Unit
+    public open func removeObserverForKeyPathContext(observer: NSObject, keyPath: NSString, context: ObjCPointer<Unit>): Unit
     public open func removeObserverForKeyPath(observer: NSObject, keyPath: NSString): Unit
     @ForeignName["sortedArrayUsingDescriptors:"] public open func sortedArrayUsingDescriptors(sortDescriptors: NSArray/*<NSSortDescriptor>*/): NSArray/*<ObjectType>*/
     @ForeignName["filteredSetUsingPredicate:"] public open func filteredSetUsingPredicate(predicate: NSPredicate): NSSet/*<ObjectType>*/

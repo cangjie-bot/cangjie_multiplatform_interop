@@ -11,8 +11,8 @@ public type NSURLResourceKey = NSString
 public open class NSURL <: NSObject & NSSecureCoding & NSCopying {
     protected var _urlString: ?NSString
     protected var _baseURL: ?NSURL
-    protected var _clients: CPointer<Unit>
-    protected var _reserved: CPointer<Unit>
+    protected var _clients: ObjCPointer<Unit>
+    protected var _reserved: ObjCPointer<Unit>
     @ForeignName["initWithScheme:host:path:"] public init(scheme: NSString, host: ?NSString, path: NSString)
     @ForeignName["initFileURLWithPath:isDirectory:relativeToURL:"] public init(path: NSString, isDir: Bool, baseURL: ?NSURL)
     @ObjCInit @ForeignName["initFileURLWithPath:relativeToURL:"] public static func initFileURLWithPathRelativeToURL(path: NSString, baseURL: ?NSURL): NSURL
@@ -22,8 +22,8 @@ public open class NSURL <: NSObject & NSSecureCoding & NSCopying {
     @ForeignName["fileURLWithPath:relativeToURL:"] public static func fileURLWithPathRelativeToURL(path: NSString, baseURL: ?NSURL): NSURL
     @ForeignName["fileURLWithPath:isDirectory:"] public static func fileURLWithPathIsDirectory(path: NSString, isDir: Bool): NSURL
     @ForeignName["fileURLWithPath:"] public static func fileURLWithPath(path: NSString): NSURL
-    @ForeignName["initFileURLWithFileSystemRepresentation:isDirectory:relativeToURL:"] public init(path: CPointer<Int8>, isDir: Bool, baseURL: ?NSURL)
-    @ForeignName["fileURLWithFileSystemRepresentation:isDirectory:relativeToURL:"] public static func fileURLWithFileSystemRepresentationIsDirectoryRelativeToURL(path: CPointer<Int8>, isDir: Bool, baseURL: ?NSURL): NSURL
+    @ForeignName["initFileURLWithFileSystemRepresentation:isDirectory:relativeToURL:"] public init(path: ObjCPointer<Int8>, isDir: Bool, baseURL: ?NSURL)
+    @ForeignName["fileURLWithFileSystemRepresentation:isDirectory:relativeToURL:"] public static func fileURLWithFileSystemRepresentationIsDirectoryRelativeToURL(path: ObjCPointer<Int8>, isDir: Bool, baseURL: ?NSURL): NSURL
     @ObjCInit @ForeignName["initWithString:"] public static func initWithString(URLString: NSString): NSURL
     @ObjCInit @ForeignName["initWithString:relativeToURL:"] public static func initWithStringRelativeToURL(URLString: NSString, baseURL: ?NSURL): NSURL
     @ForeignName["URLWithString:"] public static func URLWithString(URLString: NSString): NSURL
@@ -51,8 +51,8 @@ public open class NSURL <: NSObject & NSSecureCoding & NSCopying {
     public open prop query: ?NSString
     public open prop relativePath: ?NSString
     public open prop hasDirectoryPath: Bool
-    @ForeignName["getFileSystemRepresentation:maxLength:"] public open func getFileSystemRepresentationMaxLength(buffer: CPointer<Int8>, maxBufferLength: NSUInteger): Bool
-    public open prop fileSystemRepresentation: CPointer<Int8>
+    @ForeignName["getFileSystemRepresentation:maxLength:"] public open func getFileSystemRepresentationMaxLength(buffer: ObjCPointer<Int8>, maxBufferLength: NSUInteger): Bool
+    public open prop fileSystemRepresentation: ObjCPointer<Int8>
     public open prop isFileURL: Bool
     public open prop standardizedURL: ?NSURL
     public open func isFileReferenceURL(): Bool
@@ -66,8 +66,8 @@ public open class NSURL <: NSObject & NSSecureCoding & NSCopying {
     public open func removeAllCachedResourceValues(): Unit
     @ForeignName["setTemporaryResourceValue:forKey:"] public open func setTemporaryResourceValueForKey(value: ?ObjCId, key: NSURLResourceKey): Unit
     @ForeignName["bookmarkDataWithOptions:includingResourceValuesForKeys:relativeToURL:error:"] public open func bookmarkDataWithOptionsIncludingResourceValuesForKeysRelativeToURLError(options: Int32 /*NSURLBookmarkCreationOptions*/, keys: ?NSArray/*<NSURLResourceKey>*/, relativeURL: ?NSURL, error: ObjCPointer<NSError>): ?NSData
-    @ForeignName["initByResolvingBookmarkData:options:relativeToURL:bookmarkDataIsStale:error:"] public init(bookmarkData: NSData, options: Int32 /*NSURLBookmarkResolutionOptions*/, relativeURL: ?NSURL, isStale: CPointer<Bool>, error: ObjCPointer<NSError>)
-    @ForeignName["URLByResolvingBookmarkData:options:relativeToURL:bookmarkDataIsStale:error:"] public static func URLByResolvingBookmarkDataOptionsRelativeToURLBookmarkDataIsStaleError(bookmarkData: NSData, options: Int32 /*NSURLBookmarkResolutionOptions*/, relativeURL: ?NSURL, isStale: CPointer<Bool>, error: ObjCPointer<NSError>): NSURL
+    @ForeignName["initByResolvingBookmarkData:options:relativeToURL:bookmarkDataIsStale:error:"] public init(bookmarkData: NSData, options: Int32 /*NSURLBookmarkResolutionOptions*/, relativeURL: ?NSURL, isStale: ObjCPointer<Bool>, error: ObjCPointer<NSError>)
+    @ForeignName["URLByResolvingBookmarkData:options:relativeToURL:bookmarkDataIsStale:error:"] public static func URLByResolvingBookmarkDataOptionsRelativeToURLBookmarkDataIsStaleError(bookmarkData: NSData, options: Int32 /*NSURLBookmarkResolutionOptions*/, relativeURL: ?NSURL, isStale: ObjCPointer<Bool>, error: ObjCPointer<NSError>): NSURL
     @ForeignName["resourceValuesForKeys:fromBookmarkData:"] public static func resourceValuesForKeysFromBookmarkData(keys: NSArray/*<NSURLResourceKey>*/, bookmarkData: NSData): ?NSDictionary/*<NSURLResourceKey, ObjCId>*/
     @ForeignName["writeBookmarkData:toURL:options:error:"] public static func writeBookmarkDataToURLOptionsError(bookmarkData: NSData, bookmarkFileURL: NSURL, options: NSURLBookmarkFileCreationOptions, error: ObjCPointer<NSError>): Bool
     @ForeignName["bookmarkDataWithContentsOfURL:error:"] public static func bookmarkDataWithContentsOfURLError(bookmarkFileURL: NSURL, error: ObjCPointer<NSError>): ?NSData

@@ -7,7 +7,7 @@ import objc.lang.*
 
 @ObjCMirror
 public open class NSPredicate <: NSObject & NSSecureCoding & NSCopying {
-    // protected var _predicateFlags: _predicateFlags
+    protected var _predicateFlags: _predicateFlags
     protected var reserved: uint32_t
     @ForeignName["predicateWithFormat:argumentArray:"] public static func predicateWithFormatArgumentArray(predicateFormat: NSString, arguments: ?NSArray/*<ObjectType>*/): NSPredicate
     @ForeignName["predicateWithFormat:"] public static func predicateWithFormat(predicateFormat: NSString): NSPredicate
@@ -24,7 +24,7 @@ public open class NSPredicate <: NSObject & NSSecureCoding & NSCopying {
 
 @C
 public struct _predicateFlags {
-    public var _evaluationBlocked: UInt32 = 0
-    public var _reservedPredicateFlags: UInt32 = 0
+    public var _evaluationBlocked: UInt32
+    public var _reservedPredicateFlags: UInt32
 }
 

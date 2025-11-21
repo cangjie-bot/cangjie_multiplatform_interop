@@ -23,54 +23,54 @@ public open class NSIndexSet <: NSObject & NSCopying & NSMutableCopying & NSSecu
     @ForeignName["indexLessThanIndex:"] public open func indexLessThanIndex(value: NSUInteger): NSUInteger
     @ForeignName["indexGreaterThanOrEqualToIndex:"] public open func indexGreaterThanOrEqualToIndex(value: NSUInteger): NSUInteger
     @ForeignName["indexLessThanOrEqualToIndex:"] public open func indexLessThanOrEqualToIndex(value: NSUInteger): NSUInteger
-    @ForeignName["getIndexes:maxCount:inIndexRange:"] public open func getIndexesMaxCountInIndexRange(indexBuffer: CPointer<NSUInteger>, bufferSize: NSUInteger, range: NSRangePointer): NSUInteger
+    @ForeignName["getIndexes:maxCount:inIndexRange:"] public open func getIndexesMaxCountInIndexRange(indexBuffer: ObjCPointer<NSUInteger>, bufferSize: NSUInteger, range: NSRangePointer): NSUInteger
     @ForeignName["countOfIndexesInRange:"] public open func countOfIndexesInRange(range: NSRange): NSUInteger
     @ForeignName["containsIndex:"] public open func containsIndex(value: NSUInteger): Bool
     @ForeignName["containsIndexesInRange:"] public open func containsIndexesInRange(range: NSRange): Bool
     @ForeignName["containsIndexes:"] public open func containsIndexes(indexSet: NSIndexSet): Bool
     @ForeignName["intersectsIndexesInRange:"] public open func intersectsIndexesInRange(range: NSRange): Bool
-    @ForeignName["enumerateIndexesUsingBlock:"] public open func enumerateIndexesUsingBlock(block: ObjCBlock<(NSUInteger, CPointer<Bool>) -> Unit>): Unit
-    @ForeignName["enumerateIndexesWithOptions:usingBlock:"] public open func enumerateIndexesWithOptionsUsingBlock(opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(NSUInteger, CPointer<Bool>) -> Unit>): Unit
-    @ForeignName["enumerateIndexesInRange:options:usingBlock:"] public open func enumerateIndexesInRangeOptionsUsingBlock(range: NSRange, opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(NSUInteger, CPointer<Bool>) -> Unit>): Unit
-    @ForeignName["indexPassingTest:"] public open func indexPassingTest(predicate: ObjCBlock<(NSUInteger, CPointer<Bool>) -> Bool>): NSUInteger
-    @ForeignName["indexWithOptions:passingTest:"] public open func indexWithOptionsPassingTest(opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(NSUInteger, CPointer<Bool>) -> Bool>): NSUInteger
-    @ForeignName["indexInRange:options:passingTest:"] public open func indexInRangeOptionsPassingTest(range: NSRange, opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(NSUInteger, CPointer<Bool>) -> Bool>): NSUInteger
-    @ForeignName["indexesPassingTest:"] public open func indexesPassingTest(predicate: ObjCBlock<(NSUInteger, CPointer<Bool>) -> Bool>): NSIndexSet
-    @ForeignName["indexesWithOptions:passingTest:"] public open func indexesWithOptionsPassingTest(opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(NSUInteger, CPointer<Bool>) -> Bool>): NSIndexSet
-    @ForeignName["indexesInRange:options:passingTest:"] public open func indexesInRangeOptionsPassingTest(range: NSRange, opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(NSUInteger, CPointer<Bool>) -> Bool>): NSIndexSet
-    @ForeignName["enumerateRangesUsingBlock:"] public open func enumerateRangesUsingBlock(block: ObjCBlock<(NSRange, CPointer<Bool>) -> Unit>): Unit
-    @ForeignName["enumerateRangesWithOptions:usingBlock:"] public open func enumerateRangesWithOptionsUsingBlock(opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(NSRange, CPointer<Bool>) -> Unit>): Unit
-    @ForeignName["enumerateRangesInRange:options:usingBlock:"] public open func enumerateRangesInRangeOptionsUsingBlock(range: NSRange, opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(NSRange, CPointer<Bool>) -> Unit>): Unit
+    @ForeignName["enumerateIndexesUsingBlock:"] public open func enumerateIndexesUsingBlock(block: ObjCBlock<(NSUInteger, ObjCPointer<Bool>) -> Unit>): Unit
+    @ForeignName["enumerateIndexesWithOptions:usingBlock:"] public open func enumerateIndexesWithOptionsUsingBlock(opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(NSUInteger, ObjCPointer<Bool>) -> Unit>): Unit
+    @ForeignName["enumerateIndexesInRange:options:usingBlock:"] public open func enumerateIndexesInRangeOptionsUsingBlock(range: NSRange, opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(NSUInteger, ObjCPointer<Bool>) -> Unit>): Unit
+    @ForeignName["indexPassingTest:"] public open func indexPassingTest(predicate: ObjCBlock<(NSUInteger, ObjCPointer<Bool>) -> Bool>): NSUInteger
+    @ForeignName["indexWithOptions:passingTest:"] public open func indexWithOptionsPassingTest(opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(NSUInteger, ObjCPointer<Bool>) -> Bool>): NSUInteger
+    @ForeignName["indexInRange:options:passingTest:"] public open func indexInRangeOptionsPassingTest(range: NSRange, opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(NSUInteger, ObjCPointer<Bool>) -> Bool>): NSUInteger
+    @ForeignName["indexesPassingTest:"] public open func indexesPassingTest(predicate: ObjCBlock<(NSUInteger, ObjCPointer<Bool>) -> Bool>): NSIndexSet
+    @ForeignName["indexesWithOptions:passingTest:"] public open func indexesWithOptionsPassingTest(opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(NSUInteger, ObjCPointer<Bool>) -> Bool>): NSIndexSet
+    @ForeignName["indexesInRange:options:passingTest:"] public open func indexesInRangeOptionsPassingTest(range: NSRange, opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(NSUInteger, ObjCPointer<Bool>) -> Bool>): NSIndexSet
+    @ForeignName["enumerateRangesUsingBlock:"] public open func enumerateRangesUsingBlock(block: ObjCBlock<(NSRange, ObjCPointer<Bool>) -> Unit>): Unit
+    @ForeignName["enumerateRangesWithOptions:usingBlock:"] public open func enumerateRangesWithOptionsUsingBlock(opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(NSRange, ObjCPointer<Bool>) -> Unit>): Unit
+    @ForeignName["enumerateRangesInRange:options:usingBlock:"] public open func enumerateRangesInRangeOptionsUsingBlock(range: NSRange, opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(NSRange, ObjCPointer<Bool>) -> Unit>): Unit
 }
 
 @C
 public struct __NSIndexSet_1 {
-    public var _hasSingleRange: NSUInteger = unsafe{zeroValue<NSUInteger>()}
-    public var _hasBitfield: NSUInteger = unsafe{zeroValue<NSUInteger>()}
-    public var _reservedArrayBinderController: NSUInteger = unsafe{zeroValue<NSUInteger>()}
+    public var _hasSingleRange: NSUInteger
+    public var _hasBitfield: NSUInteger
+    public var _reservedArrayBinderController: NSUInteger
 }
 
 @C
 public struct __NSIndexSet_2 {
-    public var _singleRange: __NSIndexSet_3 = __NSIndexSet_3()
-    public var _multipleRanges: __NSIndexSet_4 = __NSIndexSet_4()
-    public var _singleBitfield: __NSIndexSet_5 = __NSIndexSet_5()
+    public var _singleRange: __NSIndexSet_3
+    public var _multipleRanges: __NSIndexSet_4
+    public var _singleBitfield: __NSIndexSet_5
 }
 
 @C
 public struct __NSIndexSet_3 {
-    public var _range: NSRange = _NSRange()
+    public var _range: NSRange
 }
 
 @C
 public struct __NSIndexSet_4 {
-    public var _data: CPointer<Unit> = CPointer<Unit>()
-    public var _reserved: CPointer<Unit> = CPointer<Unit>()
+    public var _data: CPointer<Unit>
+    public var _reserved: CPointer<Unit>
 }
 
 @C
 public struct __NSIndexSet_5 {
-    public var _bitfield: uint64_t = unsafe{zeroValue<uint64_t>()}
+    public var _bitfield: uint64_t
 }
 
 @ObjCMirror

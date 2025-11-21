@@ -7,9 +7,9 @@ import objc.lang.*
 
 @C
 public struct NSOperatingSystemVersion {
-    public var majorVersion: NSInteger = unsafe{zeroValue<NSInteger>()}
-    public var minorVersion: NSInteger = unsafe{zeroValue<NSInteger>()}
-    public var patchVersion: NSInteger = unsafe{zeroValue<NSInteger>()}
+    public var majorVersion: NSInteger
+    public var minorVersion: NSInteger
+    public var patchVersion: NSInteger
 }
 
 @ObjCMirror

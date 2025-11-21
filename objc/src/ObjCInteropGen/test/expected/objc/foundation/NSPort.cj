@@ -18,7 +18,7 @@ public interface NSPortDelegate <: NSObjectProtocol {
 
 @ObjCMirror
 public interface NSMachPortDelegate <: NSPortDelegate {
-    @ForeignName["handleMachMessage:"] func handleMachMessage(msg: CPointer<Unit>): Unit
+    @ForeignName["handleMachMessage:"] func handleMachMessage(msg: ObjCPointer<Unit>): Unit
 }
 
 @ObjCMirror

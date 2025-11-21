@@ -45,9 +45,9 @@ public abstract sealed class NSDataBase64DecodingOptions {
 @ObjCMirror
 public open class NSData <: NSObject & NSCopying & NSMutableCopying & NSSecureCoding {
     public open prop length: NSUInteger
-    public open prop bytes: CPointer<Unit>
-    @ForeignName["getBytes:length:"] public open func getBytesLength(buffer: CPointer<Unit>, length: NSUInteger): Unit
-    @ForeignName["getBytes:range:"] public open func getBytesRange(buffer: CPointer<Unit>, range: NSRange): Unit
+    public open prop bytes: ObjCPointer<Unit>
+    @ForeignName["getBytes:length:"] public open func getBytesLength(buffer: ObjCPointer<Unit>, length: NSUInteger): Unit
+    @ForeignName["getBytes:range:"] public open func getBytesRange(buffer: ObjCPointer<Unit>, range: NSRange): Unit
     @ForeignName["isEqualToData:"] public open func isEqualToData(other: NSData): Bool
     @ForeignName["subdataWithRange:"] public open func subdataWithRange(range: NSRange): NSData
     @ForeignName["writeToFile:atomically:"] public open func writeToFileAtomically(path: NSString, useAuxiliaryFile: Bool): Bool
@@ -55,19 +55,19 @@ public open class NSData <: NSObject & NSCopying & NSMutableCopying & NSSecureCo
     @ForeignName["writeToFile:options:error:"] public open func writeToFileOptionsError(path: NSString, writeOptionsMask: Int32 /*NSDataWritingOptions*/, errorPtr: ObjCPointer<NSError>): Bool
     @ForeignName["writeToURL:options:error:"] public open func writeToURLOptionsError(url: NSURL, writeOptionsMask: Int32 /*NSDataWritingOptions*/, errorPtr: ObjCPointer<NSError>): Bool
     @ForeignName["rangeOfData:options:range:"] public open func rangeOfDataOptionsRange(dataToFind: NSData, mask: Int32 /*NSDataSearchOptions*/, searchRange: NSRange): NSRange
-    @ForeignName["enumerateByteRangesUsingBlock:"] public open func enumerateByteRangesUsingBlock(block: ObjCBlock<(CPointer<Unit>, NSRange, CPointer<Bool>) -> Unit>): Unit
+    @ForeignName["enumerateByteRangesUsingBlock:"] public open func enumerateByteRangesUsingBlock(block: ObjCBlock<(ObjCPointer<Unit>, NSRange, ObjCPointer<Bool>) -> Unit>): Unit
     public static func data(): NSData
-    @ForeignName["dataWithBytes:length:"] public static func dataWithBytesLength(bytes: CPointer<Unit>, length: NSUInteger): NSData
-    @ForeignName["dataWithBytesNoCopy:length:"] public static func dataWithBytesNoCopyLength(bytes: CPointer<Unit>, length: NSUInteger): NSData
-    @ForeignName["dataWithBytesNoCopy:length:freeWhenDone:"] public static func dataWithBytesNoCopyLengthFreeWhenDone(bytes: CPointer<Unit>, length: NSUInteger, b: Bool): NSData
+    @ForeignName["dataWithBytes:length:"] public static func dataWithBytesLength(bytes: ObjCPointer<Unit>, length: NSUInteger): NSData
+    @ForeignName["dataWithBytesNoCopy:length:"] public static func dataWithBytesNoCopyLength(bytes: ObjCPointer<Unit>, length: NSUInteger): NSData
+    @ForeignName["dataWithBytesNoCopy:length:freeWhenDone:"] public static func dataWithBytesNoCopyLengthFreeWhenDone(bytes: ObjCPointer<Unit>, length: NSUInteger, b: Bool): NSData
     @ForeignName["dataWithContentsOfFile:options:error:"] public static func dataWithContentsOfFileOptionsError(path: NSString, readOptionsMask: Int32 /*NSDataReadingOptions*/, errorPtr: ObjCPointer<NSError>): NSData
     @ForeignName["dataWithContentsOfURL:options:error:"] public static func dataWithContentsOfURLOptionsError(url: NSURL, readOptionsMask: Int32 /*NSDataReadingOptions*/, errorPtr: ObjCPointer<NSError>): NSData
     @ForeignName["dataWithContentsOfFile:"] public static func dataWithContentsOfFile(path: NSString): NSData
     @ForeignName["dataWithContentsOfURL:"] public static func dataWithContentsOfURL(url: NSURL): NSData
-    @ObjCInit @ForeignName["initWithBytes:length:"] public static func initWithBytesLength(bytes: CPointer<Unit>, length: NSUInteger): NSData
-    @ObjCInit @ForeignName["initWithBytesNoCopy:length:"] public static func initWithBytesNoCopyLength(bytes: CPointer<Unit>, length: NSUInteger): NSData
-    @ForeignName["initWithBytesNoCopy:length:freeWhenDone:"] public init(bytes: CPointer<Unit>, length: NSUInteger, b: Bool)
-    @ForeignName["initWithBytesNoCopy:length:deallocator:"] public init(bytes: CPointer<Unit>, length: NSUInteger, deallocator: ObjCBlock<(CPointer<Unit>, NSUInteger) -> Unit>)
+    @ObjCInit @ForeignName["initWithBytes:length:"] public static func initWithBytesLength(bytes: ObjCPointer<Unit>, length: NSUInteger): NSData
+    @ObjCInit @ForeignName["initWithBytesNoCopy:length:"] public static func initWithBytesNoCopyLength(bytes: ObjCPointer<Unit>, length: NSUInteger): NSData
+    @ForeignName["initWithBytesNoCopy:length:freeWhenDone:"] public init(bytes: ObjCPointer<Unit>, length: NSUInteger, b: Bool)
+    @ForeignName["initWithBytesNoCopy:length:deallocator:"] public init(bytes: ObjCPointer<Unit>, length: NSUInteger, deallocator: ObjCBlock<(ObjCPointer<Unit>, NSUInteger) -> Unit>)
     @ForeignName["initWithContentsOfFile:options:error:"] public init(path: NSString, readOptionsMask: Int32 /*NSDataReadingOptions*/, errorPtr: ObjCPointer<NSError>)
     @ForeignName["initWithContentsOfURL:options:error:"] public init(url: NSURL, readOptionsMask: Int32 /*NSDataReadingOptions*/, errorPtr: ObjCPointer<NSError>)
     @ObjCInit @ForeignName["initWithContentsOfFile:"] public static func initWithContentsOfFile(path: NSString): NSData
@@ -80,7 +80,7 @@ public open class NSData <: NSObject & NSCopying & NSMutableCopying & NSSecureCo
     @ForeignName["base64EncodedDataWithOptions:"] public open func base64EncodedDataWithOptions(options: Int32 /*NSDataBase64EncodingOptions*/): NSData
     @ForeignName["decompressedDataUsingAlgorithm:error:"] public open func decompressedDataUsingAlgorithmError(algorithm: Int32 /*NSDataCompressionAlgorithm*/, error: ObjCPointer<NSError>): NSData
     @ForeignName["compressedDataUsingAlgorithm:error:"] public open func compressedDataUsingAlgorithmError(algorithm: Int32 /*NSDataCompressionAlgorithm*/, error: ObjCPointer<NSError>): NSData
-    @ForeignName["getBytes:"] public open func getBytes(buffer: CPointer<Unit>): Unit
+    @ForeignName["getBytes:"] public open func getBytes(buffer: ObjCPointer<Unit>): Unit
     @ForeignName["dataWithContentsOfMappedFile:"] public static func dataWithContentsOfMappedFile(path: NSString): ?ObjCId
     @ObjCInit @ForeignName["initWithContentsOfMappedFile:"] public static func initWithContentsOfMappedFile(path: NSString): ObjCId
     @ObjCInit @ForeignName["initWithBase64Encoding:"] public static func initWithBase64Encoding(base64String: NSString): ObjCId
@@ -96,14 +96,14 @@ public abstract sealed class NSDataCompressionAlgorithm {
 
 @ObjCMirror
 public open class NSMutableData <: NSData {
-    public open prop mutableBytes: CPointer<Unit>
-    @ForeignName["appendBytes:length:"] public open func appendBytesLength(bytes: CPointer<Unit>, length: NSUInteger): Unit
+    public open prop mutableBytes: ObjCPointer<Unit>
+    @ForeignName["appendBytes:length:"] public open func appendBytesLength(bytes: ObjCPointer<Unit>, length: NSUInteger): Unit
     @ForeignName["appendData:"] public open func appendData(other: NSData): Unit
     @ForeignName["increaseLengthBy:"] public open func increaseLengthBy(extraLength: NSUInteger): Unit
-    @ForeignName["replaceBytesInRange:withBytes:"] public open func replaceBytesInRangeWithBytes(range: NSRange, bytes: CPointer<Unit>): Unit
+    @ForeignName["replaceBytesInRange:withBytes:"] public open func replaceBytesInRangeWithBytes(range: NSRange, bytes: ObjCPointer<Unit>): Unit
     @ForeignName["resetBytesInRange:"] public open func resetBytesInRange(range: NSRange): Unit
     @ForeignName["setData:"] public open func setData(data: NSData): Unit
-    @ForeignName["replaceBytesInRange:withBytes:length:"] public open func replaceBytesInRangeWithBytesLength(range: NSRange, replacementBytes: CPointer<Unit>, replacementLength: NSUInteger): Unit
+    @ForeignName["replaceBytesInRange:withBytes:length:"] public open func replaceBytesInRangeWithBytesLength(range: NSRange, replacementBytes: ObjCPointer<Unit>, replacementLength: NSUInteger): Unit
     @ForeignName["dataWithCapacity:"] public static func dataWithCapacity(aNumItems: NSUInteger): NSMutableData
     @ForeignName["dataWithLength:"] public static func dataWithLength(length: NSUInteger): NSMutableData
     @ObjCInit @ForeignName["initWithCapacity:"] public static func initWithCapacity(capacity: NSUInteger): NSMutableData

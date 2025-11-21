@@ -12,24 +12,24 @@ public abstract sealed class NSDecodingFailurePolicy {
 
 @ObjCMirror
 public open class NSCoder <: NSObject {
-    @ForeignName["encodeValueOfObjCType:at:"] public open func encodeValueOfObjCTypeAt(`type`: CPointer<Int8>, addr: CPointer<Unit>): Unit
+    @ForeignName["encodeValueOfObjCType:at:"] public open func encodeValueOfObjCTypeAt(`type`: ObjCPointer<Int8>, addr: ObjCPointer<Unit>): Unit
     @ForeignName["encodeDataObject:"] public open func encodeDataObject(data: NSData): Unit
     public open func decodeDataObject(): ?NSData
-    @ForeignName["decodeValueOfObjCType:at:size:"] public open func decodeValueOfObjCTypeAtSize(`type`: CPointer<Int8>, data: CPointer<Unit>, size: NSUInteger): Unit
+    @ForeignName["decodeValueOfObjCType:at:size:"] public open func decodeValueOfObjCTypeAtSize(`type`: ObjCPointer<Int8>, data: ObjCPointer<Unit>, size: NSUInteger): Unit
     @ForeignName["versionForClassName:"] public open func versionForClassName(className: NSString): NSInteger
     @ForeignName["encodeObject:"] public open func encodeObject(object: ?ObjCId): Unit
     @ForeignName["encodeRootObject:"] public open func encodeRootObject(rootObject: ObjCId): Unit
     @ForeignName["encodeBycopyObject:"] public open func encodeBycopyObject(anObject: ?ObjCId): Unit
     @ForeignName["encodeByrefObject:"] public open func encodeByrefObject(anObject: ?ObjCId): Unit
     @ForeignName["encodeConditionalObject:"] public open func encodeConditionalObject(object: ?ObjCId): Unit
-    @ForeignName["encodeValuesOfObjCTypes:"] public open func encodeValuesOfObjCTypes(types: CPointer<Int8>): Unit
-    @ForeignName["encodeArrayOfObjCType:count:at:"] public open func encodeArrayOfObjCTypeCountAt(`type`: CPointer<Int8>, count: NSUInteger, array: CPointer<Unit>): Unit
-    @ForeignName["encodeBytes:length:"] public open func encodeBytesLength(byteaddr: CPointer<Unit>, length: NSUInteger): Unit
+    @ForeignName["encodeValuesOfObjCTypes:"] public open func encodeValuesOfObjCTypes(types: ObjCPointer<Int8>): Unit
+    @ForeignName["encodeArrayOfObjCType:count:at:"] public open func encodeArrayOfObjCTypeCountAt(`type`: ObjCPointer<Int8>, count: NSUInteger, array: ObjCPointer<Unit>): Unit
+    @ForeignName["encodeBytes:length:"] public open func encodeBytesLength(byteaddr: ObjCPointer<Unit>, length: NSUInteger): Unit
     public open func decodeObject(): ?ObjCId
     @ForeignName["decodeTopLevelObjectAndReturnError:"] public open func decodeTopLevelObjectAndReturnError(error: ObjCPointer<NSError>): ?ObjCId
-    @ForeignName["decodeValuesOfObjCTypes:"] public open func decodeValuesOfObjCTypes(types: CPointer<Int8>): Unit
-    @ForeignName["decodeArrayOfObjCType:count:at:"] public open func decodeArrayOfObjCTypeCountAt(itemType: CPointer<Int8>, count: NSUInteger, array: CPointer<Unit>): Unit
-    @ForeignName["decodeBytesWithReturnedLength:"] public open func decodeBytesWithReturnedLength(lengthp: CPointer<NSUInteger>): CPointer<Unit>
+    @ForeignName["decodeValuesOfObjCTypes:"] public open func decodeValuesOfObjCTypes(types: ObjCPointer<Int8>): Unit
+    @ForeignName["decodeArrayOfObjCType:count:at:"] public open func decodeArrayOfObjCTypeCountAt(itemType: ObjCPointer<Int8>, count: NSUInteger, array: ObjCPointer<Unit>): Unit
+    @ForeignName["decodeBytesWithReturnedLength:"] public open func decodeBytesWithReturnedLength(lengthp: ObjCPointer<NSUInteger>): ObjCPointer<Unit>
     public open prop systemVersion: UInt32
     public open prop allowsKeyedCoding: Bool
     @ForeignName["encodeObject:forKey:"] public open func encodeObjectForKey(object: ?ObjCId, key: NSString): Unit
@@ -40,7 +40,7 @@ public open class NSCoder <: NSObject {
     @ForeignName["encodeInt64:forKey:"] public open func encodeInt64ForKey(value: int64_t, key: NSString): Unit
     @ForeignName["encodeFloat:forKey:"] public open func encodeFloatForKey(value: Float32, key: NSString): Unit
     @ForeignName["encodeDouble:forKey:"] public open func encodeDoubleForKey(value: Float64, key: NSString): Unit
-    @ForeignName["encodeBytes:length:forKey:"] public open func encodeBytesLengthForKey(bytes: CPointer<uint8_t>, length: NSUInteger, key: NSString): Unit
+    @ForeignName["encodeBytes:length:forKey:"] public open func encodeBytesLengthForKey(bytes: ObjCPointer<uint8_t>, length: NSUInteger, key: NSString): Unit
     @ForeignName["containsValueForKey:"] public open func containsValueForKey(key: NSString): Bool
     @ForeignName["decodeObjectForKey:"] public open func decodeObjectForKey(key: NSString): ?ObjCId
     @ForeignName["decodeTopLevelObjectForKey:error:"] public open func decodeTopLevelObjectForKeyError(key: NSString, error: ObjCPointer<NSError>): ?ObjCId
@@ -50,7 +50,7 @@ public open class NSCoder <: NSObject {
     @ForeignName["decodeInt64ForKey:"] public open func decodeInt64ForKey(key: NSString): int64_t
     @ForeignName["decodeFloatForKey:"] public open func decodeFloatForKey(key: NSString): Float32
     @ForeignName["decodeDoubleForKey:"] public open func decodeDoubleForKey(key: NSString): Float64
-    @ForeignName["decodeBytesForKey:returnedLength:"] public open func decodeBytesForKeyReturnedLength(key: NSString, lengthp: CPointer<NSUInteger>): CPointer<uint8_t>
+    @ForeignName["decodeBytesForKey:returnedLength:"] public open func decodeBytesForKeyReturnedLength(key: NSString, lengthp: ObjCPointer<NSUInteger>): ObjCPointer<uint8_t>
     @ForeignName["encodeInteger:forKey:"] public open func encodeIntegerForKey(value: NSInteger, key: NSString): Unit
     @ForeignName["decodeIntegerForKey:"] public open func decodeIntegerForKey(key: NSString): NSInteger
     public open prop requiresSecureCoding: Bool
@@ -67,6 +67,6 @@ public open class NSCoder <: NSObject {
     @ForeignName["failWithError:"] public open func failWithError(error: NSError): Unit
     public open prop decodingFailurePolicy: Int32 /*NSDecodingFailurePolicy*/
     public open prop error: ?NSError
-    @ForeignName["decodeValueOfObjCType:at:"] public open func decodeValueOfObjCTypeAt(`type`: CPointer<Int8>, data: CPointer<Unit>): Unit
+    @ForeignName["decodeValueOfObjCType:at:"] public open func decodeValueOfObjCTypeAt(`type`: ObjCPointer<Int8>, data: ObjCPointer<Unit>): Unit
 }
 

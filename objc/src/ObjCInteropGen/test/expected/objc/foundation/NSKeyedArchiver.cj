@@ -47,7 +47,7 @@ public open class NSKeyedArchiver <: NSCoder {
     public open func encodeInt64ForKey(value: int64_t, key: NSString): Unit
     public open func encodeFloatForKey(value: Float32, key: NSString): Unit
     public open func encodeDoubleForKey(value: Float64, key: NSString): Unit
-    public open func encodeBytesLengthForKey(bytes: CPointer<uint8_t>, length: NSUInteger, key: NSString): Unit
+    public open func encodeBytesLengthForKey(bytes: ObjCPointer<uint8_t>, length: NSUInteger, key: NSString): Unit
 }
 
 @ObjCMirror
@@ -78,6 +78,6 @@ public open class NSKeyedUnarchiver <: NSCoder {
     public open func decodeInt64ForKey(key: NSString): int64_t
     public open func decodeFloatForKey(key: NSString): Float32
     public open func decodeDoubleForKey(key: NSString): Float64
-    public open func decodeBytesForKeyReturnedLength(key: NSString, lengthp: CPointer<NSUInteger>): CPointer<uint8_t>
+    public open func decodeBytesForKeyReturnedLength(key: NSString, lengthp: ObjCPointer<NSUInteger>): ObjCPointer<uint8_t>
 }
 
