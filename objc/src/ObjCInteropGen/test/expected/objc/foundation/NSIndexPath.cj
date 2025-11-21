@@ -8,15 +8,15 @@ import objc.lang.*
 @ObjCMirror
 public open class NSIndexPath <: NSObject & NSCopying & NSSecureCoding {
     @ForeignName["indexPathWithIndex:"] public static func indexPathWithIndex(index: NSUInteger): NSIndexPath
-    @ForeignName["indexPathWithIndexes:length:"] public static func indexPathWithIndexesLength(indexes: CPointer<NSUInteger>, length: NSUInteger): NSIndexPath
-    @ForeignName["initWithIndexes:length:"] public init(indexes: CPointer<NSUInteger>, length: NSUInteger)
+    @ForeignName["indexPathWithIndexes:length:"] public static func indexPathWithIndexesLength(indexes: ObjCPointer<NSUInteger>, length: NSUInteger): NSIndexPath
+    @ForeignName["initWithIndexes:length:"] public init(indexes: ObjCPointer<NSUInteger>, length: NSUInteger)
     @ForeignName["initWithIndex:"] public init(index: NSUInteger)
     @ForeignName["indexPathByAddingIndex:"] public open func indexPathByAddingIndex(index: NSUInteger): NSIndexPath
     public open func indexPathByRemovingLastIndex(): NSIndexPath
     @ForeignName["indexAtPosition:"] public open func indexAtPosition(position: NSUInteger): NSUInteger
     public open prop length: NSUInteger
-    @ForeignName["getIndexes:range:"] public open func getIndexesRange(indexes: CPointer<NSUInteger>, positionRange: NSRange): Unit
+    @ForeignName["getIndexes:range:"] public open func getIndexesRange(indexes: ObjCPointer<NSUInteger>, positionRange: NSRange): Unit
     @ForeignName["compare:"] public open func compare(otherObject: NSIndexPath): Int32 /*NSComparisonResult*/
-    @ForeignName["getIndexes:"] public open func getIndexes(indexes: CPointer<NSUInteger>): Unit
+    @ForeignName["getIndexes:"] public open func getIndexes(indexes: ObjCPointer<NSUInteger>): Unit
 }
 

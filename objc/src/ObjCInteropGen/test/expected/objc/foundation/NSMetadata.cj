@@ -31,8 +31,8 @@ public open class NSMetadataQuery <: NSObject {
     public open func enableUpdates(): Unit
     public open prop resultCount: NSUInteger
     @ForeignName["resultAtIndex:"] public open func resultAtIndex(idx: NSUInteger): ObjCId
-    @ForeignName["enumerateResultsUsingBlock:"] public open func enumerateResultsUsingBlock(block: ObjCBlock<(ObjCId, NSUInteger, CPointer<Bool>) -> Unit>): Unit
-    @ForeignName["enumerateResultsWithOptions:usingBlock:"] public open func enumerateResultsWithOptionsUsingBlock(opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(ObjCId, NSUInteger, CPointer<Bool>) -> Unit>): Unit
+    @ForeignName["enumerateResultsUsingBlock:"] public open func enumerateResultsUsingBlock(block: ObjCBlock<(ObjCId, NSUInteger, ObjCPointer<Bool>) -> Unit>): Unit
+    @ForeignName["enumerateResultsWithOptions:usingBlock:"] public open func enumerateResultsWithOptionsUsingBlock(opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(ObjCId, NSUInteger, ObjCPointer<Bool>) -> Unit>): Unit
     public open prop results: NSArray/*<ObjectType>*/
     @ForeignName["indexOfResult:"] public open func indexOfResult(result: ObjCId): NSUInteger
     public open prop valueLists: NSDictionary/*<NSString, NSArray<NSMetadataQueryAttributeValueTuple>>*/

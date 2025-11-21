@@ -13,10 +13,10 @@ public open class NSInvocation <: NSObject {
     public open prop argumentsRetained: Bool
     public open mut prop target: ?ObjCId
     public open mut prop selector: SEL
-    @ForeignName["getReturnValue:"] public open func getReturnValue(retLoc: CPointer<Unit>): Unit
-    @ForeignName["setReturnValue:"] public open func setReturnValue(retLoc: CPointer<Unit>): Unit
-    @ForeignName["getArgument:atIndex:"] public open func getArgumentAtIndex(argumentLocation: CPointer<Unit>, idx: NSInteger): Unit
-    @ForeignName["setArgument:atIndex:"] public open func setArgumentAtIndex(argumentLocation: CPointer<Unit>, idx: NSInteger): Unit
+    @ForeignName["getReturnValue:"] public open func getReturnValue(retLoc: ObjCPointer<Unit>): Unit
+    @ForeignName["setReturnValue:"] public open func setReturnValue(retLoc: ObjCPointer<Unit>): Unit
+    @ForeignName["getArgument:atIndex:"] public open func getArgumentAtIndex(argumentLocation: ObjCPointer<Unit>, idx: NSInteger): Unit
+    @ForeignName["setArgument:atIndex:"] public open func setArgumentAtIndex(argumentLocation: ObjCPointer<Unit>, idx: NSInteger): Unit
     public open func invoke(): Unit
     @ForeignName["invokeWithTarget:"] public open func invokeWithTarget(target: ObjCId): Unit
     @ForeignName["invokeUsingIMP:"] public open func invokeUsingIMP(imp: IMP): Unit

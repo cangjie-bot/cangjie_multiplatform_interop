@@ -13,8 +13,8 @@ public open class NSFileHandle <: NSObject & NSSecureCoding {
     @ForeignName["readDataToEndOfFileAndReturnError:"] public open func readDataToEndOfFileAndReturnError(error: ObjCPointer<NSError>): ?NSData
     @ForeignName["readDataUpToLength:error:"] public open func readDataUpToLengthError(length: NSUInteger, error: ObjCPointer<NSError>): ?NSData
     @ForeignName["writeData:error:"] public open func writeDataError(data: NSData, error: ObjCPointer<NSError>): Bool
-    @ForeignName["getOffset:error:"] public open func getOffsetError(offsetInFile: CPointer<UInt64>, error: ObjCPointer<NSError>): Bool
-    @ForeignName["seekToEndReturningOffset:error:"] public open func seekToEndReturningOffsetError(offsetInFile: CPointer<UInt64>, error: ObjCPointer<NSError>): Bool
+    @ForeignName["getOffset:error:"] public open func getOffsetError(offsetInFile: ObjCPointer<UInt64>, error: ObjCPointer<NSError>): Bool
+    @ForeignName["seekToEndReturningOffset:error:"] public open func seekToEndReturningOffsetError(offsetInFile: ObjCPointer<UInt64>, error: ObjCPointer<NSError>): Bool
     @ForeignName["seekToOffset:error:"] public open func seekToOffsetError(offset: UInt64, error: ObjCPointer<NSError>): Bool
     @ForeignName["truncateAtOffset:error:"] public open func truncateAtOffsetError(offset: UInt64, error: ObjCPointer<NSError>): Bool
     @ForeignName["synchronizeAndReturnError:"] public open func synchronizeAndReturnError(error: ObjCPointer<NSError>): Bool

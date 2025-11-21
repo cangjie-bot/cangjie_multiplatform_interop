@@ -49,12 +49,12 @@ foreign func NSSwapHostLongLongToLittle(x: UInt64): UInt64
 
 @C
 public struct NSSwappedFloat {
-    public var v: UInt32 = 0
+    public var v: UInt32
 }
 
 @C
 public struct NSSwappedDouble {
-    public var v: UInt64 = 0
+    public var v: UInt64
 }
 
 foreign func NSConvertHostFloatToSwapped(x: Float32): NSSwappedFloat

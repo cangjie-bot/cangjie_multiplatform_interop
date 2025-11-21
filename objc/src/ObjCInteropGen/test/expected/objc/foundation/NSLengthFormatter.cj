@@ -24,7 +24,7 @@ public open class NSLengthFormatter <: NSFormatter {
     @ForeignName["stringFromValue:unit:"] public open func stringFromValueUnit(value: Float64, unit: Int32 /*NSLengthFormatterUnit*/): NSString
     @ForeignName["stringFromMeters:"] public open func stringFromMeters(numberInMeters: Float64): NSString
     @ForeignName["unitStringFromValue:unit:"] public open func unitStringFromValueUnit(value: Float64, unit: Int32 /*NSLengthFormatterUnit*/): NSString
-    @ForeignName["unitStringFromMeters:usedUnit:"] public open func unitStringFromMetersUsedUnit(numberInMeters: Float64, unitp: CPointer<Int32 /*NSLengthFormatterUnit*/>): NSString
+    @ForeignName["unitStringFromMeters:usedUnit:"] public open func unitStringFromMetersUsedUnit(numberInMeters: Float64, unitp: ObjCPointer<Int32 /*NSLengthFormatterUnit*/>): NSString
     public open func getObjectValueForStringErrorDescription(obj: ObjCPointer<ObjCId>, string: NSString, error: ObjCPointer<NSString>): Bool
 }
 

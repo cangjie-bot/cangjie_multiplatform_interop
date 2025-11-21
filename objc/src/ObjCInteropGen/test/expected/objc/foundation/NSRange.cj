@@ -7,8 +7,8 @@ import objc.lang.*
 
 @C
 public struct _NSRange {
-    public var location: NSUInteger = unsafe{zeroValue<NSUInteger>()}
-    public var length: NSUInteger = unsafe{zeroValue<NSUInteger>()}
+    public var location: NSUInteger
+    public var length: NSUInteger
 }
 
 public type NSRange = _NSRange

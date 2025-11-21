@@ -7,18 +7,18 @@ import objc.lang.*
 
 @ObjCMirror
 public open class NSValue <: NSObject & NSCopying & NSSecureCoding {
-    @ForeignName["getValue:size:"] public open func getValueSize(value: CPointer<Unit>, size: NSUInteger): Unit
-    public open prop objCType: CPointer<Int8>
-    @ForeignName["initWithBytes:objCType:"] public init(value: CPointer<Unit>, `type`: CPointer<Int8>)
+    @ForeignName["getValue:size:"] public open func getValueSize(value: ObjCPointer<Unit>, size: NSUInteger): Unit
+    public open prop objCType: ObjCPointer<Int8>
+    @ForeignName["initWithBytes:objCType:"] public init(value: ObjCPointer<Unit>, `type`: ObjCPointer<Int8>)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
-    @ForeignName["valueWithBytes:objCType:"] public static func valueWithBytesObjCType(value: CPointer<Unit>, `type`: CPointer<Int8>): NSValue
-    @ForeignName["value:withObjCType:"] public static func valueWithObjCType(value: CPointer<Unit>, `type`: CPointer<Int8>): NSValue
+    @ForeignName["valueWithBytes:objCType:"] public static func valueWithBytesObjCType(value: ObjCPointer<Unit>, `type`: ObjCPointer<Int8>): NSValue
+    @ForeignName["value:withObjCType:"] public static func valueWithObjCType(value: ObjCPointer<Unit>, `type`: ObjCPointer<Int8>): NSValue
     @ForeignName["valueWithNonretainedObject:"] public static func valueWithNonretainedObject(anObject: ?ObjCId): NSValue
     public open prop nonretainedObjectValue: ?ObjCId
-    @ForeignName["valueWithPointer:"] public static func valueWithPointer(pointer: CPointer<Unit>): NSValue
-    public open prop pointerValue: CPointer<Unit>
+    @ForeignName["valueWithPointer:"] public static func valueWithPointer(pointer: ObjCPointer<Unit>): NSValue
+    public open prop pointerValue: ObjCPointer<Unit>
     @ForeignName["isEqualToValue:"] public open func isEqualToValue(value: NSValue): Bool
-    @ForeignName["getValue:"] public open func getValue(value: CPointer<Unit>): Unit
+    @ForeignName["getValue:"] public open func getValue(value: ObjCPointer<Unit>): Unit
     @ForeignName["valueWithRange:"] public static func valueWithRange(range: NSRange): NSValue
     public open prop rangeValue: NSRange
 }
@@ -39,8 +39,8 @@ public open class NSNumber <: NSValue {
     @ForeignName["initWithFloat:"] public init(value: Float32)
     @ForeignName["initWithDouble:"] public init(value: Float64)
     @ForeignName["initWithBool:"] public init(value: Bool)
-    @ForeignName["initWithInteger:"] public init(value: NSInteger)
-    @ForeignName["initWithUnsignedInteger:"] public init(value: NSUInteger)
+    @ObjCInit @ForeignName["initWithInteger:"] public static func initWithInteger(value: NSInteger): NSNumber
+    @ObjCInit @ForeignName["initWithUnsignedInteger:"] public static func initWithUnsignedInteger(value: NSUInteger): NSNumber
     public open prop charValue: Int8
     public open prop unsignedCharValue: UInt8
     public open prop shortValue: Int16

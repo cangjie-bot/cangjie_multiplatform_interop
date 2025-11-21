@@ -49,8 +49,8 @@ public open class NSStream <: NSObject {
 
 @ObjCMirror
 public open class NSInputStream <: NSStream {
-    @ForeignName["read:maxLength:"] public open func readMaxLength(buffer: CPointer<uint8_t>, len: NSUInteger): NSInteger
-    @ForeignName["getBuffer:length:"] public open func getBufferLength(buffer: CPointer<CPointer<uint8_t>>, len: CPointer<NSUInteger>): Bool
+    @ForeignName["read:maxLength:"] public open func readMaxLength(buffer: ObjCPointer<uint8_t>, len: NSUInteger): NSInteger
+    @ForeignName["getBuffer:length:"] public open func getBufferLength(buffer: ObjCPointer<ObjCPointer<uint8_t>>, len: ObjCPointer<NSUInteger>): Bool
     public open prop hasBytesAvailable: Bool
     @ForeignName["initWithData:"] public init(data: NSData)
     @ForeignName["initWithURL:"] public init(url: NSURL)
@@ -62,14 +62,14 @@ public open class NSInputStream <: NSStream {
 
 @ObjCMirror
 public open class NSOutputStream <: NSStream {
-    @ForeignName["write:maxLength:"] public open func writeMaxLength(buffer: CPointer<uint8_t>, len: NSUInteger): NSInteger
+    @ForeignName["write:maxLength:"] public open func writeMaxLength(buffer: ObjCPointer<uint8_t>, len: NSUInteger): NSInteger
     public open prop hasSpaceAvailable: Bool
     @ForeignName["initToMemory"] public init()
-    @ForeignName["initToBuffer:capacity:"] public init(buffer: CPointer<uint8_t>, capacity: NSUInteger)
+    @ForeignName["initToBuffer:capacity:"] public init(buffer: ObjCPointer<uint8_t>, capacity: NSUInteger)
     @ForeignName["initWithURL:append:"] public init(url: NSURL, shouldAppend: Bool)
     @ForeignName["initToFileAtPath:append:"] public init(path: NSString, shouldAppend: Bool)
     public static func outputStreamToMemory(): NSOutputStream
-    @ForeignName["outputStreamToBuffer:capacity:"] public static func outputStreamToBufferCapacity(buffer: CPointer<uint8_t>, capacity: NSUInteger): NSOutputStream
+    @ForeignName["outputStreamToBuffer:capacity:"] public static func outputStreamToBufferCapacity(buffer: ObjCPointer<uint8_t>, capacity: NSUInteger): NSOutputStream
     @ForeignName["outputStreamToFileAtPath:append:"] public static func outputStreamToFileAtPathAppend(path: NSString, shouldAppend: Bool): NSOutputStream
     @ForeignName["outputStreamWithURL:append:"] public static func outputStreamWithURLAppend(url: NSURL, shouldAppend: Bool): NSOutputStream
 }
