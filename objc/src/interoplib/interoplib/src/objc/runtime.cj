@@ -69,6 +69,11 @@ public type RegistryId = Int64
  */
 public class ObjCUnreachableCodeException <: Exception {}
 
+/**
+ * An exception that has to be used when runtime calls for method unimplemented in Mirror from protocol.
+ */
+public class ObjCOptionalMethodUnimplementedException <: Exception {}
+
 @Frozen
 /**
  * Gets a Cangjie object of type R from registry by the pointer of its Objective-C counterpart.
