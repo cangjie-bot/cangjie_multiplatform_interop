@@ -649,6 +649,26 @@ static NonTypeSymbol* get_overridden_property(TypeDeclarationSymbol& decl, const
     return nullptr;
 }
 
+static void print_optional(std::ostream& output, const NonTypeSymbol& member)
+{
+    if (member.is_optional()) {
+        if (generate_definitions_mode()) {
+            output << "// ";
+        }
+
+        // Currently FE does not support @ObjCOptional.
+        constexpr bool objc_optional_supported = false;
+
+        if constexpr (objc_optional_supported) {
+            output << "@ObjCOptional\n";
+        } else {
+            if (!normal_mode()) {
+                output << "@ObjCOptional\n";
+            }
+        }
+    }
+}
+
 enum class FuncKind { TopLevelFunc, InterfaceMethod, ClassMethod };
 
 static void write_function(
@@ -669,6 +689,8 @@ static void write_function(
             output << "@ObjCMirror\n";
             format = SymbolPrintFormat::EmitCangjieStrict;
         }
+    } else {
+        print_optional(output, function);
     }
     write_foreign_name(output, function);
     if (kind == FuncKind::ClassMethod || (kind == FuncKind::TopLevelFunc && !is_ctype)) {
@@ -865,6 +887,7 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
                 if (!supported) {
                     output.set_comment();
                 }
+                print_optional(output, member);
                 if (decl_kind != DeclKind::Interface) {
                     output << "public ";
                 }

@@ -619,6 +619,7 @@ constexpr uint8_t ModifierStatic = 1 << 3;
 constexpr uint8_t ModifierReadonly = 1 << 4;
 constexpr uint8_t ModifierNullable = 1 << 5;
 constexpr uint8_t ModifierOverride = 1 << 6;
+constexpr uint8_t ModifierOptional = 1 << 7;
 
 class TypeDeclarationSymbol : public NamedTypeSymbol {
     std::vector<std::unique_ptr<TypeParameterSymbol>> parameters_;
@@ -1178,6 +1179,11 @@ public:
     [[nodiscard]] bool is_override() const noexcept
     {
         return modifiers_ & ModifierOverride;
+    }
+
+    [[nodiscard]] bool is_optional() const noexcept
+    {
+        return modifiers_ & ModifierOptional;
     }
 
     [[nodiscard]] const std::string& getter() const noexcept

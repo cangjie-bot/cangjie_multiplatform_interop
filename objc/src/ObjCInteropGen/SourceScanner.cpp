@@ -196,7 +196,7 @@ class SourceScanner final : public ClangVisitor {
     [[nodiscard]] Symbol* push_property(
         std::string&& name, std::string&& getter, std::string&& setter, uint8_t modifiers);
 
-    [[nodiscard]] Symbol* push_member_method(CXCursor cursor, std::string&& name, bool is_static);
+    [[nodiscard]] Symbol* push_member_method(CXCursor cursor, std::string&& name, uint8_t modifiers);
 
     [[nodiscard]] Symbol* push_constructor(CXCursor cursor, std::string&& name);
 
@@ -958,7 +958,7 @@ Symbol* SourceScanner::push_top_level_function(const CXCursor& cursor, std::stri
     return push_current(&function);
 }
 
-Symbol* SourceScanner::push_member_method(CXCursor cursor, std::string&& name, bool is_static)
+Symbol* SourceScanner::push_member_method(CXCursor cursor, std::string&& name, uint8_t modifiers)
 {
     assert(current_top_is_type() || current_top_is_property());
     auto* decl = current_type_declaration();
@@ -974,7 +974,6 @@ Symbol* SourceScanner::push_member_method(CXCursor cursor, std::string&& name, b
     if (nullable_overridden_result_type) {
         cx_result_type = *nullable_overridden_result_type;
     }
-    uint8_t modifiers = 0;
     auto overridden_cursors = OverriddenCursors::get(cursor);
     if (!overridden_cursors.empty()) {
         modifiers |= ModifierOverride;
@@ -990,9 +989,6 @@ Symbol* SourceScanner::push_member_method(CXCursor cursor, std::string&& name, b
                 }
             }
         }
-    }
-    if (is_static) {
-        modifiers |= ModifierStatic;
     }
     if (is_nullable(cx_result_type)) {
         modifiers |= ModifierNullable;
@@ -1237,21 +1233,34 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
         }
         case CXCursor_ObjCInstanceMethodDecl: {
             pushed = is_init_method(cursor) ? push_constructor(cursor, std::move(name))
-                                            : push_member_method(cursor, std::move(name), false);
+                                            : push_member_method(cursor, std::move(name),
+                                                  clang_Cursor_isObjCOptional(cursor) ? ModifierOptional : 0);
             this->func_parameter_index_ = 0;
             break;
         }
         case CXCursor_ObjCClassMethodDecl: {
-            pushed = push_member_method(cursor, std::move(name), true);
+            uint8_t modifiers = ModifierStatic;
+            if (clang_Cursor_isObjCOptional(cursor)) {
+                modifiers |= ModifierOptional;
+            }
+            pushed = push_member_method(cursor, std::move(name), modifiers);
             this->func_parameter_index_ = 0;
             break;
         }
         case CXCursor_ObjCPropertyDecl: {
+            uint8_t modifiers = 0;
             auto attributes = clang_Cursor_getObjCPropertyAttributes(cursor, 0);
+            if (attributes & CXObjCPropertyAttr_class) {
+                modifiers |= ModifierStatic;
+            }
+            if (attributes & CXObjCPropertyAttr_readonly) {
+                modifiers |= ModifierReadonly;
+            }
+            if (clang_Cursor_isObjCOptional(cursor)) {
+                modifiers |= ModifierOptional;
+            }
             pushed = push_property(std::move(name), as_string(clang_Cursor_getObjCPropertyGetterName(cursor)),
-                as_string(clang_Cursor_getObjCPropertySetterName(cursor)),
-                static_cast<uint8_t>((attributes & CXObjCPropertyAttr_class ? ModifierStatic : 0) |
-                    (attributes & CXObjCPropertyAttr_readonly ? ModifierReadonly : 0)));
+                as_string(clang_Cursor_getObjCPropertySetterName(cursor)), modifiers);
             break;
         }
         case CXCursor_ObjCIvarDecl: {
