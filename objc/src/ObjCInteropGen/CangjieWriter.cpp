@@ -479,35 +479,36 @@ static void write_method_parameters(std::ostream& output, const NonTypeSymbol& m
     output << ')';
 }
 
-static void write_foreign_name(std::ostream& output, const NonTypeSymbol& method)
+static void write_foreign_name(std::ostream& output, std::string_view attribute, std::string_view value)
 {
-    // @ForeignName could not appear on overridden declaration
-    if (method.is_override()) {
-        return;
-    }
-
-    const std::string* selector;
-    const auto& selector_attribute = method.selector_attribute();
-    if (!selector_attribute.empty()) {
-        selector = &selector_attribute;
-    } else if (method.is_constructor() && method.name() != "init") {
-        selector = &method.name();
-    } else {
-        return;
-    }
-
-    // FE supports `@ForeignName` in `@ObjCMirror` classes only.  In the
-    // `GENERATE_DEFINITIONS` mode, `@ObjCMirror` is hidden, so hide `@ForeignName`
-    // as well.
+    // FE supports foreign name attributes in @ObjCMirror classes only.  In the
+    // GENERATE_DEFINITIONS mode, where @ObjCMirror is not used, the foreign name
+    // attributes are commented out.
     auto hide_foreign_name = generate_definitions_mode();
     if (hide_foreign_name) {
         output << "/* ";
     }
-    output << "@ForeignName[\"" << *selector << "\"]";
+    output << attribute << "[\"" << value << "\"]";
     if (hide_foreign_name) {
         output << " */";
     }
     output << ' ';
+}
+
+static void write_foreign_name(std::ostream& output, const NonTypeSymbol& method)
+{
+    // The foreign name attributes could not appear on overridden declaration
+    if (method.is_override()) {
+        return;
+    }
+
+    constexpr std::string_view attribute = "@ForeignName";
+    const auto& selector_attribute = method.selector_attribute();
+    if (!selector_attribute.empty()) {
+        write_foreign_name(output, attribute, selector_attribute);
+    } else if (method.is_constructor() && method.name() != "init") {
+        write_foreign_name(output, attribute, method.name());
+    }
 }
 
 static bool same_types(const TypeLikeSymbol* type1, const TypeLikeSymbol* type2)
@@ -665,6 +666,44 @@ static void print_optional(std::ostream& output, const NonTypeSymbol& member)
             if (!normal_mode()) {
                 output << "@ObjCOptional\n";
             }
+        }
+    }
+}
+
+static bool is_standard_setter_name(std::string_view prop_name, std::string_view setter_name)
+{
+    assert(!prop_name.empty());
+    constexpr char standard_setter_prefix[] = "set";
+    constexpr auto standard_setter_prefix_size = std::size(standard_setter_prefix) - 1;
+    return setter_name.size() > standard_setter_prefix_size + 1 && setter_name.back() == ':' &&
+        starts_with(setter_name, standard_setter_prefix) &&
+        setter_name[standard_setter_prefix_size] == static_cast<char>(toupper(prop_name.front())) &&
+        setter_name.substr(standard_setter_prefix_size + 1, prop_name.size() - 1) == prop_name.substr(1);
+}
+
+static void print_getter_setter_names(std::ostream& output, const NonTypeSymbol& prop)
+{
+    assert(prop.kind() == NonTypeSymbol::Kind::Property);
+    const auto& name = prop.name();
+    const auto& getter_name = prop.getter();
+    bool standard_getter = getter_name == name;
+    if (prop.is_readonly()) {
+        if (!standard_getter) {
+            write_foreign_name(output, "@ForeignGetterName", getter_name);
+        }
+    } else {
+        const auto& setter_name = prop.setter();
+        if (is_standard_setter_name(name, setter_name)) {
+            if (!standard_getter) {
+                write_foreign_name(output, "@ForeignGetterName", getter_name);
+            }
+        } else if (standard_getter) {
+            write_foreign_name(output, "@ForeignSetterName", setter_name);
+        } else if (is_standard_setter_name(getter_name, setter_name)) {
+            write_foreign_name(output, "@ForeignName", getter_name);
+        } else {
+            write_foreign_name(output, "@ForeignGetterName", getter_name);
+            write_foreign_name(output, "@ForeignSetterName", setter_name);
         }
     }
 }
@@ -876,18 +915,20 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
     for (auto&& member : type->members()) {
         if (member.is_property()) {
             auto is_static = member.is_static();
-            auto* getter = get_method_by_selector(*type, member.getter(), is_static);
+            const auto& getter_name = member.getter();
+            auto* getter = get_method_by_selector(*type, getter_name, is_static);
             assert(getter);
-            if (!get_overridden_method(*type, member) && !get_overridden_property(*type, member.getter(), is_static)) {
+            if (!get_overridden_method(*type, member) && !get_overridden_property(*type, getter_name, is_static)) {
                 auto* return_type = getter->return_type();
                 assert(return_type);
                 assert(!return_type->is_unit());
-                const auto& name = getter->name();
+                const auto& name = member.name();
                 auto supported = is_field_type_supported(decl_kind, *return_type, name);
                 if (!supported) {
                     output.set_comment();
                 }
                 print_optional(output, member);
+                print_getter_setter_names(output, member);
                 if (decl_kind != DeclKind::Interface) {
                     output << "public ";
                 }
