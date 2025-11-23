@@ -20,7 +20,7 @@ public open class NSTimer <: NSObject {
     public open prop timeInterval: NSTimeInterval
     public open mut prop tolerance: NSTimeInterval
     public open func invalidate(): Unit
-    public open prop isValid: Bool
+    @ForeignGetterName["isValid"] public open prop valid: Bool
     public open prop userInfo: ?ObjCId
 }
 

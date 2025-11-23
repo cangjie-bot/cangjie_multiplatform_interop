@@ -53,7 +53,7 @@ public open class NSURL <: NSObject & NSSecureCoding & NSCopying {
     public open prop hasDirectoryPath: Bool
     @ForeignName["getFileSystemRepresentation:maxLength:"] public open func getFileSystemRepresentationMaxLength(buffer: ObjCPointer<Int8>, maxBufferLength: NSUInteger): Bool
     public open prop fileSystemRepresentation: ObjCPointer<Int8>
-    public open prop isFileURL: Bool
+    @ForeignGetterName["isFileURL"] public open prop fileURL: Bool
     public open prop standardizedURL: ?NSURL
     public open func isFileReferenceURL(): Bool
     public open func fileReferenceURL(): ?NSURL

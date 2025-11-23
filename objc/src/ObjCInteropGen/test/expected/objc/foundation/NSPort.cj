@@ -27,7 +27,7 @@ public interface NSMachPortDelegate <: NSPortDelegate {
 public open class NSPort <: NSObject & NSCopying & NSCoding {
     public static func port(): NSPort
     public open func invalidate(): Unit
-    public open prop isValid: Bool
+    @ForeignGetterName["isValid"] public open prop valid: Bool
     @ForeignName["setDelegate:"] public open func setDelegate(anObject: ?NSPortDelegate): Unit
     public open func delegate(): ?NSPortDelegate
     @ForeignName["scheduleInRunLoop:forMode:"] public open func scheduleInRunLoopForMode(runLoop: NSRunLoop, mode: NSRunLoopMode): Unit

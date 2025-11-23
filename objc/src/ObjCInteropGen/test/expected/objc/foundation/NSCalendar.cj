@@ -140,13 +140,13 @@ public open class NSDateComponents <: NSObject & NSCopying & NSSecureCoding {
     public open mut prop weekOfMonth: NSInteger
     public open mut prop weekOfYear: NSInteger
     public open mut prop yearForWeekOfYear: NSInteger
-    public open mut prop isLeapMonth: Bool
+    @ForeignGetterName["isLeapMonth"] public open mut prop leapMonth: Bool
     public open prop date: ?NSDate
     public open func week(): NSInteger
     @ForeignName["setWeek:"] public open func setWeek(v: NSInteger): Unit
     @ForeignName["setValue:forComponent:"] public open func setValueForComponent(value: NSInteger, unit: Int32 /*NSCalendarUnit*/): Unit
     @ForeignName["valueForComponent:"] public open func valueForComponent(unit: Int32 /*NSCalendarUnit*/): NSInteger
-    public open prop isValidDate: Bool
+    @ForeignGetterName["isValidDate"] public open prop validDate: Bool
     @ForeignName["isValidDateInCalendar:"] public open func isValidDateInCalendar(calendar: NSCalendar): Bool
 }
 

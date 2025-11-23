@@ -18,7 +18,7 @@ public abstract sealed class NSItemProviderFileOptions {
 
 @ObjCMirror
 public interface NSItemProviderWriting <: NSObjectProtocol {
-    static prop writableTypeIdentifiersForItemProviderStatic: NSArray/*<NSString>*/
+    @ForeignGetterName["writableTypeIdentifiersForItemProvider"] static prop writableTypeIdentifiersForItemProviderStatic: NSArray/*<NSString>*/
     @ObjCOptional
     prop writableTypeIdentifiersForItemProvider: NSArray/*<NSString>*/
     @ObjCOptional

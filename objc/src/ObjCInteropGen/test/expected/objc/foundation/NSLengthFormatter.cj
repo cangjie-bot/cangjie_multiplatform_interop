@@ -20,7 +20,7 @@ public abstract sealed class NSLengthFormatterUnit {
 public open class NSLengthFormatter <: NSFormatter {
     public open mut prop numberFormatter: NSNumberFormatter
     public open mut prop unitStyle: Int32 /*NSFormattingUnitStyle*/
-    public open mut prop isForPersonHeightUse: Bool
+    @ForeignGetterName["isForPersonHeightUse"] public open mut prop forPersonHeightUse: Bool
     @ForeignName["stringFromValue:unit:"] public open func stringFromValueUnit(value: Float64, unit: Int32 /*NSLengthFormatterUnit*/): NSString
     @ForeignName["stringFromMeters:"] public open func stringFromMeters(numberInMeters: Float64): NSString
     @ForeignName["unitStringFromValue:unit:"] public open func unitStringFromValueUnit(value: Float64, unit: Int32 /*NSLengthFormatterUnit*/): NSString

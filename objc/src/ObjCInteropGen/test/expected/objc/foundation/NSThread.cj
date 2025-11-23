@@ -24,14 +24,14 @@ public open class NSThread <: NSObject {
     public open mut prop name: ?NSString
     public open mut prop stackSize: NSUInteger
     public open prop isMainThread: Bool
-    public static prop isMainThreadStatic: Bool
+    @ForeignGetterName["isMainThread"] public static prop isMainThreadStatic: Bool
     public static prop mainThread: NSThread
     public init()
     @ForeignName["initWithTarget:selector:object:"] public init(target: ObjCId, selector: SEL, argument: ?ObjCId)
     @ForeignName["initWithBlock:"] public init(block: ObjCBlock<() -> Unit>)
-    public open prop isExecuting: Bool
-    public open prop isFinished: Bool
-    public open prop isCancelled: Bool
+    @ForeignGetterName["isExecuting"] public open prop executing: Bool
+    @ForeignGetterName["isFinished"] public open prop finished: Bool
+    @ForeignGetterName["isCancelled"] public open prop cancelled: Bool
     public open func cancel(): Unit
     public open func start(): Unit
     public open func `main`(): Unit

@@ -17,7 +17,7 @@ public open class NSBundle <: NSObject {
     public static prop allBundles: NSArray/*<NSBundle>*/
     public static prop allFrameworks: NSArray/*<NSBundle>*/
     @ForeignName["load"] public open func loadInstance(): Bool
-    public open prop isLoaded: Bool
+    @ForeignGetterName["isLoaded"] public open prop loaded: Bool
     public open func unload(): Bool
     @ForeignName["preflightAndReturnError:"] public open func preflightAndReturnError(error: ObjCPointer<NSError>): Bool
     @ForeignName["loadAndReturnError:"] public open func loadAndReturnError(error: ObjCPointer<NSError>): Bool

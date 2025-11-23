@@ -27,7 +27,7 @@ public open class NSScanner <: NSObject & NSCopying {
     @ForeignName["scanCharactersFromSet:intoString:"] public open func scanCharactersFromSetIntoString(set: NSCharacterSet, result: ObjCPointer<NSString>): Bool
     @ForeignName["scanUpToString:intoString:"] public open func scanUpToStringIntoString(string: NSString, result: ObjCPointer<NSString>): Bool
     @ForeignName["scanUpToCharactersFromSet:intoString:"] public open func scanUpToCharactersFromSetIntoString(set: NSCharacterSet, result: ObjCPointer<NSString>): Bool
-    public open prop isAtEnd: Bool
+    @ForeignGetterName["isAtEnd"] public open prop atEnd: Bool
     @ForeignName["scannerWithString:"] public static func scannerWithString(string: NSString): NSScanner
     @ForeignName["localizedScannerWithString:"] public static func localizedScannerWithString(string: NSString): ObjCId
     @ForeignName["scanDecimal:"] public open func scanDecimal(dcm: ObjCPointer<NSDecimal>): Bool

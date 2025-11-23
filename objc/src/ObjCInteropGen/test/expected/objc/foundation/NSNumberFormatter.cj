@@ -70,11 +70,11 @@ public open class NSNumberFormatter <: NSFormatter {
     public open mut prop minimum: ?NSNumber
     public open mut prop maximum: ?NSNumber
     public open mut prop currencyGroupingSeparator: NSString
-    public open mut prop isLenient: Bool
+    @ForeignGetterName["isLenient"] public open mut prop lenient: Bool
     public open mut prop usesSignificantDigits: Bool
     public open mut prop minimumSignificantDigits: NSUInteger
     public open mut prop maximumSignificantDigits: NSUInteger
-    public open mut prop isPartialStringValidationEnabled: Bool
+    @ForeignGetterName["isPartialStringValidationEnabled"] public open mut prop partialStringValidationEnabled: Bool
 }
 
 public abstract sealed class NSNumberFormatterStyle {

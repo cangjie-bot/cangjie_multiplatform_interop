@@ -23,7 +23,7 @@ public open class NSDateFormatter <: NSFormatter {
     public open mut prop formatterBehavior: Int32 /*NSDateFormatterBehavior*/
     public open mut prop timeZone: NSTimeZone
     public open mut prop calendar: NSCalendar
-    public open mut prop isLenient: Bool
+    @ForeignGetterName["isLenient"] public open mut prop lenient: Bool
     public open mut prop twoDigitStartDate: ?NSDate
     public open mut prop defaultDate: ?NSDate
     public open mut prop eraSymbols: NSArray/*<NSString>*/

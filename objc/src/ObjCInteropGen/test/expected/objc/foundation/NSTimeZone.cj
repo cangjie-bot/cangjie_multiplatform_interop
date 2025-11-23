@@ -23,7 +23,7 @@ public open class NSTimeZone <: NSObject & NSCopying & NSSecureCoding {
     public static prop timeZoneDataVersion: NSString
     public open prop secondsFromGMT: NSInteger
     public open prop abbreviation: ?NSString
-    public open prop isDaylightSavingTime: Bool
+    @ForeignGetterName["isDaylightSavingTime"] public open prop daylightSavingTime: Bool
     public open prop daylightSavingTimeOffset: NSTimeInterval
     public open prop nextDaylightSavingTimeTransition: ?NSDate
     @ForeignName["isEqualToTimeZone:"] public open func isEqualToTimeZone(aTimeZone: NSTimeZone): Bool

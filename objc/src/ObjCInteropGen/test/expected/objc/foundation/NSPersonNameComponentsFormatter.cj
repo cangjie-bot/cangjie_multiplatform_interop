@@ -20,7 +20,7 @@ public abstract sealed class NSPersonNameComponentsFormatterOptions {
 @ObjCMirror
 public open class NSPersonNameComponentsFormatter <: NSFormatter {
     public open mut prop style: Int32 /*NSPersonNameComponentsFormatterStyle*/
-    public open mut prop isPhonetic: Bool
+    @ForeignGetterName["isPhonetic"] public open mut prop phonetic: Bool
     public open mut prop locale: NSLocale
     @ForeignName["localizedStringFromPersonNameComponents:style:options:"] public static func localizedStringFromPersonNameComponentsStyleOptions(components: NSPersonNameComponents, nameFormatStyle: Int32 /*NSPersonNameComponentsFormatterStyle*/, nameOptions: Int32 /*NSPersonNameComponentsFormatterOptions*/): NSString
     @ForeignName["stringFromPersonNameComponents:"] public open func stringFromPersonNameComponents(components: NSPersonNameComponents): NSString

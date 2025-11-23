@@ -9,13 +9,13 @@ import objc.lang.*
 public open class NSOperation <: NSObject {
     public open func start(): Unit
     public open func `main`(): Unit
-    public open prop isCancelled: Bool
+    @ForeignGetterName["isCancelled"] public open prop cancelled: Bool
     public open func cancel(): Unit
-    public open prop isExecuting: Bool
-    public open prop isFinished: Bool
-    public open prop isConcurrent: Bool
-    public open prop isAsynchronous: Bool
-    public open prop isReady: Bool
+    @ForeignGetterName["isExecuting"] public open prop executing: Bool
+    @ForeignGetterName["isFinished"] public open prop finished: Bool
+    @ForeignGetterName["isConcurrent"] public open prop concurrent: Bool
+    @ForeignGetterName["isAsynchronous"] public open prop asynchronous: Bool
+    @ForeignGetterName["isReady"] public open prop ready: Bool
     @ForeignName["addDependency:"] public open func addDependency(op: NSOperation): Unit
     @ForeignName["removeDependency:"] public open func removeDependency(op: NSOperation): Unit
     public open prop dependencies: NSArray/*<NSOperation>*/
@@ -57,7 +57,7 @@ public open class NSOperationQueue <: NSObject & NSProgressReporting {
     @ForeignName["addOperationWithBlock:"] public open func addOperationWithBlock(block: ObjCBlock<() -> Unit>): Unit
     @ForeignName["addBarrierBlock:"] public open func addBarrierBlock(barrier: ObjCBlock<() -> Unit>): Unit
     public open mut prop maxConcurrentOperationCount: NSInteger
-    public open mut prop isSuspended: Bool
+    @ForeignGetterName["isSuspended"] public open mut prop suspended: Bool
     public open mut prop name: ?NSString
     public open mut prop qualityOfService: Int32 /*NSQualityOfService*/
     public open mut prop underlyingQueue: dispatch_queue_t

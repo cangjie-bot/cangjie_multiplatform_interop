@@ -172,7 +172,7 @@ public open class NSString <: NSObject & NSCopying & NSMutableCopying & NSSecure
     @ForeignName["variantFittingPresentationWidth:"] public open func variantFittingPresentationWidth(width: NSInteger): NSString
     @ForeignName["pathWithComponents:"] public static func pathWithComponents(components: NSArray/*<NSString>*/): NSString
     public open prop pathComponents: NSArray/*<NSString>*/
-    public open prop isAbsolutePath: Bool
+    @ForeignGetterName["isAbsolutePath"] public open prop absolutePath: Bool
     public open prop lastPathComponent: NSString
     public open prop stringByDeletingLastPathComponent: NSString
     @ForeignName["stringByAppendingPathComponent:"] public open func stringByAppendingPathComponent(str: NSString): NSString

@@ -211,7 +211,7 @@ public open class NSURLSessionConfiguration <: NSObject & NSCopying {
     public open mut prop allowsConstrainedNetworkAccess: Bool
     public open mut prop requiresDNSSECValidation: Bool
     public open mut prop waitsForConnectivity: Bool
-    public open mut prop isDiscretionary: Bool
+    @ForeignGetterName["isDiscretionary"] public open mut prop discretionary: Bool
     public open mut prop sharedContainerIdentifier: ?NSString
     public open mut prop sessionSendsLaunchEvents: Bool
     public open mut prop connectionProxyDictionary: ?NSDictionary/*<KeyType, ObjectType>*/
@@ -329,8 +329,8 @@ public open class NSURLSessionTaskTransactionMetrics <: NSObject {
     public open prop responseStartDate: ?NSDate
     public open prop responseEndDate: ?NSDate
     public open prop networkProtocolName: ?NSString
-    public open prop isProxyConnection: Bool
-    public open prop isReusedConnection: Bool
+    @ForeignGetterName["isProxyConnection"] public open prop proxyConnection: Bool
+    @ForeignGetterName["isReusedConnection"] public open prop reusedConnection: Bool
     public open prop resourceFetchType: Int32 /*NSURLSessionTaskMetricsResourceFetchType*/
     public open prop countOfRequestHeaderBytesSent: int64_t
     public open prop countOfRequestBodyBytesSent: int64_t
@@ -344,10 +344,10 @@ public open class NSURLSessionTaskTransactionMetrics <: NSObject {
     public open prop remotePort: ?NSNumber
     public open prop negotiatedTLSProtocolVersion: ?NSNumber
     public open prop negotiatedTLSCipherSuite: ?NSNumber
-    public open prop isCellular: Bool
-    public open prop isExpensive: Bool
-    public open prop isConstrained: Bool
-    public open prop isMultipath: Bool
+    @ForeignGetterName["isCellular"] public open prop cellular: Bool
+    @ForeignGetterName["isExpensive"] public open prop expensive: Bool
+    @ForeignGetterName["isConstrained"] public open prop constrained: Bool
+    @ForeignGetterName["isMultipath"] public open prop multipath: Bool
     public open prop domainResolutionProtocol: Int32 /*NSURLSessionTaskMetricsDomainResolutionProtocol*/
     public init()
     public static func new(): NSURLSessionTaskTransactionMetrics

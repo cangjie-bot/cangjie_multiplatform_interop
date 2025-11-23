@@ -38,10 +38,10 @@ public open class NSUserActivity <: NSObject {
     public open func resignCurrent(): Unit
     public open func invalidate(): Unit
     @ForeignName["getContinuationStreamsWithCompletionHandler:"] public open func getContinuationStreamsWithCompletionHandler(completionHandler: ObjCBlock<(NSInputStream, NSOutputStream, NSError) -> Unit>): Unit
-    public open mut prop isEligibleForHandoff: Bool
-    public open mut prop isEligibleForSearch: Bool
-    public open mut prop isEligibleForPublicIndexing: Bool
-    public open mut prop isEligibleForPrediction: Bool
+    @ForeignGetterName["isEligibleForHandoff"] public open mut prop eligibleForHandoff: Bool
+    @ForeignGetterName["isEligibleForSearch"] public open mut prop eligibleForSearch: Bool
+    @ForeignGetterName["isEligibleForPublicIndexing"] public open mut prop eligibleForPublicIndexing: Bool
+    @ForeignGetterName["isEligibleForPrediction"] public open mut prop eligibleForPrediction: Bool
     public open mut prop persistentIdentifier: NSUserActivityPersistentIdentifier
     @ForeignName["deleteSavedUserActivitiesWithPersistentIdentifiers:completionHandler:"] public static func deleteSavedUserActivitiesWithPersistentIdentifiersCompletionHandler(persistentIdentifiers: NSArray/*<NSUserActivityPersistentIdentifier>*/, handler: ObjCBlock<() -> Unit>): Unit
     @ForeignName["deleteAllSavedUserActivitiesWithCompletionHandler:"] public static func deleteAllSavedUserActivitiesWithCompletionHandler(handler: ObjCBlock<() -> Unit>): Unit

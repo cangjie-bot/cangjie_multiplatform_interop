@@ -26,9 +26,9 @@ public open class NSMetadataQuery <: NSObject {
     public open mut prop operationQueue: ?NSOperationQueue
     public open func startQuery(): Bool
     public open func stopQuery(): Unit
-    public open prop isStarted: Bool
-    public open prop isGathering: Bool
-    public open prop isStopped: Bool
+    @ForeignGetterName["isStarted"] public open prop started: Bool
+    @ForeignGetterName["isGathering"] public open prop gathering: Bool
+    @ForeignGetterName["isStopped"] public open prop stopped: Bool
     public open func disableUpdates(): Unit
     public open func enableUpdates(): Unit
     public open prop resultCount: NSUInteger
