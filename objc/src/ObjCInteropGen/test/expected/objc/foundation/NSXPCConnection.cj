@@ -7,6 +7,7 @@ import objc.lang.*
 
 @ObjCMirror
 public interface NSXPCListenerDelegate <: NSObjectProtocol {
+    @ObjCOptional
     @ForeignName["listener:shouldAcceptNewConnection:"] func listenerShouldAcceptNewConnection(listener: NSXPCListener, newConnection: NSXPCConnection): Bool
 }
 
@@ -14,6 +15,7 @@ public interface NSXPCListenerDelegate <: NSObjectProtocol {
 public interface NSXPCProxyCreating {
     func remoteObjectProxy(): ObjCId
     @ForeignName["remoteObjectProxyWithErrorHandler:"] func remoteObjectProxyWithErrorHandler(handler: ObjCBlock<(NSError) -> Unit>): ObjCId
+    @ObjCOptional
     @ForeignName["synchronousRemoteObjectProxyWithErrorHandler:"] func synchronousRemoteObjectProxyWithErrorHandler(handler: ObjCBlock<(NSError) -> Unit>): ObjCId
 }
 

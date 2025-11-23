@@ -24,28 +24,43 @@ public open class NSURLConnection <: NSObject {
 
 @ObjCMirror
 public interface NSURLConnectionDelegate <: NSObjectProtocol {
+    @ObjCOptional
     @ForeignName["connection:didFailWithError:"] func connectionDidFailWithError(connection: NSURLConnection, error: NSError): Unit
+    @ObjCOptional
     @ForeignName["connectionShouldUseCredentialStorage:"] func connectionShouldUseCredentialStorage(connection: NSURLConnection): Bool
+    @ObjCOptional
     @ForeignName["connection:willSendRequestForAuthenticationChallenge:"] func connectionWillSendRequestForAuthenticationChallenge(connection: NSURLConnection, challenge: NSURLAuthenticationChallenge): Unit
+    @ObjCOptional
     @ForeignName["connection:canAuthenticateAgainstProtectionSpace:"] func connectionCanAuthenticateAgainstProtectionSpace(connection: NSURLConnection, protectionSpace: NSURLProtectionSpace): Bool
+    @ObjCOptional
     @ForeignName["connection:didReceiveAuthenticationChallenge:"] func connectionDidReceiveAuthenticationChallenge(connection: NSURLConnection, challenge: NSURLAuthenticationChallenge): Unit
+    @ObjCOptional
     @ForeignName["connection:didCancelAuthenticationChallenge:"] func connectionDidCancelAuthenticationChallenge(connection: NSURLConnection, challenge: NSURLAuthenticationChallenge): Unit
 }
 
 @ObjCMirror
 public interface NSURLConnectionDataDelegate <: NSURLConnectionDelegate {
+    @ObjCOptional
     @ForeignName["connection:willSendRequest:redirectResponse:"] func connectionWillSendRequestRedirectResponse(connection: NSURLConnection, request: NSURLRequest, response: ?NSURLResponse): ?NSURLRequest
+    @ObjCOptional
     @ForeignName["connection:didReceiveResponse:"] func connectionDidReceiveResponse(connection: NSURLConnection, response: NSURLResponse): Unit
+    @ObjCOptional
     @ForeignName["connection:didReceiveData:"] func connectionDidReceiveData(connection: NSURLConnection, data: NSData): Unit
+    @ObjCOptional
     @ForeignName["connection:needNewBodyStream:"] func connectionNeedNewBodyStream(connection: NSURLConnection, request: NSURLRequest): ?NSInputStream
+    @ObjCOptional
     @ForeignName["connection:didSendBodyData:totalBytesWritten:totalBytesExpectedToWrite:"] func connectionDidSendBodyDataTotalBytesWrittenTotalBytesExpectedToWrite(connection: NSURLConnection, bytesWritten: NSInteger, totalBytesWritten: NSInteger, totalBytesExpectedToWrite: NSInteger): Unit
+    @ObjCOptional
     @ForeignName["connection:willCacheResponse:"] func connectionWillCacheResponse(connection: NSURLConnection, cachedResponse: NSCachedURLResponse): ?NSCachedURLResponse
+    @ObjCOptional
     @ForeignName["connectionDidFinishLoading:"] func connectionDidFinishLoading(connection: NSURLConnection): Unit
 }
 
 @ObjCMirror
 public interface NSURLConnectionDownloadDelegate <: NSURLConnectionDelegate {
+    @ObjCOptional
     @ForeignName["connection:didWriteData:totalBytesWritten:expectedTotalBytes:"] func connectionDidWriteDataTotalBytesWrittenExpectedTotalBytes(connection: NSURLConnection, bytesWritten: Int64, totalBytesWritten: Int64, expectedTotalBytes: Int64): Unit
+    @ObjCOptional
     @ForeignName["connectionDidResumeDownloading:totalBytesWritten:expectedTotalBytes:"] func connectionDidResumeDownloadingTotalBytesWrittenExpectedTotalBytes(connection: NSURLConnection, totalBytesWritten: Int64, expectedTotalBytes: Int64): Unit
     @ForeignName["connectionDidFinishDownloading:destinationURL:"] func connectionDidFinishDownloadingDestinationURL(connection: NSURLConnection, destinationURL: NSURL): Unit
 }

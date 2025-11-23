@@ -13,11 +13,13 @@ public open class NSPortMessage {
 
 @ObjCMirror
 public interface NSPortDelegate <: NSObjectProtocol {
+    @ObjCOptional
     @ForeignName["handlePortMessage:"] func handlePortMessage(message: NSPortMessage): Unit
 }
 
 @ObjCMirror
 public interface NSMachPortDelegate <: NSPortDelegate {
+    @ObjCOptional
     @ForeignName["handleMachMessage:"] func handleMachMessage(msg: ObjCPointer<Unit>): Unit
 }
 

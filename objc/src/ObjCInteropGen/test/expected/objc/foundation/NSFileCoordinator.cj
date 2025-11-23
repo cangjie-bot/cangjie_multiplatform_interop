@@ -9,25 +9,45 @@ import objc.lang.*
 public interface NSFilePresenter <: NSObjectProtocol {
     prop presentedItemURL: ?NSURL
     prop presentedItemOperationQueue: NSOperationQueue
+    @ObjCOptional
     prop primaryPresentedItemURL: ?NSURL
+    @ObjCOptional
     @ForeignName["relinquishPresentedItemToReader:"] func relinquishPresentedItemToReader(reader: ObjCBlock<(ObjCBlock<() -> Unit>) -> Unit>): Unit
+    @ObjCOptional
     @ForeignName["relinquishPresentedItemToWriter:"] func relinquishPresentedItemToWriter(writer: ObjCBlock<(ObjCBlock<() -> Unit>) -> Unit>): Unit
+    @ObjCOptional
     @ForeignName["savePresentedItemChangesWithCompletionHandler:"] func savePresentedItemChangesWithCompletionHandler(completionHandler: ObjCBlock<(NSError) -> Unit>): Unit
+    @ObjCOptional
     @ForeignName["accommodatePresentedItemDeletionWithCompletionHandler:"] func accommodatePresentedItemDeletionWithCompletionHandler(completionHandler: ObjCBlock<(NSError) -> Unit>): Unit
+    @ObjCOptional
     @ForeignName["accommodatePresentedItemEvictionWithCompletionHandler:"] func accommodatePresentedItemEvictionWithCompletionHandler(completionHandler: ObjCBlock<(NSError) -> Unit>): Unit
+    @ObjCOptional
     @ForeignName["presentedItemDidMoveToURL:"] func presentedItemDidMoveToURL(newURL: NSURL): Unit
+    @ObjCOptional
     func presentedItemDidChange(): Unit
+    @ObjCOptional
     @ForeignName["presentedItemDidChangeUbiquityAttributes:"] func presentedItemDidChangeUbiquityAttributes(attributes: NSSet/*<NSURLResourceKey>*/): Unit
+    @ObjCOptional
     prop observedPresentedItemUbiquityAttributes: NSSet/*<NSURLResourceKey>*/
+    @ObjCOptional
     @ForeignName["presentedItemDidGainVersion:"] func presentedItemDidGainVersion(version: NSFileVersion): Unit
+    @ObjCOptional
     @ForeignName["presentedItemDidLoseVersion:"] func presentedItemDidLoseVersion(version: NSFileVersion): Unit
+    @ObjCOptional
     @ForeignName["presentedItemDidResolveConflictVersion:"] func presentedItemDidResolveConflictVersion(version: NSFileVersion): Unit
+    @ObjCOptional
     @ForeignName["accommodatePresentedSubitemDeletionAtURL:completionHandler:"] func accommodatePresentedSubitemDeletionAtURLCompletionHandler(url: NSURL, completionHandler: ObjCBlock<(NSError) -> Unit>): Unit
+    @ObjCOptional
     @ForeignName["presentedSubitemDidAppearAtURL:"] func presentedSubitemDidAppearAtURL(url: NSURL): Unit
+    @ObjCOptional
     @ForeignName["presentedSubitemAtURL:didMoveToURL:"] func presentedSubitemAtURLDidMoveToURL(oldURL: NSURL, newURL: NSURL): Unit
+    @ObjCOptional
     @ForeignName["presentedSubitemDidChangeAtURL:"] func presentedSubitemDidChangeAtURL(url: NSURL): Unit
+    @ObjCOptional
     @ForeignName["presentedSubitemAtURL:didGainVersion:"] func presentedSubitemAtURLDidGainVersion(url: NSURL, version: NSFileVersion): Unit
+    @ObjCOptional
     @ForeignName["presentedSubitemAtURL:didLoseVersion:"] func presentedSubitemAtURLDidLoseVersion(url: NSURL, version: NSFileVersion): Unit
+    @ObjCOptional
     @ForeignName["presentedSubitemAtURL:didResolveConflictVersion:"] func presentedSubitemAtURLDidResolveConflictVersion(url: NSURL, version: NSFileVersion): Unit
 }
 

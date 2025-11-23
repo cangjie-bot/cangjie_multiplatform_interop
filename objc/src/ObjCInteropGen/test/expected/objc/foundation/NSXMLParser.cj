@@ -7,25 +7,45 @@ import objc.lang.*
 
 @ObjCMirror
 public interface NSXMLParserDelegate <: NSObjectProtocol {
+    @ObjCOptional
     @ForeignName["parserDidStartDocument:"] func parserDidStartDocument(parser: NSXMLParser): Unit
+    @ObjCOptional
     @ForeignName["parserDidEndDocument:"] func parserDidEndDocument(parser: NSXMLParser): Unit
+    @ObjCOptional
     @ForeignName["parser:foundNotationDeclarationWithName:publicID:systemID:"] func parserFoundNotationDeclarationWithNamePublicIDSystemID(parser: NSXMLParser, name: NSString, publicID: ?NSString, systemID: ?NSString): Unit
+    @ObjCOptional
     @ForeignName["parser:foundUnparsedEntityDeclarationWithName:publicID:systemID:notationName:"] func parserFoundUnparsedEntityDeclarationWithNamePublicIDSystemIDNotationName(parser: NSXMLParser, name: NSString, publicID: ?NSString, systemID: ?NSString, notationName: ?NSString): Unit
+    @ObjCOptional
     @ForeignName["parser:foundAttributeDeclarationWithName:forElement:type:defaultValue:"] func parserFoundAttributeDeclarationWithNameForElementTypeDefaultValue(parser: NSXMLParser, attributeName: NSString, elementName: NSString, `type`: ?NSString, defaultValue: ?NSString): Unit
+    @ObjCOptional
     @ForeignName["parser:foundElementDeclarationWithName:model:"] func parserFoundElementDeclarationWithNameModel(parser: NSXMLParser, elementName: NSString, model: NSString): Unit
+    @ObjCOptional
     @ForeignName["parser:foundInternalEntityDeclarationWithName:value:"] func parserFoundInternalEntityDeclarationWithNameValue(parser: NSXMLParser, name: NSString, value: ?NSString): Unit
+    @ObjCOptional
     @ForeignName["parser:foundExternalEntityDeclarationWithName:publicID:systemID:"] func parserFoundExternalEntityDeclarationWithNamePublicIDSystemID(parser: NSXMLParser, name: NSString, publicID: ?NSString, systemID: ?NSString): Unit
+    @ObjCOptional
     @ForeignName["parser:didStartElement:namespaceURI:qualifiedName:attributes:"] func parserDidStartElementNamespaceURIQualifiedNameAttributes(parser: NSXMLParser, elementName: NSString, namespaceURI: ?NSString, qName: ?NSString, attributeDict: NSDictionary/*<NSString, NSString>*/): Unit
+    @ObjCOptional
     @ForeignName["parser:didEndElement:namespaceURI:qualifiedName:"] func parserDidEndElementNamespaceURIQualifiedName(parser: NSXMLParser, elementName: NSString, namespaceURI: ?NSString, qName: ?NSString): Unit
+    @ObjCOptional
     @ForeignName["parser:didStartMappingPrefix:toURI:"] func parserDidStartMappingPrefixToURI(parser: NSXMLParser, prefix: NSString, namespaceURI: NSString): Unit
+    @ObjCOptional
     @ForeignName["parser:didEndMappingPrefix:"] func parserDidEndMappingPrefix(parser: NSXMLParser, prefix: NSString): Unit
+    @ObjCOptional
     @ForeignName["parser:foundCharacters:"] func parserFoundCharacters(parser: NSXMLParser, string: NSString): Unit
+    @ObjCOptional
     @ForeignName["parser:foundIgnorableWhitespace:"] func parserFoundIgnorableWhitespace(parser: NSXMLParser, whitespaceString: NSString): Unit
+    @ObjCOptional
     @ForeignName["parser:foundProcessingInstructionWithTarget:data:"] func parserFoundProcessingInstructionWithTargetData(parser: NSXMLParser, target: NSString, data: ?NSString): Unit
+    @ObjCOptional
     @ForeignName["parser:foundComment:"] func parserFoundComment(parser: NSXMLParser, comment: NSString): Unit
+    @ObjCOptional
     @ForeignName["parser:foundCDATA:"] func parserFoundCDATA(parser: NSXMLParser, CDATABlock: NSData): Unit
+    @ObjCOptional
     @ForeignName["parser:resolveExternalEntityName:systemID:"] func parserResolveExternalEntityNameSystemID(parser: NSXMLParser, name: NSString, systemID: ?NSString): ?NSData
+    @ObjCOptional
     @ForeignName["parser:parseErrorOccurred:"] func parserParseErrorOccurred(parser: NSXMLParser, parseError: NSError): Unit
+    @ObjCOptional
     @ForeignName["parser:validationErrorOccurred:"] func parserValidationErrorOccurred(parser: NSXMLParser, validationError: NSError): Unit
 }
 

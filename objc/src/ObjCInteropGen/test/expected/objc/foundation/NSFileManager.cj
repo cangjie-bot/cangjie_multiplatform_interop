@@ -7,21 +7,37 @@ import objc.lang.*
 
 @ObjCMirror
 public interface NSFileManagerDelegate <: NSObjectProtocol {
+    @ObjCOptional
     @ForeignName["fileManager:shouldCopyItemAtPath:toPath:"] func fileManagerShouldCopyItemAtPathToPath(fileManager: NSFileManager, srcPath: NSString, dstPath: NSString): Bool
+    @ObjCOptional
     @ForeignName["fileManager:shouldCopyItemAtURL:toURL:"] func fileManagerShouldCopyItemAtURLToURL(fileManager: NSFileManager, srcURL: NSURL, dstURL: NSURL): Bool
+    @ObjCOptional
     @ForeignName["fileManager:shouldProceedAfterError:copyingItemAtPath:toPath:"] func fileManagerShouldProceedAfterErrorCopyingItemAtPathToPath(fileManager: NSFileManager, error: NSError, srcPath: NSString, dstPath: NSString): Bool
+    @ObjCOptional
     @ForeignName["fileManager:shouldProceedAfterError:copyingItemAtURL:toURL:"] func fileManagerShouldProceedAfterErrorCopyingItemAtURLToURL(fileManager: NSFileManager, error: NSError, srcURL: NSURL, dstURL: NSURL): Bool
+    @ObjCOptional
     @ForeignName["fileManager:shouldMoveItemAtPath:toPath:"] func fileManagerShouldMoveItemAtPathToPath(fileManager: NSFileManager, srcPath: NSString, dstPath: NSString): Bool
+    @ObjCOptional
     @ForeignName["fileManager:shouldMoveItemAtURL:toURL:"] func fileManagerShouldMoveItemAtURLToURL(fileManager: NSFileManager, srcURL: NSURL, dstURL: NSURL): Bool
+    @ObjCOptional
     @ForeignName["fileManager:shouldProceedAfterError:movingItemAtPath:toPath:"] func fileManagerShouldProceedAfterErrorMovingItemAtPathToPath(fileManager: NSFileManager, error: NSError, srcPath: NSString, dstPath: NSString): Bool
+    @ObjCOptional
     @ForeignName["fileManager:shouldProceedAfterError:movingItemAtURL:toURL:"] func fileManagerShouldProceedAfterErrorMovingItemAtURLToURL(fileManager: NSFileManager, error: NSError, srcURL: NSURL, dstURL: NSURL): Bool
+    @ObjCOptional
     @ForeignName["fileManager:shouldLinkItemAtPath:toPath:"] func fileManagerShouldLinkItemAtPathToPath(fileManager: NSFileManager, srcPath: NSString, dstPath: NSString): Bool
+    @ObjCOptional
     @ForeignName["fileManager:shouldLinkItemAtURL:toURL:"] func fileManagerShouldLinkItemAtURLToURL(fileManager: NSFileManager, srcURL: NSURL, dstURL: NSURL): Bool
+    @ObjCOptional
     @ForeignName["fileManager:shouldProceedAfterError:linkingItemAtPath:toPath:"] func fileManagerShouldProceedAfterErrorLinkingItemAtPathToPath(fileManager: NSFileManager, error: NSError, srcPath: NSString, dstPath: NSString): Bool
+    @ObjCOptional
     @ForeignName["fileManager:shouldProceedAfterError:linkingItemAtURL:toURL:"] func fileManagerShouldProceedAfterErrorLinkingItemAtURLToURL(fileManager: NSFileManager, error: NSError, srcURL: NSURL, dstURL: NSURL): Bool
+    @ObjCOptional
     @ForeignName["fileManager:shouldRemoveItemAtPath:"] func fileManagerShouldRemoveItemAtPath(fileManager: NSFileManager, path: NSString): Bool
+    @ObjCOptional
     @ForeignName["fileManager:shouldRemoveItemAtURL:"] func fileManagerShouldRemoveItemAtURL(fileManager: NSFileManager, URL: NSURL): Bool
+    @ObjCOptional
     @ForeignName["fileManager:shouldProceedAfterError:removingItemAtPath:"] func fileManagerShouldProceedAfterErrorRemovingItemAtPath(fileManager: NSFileManager, error: NSError, path: NSString): Bool
+    @ObjCOptional
     @ForeignName["fileManager:shouldProceedAfterError:removingItemAtURL:"] func fileManagerShouldProceedAfterErrorRemovingItemAtURL(fileManager: NSFileManager, error: NSError, URL: NSURL): Bool
 }
 

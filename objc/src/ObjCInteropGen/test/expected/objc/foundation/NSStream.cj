@@ -7,6 +7,7 @@ import objc.lang.*
 
 @ObjCMirror
 public interface NSStreamDelegate <: NSObjectProtocol {
+    @ObjCOptional
     @ForeignName["stream:handleEvent:"] func streamHandleEvent(aStream: NSStream, eventCode: Int32 /*NSStreamEvent*/): Unit
 }
 

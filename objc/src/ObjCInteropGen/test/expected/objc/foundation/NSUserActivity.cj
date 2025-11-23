@@ -7,8 +7,11 @@ import objc.lang.*
 
 @ObjCMirror
 public interface NSUserActivityDelegate <: NSObjectProtocol {
+    @ObjCOptional
     @ForeignName["userActivityWillSave:"] func userActivityWillSave(userActivity: NSUserActivity): Unit
+    @ObjCOptional
     @ForeignName["userActivityWasContinued:"] func userActivityWasContinued(userActivity: NSUserActivity): Unit
+    @ObjCOptional
     @ForeignName["userActivity:didReceiveInputStream:outputStream:"] func userActivityDidReceiveInputStreamOutputStream(userActivity: NSUserActivity, inputStream: NSInputStream, outputStream: NSOutputStream): Unit
 }
 

@@ -7,6 +7,7 @@ import objc.lang.*
 
 @ObjCMirror
 public interface NSCacheDelegate <: NSObjectProtocol {
+    @ObjCOptional
     @ForeignName["cache:willEvictObject:"] func cacheWillEvictObject(cache: NSCache/*<KeyType, ObjectType>*/, obj: ObjCId): Unit
 }
 

@@ -21,6 +21,7 @@ public interface NSObjectProtocol {
     @ForeignName["conformsToProtocol:"] func conformsToProtocol(aProtocol: ?Protocol): Bool
     @ForeignName["respondsToSelector:"] func respondsToSelector(aSelector: ?SEL): Bool
     prop description: ?NSString
+    @ObjCOptional
     prop debugDescription: ?NSString
 }
 

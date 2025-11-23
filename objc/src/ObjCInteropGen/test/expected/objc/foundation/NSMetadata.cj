@@ -7,7 +7,9 @@ import objc.lang.*
 
 @ObjCMirror
 public interface NSMetadataQueryDelegate <: NSObjectProtocol {
+    @ObjCOptional
     @ForeignName["metadataQuery:replacementObjectForResultObject:"] func metadataQueryReplacementObjectForResultObject(query: NSMetadataQuery, result: NSMetadataItem): ObjCId
+    @ObjCOptional
     @ForeignName["metadataQuery:replacementValueForAttribute:value:"] func metadataQueryReplacementValueForAttributeValue(query: NSMetadataQuery, attrName: NSString, attrValue: ObjCId): ObjCId
 }
 
