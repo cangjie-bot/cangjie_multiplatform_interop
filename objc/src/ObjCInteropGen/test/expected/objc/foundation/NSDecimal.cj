@@ -22,12 +22,12 @@ public abstract sealed class NSCalculationError {
 
 @C
 public struct NSDecimal {
-    public var _exponent: Int32 = 0
-    public var _length: UInt32 = 0
-    public var _isNegative: UInt32 = 0
-    public var _isCompact: UInt32 = 0
-    public var _reserved: UInt32 = 0
-    public var _mantissa: VArray<UInt16, $8> = [0, 0, 0, 0, 0, 0, 0, 0]
+    public var _exponent: Int32
+    public var _length: UInt32
+    public var _isNegative: UInt32
+    public var _isCompact: UInt32
+    public var _reserved: UInt32
+    public var _mantissa: VArray<UInt16, $8>
 }
 
 foreign func NSDecimalIsNotANumber(dcm: CPointer<NSDecimal>): Bool
@@ -55,5 +55,5 @@ foreign func NSDecimalPower(result: CPointer<NSDecimal>, number: CPointer<NSDeci
 foreign func NSDecimalMultiplyByPowerOf10(result: CPointer<NSDecimal>, number: CPointer<NSDecimal>, power: Int16, roundingMode: Int32 /*NSRoundingMode*/): Int32 /*NSCalculationError*/
 
 @ObjCMirror
-public func NSDecimalString(dcm: CPointer<NSDecimal>, locale: ?ObjCId): NSString
+public func NSDecimalString(dcm: ObjCPointer<NSDecimal>, locale: ?ObjCId): NSString
 

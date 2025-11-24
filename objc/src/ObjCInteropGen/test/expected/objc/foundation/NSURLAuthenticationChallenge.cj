@@ -10,7 +10,9 @@ public interface NSURLAuthenticationChallengeSender <: NSObjectProtocol {
     @ForeignName["useCredential:forAuthenticationChallenge:"] func useCredentialForAuthenticationChallenge(credential: NSURLCredential, challenge: NSURLAuthenticationChallenge): Unit
     @ForeignName["continueWithoutCredentialForAuthenticationChallenge:"] func continueWithoutCredentialForAuthenticationChallenge(challenge: NSURLAuthenticationChallenge): Unit
     @ForeignName["cancelAuthenticationChallenge:"] func cancelAuthenticationChallenge(challenge: NSURLAuthenticationChallenge): Unit
+    @ObjCOptional
     @ForeignName["performDefaultHandlingForAuthenticationChallenge:"] func performDefaultHandlingForAuthenticationChallenge(challenge: NSURLAuthenticationChallenge): Unit
+    @ObjCOptional
     @ForeignName["rejectProtectionSpaceAndContinueWithChallenge:"] func rejectProtectionSpaceAndContinueWithChallenge(challenge: NSURLAuthenticationChallenge): Unit
 }
 

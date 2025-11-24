@@ -13,7 +13,7 @@ public abstract sealed class NSNumberFormatterBehavior {
 @ObjCMirror
 public open class NSNumberFormatter <: NSFormatter {
     public open mut prop formattingContext: Int32 /*NSFormattingContext*/
-    @ForeignName["getObjectValue:forString:range:error:"] public open func getObjectValueForStringRangeError(obj: ObjCPointer<ObjCId>, string: NSString, rangep: CPointer<NSRange>, error: ObjCPointer<NSError>): Bool
+    @ForeignName["getObjectValue:forString:range:error:"] public open func getObjectValueForStringRangeError(obj: ObjCPointer<ObjCId>, string: NSString, rangep: ObjCPointer<NSRange>, error: ObjCPointer<NSError>): Bool
     @ForeignName["stringFromNumber:"] public open func stringFromNumber(number: NSNumber): ?NSString
     @ForeignName["numberFromString:"] public open func numberFromString(string: NSString): ?NSNumber
     @ForeignName["localizedStringFromNumber:numberStyle:"] public static func localizedStringFromNumberNumberStyle(num: NSNumber, nstyle: Int32 /*NSNumberFormatterStyle*/): NSString
@@ -70,11 +70,11 @@ public open class NSNumberFormatter <: NSFormatter {
     public open mut prop minimum: ?NSNumber
     public open mut prop maximum: ?NSNumber
     public open mut prop currencyGroupingSeparator: NSString
-    public open mut prop isLenient: Bool
+    @ForeignGetterName["isLenient"] public open mut prop lenient: Bool
     public open mut prop usesSignificantDigits: Bool
     public open mut prop minimumSignificantDigits: NSUInteger
     public open mut prop maximumSignificantDigits: NSUInteger
-    public open mut prop isPartialStringValidationEnabled: Bool
+    @ForeignGetterName["isPartialStringValidationEnabled"] public open mut prop partialStringValidationEnabled: Bool
 }
 
 public abstract sealed class NSNumberFormatterStyle {

@@ -26,17 +26,17 @@ public open class NSProgress <: NSObject {
     public open mut prop completedUnitCount: int64_t
     public open mut prop localizedDescription: NSString
     public open mut prop localizedAdditionalDescription: NSString
-    public open mut prop isCancellable: Bool
-    public open mut prop isPausable: Bool
-    public open prop isCancelled: Bool
-    public open prop isPaused: Bool
+    @ForeignGetterName["isCancellable"] public open mut prop cancellable: Bool
+    @ForeignGetterName["isPausable"] public open mut prop pausable: Bool
+    @ForeignGetterName["isCancelled"] public open prop cancelled: Bool
+    @ForeignGetterName["isPaused"] public open prop paused: Bool
     public open mut prop cancellationHandler: ObjCBlock<() -> Unit>
     public open mut prop pausingHandler: ObjCBlock<() -> Unit>
     public open mut prop resumingHandler: ObjCBlock<() -> Unit>
     @ForeignName["setUserInfoObject:forKey:"] public open func setUserInfoObjectForKey(objectOrNil: ?ObjCId, key: NSProgressUserInfoKey): Unit
-    public open prop isIndeterminate: Bool
+    @ForeignGetterName["isIndeterminate"] public open prop indeterminate: Bool
     public open prop fractionCompleted: Float64
-    public open prop isFinished: Bool
+    @ForeignGetterName["isFinished"] public open prop finished: Bool
     public open func cancel(): Unit
     public open func pause(): Unit
     public open func `resume`(): Unit
@@ -52,7 +52,7 @@ public open class NSProgress <: NSObject {
     public open func unpublish(): Unit
     @ForeignName["addSubscriberForFileURL:withPublishingHandler:"] public static func addSubscriberForFileURLWithPublishingHandler(url: NSURL, publishingHandler: NSProgressPublishingHandler): ObjCId
     @ForeignName["removeSubscriber:"] public static func removeSubscriber(subscriber: ObjCId): Unit
-    public open prop isOld: Bool
+    @ForeignGetterName["isOld"] public open prop old: Bool
 }
 
 public type NSProgressUnpublishingHandler = ObjCBlock<() -> Unit>

@@ -7,19 +7,29 @@ import objc.lang.*
 
 @ObjCMirror
 public interface NSKeyedArchiverDelegate <: NSObjectProtocol {
+    @ObjCOptional
     @ForeignName["archiver:willEncodeObject:"] func archiverWillEncodeObject(archiver: NSKeyedArchiver, object: ObjCId): ?ObjCId
+    @ObjCOptional
     @ForeignName["archiver:didEncodeObject:"] func archiverDidEncodeObject(archiver: NSKeyedArchiver, object: ?ObjCId): Unit
+    @ObjCOptional
     @ForeignName["archiver:willReplaceObject:withObject:"] func archiverWillReplaceObjectWithObject(archiver: NSKeyedArchiver, object: ?ObjCId, newObject: ?ObjCId): Unit
+    @ObjCOptional
     @ForeignName["archiverWillFinish:"] func archiverWillFinish(archiver: NSKeyedArchiver): Unit
+    @ObjCOptional
     @ForeignName["archiverDidFinish:"] func archiverDidFinish(archiver: NSKeyedArchiver): Unit
 }
 
 @ObjCMirror
 public interface NSKeyedUnarchiverDelegate <: NSObjectProtocol {
+    @ObjCOptional
     @ForeignName["unarchiver:cannotDecodeObjectOfClassName:originalClasses:"] func unarchiverCannotDecodeObjectOfClassNameOriginalClasses(unarchiver: NSKeyedUnarchiver, name: NSString, classNames: NSArray/*<NSString>*/): ?Class
+    @ObjCOptional
     @ForeignName["unarchiver:didDecodeObject:"] func unarchiverDidDecodeObject(unarchiver: NSKeyedUnarchiver, object: ?ObjCId): ?ObjCId
+    @ObjCOptional
     @ForeignName["unarchiver:willReplaceObject:withObject:"] func unarchiverWillReplaceObjectWithObject(unarchiver: NSKeyedUnarchiver, object: ObjCId, newObject: ObjCId): Unit
+    @ObjCOptional
     @ForeignName["unarchiverWillFinish:"] func unarchiverWillFinish(unarchiver: NSKeyedUnarchiver): Unit
+    @ObjCOptional
     @ForeignName["unarchiverDidFinish:"] func unarchiverDidFinish(unarchiver: NSKeyedUnarchiver): Unit
 }
 
@@ -47,7 +57,7 @@ public open class NSKeyedArchiver <: NSCoder {
     public open func encodeInt64ForKey(value: int64_t, key: NSString): Unit
     public open func encodeFloatForKey(value: Float32, key: NSString): Unit
     public open func encodeDoubleForKey(value: Float64, key: NSString): Unit
-    public open func encodeBytesLengthForKey(bytes: CPointer<uint8_t>, length: NSUInteger, key: NSString): Unit
+    public open func encodeBytesLengthForKey(bytes: ObjCPointer<uint8_t>, length: NSUInteger, key: NSString): Unit
 }
 
 @ObjCMirror
@@ -78,6 +88,6 @@ public open class NSKeyedUnarchiver <: NSCoder {
     public open func decodeInt64ForKey(key: NSString): int64_t
     public open func decodeFloatForKey(key: NSString): Float32
     public open func decodeDoubleForKey(key: NSString): Float64
-    public open func decodeBytesForKeyReturnedLength(key: NSString, lengthp: CPointer<NSUInteger>): CPointer<uint8_t>
+    public open func decodeBytesForKeyReturnedLength(key: NSString, lengthp: ObjCPointer<NSUInteger>): ObjCPointer<uint8_t>
 }
 

@@ -12,7 +12,7 @@ public open class NSUndoManager <: NSObject {
     public open prop groupingLevel: NSInteger
     public open func disableUndoRegistration(): Unit
     public open func enableUndoRegistration(): Unit
-    public open prop isUndoRegistrationEnabled: Bool
+    @ForeignGetterName["isUndoRegistrationEnabled"] public open prop undoRegistrationEnabled: Bool
     public open mut prop groupsByEvent: Bool
     public open mut prop levelsOfUndo: NSUInteger
     public open mut prop runLoopModes: NSArray/*<NSRunLoopMode>*/
@@ -23,8 +23,8 @@ public open class NSUndoManager <: NSObject {
     public open prop canRedo: Bool
     public open prop undoCount: NSUInteger
     public open prop redoCount: NSUInteger
-    public open prop isUndoing: Bool
-    public open prop isRedoing: Bool
+    @ForeignGetterName["isUndoing"] public open prop undoing: Bool
+    @ForeignGetterName["isRedoing"] public open prop redoing: Bool
     public open func removeAllActions(): Unit
     @ForeignName["removeAllActionsWithTarget:"] public open func removeAllActionsWithTarget(target: ObjCId): Unit
     @ForeignName["registerUndoWithTarget:selector:object:"] public open func registerUndoWithTargetSelectorObject(target: ObjCId, selector: SEL, object: ?ObjCId): Unit

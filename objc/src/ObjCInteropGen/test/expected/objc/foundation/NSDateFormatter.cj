@@ -8,7 +8,7 @@ import objc.lang.*
 @ObjCMirror
 public open class NSDateFormatter <: NSFormatter {
     public open mut prop formattingContext: Int32 /*NSFormattingContext*/
-    @ForeignName["getObjectValue:forString:range:error:"] public open func getObjectValueForStringRangeError(obj: ObjCPointer<ObjCId>, string: NSString, rangep: CPointer<NSRange>, error: ObjCPointer<NSError>): Bool
+    @ForeignName["getObjectValue:forString:range:error:"] public open func getObjectValueForStringRangeError(obj: ObjCPointer<ObjCId>, string: NSString, rangep: ObjCPointer<NSRange>, error: ObjCPointer<NSError>): Bool
     @ForeignName["stringFromDate:"] public open func stringFromDate(date: NSDate): NSString
     @ForeignName["dateFromString:"] public open func dateFromString(string: NSString): ?NSDate
     @ForeignName["localizedStringFromDate:dateStyle:timeStyle:"] public static func localizedStringFromDateDateStyleTimeStyle(date: NSDate, dstyle: Int32 /*NSDateFormatterStyle*/, tstyle: Int32 /*NSDateFormatterStyle*/): NSString
@@ -23,7 +23,7 @@ public open class NSDateFormatter <: NSFormatter {
     public open mut prop formatterBehavior: Int32 /*NSDateFormatterBehavior*/
     public open mut prop timeZone: NSTimeZone
     public open mut prop calendar: NSCalendar
-    public open mut prop isLenient: Bool
+    @ForeignGetterName["isLenient"] public open mut prop lenient: Bool
     public open mut prop twoDigitStartDate: ?NSDate
     public open mut prop defaultDate: ?NSDate
     public open mut prop eraSymbols: NSArray/*<NSString>*/

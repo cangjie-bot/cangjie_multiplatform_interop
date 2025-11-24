@@ -35,9 +35,9 @@ public open class NSHashTable/*<ObjectType>*/ <: NSObject & NSCopying & NSSecure
 
 @C
 public struct NSHashEnumerator {
-    public var _pi: NSUInteger = unsafe{zeroValue<NSUInteger>()}
-    public var _si: NSUInteger = unsafe{zeroValue<NSUInteger>()}
-    public var _bs: CPointer<Unit> = CPointer<Unit>()
+    public var _pi: NSUInteger
+    public var _si: NSUInteger
+    public var _bs: CPointer<Unit>
 }
 
 @ObjCMirror
@@ -50,22 +50,22 @@ public func NSResetHashTable(table: NSHashTable/*<ObjectType>*/): Unit
 public func NSCompareHashTables(table1: NSHashTable/*<ObjectType>*/, table2: NSHashTable/*<ObjectType>*/): Bool
 
 @ObjCMirror
-public func NSCopyHashTableWithZone(table: NSHashTable/*<ObjectType>*/, zone: CPointer<NSZone>): NSHashTable/*<ObjectType>*/
+public func NSCopyHashTableWithZone(table: NSHashTable/*<ObjectType>*/, zone: ObjCPointer<NSZone>): NSHashTable/*<ObjectType>*/
 
 @ObjCMirror
-public func NSHashGet(table: NSHashTable/*<ObjectType>*/, pointer: CPointer<Unit>): CPointer<Unit>
+public func NSHashGet(table: NSHashTable/*<ObjectType>*/, pointer: ObjCPointer<Unit>): ObjCPointer<Unit>
 
 @ObjCMirror
-public func NSHashInsert(table: NSHashTable/*<ObjectType>*/, pointer: CPointer<Unit>): Unit
+public func NSHashInsert(table: NSHashTable/*<ObjectType>*/, pointer: ObjCPointer<Unit>): Unit
 
 @ObjCMirror
-public func NSHashInsertKnownAbsent(table: NSHashTable/*<ObjectType>*/, pointer: CPointer<Unit>): Unit
+public func NSHashInsertKnownAbsent(table: NSHashTable/*<ObjectType>*/, pointer: ObjCPointer<Unit>): Unit
 
 @ObjCMirror
-public func NSHashInsertIfAbsent(table: NSHashTable/*<ObjectType>*/, pointer: CPointer<Unit>): CPointer<Unit>
+public func NSHashInsertIfAbsent(table: NSHashTable/*<ObjectType>*/, pointer: ObjCPointer<Unit>): ObjCPointer<Unit>
 
 @ObjCMirror
-public func NSHashRemove(table: NSHashTable/*<ObjectType>*/, pointer: CPointer<Unit>): Unit
+public func NSHashRemove(table: NSHashTable/*<ObjectType>*/, pointer: ObjCPointer<Unit>): Unit
 
 @ObjCMirror
 public func NSEnumerateHashTable(table: NSHashTable/*<ObjectType>*/): NSHashEnumerator
@@ -85,15 +85,15 @@ public func NSAllHashTableObjects(table: NSHashTable/*<ObjectType>*/): NSArray/*
 
 @ObjCMirror
 public struct NSHashTableCallBacks {
-    public var hash: ObjCFunc<(NSHashTable/*<ObjectType>*/, CPointer<Unit>) -> NSUInteger> = ObjCFunc<(NSHashTable/*<ObjectType>*/, CPointer<Unit>) -> NSUInteger>()
-    public var isEqual: ObjCFunc<(NSHashTable/*<ObjectType>*/, CPointer<Unit>, CPointer<Unit>) -> Bool> = ObjCFunc<(NSHashTable/*<ObjectType>*/, CPointer<Unit>, CPointer<Unit>) -> Bool>()
-    public var retain: ObjCFunc<(NSHashTable/*<ObjectType>*/, CPointer<Unit>) -> Unit> = ObjCFunc<(NSHashTable/*<ObjectType>*/, CPointer<Unit>) -> Unit>()
-    public var release: ObjCFunc<(NSHashTable/*<ObjectType>*/, CPointer<Unit>) -> Unit> = ObjCFunc<(NSHashTable/*<ObjectType>*/, CPointer<Unit>) -> Unit>()
-    public var describe: ObjCFunc<(NSHashTable/*<ObjectType>*/, CPointer<Unit>) -> NSString> = ObjCFunc<(NSHashTable/*<ObjectType>*/, CPointer<Unit>) -> NSString>()
+    public var hash: ObjCFunc<(NSHashTable/*<ObjectType>*/, ObjCPointer<Unit>) -> NSUInteger>
+    public var isEqual: ObjCFunc<(NSHashTable/*<ObjectType>*/, ObjCPointer<Unit>, ObjCPointer<Unit>) -> Bool>
+    public var retain: ObjCFunc<(NSHashTable/*<ObjectType>*/, ObjCPointer<Unit>) -> Unit>
+    public var release: ObjCFunc<(NSHashTable/*<ObjectType>*/, ObjCPointer<Unit>) -> Unit>
+    public var describe: ObjCFunc<(NSHashTable/*<ObjectType>*/, ObjCPointer<Unit>) -> NSString>
 }
 
 @ObjCMirror
-public func NSCreateHashTableWithZone(callBacks: NSHashTableCallBacks, capacity: NSUInteger, zone: CPointer<NSZone>): NSHashTable/*<ObjectType>*/
+public func NSCreateHashTableWithZone(callBacks: NSHashTableCallBacks, capacity: NSUInteger, zone: ObjCPointer<NSZone>): NSHashTable/*<ObjectType>*/
 
 @ObjCMirror
 public func NSCreateHashTable(callBacks: NSHashTableCallBacks, capacity: NSUInteger): NSHashTable/*<ObjectType>*/

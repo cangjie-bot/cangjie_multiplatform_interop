@@ -21,6 +21,7 @@ public interface NSObjectProtocol {
     @ForeignName["conformsToProtocol:"] func conformsToProtocol(aProtocol: ?Protocol): Bool
     @ForeignName["respondsToSelector:"] func respondsToSelector(aSelector: ?SEL): Bool
     prop description: ?NSString
+    @ObjCOptional
     prop debugDescription: ?NSString
 }
 
@@ -35,7 +36,7 @@ public open class NSObject <: NSObjectProtocol {
     public static func initialize(): Unit
     public init()
     public static func new(): NSObject
-    @ForeignName["allocWithZone:"] public static func allocWithZone(zone: CPointer<_NSZone>): NSObject
+    @ForeignName["allocWithZone:"] public static func allocWithZone(zone: ObjCPointer<_NSZone>): NSObject
     public static func alloc(): NSObject
     public open func dealloc(): Unit
     public open func finalize(): Unit
@@ -64,7 +65,7 @@ public open class NSObject <: NSObjectProtocol {
     @ForeignName["replacementObjectForCoder:"] public open func replacementObjectForCoder(coder: NSCoder): ?ObjCId
     @ForeignName["awakeAfterUsingCoder:"] public open func awakeAfterUsingCoder(coder: NSCoder): ?ObjCId
     public open prop autoContentAccessingProxy: ObjCId
-    @ForeignName["attemptRecoveryFromError:optionIndex:delegate:didRecoverSelector:contextInfo:"] public open func attemptRecoveryFromErrorOptionIndexDelegateDidRecoverSelectorContextInfo(error: NSError, recoveryOptionIndex: NSUInteger, delegate: ?ObjCId, didRecoverSelector: ?SEL, contextInfo: CPointer<Unit>): Unit
+    @ForeignName["attemptRecoveryFromError:optionIndex:delegate:didRecoverSelector:contextInfo:"] public open func attemptRecoveryFromErrorOptionIndexDelegateDidRecoverSelectorContextInfo(error: NSError, recoveryOptionIndex: NSUInteger, delegate: ?ObjCId, didRecoverSelector: ?SEL, contextInfo: ObjCPointer<Unit>): Unit
     @ForeignName["attemptRecoveryFromError:optionIndex:"] public open func attemptRecoveryFromErrorOptionIndex(error: NSError, recoveryOptionIndex: NSUInteger): Bool
     @ForeignName["performSelector:withObject:afterDelay:inModes:"] public open func performSelectorWithObjectAfterDelayInModes(aSelector: SEL, anArgument: ?ObjCId, delay: NSTimeInterval, modes: NSArray/*<NSRunLoopMode>*/): Unit
     @ForeignName["performSelector:withObject:afterDelay:"] public open func performSelectorWithObjectAfterDelay(aSelector: SEL, anArgument: ?ObjCId, delay: NSTimeInterval): Unit
@@ -100,9 +101,9 @@ public open class NSObject <: NSObjectProtocol {
     @ForeignName["unableToSetNilForKey:"] public open func unableToSetNilForKey(key: NSString): Unit
     @ForeignName["valuesForKeys:"] public open func valuesForKeys(keys: NSArray/*<ObjectType>*/): NSDictionary/*<KeyType, ObjectType>*/
     @ForeignName["takeValuesFromDictionary:"] public open func takeValuesFromDictionary(properties: NSDictionary/*<KeyType, ObjectType>*/): Unit
-    @ForeignName["observeValueForKeyPath:ofObject:change:context:"] public open func observeValueForKeyPathOfObjectChangeContext(keyPath: ?NSString, object: ?ObjCId, change: ?NSDictionary/*<NSKeyValueChangeKey, ObjCId>*/, context: CPointer<Unit>): Unit
-    @ForeignName["addObserver:forKeyPath:options:context:"] public open func addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: NSString, options: Int32 /*NSKeyValueObservingOptions*/, context: CPointer<Unit>): Unit
-    @ForeignName["removeObserver:forKeyPath:context:"] public open func removeObserverForKeyPathContext(observer: NSObject, keyPath: NSString, context: CPointer<Unit>): Unit
+    @ForeignName["observeValueForKeyPath:ofObject:change:context:"] public open func observeValueForKeyPathOfObjectChangeContext(keyPath: ?NSString, object: ?ObjCId, change: ?NSDictionary/*<NSKeyValueChangeKey, ObjCId>*/, context: ObjCPointer<Unit>): Unit
+    @ForeignName["addObserver:forKeyPath:options:context:"] public open func addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: NSString, options: Int32 /*NSKeyValueObservingOptions*/, context: ObjCPointer<Unit>): Unit
+    @ForeignName["removeObserver:forKeyPath:context:"] public open func removeObserverForKeyPathContext(observer: NSObject, keyPath: NSString, context: ObjCPointer<Unit>): Unit
     @ForeignName["removeObserver:forKeyPath:"] public open func removeObserverForKeyPath(observer: NSObject, keyPath: NSString): Unit
     @ForeignName["willChangeValueForKey:"] public open func willChangeValueForKey(key: NSString): Unit
     @ForeignName["didChangeValueForKey:"] public open func didChangeValueForKey(key: NSString): Unit
@@ -112,7 +113,7 @@ public open class NSObject <: NSObjectProtocol {
     @ForeignName["didChangeValueForKey:withSetMutation:usingObjects:"] public open func didChangeValueForKeyWithSetMutationUsingObjects(key: NSString, mutationKind: Int32 /*NSKeyValueSetMutationKind*/, objects: NSSet/*<ObjectType>*/): Unit
     @ForeignName["keyPathsForValuesAffectingValueForKey:"] public static func keyPathsForValuesAffectingValueForKey(key: NSString): NSSet/*<NSString>*/
     @ForeignName["automaticallyNotifiesObserversForKey:"] public static func automaticallyNotifiesObserversForKey(key: NSString): Bool
-    public open mut prop observationInfo: CPointer<Unit>
+    public open mut prop observationInfo: ObjCPointer<Unit>
     public open prop classForKeyedArchiver: ?Class
     @ForeignName["replacementObjectForKeyedArchiver:"] public open func replacementObjectForKeyedArchiver(archiver: NSKeyedArchiver): ?ObjCId
     public static func classFallbacksForKeyedArchiver(): NSArray/*<NSString>*/
@@ -126,12 +127,12 @@ public open class NSObject <: NSObjectProtocol {
 
 @ObjCMirror
 public interface NSCopying {
-    @ForeignName["copyWithZone:"] func copyWithZone(zone: CPointer<NSZone>): ObjCId
+    @ForeignName["copyWithZone:"] func copyWithZone(zone: ObjCPointer<NSZone>): ObjCId
 }
 
 @ObjCMirror
 public interface NSMutableCopying {
-    @ForeignName["mutableCopyWithZone:"] func mutableCopyWithZone(zone: CPointer<NSZone>): ObjCId
+    @ForeignName["mutableCopyWithZone:"] func mutableCopyWithZone(zone: ObjCPointer<NSZone>): ObjCId
 }
 
 @ObjCMirror

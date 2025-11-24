@@ -16,15 +16,15 @@ public open class NSHTTPCookie <: NSObject {
     @ForeignName["requestHeaderFieldsWithCookies:"] public static func requestHeaderFieldsWithCookies(cookies: NSArray/*<NSHTTPCookie>*/): NSDictionary/*<NSString, NSString>*/
     @ForeignName["cookiesWithResponseHeaderFields:forURL:"] public static func cookiesWithResponseHeaderFieldsForURL(headerFields: NSDictionary/*<NSString, NSString>*/, URL: NSURL): NSArray/*<NSHTTPCookie>*/
     public open prop properties: ?NSDictionary/*<NSHTTPCookiePropertyKey, ObjCId>*/
-    public open prop versionInstance: NSUInteger
+    @ForeignGetterName["version"] public open prop versionInstance: NSUInteger
     public open prop name: NSString
     public open prop value: NSString
     public open prop expiresDate: ?NSDate
-    public open prop isSessionOnly: Bool
+    @ForeignGetterName["isSessionOnly"] public open prop sessionOnly: Bool
     public open prop domain: NSString
     public open prop path: NSString
-    public open prop isSecure: Bool
-    public open prop isHTTPOnly: Bool
+    @ForeignGetterName["isSecure"] public open prop secure: Bool
+    @ForeignGetterName["isHTTPOnly"] public open prop HTTPOnly: Bool
     public open prop comment: ?NSString
     public open prop commentURL: ?NSURL
     public open prop portList: ?NSArray/*<NSNumber>*/

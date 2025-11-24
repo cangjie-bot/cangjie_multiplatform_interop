@@ -23,9 +23,9 @@ public open class NSFileWrapper <: NSObject & NSSecureCoding {
     @ForeignName["initSymbolicLinkWithDestinationURL:"] public init(url: NSURL)
     @ObjCInit @ForeignName["initWithSerializedRepresentation:"] public static func initWithSerializedRepresentation(serializeRepresentation: NSData): NSFileWrapper
     @ForeignName["initWithCoder:"] public init(inCoder: NSCoder)
-    public open prop isDirectory: Bool
-    public open prop isRegularFile: Bool
-    public open prop isSymbolicLink: Bool
+    @ForeignGetterName["isDirectory"] public open prop directory: Bool
+    @ForeignGetterName["isRegularFile"] public open prop regularFile: Bool
+    @ForeignGetterName["isSymbolicLink"] public open prop symbolicLink: Bool
     public open mut prop preferredFilename: ?NSString
     public open mut prop filename: ?NSString
     public open mut prop fileAttributes: NSDictionary/*<NSString, ObjCId>*/

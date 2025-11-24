@@ -39,7 +39,7 @@ public open class NSByteCountFormatter <: NSFormatter {
     public open mut prop includesUnit: Bool
     public open mut prop includesCount: Bool
     public open mut prop includesActualByteCount: Bool
-    public open mut prop isAdaptive: Bool
+    @ForeignGetterName["isAdaptive"] public open mut prop adaptive: Bool
     public open mut prop zeroPadsFractionDigits: Bool
     public open mut prop formattingContext: Int32 /*NSFormattingContext*/
 }

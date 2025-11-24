@@ -7,7 +7,9 @@ import objc.lang.*
 
 @ObjCMirror
 public interface NSMetadataQueryDelegate <: NSObjectProtocol {
+    @ObjCOptional
     @ForeignName["metadataQuery:replacementObjectForResultObject:"] func metadataQueryReplacementObjectForResultObject(query: NSMetadataQuery, result: NSMetadataItem): ObjCId
+    @ObjCOptional
     @ForeignName["metadataQuery:replacementValueForAttribute:value:"] func metadataQueryReplacementValueForAttributeValue(query: NSMetadataQuery, attrName: NSString, attrValue: ObjCId): ObjCId
 }
 
@@ -24,15 +26,15 @@ public open class NSMetadataQuery <: NSObject {
     public open mut prop operationQueue: ?NSOperationQueue
     public open func startQuery(): Bool
     public open func stopQuery(): Unit
-    public open prop isStarted: Bool
-    public open prop isGathering: Bool
-    public open prop isStopped: Bool
+    @ForeignGetterName["isStarted"] public open prop started: Bool
+    @ForeignGetterName["isGathering"] public open prop gathering: Bool
+    @ForeignGetterName["isStopped"] public open prop stopped: Bool
     public open func disableUpdates(): Unit
     public open func enableUpdates(): Unit
     public open prop resultCount: NSUInteger
     @ForeignName["resultAtIndex:"] public open func resultAtIndex(idx: NSUInteger): ObjCId
-    @ForeignName["enumerateResultsUsingBlock:"] public open func enumerateResultsUsingBlock(block: ObjCBlock<(ObjCId, NSUInteger, CPointer<Bool>) -> Unit>): Unit
-    @ForeignName["enumerateResultsWithOptions:usingBlock:"] public open func enumerateResultsWithOptionsUsingBlock(opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(ObjCId, NSUInteger, CPointer<Bool>) -> Unit>): Unit
+    @ForeignName["enumerateResultsUsingBlock:"] public open func enumerateResultsUsingBlock(block: ObjCBlock<(ObjCId, NSUInteger, ObjCPointer<Bool>) -> Unit>): Unit
+    @ForeignName["enumerateResultsWithOptions:usingBlock:"] public open func enumerateResultsWithOptionsUsingBlock(opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(ObjCId, NSUInteger, ObjCPointer<Bool>) -> Unit>): Unit
     public open prop results: NSArray/*<ObjectType>*/
     @ForeignName["indexOfResult:"] public open func indexOfResult(result: ObjCId): NSUInteger
     public open prop valueLists: NSDictionary/*<NSString, NSArray<NSMetadataQueryAttributeValueTuple>>*/

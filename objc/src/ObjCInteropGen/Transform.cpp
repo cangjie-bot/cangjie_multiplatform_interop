@@ -12,9 +12,24 @@
 #include "Mappings.h"
 #include "Universe.h"
 
-static void append_name(Symbol& symbol, std::string_view suffix)
+static void resolve_static_instance_clash(Symbol& symbol, bool is_static)
 {
-    symbol.rename(std::string(symbol.name()).append(suffix));
+    symbol.rename(std::string(symbol.name()).append(is_static ? "Static" : "Instance"));
+}
+
+static void resolve_static_instance_clash(TypeDeclarationSymbol& decl, NonTypeSymbol& method, bool is_static)
+{
+    assert(method.kind() == NonTypeSymbol::Kind::MemberMethod);
+    resolve_static_instance_clash(method, is_static);
+
+    // This method can be the getter of a property.  Rename the property too.
+    for (auto& member : decl.members()) {
+        if (member.kind() == NonTypeSymbol::Kind::Property && member.is_static() == is_static &&
+            member.getter() == method.selector()) {
+            resolve_static_instance_clash(member, is_static);
+            break;
+        }
+    }
 }
 
 static void resolve_static_instance_clashes(TypeDeclarationSymbol& type);
@@ -43,10 +58,10 @@ static void resolve_static_instance_clashes(TypeDeclarationSymbol& subclass, Typ
                     if (supername == submember.name()) {
                         if (submember.is_static()) {
                             if (!supermember.is_static()) {
-                                append_name(submember, "Static");
+                                resolve_static_instance_clash(subclass, submember, true);
                             }
                         } else if (supermember.is_static()) {
-                            append_name(submember, "Instance");
+                            resolve_static_instance_clash(subclass, submember, false);
                         }
                     } else {
                         // The supermember could be already renamed.  In Objective-C methods are not
@@ -137,10 +152,29 @@ static void resolve_static_instance_clashes(TypeDeclarationSymbol& type)
         }
     }
     for (const auto& [name, methods] : map) {
-        if (methods.both() && methods.get_static()->name() == methods.get_instance()->name()) {
-            append_name(*methods.get_static(), "Static");
+        if (methods.both()) {
+            auto& static_method = *methods.get_static();
+            if (static_method.name() == methods.get_instance()->name()) {
+                resolve_static_instance_clash(type, static_method, true);
+            }
         }
     }
+
+    map.clear();
+    for (auto& member : type.members()) {
+        if (member.kind() == NonTypeSymbol::Kind::Property) {
+            map[member.selector()].add(member);
+        }
+    }
+    for (const auto& [name, props] : map) {
+        if (props.both()) {
+            auto& static_prop = *props.get_static();
+            if (static_prop.name() == props.get_instance()->name()) {
+                resolve_static_instance_clash(static_prop, true);
+            }
+        }
+    }
+
     type.mark_static_instance_clashes_resolved();
 }
 

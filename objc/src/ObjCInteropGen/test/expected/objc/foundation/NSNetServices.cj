@@ -7,25 +7,41 @@ import objc.lang.*
 
 @ObjCMirror
 public interface NSNetServiceDelegate <: NSObjectProtocol {
+    @ObjCOptional
     @ForeignName["netServiceWillPublish:"] func netServiceWillPublish(sender: NSNetService): Unit
+    @ObjCOptional
     @ForeignName["netServiceDidPublish:"] func netServiceDidPublish(sender: NSNetService): Unit
+    @ObjCOptional
     @ForeignName["netService:didNotPublish:"] func netServiceDidNotPublish(sender: NSNetService, errorDict: NSDictionary/*<NSString, NSNumber>*/): Unit
+    @ObjCOptional
     @ForeignName["netServiceWillResolve:"] func netServiceWillResolve(sender: NSNetService): Unit
+    @ObjCOptional
     @ForeignName["netServiceDidResolveAddress:"] func netServiceDidResolveAddress(sender: NSNetService): Unit
+    @ObjCOptional
     @ForeignName["netService:didNotResolve:"] func netServiceDidNotResolve(sender: NSNetService, errorDict: NSDictionary/*<NSString, NSNumber>*/): Unit
+    @ObjCOptional
     @ForeignName["netServiceDidStop:"] func netServiceDidStop(sender: NSNetService): Unit
+    @ObjCOptional
     @ForeignName["netService:didUpdateTXTRecordData:"] func netServiceDidUpdateTXTRecordData(sender: NSNetService, data: NSData): Unit
+    @ObjCOptional
     @ForeignName["netService:didAcceptConnectionWithInputStream:outputStream:"] func netServiceDidAcceptConnectionWithInputStreamOutputStream(sender: NSNetService, inputStream: NSInputStream, outputStream: NSOutputStream): Unit
 }
 
 @ObjCMirror
 public interface NSNetServiceBrowserDelegate <: NSObjectProtocol {
+    @ObjCOptional
     @ForeignName["netServiceBrowserWillSearch:"] func netServiceBrowserWillSearch(browser: NSNetServiceBrowser): Unit
+    @ObjCOptional
     @ForeignName["netServiceBrowserDidStopSearch:"] func netServiceBrowserDidStopSearch(browser: NSNetServiceBrowser): Unit
+    @ObjCOptional
     @ForeignName["netServiceBrowser:didNotSearch:"] func netServiceBrowserDidNotSearch(browser: NSNetServiceBrowser, errorDict: NSDictionary/*<NSString, NSNumber>*/): Unit
+    @ObjCOptional
     @ForeignName["netServiceBrowser:didFindDomain:moreComing:"] func netServiceBrowserDidFindDomainMoreComing(browser: NSNetServiceBrowser, domainString: NSString, moreComing: Bool): Unit
+    @ObjCOptional
     @ForeignName["netServiceBrowser:didFindService:moreComing:"] func netServiceBrowserDidFindServiceMoreComing(browser: NSNetServiceBrowser, service: NSNetService, moreComing: Bool): Unit
+    @ObjCOptional
     @ForeignName["netServiceBrowser:didRemoveDomain:moreComing:"] func netServiceBrowserDidRemoveDomainMoreComing(browser: NSNetServiceBrowser, domainString: NSString, moreComing: Bool): Unit
+    @ObjCOptional
     @ForeignName["netServiceBrowser:didRemoveService:moreComing:"] func netServiceBrowserDidRemoveServiceMoreComing(browser: NSNetServiceBrowser, service: NSNetService, moreComing: Bool): Unit
 }
 

@@ -18,9 +18,12 @@ public abstract sealed class NSItemProviderFileOptions {
 
 @ObjCMirror
 public interface NSItemProviderWriting <: NSObjectProtocol {
-    static prop writableTypeIdentifiersForItemProviderStatic: NSArray/*<NSString>*/
+    @ForeignGetterName["writableTypeIdentifiersForItemProvider"] static prop writableTypeIdentifiersForItemProviderStatic: NSArray/*<NSString>*/
+    @ObjCOptional
     prop writableTypeIdentifiersForItemProvider: NSArray/*<NSString>*/
+    @ObjCOptional
     @ForeignName["itemProviderVisibilityForRepresentationWithTypeIdentifier:"] static func itemProviderVisibilityForRepresentationWithTypeIdentifierStatic(typeIdentifier: NSString): Int32 /*NSItemProviderRepresentationVisibility*/
+    @ObjCOptional
     @ForeignName["itemProviderVisibilityForRepresentationWithTypeIdentifier:"] func itemProviderVisibilityForRepresentationWithTypeIdentifier(typeIdentifier: NSString): Int32 /*NSItemProviderRepresentationVisibility*/
     @ForeignName["loadDataWithTypeIdentifier:forItemProviderCompletionHandler:"] func loadDataWithTypeIdentifierForItemProviderCompletionHandler(typeIdentifier: NSString, completionHandler: ObjCBlock<(NSData, NSError) -> Unit>): ?NSProgress
 }

@@ -7,10 +7,10 @@ import objc.lang.*
 
 @ObjCMirror
 public struct NSFastEnumerationState {
-    public var state: UInt64 = 0
-    public var itemsPtr: ObjCPointer<ObjCId> = ObjCPointer<ObjCId>(CPointer<Unit>())
-    public var mutationsPtr: CPointer<UInt64> = CPointer<UInt64>()
-    public var extra: VArray<UInt64, $5> = [0, 0, 0, 0, 0]
+    public var state: UInt64
+    public var itemsPtr: ObjCPointer<ObjCId>
+    public var mutationsPtr: CPointer<UInt64>
+    public var extra: VArray<UInt64, $5>
 }
 
 @ObjCMirror

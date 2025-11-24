@@ -29,15 +29,15 @@ public open class NSOrderedSet/*<ObjectType>*/ <: NSObject & NSCopying & NSMutab
     public open prop reversedOrderedSet: NSOrderedSet/*<ObjectType>*/
     public open prop array: NSArray/*<ObjectType>*/
     public open prop set: NSSet/*<ObjectType>*/
-    @ForeignName["enumerateObjectsUsingBlock:"] public open func enumerateObjectsUsingBlock(block: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Unit>): Unit
-    @ForeignName["enumerateObjectsWithOptions:usingBlock:"] public open func enumerateObjectsWithOptionsUsingBlock(opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Unit>): Unit
-    @ForeignName["enumerateObjectsAtIndexes:options:usingBlock:"] public open func enumerateObjectsAtIndexesOptionsUsingBlock(s: NSIndexSet, opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Unit>): Unit
-    @ForeignName["indexOfObjectPassingTest:"] public open func indexOfObjectPassingTest(predicate: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Bool>): NSUInteger
-    @ForeignName["indexOfObjectWithOptions:passingTest:"] public open func indexOfObjectWithOptionsPassingTest(opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Bool>): NSUInteger
-    @ForeignName["indexOfObjectAtIndexes:options:passingTest:"] public open func indexOfObjectAtIndexesOptionsPassingTest(s: NSIndexSet, opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Bool>): NSUInteger
-    @ForeignName["indexesOfObjectsPassingTest:"] public open func indexesOfObjectsPassingTest(predicate: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Bool>): NSIndexSet
-    @ForeignName["indexesOfObjectsWithOptions:passingTest:"] public open func indexesOfObjectsWithOptionsPassingTest(opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Bool>): NSIndexSet
-    @ForeignName["indexesOfObjectsAtIndexes:options:passingTest:"] public open func indexesOfObjectsAtIndexesOptionsPassingTest(s: NSIndexSet, opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, CPointer<Bool>) -> Bool>): NSIndexSet
+    @ForeignName["enumerateObjectsUsingBlock:"] public open func enumerateObjectsUsingBlock(block: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, ObjCPointer<Bool>) -> Unit>): Unit
+    @ForeignName["enumerateObjectsWithOptions:usingBlock:"] public open func enumerateObjectsWithOptionsUsingBlock(opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, ObjCPointer<Bool>) -> Unit>): Unit
+    @ForeignName["enumerateObjectsAtIndexes:options:usingBlock:"] public open func enumerateObjectsAtIndexesOptionsUsingBlock(s: NSIndexSet, opts: Int32 /*NSEnumerationOptions*/, block: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, ObjCPointer<Bool>) -> Unit>): Unit
+    @ForeignName["indexOfObjectPassingTest:"] public open func indexOfObjectPassingTest(predicate: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, ObjCPointer<Bool>) -> Bool>): NSUInteger
+    @ForeignName["indexOfObjectWithOptions:passingTest:"] public open func indexOfObjectWithOptionsPassingTest(opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, ObjCPointer<Bool>) -> Bool>): NSUInteger
+    @ForeignName["indexOfObjectAtIndexes:options:passingTest:"] public open func indexOfObjectAtIndexesOptionsPassingTest(s: NSIndexSet, opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, ObjCPointer<Bool>) -> Bool>): NSUInteger
+    @ForeignName["indexesOfObjectsPassingTest:"] public open func indexesOfObjectsPassingTest(predicate: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, ObjCPointer<Bool>) -> Bool>): NSIndexSet
+    @ForeignName["indexesOfObjectsWithOptions:passingTest:"] public open func indexesOfObjectsWithOptionsPassingTest(opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, ObjCPointer<Bool>) -> Bool>): NSIndexSet
+    @ForeignName["indexesOfObjectsAtIndexes:options:passingTest:"] public open func indexesOfObjectsAtIndexesOptionsPassingTest(s: NSIndexSet, opts: Int32 /*NSEnumerationOptions*/, predicate: ObjCBlock<(ObjCId /*ObjectType*/, NSUInteger, ObjCPointer<Bool>) -> Bool>): NSIndexSet
     @ForeignName["indexOfObject:inSortedRange:options:usingComparator:"] public open func indexOfObjectInSortedRangeOptionsUsingComparator(object: ObjCId /*ObjectType*/, range: NSRange, opts: Int32 /*NSBinarySearchingOptions*/, cmp: NSComparator): NSUInteger
     @ForeignName["sortedArrayUsingComparator:"] public open func sortedArrayUsingComparator(cmptr: NSComparator): NSArray/*<ObjectType>*/
     @ForeignName["sortedArrayWithOptions:usingComparator:"] public open func sortedArrayWithOptionsUsingComparator(opts: Int32 /*NSSortOptions*/, cmptr: NSComparator): NSArray/*<ObjectType>*/
@@ -69,8 +69,8 @@ public open class NSOrderedSet/*<ObjectType>*/ <: NSObject & NSCopying & NSMutab
     @ForeignName["orderedSetByApplyingDifference:"] public open func orderedSetByApplyingDifference(difference: NSOrderedCollectionDifference/*<ObjectType>*/): ?NSOrderedSet/*<ObjectType>*/
     public open func valueForKey(key: NSString): ?ObjCId
     public open func setValueForKey(value: ?ObjCId, key: NSString): Unit
-    public open func addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: NSString, options: Int32 /*NSKeyValueObservingOptions*/, context: CPointer<Unit>): Unit
-    public open func removeObserverForKeyPathContext(observer: NSObject, keyPath: NSString, context: CPointer<Unit>): Unit
+    public open func addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: NSString, options: Int32 /*NSKeyValueObservingOptions*/, context: ObjCPointer<Unit>): Unit
+    public open func removeObserverForKeyPathContext(observer: NSObject, keyPath: NSString, context: ObjCPointer<Unit>): Unit
     public open func removeObserverForKeyPath(observer: NSObject, keyPath: NSString): Unit
     @ForeignName["sortedArrayUsingDescriptors:"] public open func sortedArrayUsingDescriptors(sortDescriptors: NSArray/*<NSSortDescriptor>*/): NSArray/*<ObjectType>*/
     @ForeignName["filteredOrderedSetUsingPredicate:"] public open func filteredOrderedSetUsingPredicate(p: NSPredicate): NSOrderedSet/*<ObjectType>*/

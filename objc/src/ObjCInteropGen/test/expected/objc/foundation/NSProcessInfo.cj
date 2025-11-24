@@ -7,9 +7,9 @@ import objc.lang.*
 
 @C
 public struct NSOperatingSystemVersion {
-    public var majorVersion: NSInteger = unsafe{zeroValue<NSInteger>()}
-    public var minorVersion: NSInteger = unsafe{zeroValue<NSInteger>()}
-    public var patchVersion: NSInteger = unsafe{zeroValue<NSInteger>()}
+    public var majorVersion: NSInteger
+    public var minorVersion: NSInteger
+    public var patchVersion: NSInteger
 }
 
 @ObjCMirror
@@ -42,9 +42,9 @@ public open class NSProcessInfo <: NSObject {
     public open prop userName: NSString
     public open prop fullUserName: NSString
     public open prop thermalState: Int32 /*NSProcessInfoThermalState*/
-    public open prop isLowPowerModeEnabled: Bool
-    public open prop isMacCatalystApp: Bool
-    public open prop isiOSAppOnMac: Bool
+    @ForeignGetterName["isLowPowerModeEnabled"] public open prop lowPowerModeEnabled: Bool
+    @ForeignGetterName["isMacCatalystApp"] public open prop macCatalystApp: Bool
+    @ForeignGetterName["isiOSAppOnMac"] public open prop iOSAppOnMac: Bool
 }
 
 public abstract sealed class NSActivityOptions {

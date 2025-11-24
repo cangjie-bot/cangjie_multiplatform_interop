@@ -7,23 +7,37 @@ import objc.lang.*
 
 @ObjCMirror
 public interface NSURLSessionDelegate <: NSObjectProtocol {
+    @ObjCOptional
     @ForeignName["URLSession:didBecomeInvalidWithError:"] func URLSessionDidBecomeInvalidWithError(session: NSURLSession, error: ?NSError): Unit
+    @ObjCOptional
     @ForeignName["URLSession:didReceiveChallenge:completionHandler:"] func URLSessionDidReceiveChallengeCompletionHandler(session: NSURLSession, challenge: NSURLAuthenticationChallenge, completionHandler: ObjCBlock<(Int32 /*NSURLSessionAuthChallengeDisposition*/, NSURLCredential) -> Unit>): Unit
+    @ObjCOptional
     @ForeignName["URLSessionDidFinishEventsForBackgroundURLSession:"] func URLSessionDidFinishEventsForBackgroundURLSession(session: NSURLSession): Unit
 }
 
 @ObjCMirror
 public interface NSURLSessionTaskDelegate <: NSURLSessionDelegate {
+    @ObjCOptional
     @ForeignName["URLSession:didCreateTask:"] func URLSessionDidCreateTask(session: NSURLSession, task: NSURLSessionTask): Unit
+    @ObjCOptional
     @ForeignName["URLSession:task:willBeginDelayedRequest:completionHandler:"] func URLSessionTaskWillBeginDelayedRequestCompletionHandler(session: NSURLSession, task: NSURLSessionTask, request: NSURLRequest, completionHandler: ObjCBlock<(Int32 /*NSURLSessionDelayedRequestDisposition*/, NSURLRequest) -> Unit>): Unit
+    @ObjCOptional
     @ForeignName["URLSession:taskIsWaitingForConnectivity:"] func URLSessionTaskIsWaitingForConnectivity(session: NSURLSession, task: NSURLSessionTask): Unit
+    @ObjCOptional
     @ForeignName["URLSession:task:willPerformHTTPRedirection:newRequest:completionHandler:"] func URLSessionTaskWillPerformHTTPRedirectionNewRequestCompletionHandler(session: NSURLSession, task: NSURLSessionTask, response: NSHTTPURLResponse, request: NSURLRequest, completionHandler: ObjCBlock<(NSURLRequest) -> Unit>): Unit
+    @ObjCOptional
     @ForeignName["URLSession:task:didReceiveChallenge:completionHandler:"] func URLSessionTaskDidReceiveChallengeCompletionHandler(session: NSURLSession, task: NSURLSessionTask, challenge: NSURLAuthenticationChallenge, completionHandler: ObjCBlock<(Int32 /*NSURLSessionAuthChallengeDisposition*/, NSURLCredential) -> Unit>): Unit
+    @ObjCOptional
     @ForeignName["URLSession:task:needNewBodyStream:"] func URLSessionTaskNeedNewBodyStream(session: NSURLSession, task: NSURLSessionTask, completionHandler: ObjCBlock<(NSInputStream) -> Unit>): Unit
+    @ObjCOptional
     @ForeignName["URLSession:task:needNewBodyStreamFromOffset:completionHandler:"] func URLSessionTaskNeedNewBodyStreamFromOffsetCompletionHandler(session: NSURLSession, task: NSURLSessionTask, offset: int64_t, completionHandler: ObjCBlock<(NSInputStream) -> Unit>): Unit
+    @ObjCOptional
     @ForeignName["URLSession:task:didSendBodyData:totalBytesSent:totalBytesExpectedToSend:"] func URLSessionTaskDidSendBodyDataTotalBytesSentTotalBytesExpectedToSend(session: NSURLSession, task: NSURLSessionTask, bytesSent: int64_t, totalBytesSent: int64_t, totalBytesExpectedToSend: int64_t): Unit
+    @ObjCOptional
     @ForeignName["URLSession:task:didReceiveInformationalResponse:"] func URLSessionTaskDidReceiveInformationalResponse(session: NSURLSession, task: NSURLSessionTask, response: NSHTTPURLResponse): Unit
+    @ObjCOptional
     @ForeignName["URLSession:task:didFinishCollectingMetrics:"] func URLSessionTaskDidFinishCollectingMetrics(session: NSURLSession, task: NSURLSessionTask, metrics: NSURLSessionTaskMetrics): Unit
+    @ObjCOptional
     @ForeignName["URLSession:task:didCompleteWithError:"] func URLSessionTaskDidCompleteWithError(session: NSURLSession, task: NSURLSessionTask, error: ?NSError): Unit
 }
 
@@ -197,7 +211,7 @@ public open class NSURLSessionConfiguration <: NSObject & NSCopying {
     public open mut prop allowsConstrainedNetworkAccess: Bool
     public open mut prop requiresDNSSECValidation: Bool
     public open mut prop waitsForConnectivity: Bool
-    public open mut prop isDiscretionary: Bool
+    @ForeignGetterName["isDiscretionary"] public open mut prop discretionary: Bool
     public open mut prop sharedContainerIdentifier: ?NSString
     public open mut prop sessionSendsLaunchEvents: Bool
     public open mut prop connectionProxyDictionary: ?NSDictionary/*<KeyType, ObjectType>*/
@@ -243,31 +257,44 @@ public abstract sealed class NSURLSessionResponseDisposition {
 
 @ObjCMirror
 public interface NSURLSessionDataDelegate <: NSURLSessionTaskDelegate {
+    @ObjCOptional
     @ForeignName["URLSession:dataTask:didReceiveResponse:completionHandler:"] func URLSessionDataTaskDidReceiveResponseCompletionHandler(session: NSURLSession, dataTask: NSURLSessionDataTask, response: NSURLResponse, completionHandler: ObjCBlock<(Int32 /*NSURLSessionResponseDisposition*/) -> Unit>): Unit
+    @ObjCOptional
     @ForeignName["URLSession:dataTask:didBecomeDownloadTask:"] func URLSessionDataTaskDidBecomeDownloadTask(session: NSURLSession, dataTask: NSURLSessionDataTask, downloadTask: NSURLSessionDownloadTask): Unit
+    @ObjCOptional
     @ForeignName["URLSession:dataTask:didBecomeStreamTask:"] func URLSessionDataTaskDidBecomeStreamTask(session: NSURLSession, dataTask: NSURLSessionDataTask, streamTask: NSURLSessionStreamTask): Unit
+    @ObjCOptional
     @ForeignName["URLSession:dataTask:didReceiveData:"] func URLSessionDataTaskDidReceiveData(session: NSURLSession, dataTask: NSURLSessionDataTask, data: NSData): Unit
+    @ObjCOptional
     @ForeignName["URLSession:dataTask:willCacheResponse:completionHandler:"] func URLSessionDataTaskWillCacheResponseCompletionHandler(session: NSURLSession, dataTask: NSURLSessionDataTask, proposedResponse: NSCachedURLResponse, completionHandler: ObjCBlock<(NSCachedURLResponse) -> Unit>): Unit
 }
 
 @ObjCMirror
 public interface NSURLSessionDownloadDelegate <: NSURLSessionTaskDelegate {
     @ForeignName["URLSession:downloadTask:didFinishDownloadingToURL:"] func URLSessionDownloadTaskDidFinishDownloadingToURL(session: NSURLSession, downloadTask: NSURLSessionDownloadTask, location: NSURL): Unit
+    @ObjCOptional
     @ForeignName["URLSession:downloadTask:didWriteData:totalBytesWritten:totalBytesExpectedToWrite:"] func URLSessionDownloadTaskDidWriteDataTotalBytesWrittenTotalBytesExpectedToWrite(session: NSURLSession, downloadTask: NSURLSessionDownloadTask, bytesWritten: int64_t, totalBytesWritten: int64_t, totalBytesExpectedToWrite: int64_t): Unit
+    @ObjCOptional
     @ForeignName["URLSession:downloadTask:didResumeAtOffset:expectedTotalBytes:"] func URLSessionDownloadTaskDidResumeAtOffsetExpectedTotalBytes(session: NSURLSession, downloadTask: NSURLSessionDownloadTask, fileOffset: int64_t, expectedTotalBytes: int64_t): Unit
 }
 
 @ObjCMirror
 public interface NSURLSessionStreamDelegate <: NSURLSessionTaskDelegate {
+    @ObjCOptional
     @ForeignName["URLSession:readClosedForStreamTask:"] func URLSessionReadClosedForStreamTask(session: NSURLSession, streamTask: NSURLSessionStreamTask): Unit
+    @ObjCOptional
     @ForeignName["URLSession:writeClosedForStreamTask:"] func URLSessionWriteClosedForStreamTask(session: NSURLSession, streamTask: NSURLSessionStreamTask): Unit
+    @ObjCOptional
     @ForeignName["URLSession:betterRouteDiscoveredForStreamTask:"] func URLSessionBetterRouteDiscoveredForStreamTask(session: NSURLSession, streamTask: NSURLSessionStreamTask): Unit
+    @ObjCOptional
     @ForeignName["URLSession:streamTask:didBecomeInputStream:outputStream:"] func URLSessionStreamTaskDidBecomeInputStreamOutputStream(session: NSURLSession, streamTask: NSURLSessionStreamTask, inputStream: NSInputStream, outputStream: NSOutputStream): Unit
 }
 
 @ObjCMirror
 public interface NSURLSessionWebSocketDelegate <: NSURLSessionTaskDelegate {
+    @ObjCOptional
     @ForeignName["URLSession:webSocketTask:didOpenWithProtocol:"] func URLSessionWebSocketTaskDidOpenWithProtocol(session: NSURLSession, webSocketTask: NSURLSessionWebSocketTask, protocol: ?NSString): Unit
+    @ObjCOptional
     @ForeignName["URLSession:webSocketTask:didCloseWithCode:reason:"] func URLSessionWebSocketTaskDidCloseWithCodeReason(session: NSURLSession, webSocketTask: NSURLSessionWebSocketTask, closeCode: Int32 /*NSURLSessionWebSocketCloseCode*/, reason: ?NSData): Unit
 }
 
@@ -302,8 +329,8 @@ public open class NSURLSessionTaskTransactionMetrics <: NSObject {
     public open prop responseStartDate: ?NSDate
     public open prop responseEndDate: ?NSDate
     public open prop networkProtocolName: ?NSString
-    public open prop isProxyConnection: Bool
-    public open prop isReusedConnection: Bool
+    @ForeignGetterName["isProxyConnection"] public open prop proxyConnection: Bool
+    @ForeignGetterName["isReusedConnection"] public open prop reusedConnection: Bool
     public open prop resourceFetchType: Int32 /*NSURLSessionTaskMetricsResourceFetchType*/
     public open prop countOfRequestHeaderBytesSent: int64_t
     public open prop countOfRequestBodyBytesSent: int64_t
@@ -317,10 +344,10 @@ public open class NSURLSessionTaskTransactionMetrics <: NSObject {
     public open prop remotePort: ?NSNumber
     public open prop negotiatedTLSProtocolVersion: ?NSNumber
     public open prop negotiatedTLSCipherSuite: ?NSNumber
-    public open prop isCellular: Bool
-    public open prop isExpensive: Bool
-    public open prop isConstrained: Bool
-    public open prop isMultipath: Bool
+    @ForeignGetterName["isCellular"] public open prop cellular: Bool
+    @ForeignGetterName["isExpensive"] public open prop expensive: Bool
+    @ForeignGetterName["isConstrained"] public open prop constrained: Bool
+    @ForeignGetterName["isMultipath"] public open prop multipath: Bool
     public open prop domainResolutionProtocol: Int32 /*NSURLSessionTaskMetricsDomainResolutionProtocol*/
     public init()
     public static func new(): NSURLSessionTaskTransactionMetrics

@@ -28,9 +28,9 @@ public open class NSFileVersion <: NSObject {
     public open prop originatorNameComponents: ?NSPersonNameComponents
     public open prop modificationDate: ?NSDate
     public open prop persistentIdentifier: NSCoding
-    public open prop isConflict: Bool
-    public open mut prop isResolved: Bool
-    public open mut prop isDiscardable: Bool
+    @ForeignGetterName["isConflict"] public open prop conflict: Bool
+    @ForeignGetterName["isResolved"] public open mut prop resolved: Bool
+    @ForeignGetterName["isDiscardable"] public open mut prop discardable: Bool
     public open prop hasLocalContents: Bool
     public open prop hasThumbnail: Bool
     @ForeignName["replaceItemAtURL:options:error:"] public open func replaceItemAtURLOptionsError(url: NSURL, options: Int32 /*NSFileVersionReplacingOptions*/, error: ObjCPointer<NSError>): ?NSURL

@@ -19,7 +19,7 @@ public abstract sealed class NSRegularExpressionOptions {
 public open class NSRegularExpression <: NSObject & NSCopying & NSSecureCoding {
     protected var _pattern: ?NSString
     protected var _options: NSUInteger
-    protected var _internal: CPointer<Unit>
+    protected var _internal: ObjCPointer<Unit>
     protected var _checkout: int32_t
     @ForeignName["regularExpressionWithPattern:options:error:"] public static func regularExpressionWithPatternOptionsError(pattern: NSString, options: Int32 /*NSRegularExpressionOptions*/, error: ObjCPointer<NSError>): ?NSRegularExpression
     @ForeignName["initWithPattern:options:error:"] public init(pattern: NSString, options: Int32 /*NSRegularExpressionOptions*/, error: ObjCPointer<NSError>)
@@ -27,7 +27,7 @@ public open class NSRegularExpression <: NSObject & NSCopying & NSSecureCoding {
     public open prop options: Int32 /*NSRegularExpressionOptions*/
     public open prop numberOfCaptureGroups: NSUInteger
     @ForeignName["escapedPatternForString:"] public static func escapedPatternForString(string: NSString): NSString
-    @ForeignName["enumerateMatchesInString:options:range:usingBlock:"] public open func enumerateMatchesInStringOptionsRangeUsingBlock(string: NSString, options: Int32 /*NSMatchingOptions*/, range: NSRange, block: ObjCBlock<(NSTextCheckingResult, Int32 /*NSMatchingFlags*/, CPointer<Bool>) -> Unit>): Unit
+    @ForeignName["enumerateMatchesInString:options:range:usingBlock:"] public open func enumerateMatchesInStringOptionsRangeUsingBlock(string: NSString, options: Int32 /*NSMatchingOptions*/, range: NSRange, block: ObjCBlock<(NSTextCheckingResult, Int32 /*NSMatchingFlags*/, ObjCPointer<Bool>) -> Unit>): Unit
     @ForeignName["matchesInString:options:range:"] public open func matchesInStringOptionsRange(string: NSString, options: Int32 /*NSMatchingOptions*/, range: NSRange): NSArray/*<NSTextCheckingResult>*/
     @ForeignName["numberOfMatchesInString:options:range:"] public open func numberOfMatchesInStringOptionsRange(string: NSString, options: Int32 /*NSMatchingOptions*/, range: NSRange): NSUInteger
     @ForeignName["firstMatchInString:options:range:"] public open func firstMatchInStringOptionsRange(string: NSString, options: Int32 /*NSMatchingOptions*/, range: NSRange): ?NSTextCheckingResult

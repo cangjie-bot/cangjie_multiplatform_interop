@@ -13,19 +13,21 @@ public open class NSPortMessage {
 
 @ObjCMirror
 public interface NSPortDelegate <: NSObjectProtocol {
+    @ObjCOptional
     @ForeignName["handlePortMessage:"] func handlePortMessage(message: NSPortMessage): Unit
 }
 
 @ObjCMirror
 public interface NSMachPortDelegate <: NSPortDelegate {
-    @ForeignName["handleMachMessage:"] func handleMachMessage(msg: CPointer<Unit>): Unit
+    @ObjCOptional
+    @ForeignName["handleMachMessage:"] func handleMachMessage(msg: ObjCPointer<Unit>): Unit
 }
 
 @ObjCMirror
 public open class NSPort <: NSObject & NSCopying & NSCoding {
     public static func port(): NSPort
     public open func invalidate(): Unit
-    public open prop isValid: Bool
+    @ForeignGetterName["isValid"] public open prop valid: Bool
     @ForeignName["setDelegate:"] public open func setDelegate(anObject: ?NSPortDelegate): Unit
     public open func delegate(): ?NSPortDelegate
     @ForeignName["scheduleInRunLoop:forMode:"] public open func scheduleInRunLoopForMode(runLoop: NSRunLoop, mode: NSRunLoopMode): Unit

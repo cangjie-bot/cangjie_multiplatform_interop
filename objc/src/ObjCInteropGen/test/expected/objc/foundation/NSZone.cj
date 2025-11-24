@@ -14,10 +14,10 @@ foreign func NSCreateZone(startSize: NSUInteger, granularity: NSUInteger, canFre
 foreign func NSRecycleZone(zone: CPointer<NSZone>): Unit
 
 @ObjCMirror
-public func NSSetZoneName(zone: CPointer<NSZone>, name: NSString): Unit
+public func NSSetZoneName(zone: ObjCPointer<NSZone>, name: NSString): Unit
 
 @ObjCMirror
-public func NSZoneName(zone: CPointer<NSZone>): NSString
+public func NSZoneName(zone: ObjCPointer<NSZone>): NSString
 
 foreign func NSZoneFromPointer(ptr: CPointer<Unit>): CPointer<NSZone>
 
