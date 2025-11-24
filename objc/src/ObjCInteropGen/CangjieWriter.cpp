@@ -656,17 +656,7 @@ static void print_optional(std::ostream& output, const NonTypeSymbol& member)
         if (generate_definitions_mode()) {
             output << "// ";
         }
-
-        // Currently FE does not support @ObjCOptional.
-        constexpr bool objc_optional_supported = false;
-
-        if constexpr (objc_optional_supported) {
-            output << "@ObjCOptional\n";
-        } else {
-            if (!normal_mode()) {
-                output << "@ObjCOptional\n";
-            }
-        }
+        output << "@ObjCOptional\n";
     }
 }
 
