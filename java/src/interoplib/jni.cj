@@ -2117,13 +2117,11 @@ public func Java_CFFI_newGlobalReference(env: JNIEnv_ptr, obj: Java_CFFI_JavaEnt
 
 public func Java_CFFI_newJavaArray(env: JNIEnv_ptr, elementType: String, size: jsize): Java_CFFI_JavaEntity {
     let elementTypeSignature = Java_CFFI_parseComponentSignature(elementType)
-    let res = Java_CFFI_newJavaArray(env, elementTypeSignature, size)
-    handlePendingException(env)
-    res
+    Java_CFFI_newJavaArray(env, elementTypeSignature, size)
 }
 
 public func Java_CFFI_newJavaArray(env: JNIEnv_ptr, elementType: Java_CFFI_ComponentSignature, size: jsize): Java_CFFI_JavaEntity {
-    unsafe {
+    let res = unsafe {
         let envCJ = env.read().read()
         match (elementType) {
             case PRIMITIVE(base) => match (base) {
@@ -2141,6 +2139,8 @@ public func Java_CFFI_newJavaArray(env: JNIEnv_ptr, elementType: Java_CFFI_Compo
                 Java_CFFI_JavaEntity(JOBJECT, envCJ.NewObjectArray(env, size, Java_CFFI_Class(env, object.forJNI()).obj, jobject()))
         }
     }
+    handlePendingException(env)
+    res
 }
 
 public func Java_CFFI_arrayGetLength(env: JNIEnv_ptr, array: Java_CFFI_JavaEntity): jsize {
@@ -2164,7 +2164,7 @@ public func Java_CFFI_deleteGlobalReference(env: JNIEnv_ptr, ref: Java_CFFI_Java
 public func Java_CFFI_arrayGet(env: JNIEnv_ptr, elementType: Java_CFFI_JavaEntityKind, array: Java_CFFI_JavaEntity, index: jint): Java_CFFI_JavaEntity {
     unsafe {
         let envCJ = env.read().read()
-        match (elementType) {
+        let res = match (elementType) {
             case JBYTE =>
                 var value: jbyte = 0
                 envCJ.GetByteArrayRegion(env, array.asJObject(), index, 1, inout value)
@@ -2201,6 +2201,8 @@ public func Java_CFFI_arrayGet(env: JNIEnv_ptr, elementType: Java_CFFI_JavaEntit
                 Java_CFFI_JavaEntity(elementType, envCJ.GetObjectArrayElement(env, array.asJObject(), index))
             case _ => throw Java_CFFI_InvariantFailed()
         }
+        handlePendingException(env)
+        res
     }
 }
 
@@ -2220,7 +2222,7 @@ public func Java_CFFI_putToRegistry(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, 
 public func Java_CFFI_arraySet(env: JNIEnv_ptr, elementType: Java_CFFI_JavaEntityKind, array: Java_CFFI_JavaEntity, index: jint, valueEntity: Java_CFFI_JavaEntity): Unit {
     unsafe {
         let envCJ = env.read().read()
-        match (elementType) {
+        let res = match (elementType) {
             case JBYTE =>
                 var value: jbyte = valueEntity.asJByte()
                 envCJ.SetByteArrayRegion(env, array.asJObject(), index, 1, inout value)
@@ -2249,6 +2251,8 @@ public func Java_CFFI_arraySet(env: JNIEnv_ptr, elementType: Java_CFFI_JavaEntit
                 envCJ.SetObjectArrayElement(env, array.asJObject(), index, valueEntity.asJObject())
             case _ => throw Java_CFFI_InvariantFailed()
         }
+        handlePendingException(env)
+        res
     }
 }
 
