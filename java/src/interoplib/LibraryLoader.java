@@ -6,14 +6,15 @@
 
 package cangjie.lang;
 
-public class LibraryLoader {
+public final class LibraryLoader {
+    private LibraryLoader() {
+    }
+
     public static void loadLibrary(String libName) {
         System.loadLibrary(libName);
 
-        StringBuilder sb = new StringBuilder("lib");
-        sb.append(libName);
-        sb.append(".so");
-        nativeLoadCJLibrary(sb.toString());
+        String systemLibName = System.mapLibraryName(libName);
+        nativeLoadCJLibrary(systemLibName);
     }
 
     public static native void nativeLoadCJLibrary(String libName);

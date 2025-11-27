@@ -8,7 +8,6 @@ package interoplib.interop
 
 import std.collection.ArrayQueue
 import std.sync.AtomicBool
-import std.sync.Mutex
 
 public type jobject = CPointer<Unit>
 public type jarray = jobject
@@ -920,7 +919,7 @@ public func getLocalRef(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity): Java_CFFI_J
 public func deleteLocalRef(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity): Unit {
     unsafe {
         let envCJ = env.read().read()
-        let localRef = envCJ.DeleteLocalRef(env, obj.asJObject())
+        envCJ.DeleteLocalRef(env, obj.asJObject())
     }
 }
 
@@ -1136,7 +1135,6 @@ public struct Java_CFFI_JavaEntity {
             case JVALUE => jstring(ptrFromInt(value))
             case JOBJECT => jstring(ptrFromInt(value))
             case JSTRING => jstring(ptrFromInt(value))
-            case JOBJECT => jstring(ptrFromInt(value))
             case _ => throw InteropLibException("Cannot get jstring from ${kind.toString()}")
         }
     }
@@ -1579,14 +1577,6 @@ private func Java_CFFI_callVirtualMethod_no_exception_handling(env: JNIEnv_ptr, 
     }
 }
 
-private func Java_CFFI_callStaticMethod(env: JNIEnv_ptr, clazz: Java_CFFI_Class, methodName: String, methodSignature: String, args: Array<Java_CFFI_JavaEntity>): Java_CFFI_JavaEntity {
-    let signature = Java_CFFI_parseMethodSignature(methodSignature)
-    let id = Java_CFFI_MethodID.constrStatic(env, clazz, methodName, signature)
-    let callNest = Java_CFFI_JavaCallNest(args.size)
-
-    Java_CFFI_callStaticMethod(env, clazz, id, args, callNest)
-}
-
 public func Java_CFFI_callStaticMethod(env: JNIEnv_ptr, clazz: Java_CFFI_Class, method: Java_CFFI_MethodID, args: Array<Java_CFFI_JavaEntity>, argsCallNest: Java_CFFI_JavaCallNest): Java_CFFI_JavaEntity {
     if (args.size > argsCallNest.array.size) {
         throw InteropLibException("Cannot perform call, too small argsCallNest.array (${argsCallNest.size}, required at least ${args.size})")
@@ -1858,14 +1848,6 @@ public func Java_CFFI_getStaticField(env: JNIEnv_ptr, clazz: Java_CFFI_Class, fi
     }
     handlePendingException(env)
     res
-}
-
-private func Java_CFFI_setField(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, fieldName: String, fieldSignature: String, value: Java_CFFI_JavaEntity): Unit {
-    let clazz = Java_CFFI_Class(obj.asJObject(), "<UNNAMED>")
-    let signature = Java_CFFI_parseComponentSignature(fieldSignature)
-    let id = Java_CFFI_FieldID.constr(env, clazz, fieldName, signature)
-
-    Java_CFFI_setField(env, obj, id, value)
 }
 
 private unsafe func setPrimitiveFieldJavaEntity(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity,
@@ -2222,7 +2204,7 @@ public func Java_CFFI_putToRegistry(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, 
 public func Java_CFFI_arraySet(env: JNIEnv_ptr, elementType: Java_CFFI_JavaEntityKind, array: Java_CFFI_JavaEntity, index: jint, valueEntity: Java_CFFI_JavaEntity): Unit {
     unsafe {
         let envCJ = env.read().read()
-        let res = match (elementType) {
+        match (elementType) {
             case JBYTE =>
                 var value: jbyte = valueEntity.asJByte()
                 envCJ.SetByteArrayRegion(env, array.asJObject(), index, 1, inout value)
@@ -2252,7 +2234,6 @@ public func Java_CFFI_arraySet(env: JNIEnv_ptr, elementType: Java_CFFI_JavaEntit
             case _ => throw Java_CFFI_InvariantFailed()
         }
         handlePendingException(env)
-        res
     }
 }
 
@@ -2345,7 +2326,7 @@ public func Java_CFFI_deleteCJObject<T>(env: JNIEnv_ptr, self: jlong, getEntity:
 }
 
 public func Java_CFFI_deleteCJObjectOneWay<T>(env: JNIEnv_ptr, self: jlong): Unit {
-    let v = Java_CFFI_getFromRegistry<T>(env, self)
+    Java_CFFI_getFromRegistry<T>(env, self)
     registry.remove(self)
 }
 
