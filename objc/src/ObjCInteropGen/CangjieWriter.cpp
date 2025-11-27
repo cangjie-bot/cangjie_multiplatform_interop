@@ -587,6 +587,45 @@ static bool is_overloading_constructor(TypeDeclarationSymbol& type, const NonTyp
     return false;
 }
 
+enum Optionality { required, optional, non_overridden };
+
+// If the method does not override any method in the base protocols, return
+// `non_override`.
+// Otherwise, if the method overrides any of the @required methods in base
+// protocols methods, return `required`.
+// Otherwise, return `optional`.
+static Optionality implementation_optionality(TypeDeclarationSymbol& decl, const NonTypeSymbol& method)
+{
+    assert(method.is_member_method());
+    const auto& selector = method.selector();
+    bool is_static = method.is_static();
+    bool is_optional = false;
+    for (auto& base_decl : decl.bases()) {
+        auto* base_type_decl = dynamic_cast<TypeDeclarationSymbol*>(&base_decl);
+        if (base_type_decl && base_type_decl->kind() == NamedTypeSymbol::Kind::Protocol) {
+            for (const auto& member : base_type_decl->members()) {
+                if (member.is_member_method() && member.is_static() == is_static && member.selector() == selector) {
+                    if (!member.is_optional()) {
+                        return required;
+                    }
+                    is_optional = true;
+                }
+            }
+            switch (implementation_optionality(*base_type_decl, method)) {
+                case required:
+                    return required;
+                case optional:
+                    is_optional = true;
+                    break;
+                default:
+                    // non_overridden
+                    break;
+            }
+        }
+    }
+    return is_optional ? optional : non_overridden;
+}
+
 static NonTypeSymbol* get_overridden_method(TypeDeclarationSymbol& decl, const NonTypeSymbol& prop)
 {
     const auto& selector = prop.getter();
@@ -650,23 +689,26 @@ static NonTypeSymbol* get_overridden_property(TypeDeclarationSymbol& decl, const
     return nullptr;
 }
 
-static void print_optional(std::ostream& output, const NonTypeSymbol& member)
+static void print_optional(std::ostream& output, TypeDeclarationSymbol& decl, const NonTypeSymbol& member)
 {
-    if (member.is_optional()) {
-        if (generate_definitions_mode()) {
+    bool is_optional;
+    bool enabled;
+    if (decl.kind() == NamedTypeSymbol::Kind::Protocol) {
+        is_optional = member.is_optional();
+        enabled = mode == Mode::EXPERIMENTAL;
+    } else {
+        assert(decl.kind() == NamedTypeSymbol::Kind::Interface);
+        if (!member.is_member_method()) {
+            return;
+        }
+        is_optional = implementation_optionality(decl, member) == optional;
+        enabled = !generate_definitions_mode();
+    }
+    if (is_optional) {
+        if (!enabled) {
             output << "// ";
         }
-
-        // Currently FE does not support @ObjCOptional.
-        constexpr bool objc_optional_supported = false;
-
-        if constexpr (objc_optional_supported) {
-            output << "@ObjCOptional\n";
-        } else {
-            if (!normal_mode()) {
-                output << "@ObjCOptional\n";
-            }
-        }
+        output << "@ObjCOptional\n";
     }
 }
 
@@ -710,8 +752,8 @@ static void print_getter_setter_names(std::ostream& output, const NonTypeSymbol&
 
 enum class FuncKind { TopLevelFunc, InterfaceMethod, ClassMethod };
 
-static void write_function(
-    IndentingStringStream& output, FuncKind kind, NonTypeSymbol& function, SymbolPrintFormat format)
+static void write_function(IndentingStringStream& output, FuncKind kind, TypeDeclarationSymbol* decl,
+    NonTypeSymbol& function, SymbolPrintFormat format)
 {
     auto* return_type = function.return_type();
     assert(return_type);
@@ -729,7 +771,7 @@ static void write_function(
             format = SymbolPrintFormat::EmitCangjieStrict;
         }
     } else {
-        print_optional(output, function);
+        print_optional(output, *decl, function);
     }
     write_foreign_name(output, function);
     if (kind == FuncKind::ClassMethod || (kind == FuncKind::TopLevelFunc && !is_ctype)) {
@@ -927,7 +969,7 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
                 if (!supported) {
                     output.set_comment();
                 }
-                print_optional(output, member);
+                print_optional(output, *type, member);
                 print_getter_setter_names(output, member);
                 if (decl_kind != DeclKind::Interface) {
                     output << "public ";
@@ -1011,7 +1053,7 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
             if (!get_property(*type, member) &&
                 !get_overridden_property(*type, member.selector(), member.is_static())) {
                 write_function(output,
-                    decl_kind == DeclKind::Interface ? FuncKind::InterfaceMethod : FuncKind::ClassMethod, member,
+                    decl_kind == DeclKind::Interface ? FuncKind::InterfaceMethod : FuncKind::ClassMethod, type, member,
                     format);
             }
         } else if (member.is_instance_variable()) {
@@ -1109,7 +1151,7 @@ void write_cangjie()
                     assert(dynamic_cast<NonTypeSymbol*>(symbol));
                     auto& top_level = static_cast<NonTypeSymbol&>(*symbol);
                     assert(top_level.kind() == NonTypeSymbol::Kind::GlobalFunction);
-                    write_function(output, FuncKind::TopLevelFunc, top_level, SymbolPrintFormat::EmitCangjie);
+                    write_function(output, FuncKind::TopLevelFunc, nullptr, top_level, SymbolPrintFormat::EmitCangjie);
                 }
                 output << std::endl;
             }
