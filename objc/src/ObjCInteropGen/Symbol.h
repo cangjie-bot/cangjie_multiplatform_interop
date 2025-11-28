@@ -256,6 +256,8 @@ protected:
     virtual void visit_impl(FileLevelSymbol* owner, FileLevelSymbol* value, SymbolProperty property) = 0;
 };
 
+enum class OutputStatus { Undefined, Root, Referenced, ReferencedMarked, MultiReferenced };
+
 class FileLevelSymbol : public Symbol {
     InputFile* input_file_ = nullptr; // Stage 1
     LineCol location_ = {0, 0};
@@ -264,7 +266,12 @@ class FileLevelSymbol : public Symbol {
     std::string cangjie_package_name_;
     PackageFile* output_file_ = nullptr; // Stage 3
 
-    bool no_output_file_ = false;
+    OutputStatus output_status_ = OutputStatus::Undefined;
+
+    size_t number_of_referencing_packages_ = 0;
+
+    // Used only for debug print when verbosity > LogLevel::WARNING
+    std::unordered_set<const Package*> referencing_packages_;
 
 public:
     // Applicable only for symbols with the same defining file
@@ -286,7 +293,7 @@ public:
 
     [[nodiscard]] virtual bool is_file_level() const noexcept = 0;
 
-    [[nodiscard]] InputFile* defining_file() const
+    [[nodiscard]] virtual InputFile* defining_file() const noexcept
     {
         return input_file_;
     }
@@ -307,31 +314,27 @@ public:
         return references_symbols_;
     }
 
-    void add_reference(FileLevelSymbol* symbol);
+    bool add_reference(FileLevelSymbol& symbol);
 
-    [[nodiscard]] bool no_output_file() const
+    [[nodiscard]] auto output_status() const noexcept
     {
-        return no_output_file_;
+        return output_status_;
     }
 
-    void mark_no_output_file()
+    void set_output_status(OutputStatus output_status) noexcept
     {
-        assert(!no_output_file_);
-        assert(!output_file_);
-        no_output_file_ = true;
+        output_status_ = output_status;
     }
+
+    void add_referencing_package(const Package& package);
+
+    size_t number_of_referencing_packages() const noexcept;
+
+    void print_referencing_packages_info() const;
 
 protected:
     explicit FileLevelSymbol(std::string name) : Symbol(std::move(name))
     {
-    }
-
-    void add_reference_to_self(FileLevelSymbol* symbol)
-    {
-        assert(symbol);
-        assert(this->is_file_level());
-        assert(symbol->is_file_level());
-        references_symbols_.insert(symbol);
     }
 
     virtual void visit_impl(SymbolVisitor& visitor) = 0;
@@ -1013,6 +1016,11 @@ public:
     [[nodiscard]] bool is_file_level() const noexcept override
     {
         return false;
+    }
+
+    [[nodiscard]] InputFile* defining_file() const noexcept override
+    {
+        return original_->defining_file();
     }
 
 protected:

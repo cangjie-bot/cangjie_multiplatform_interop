@@ -6,11 +6,10 @@
 
 #include "Symbol.h"
 
-#include <algorithm>
+#include <iostream>
 
-#include "InputFile.h"
+#include "Logging.h"
 #include "Mappings.h"
-#include "Mode.h"
 #include "Package.h"
 #include "Universe.h"
 
@@ -409,15 +408,42 @@ void FileLevelSymbol::set_cangjie_package_name(std::string cangjie_package_name)
     cangjie_package_name_ = std::move(cangjie_package_name);
 }
 
-void FileLevelSymbol::add_reference(FileLevelSymbol* symbol)
+bool FileLevelSymbol::add_reference(FileLevelSymbol& symbol)
 {
-    // symbol references this
-
-    assert(symbol);
-    assert(symbol != this);
-    assert(symbol->is_file_level());
+    assert(&symbol != this);
+    assert(symbol.is_file_level());
     assert(is_file_level());
-    add_reference_to_self(symbol);
+    return references_symbols_.insert(&symbol).second;
+}
+
+static bool referencing_packages_detailed_info() noexcept
+{
+    return verbosity > LogLevel::WARNING;
+}
+
+void FileLevelSymbol::add_referencing_package(const Package& package)
+{
+    ++number_of_referencing_packages_;
+    if (referencing_packages_detailed_info()) {
+        referencing_packages_.insert(&package);
+    }
+}
+
+size_t FileLevelSymbol::number_of_referencing_packages() const noexcept
+{
+    return referencing_packages_detailed_info() ? referencing_packages_.size() : number_of_referencing_packages_;
+}
+
+void FileLevelSymbol::print_referencing_packages_info() const
+{
+    if (referencing_packages_detailed_info()) {
+        std::cerr << ":\n";
+        for (const auto* package : referencing_packages_) {
+            std::cerr << "* " << package->cangjie_name() << std::endl;
+        }
+    } else {
+        std::cerr << ". Specify -v for more detailed information" << std::endl;
+    }
 }
 
 TypeParameterSymbol::TypeParameterSymbol(Private, std::string name) : TypeLikeSymbol(std::move(name))

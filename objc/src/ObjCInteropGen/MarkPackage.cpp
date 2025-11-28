@@ -62,6 +62,7 @@ static bool set_package(FileLevelSymbol& symbol)
             continue;
         }
 
+        symbol.set_output_status(OutputStatus::Root);
         symbol.set_package_file(input_to_output(&package, &symbol));
         package_found = true;
     }
@@ -102,10 +103,11 @@ class SymbolReferenceCollector final : public SingleDeclarationSymbolVisitor {
 
 public:
 #ifdef OBJCINTEROPGEN_NO_WARNINGS
-    OBJCINTEROPGEN_NODISCARD_CONSTRUCTOR explicit SymbolReferenceCollector() : SingleDeclarationSymbolVisitor(true)
+    OBJCINTEROPGEN_NODISCARD_CONSTRUCTOR explicit SymbolReferenceCollector(FileLevelSymbol& symbol)
 #else
-    [[nodiscard]] explicit SymbolReferenceCollector() : SingleDeclarationSymbolVisitor(true)
+    [[nodiscard]] explicit SymbolReferenceCollector(FileLevelSymbol& symbol)
 #endif
+        : SingleDeclarationSymbolVisitor(true), symbol_(symbol)
     {
     }
 
@@ -117,14 +119,9 @@ public:
 
     SymbolReferenceCollector& operator=(SymbolReferenceCollector&& other) noexcept = delete;
 
-    [[nodiscard]] const std::vector<FileLevelSymbol*>& symbols() const
+    void visit()
     {
-        return symbols_;
-    }
-
-    void clear()
-    {
-        symbols_.clear();
+        SingleDeclarationSymbolVisitor::visit(&symbol_);
     }
 
 protected:
@@ -135,50 +132,25 @@ protected:
             // Skip the root type of this visit session to avoid self-referencing of each type.
             return;
         }
-        if (value->is_file_level()) {
-            symbols_.push_back(value);
+        const auto* named_value = dynamic_cast<const NamedTypeSymbol*>(value);
+        if (named_value) {
+            value = named_value->original();
+        }
+        if (value != &symbol_ // Self-reference
+            && value->is_file_level() && value->defining_file()) {
+            if (symbol_.add_reference(*value) && verbosity >= LogLevel::TRACE) {
+                std::cerr << "Entity `" << symbol_.name() << "` references `" << value->name() << "`\n";
+            }
         }
     }
 
 private:
-    std::vector<FileLevelSymbol*> symbols_;
+    FileLevelSymbol& symbol_;
 };
-
-void add_all_symbol_references()
-{
-    SymbolReferenceCollector collector;
-
-    for (const auto* input_directory : inputs) {
-        for (const auto* input_file : *input_directory) {
-            for (auto* symbol : *input_file) {
-                assert(check_symbol(symbol));
-
-                collector.visit(symbol);
-
-                for (auto* used : collector.symbols()) {
-                    if (used == symbol) {
-                        // Self-reference
-                        continue;
-                    }
-
-                    if (verbosity >= LogLevel::TRACE) {
-                        std::cerr << "Entity `" << symbol->name() << "` references `" << used->name() << "`"
-                                  << std::endl;
-                    }
-
-                    used->add_reference(symbol);
-                }
-
-                collector.clear();
-            }
-        }
-    }
-}
 
 class ScopeBuilderStatus final {
     bool success_ = true;
     bool changed_ = false;
-    bool has_undecided_ = false;
 
 public:
     [[nodiscard]] bool success() const
@@ -196,11 +168,6 @@ public:
         return changed_;
     }
 
-    [[nodiscard]] bool has_undecided() const
-    {
-        return has_undecided_;
-    }
-
     void mark_error()
     {
         success_ = false;
@@ -210,100 +177,71 @@ public:
     {
         changed_ = true;
     }
-
-    void mark_has_undecided()
-    {
-        has_undecided_ = true;
-    }
 };
 
-ScopeBuilderStatus symbol_references_to_packages_pass(bool aggressive)
+void add_all_symbol_references()
+{
+    for (const auto* input_directory : inputs) {
+        for (const auto* input_file : *input_directory) {
+            for (auto* symbol : *input_file) {
+                assert(check_symbol(symbol));
+
+                SymbolReferenceCollector(*symbol).visit();
+            }
+        }
+    }
+}
+
+static ScopeBuilderStatus symbol_references_to_packages_pass(bool roots_only)
 {
     ScopeBuilderStatus status;
-
-    std::unordered_map<Package*, std::uint64_t> package_counts;
 
     for (const auto* input_directory : inputs) {
         for (const auto* input_file : *input_directory) {
             for (auto* symbol : *input_file) {
                 assert(check_symbol(symbol));
 
-                if (symbol->package_file() || symbol->no_output_file()) {
+                if (symbol->output_status() != (roots_only ? OutputStatus::Root : OutputStatus::Referenced)) {
                     continue;
                 }
 
-                package_counts.clear();
-                std::uint64_t no_package_count = 0;
+                auto* package = symbol->package();
+                assert(package);
 
-                for (const auto* reference : symbol->references_symbols()) {
-                    if (auto* package = reference->package()) {
-                        if (auto it = package_counts.find(package); it != package_counts.end()) {
-                            it->second++;
-                        } else {
-                            package_counts.emplace(package, 1);
+                for (auto* reference : symbol->references_symbols()) {
+                    assert(reference);
+                    switch (reference->output_status()) {
+                        case OutputStatus::Undefined: {
+                            assert(!reference->package());
+                            auto* package_file = input_to_output(package, reference->defining_file());
+                            assert(package_file);
+                            reference->set_output_status(OutputStatus::Referenced);
+                            reference->add_referencing_package(*package);
+                            reference->set_package_file(package_file);
+                            status.mark_changed();
+                            break;
                         }
-                    } else if (!reference->no_output_file()) {
-                        no_package_count++;
-                    }
-                }
-
-                if (package_counts.empty() && (no_package_count == 0 || aggressive)) {
-                    if (verbosity >= LogLevel::DEBUG) {
-                        std::cerr << "Entity `" << symbol->name() << "` from `" << input_file->path().u8string()
-                                  << "` is not used" << std::endl;
-                    }
-                    symbol->mark_no_output_file();
-                    status.mark_changed();
-                    continue;
-                }
-
-                if (package_counts.size() == 1 && (no_package_count == 0 || aggressive)) {
-                    auto* package = package_counts.begin()->first;
-                    assert(package);
-                    auto* package_file = input_to_output(package, input_file);
-                    assert(package_file);
-                    if (verbosity >= LogLevel::TRACE) {
-                        std::cerr << "Entity `" << symbol->name() << "` from `" << input_file->path().u8string()
-                                  << "` is only used from `" << package->cangjie_name() << "` package, assigning `"
-                                  << package_file->output_path().u8string() << "`" << std::endl;
-                    }
-                    symbol->set_package_file(package_file);
-                    status.mark_changed();
-                    continue;
-                }
-
-                if (package_counts.size() > 1) {
-                    // TODO: build graph of dependencies between packages and resolve the most common cases
-                    //       by selecting the closest common dependency package
-                    std::cerr << "Entity `" << symbol->name() << "` from `" << input_file->path().u8string()
-                              << "` is ambiguous between " << package_counts.size() << " packages";
-                    if (verbosity == LogLevel::WARNING) {
-                        std::cerr << ". Specify -v for more detailed information" << std::endl;
-                    } else {
-                        std::cerr << ":" << std::endl;
-                        for (const auto [package, _] : package_counts) {
-                            std::cerr << "* " << package->cangjie_name() << std::endl;
+                        case OutputStatus::Referenced:
+                        case OutputStatus::ReferencedMarked: {
+                            const auto* reference_package = reference->package();
+                            assert(reference_package);
+                            if (reference_package != package) {
+                                // TODO: build graph of dependencies between packages and resolve the most
+                                // common cases by selecting the closest common dependency package
+                                reference->set_output_status(OutputStatus::MultiReferenced);
+                                reference->add_referencing_package(*package);
+                                status.mark_error();
+                            }
+                            break;
                         }
+                        default:
+                            assert(reference->package());
+                            break;
                     }
-                    status.mark_error();
-                    continue;
                 }
-
-                assert(no_package_count != 0);
-                status.mark_has_undecided();
-                if (verbosity >= LogLevel::TRACE) {
-                    std::cerr << "Entity `" << symbol->name() << "` is undecided:" << std::endl;
-                    for (const auto* reference : symbol->references_symbols()) {
-                        std::cerr << "* " << reference->name();
-                        if (const auto* package = reference->package()) {
-                            std::cerr << " from package `" << package->cangjie_name() << "`";
-                        } else if (reference->no_output_file()) {
-                            std::cerr << " (no output file)";
-                        } else {
-                            std::cerr << " (no package)";
-                        }
-                        std::cerr << std::endl;
-                    }
+                if (!roots_only) {
+                    assert(symbol->output_status() == OutputStatus::Referenced);
+                    symbol->set_output_status(OutputStatus::ReferencedMarked);
                 }
             }
         }
@@ -314,31 +252,50 @@ ScopeBuilderStatus symbol_references_to_packages_pass(bool aggressive)
 
 bool symbol_references_to_packages()
 {
-    while (true) {
-        auto status = symbol_references_to_packages_pass(false);
+    auto status = symbol_references_to_packages_pass(true);
+    auto error = status.error();
+    while (status.changed()) {
+        status = symbol_references_to_packages_pass(false);
         if (status.error()) {
-            return false;
+            error = true;
         }
-
-        if (status.changed()) {
-            continue;
-        }
-
-        if (!status.has_undecided()) {
-            return true;
-        }
-
-        status = symbol_references_to_packages_pass(true);
-        if (status.error()) {
-            return false;
-        }
-
-        if (status.changed()) {
-            continue;
-        }
-
-        return false;
     }
+
+    for (const auto* input_directory : inputs) {
+        for (const auto* input_file : *input_directory) {
+            for (auto* symbol : *input_file) {
+                switch (symbol->output_status()) {
+                    case OutputStatus::Undefined:
+                        if (verbosity >= LogLevel::DEBUG) {
+                            std::cerr << "Entity `" << symbol->name() << "` from `" << input_file->path().u8string()
+                                      << "` is not used" << std::endl;
+                        }
+                        break;
+                    case OutputStatus::Referenced:
+                    case OutputStatus::ReferencedMarked:
+                        assert(symbol->package());
+                        assert(symbol->package_file());
+                        if (verbosity >= LogLevel::TRACE) {
+                            std::cerr << "Entity `" << symbol->name() << "` from `" << input_file->path().u8string()
+                                      << "` is only used from `" << symbol->package()->cangjie_name()
+                                      << "` package, assigning `" << symbol->package_file()->output_path().u8string()
+                                      << '`' << std::endl;
+                        }
+                        break;
+                    case OutputStatus::MultiReferenced:
+                        std::cerr << "Entity `" << symbol->name() << "` from `" << input_file->path().u8string()
+                                  << "` is ambiguous between " << symbol->number_of_referencing_packages()
+                                  << " packages";
+                        symbol->print_referencing_packages_info();
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+    }
+
+    return !error;
 }
 
 void register_symbols_in_declaration_order()
@@ -350,17 +307,6 @@ void register_symbols_in_declaration_order()
 
                 if (auto* package_file = symbol->package_file()) {
                     package_file->add_symbol(symbol);
-
-                    auto* edge_to = package_file->package();
-                    assert(edge_to);
-                    for (const auto* reference : symbol->references_symbols()) {
-                        if (auto* edge_from = reference->package()) {
-                            assert(!reference->no_output_file());
-                            if (edge_from != edge_to) {
-                                edge_from->add_dependency_edge(edge_to);
-                            }
-                        }
-                    }
                 }
             }
         }
