@@ -1181,6 +1181,24 @@ void write_cangjie()
     }
 
     if (verbosity >= LogLevel::INFO) {
+        for (const auto* input_directory : inputs) {
+            for (const auto* input_file : *input_directory) {
+                for (const auto* symbol : *input_file) {
+                    assert(symbol);
+                    if (auto* package_file = symbol->package_file()) {
+                        auto* edge_from = package_file->package();
+                        assert(edge_from);
+                        for (const auto* reference : symbol->references_symbols()) {
+                            if (auto* edge_to = reference->package()) {
+                                if (edge_from != edge_to) {
+                                    edge_from->add_dependency_edge(edge_to);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
         for (auto&& package : packages) {
             auto& depends_on = package.depends_on();
             std::cout << "Package `" << package.cangjie_name() << "` depends on " << depends_on.size();
