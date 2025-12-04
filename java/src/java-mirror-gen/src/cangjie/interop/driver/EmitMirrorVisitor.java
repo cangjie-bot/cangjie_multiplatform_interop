@@ -25,7 +25,6 @@ package cangjie.interop.driver;
 import static cangjie.interop.Utils.addBackticksIfNeeded;
 import static cangjie.interop.Utils.addUnderscoresIfNeeded;
 import static cangjie.interop.Utils.getFlatNameWithoutPackage;
-import static cangjie.interop.Utils.syntheticParameterName;
 import static cangjie.interop.driver.VisitorUtils.addSymbolsToMangle;
 import static cangjie.interop.driver.VisitorUtils.collectImports;
 import static cangjie.interop.driver.VisitorUtils.createJavaMirrorAnnotation;
@@ -74,6 +73,7 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -627,7 +627,8 @@ public final class EmitMirrorVisitor {
             if (parts.length < 1) {
                 continue;
             }
-            final var newPackageName = parts[0];
+            final var newNameParts = Arrays.copyOfRange(parts, 0, parts.length - 1);
+            final var newPackageName = String.join(".", newNameParts);
             if (wildcardImports.contains(newPackageName)) {
                 continue;
             }
