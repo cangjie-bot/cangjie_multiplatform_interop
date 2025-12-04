@@ -1,0 +1,26 @@
+[default]
+APIStrategy = "Full"
+GenericTypeStrategy = "None"
+
+[[package]]
+name = "genericStruct"
+APIStrategy = "Full"
+GenericTypeStrategy = "Partial"
+excluded_apis = [
+]
+generic_object_configuration = [
+    { name = "GenericStruct", type_arguments = ["Float64", "Int32"] },
+    { name = "GenericStruct<Float64>", symbols = [
+        "getValue",
+        "GenericStruct",
+        "value",
+        "setValue"
+    ]},
+
+    { name = "GenericStruct<Int32>", symbols = [
+        "getValue",
+        "GenericStruct",
+        "value",
+        "setValue"
+    ]}
+]
