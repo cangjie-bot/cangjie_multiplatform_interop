@@ -152,7 +152,7 @@ def build(args):
         CANGJIE_RUNTIME_INCLUDE_PATH=f"{CANGJIE_HOME}/include"
         CANGJIE_RUNTIME_LIB_PATH=f"{CANGJIE_HOME}/runtime/lib/{runtime}"
 
-        clang_command = ["clang", "-fmodules", "-shared"]
+        clang_command = ["clang", "-shared"]
         if not IS_DARWIN:
             clang_command += subprocess.run(['gnustep-config', '--objc-flags'], capture_output=True).stdout.decode().split()
             clang_command += subprocess.run(['gnustep-config', '--objc-libs'], capture_output=True).stdout.decode().split()
