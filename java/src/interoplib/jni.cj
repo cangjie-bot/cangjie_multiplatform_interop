@@ -2087,7 +2087,7 @@ public func Java_CFFI_newJavaObject(env: JNIEnv_ptr, clazz: Java_CFFI_Class, con
 
 // The constructor of the proxy class for structTy contains a special parameter, whereas EnumTy
 // does not require it. 
-public func Java_CFFI_newJavaProxyObjectForCJMapping(env: JNIEnv_ptr, entity: Object, name: String,
+public func Java_CFFI_newJavaProxyObjectForCJMapping(env: JNIEnv_ptr, entity: Any, name: String,
     withMarkerParam: Bool): jobject {
     let id = Java_CFFI_put_to_registry_1(entity)
     let clazz = Java_CFFI_Class(env, name)
