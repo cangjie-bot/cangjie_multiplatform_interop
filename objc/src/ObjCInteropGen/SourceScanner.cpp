@@ -1,4 +1,4 @@
-﻿// Copyright (c) Huawei Technologies Co., Ltd. 2025. All rights reserved.
+// Copyright (c) Huawei Technologies Co., Ltd. 2025. All rights reserved.
 // This source file is part of the Cangjie project, licensed under Apache-2.0
 // with Runtime Library Exception.
 //
@@ -452,7 +452,7 @@ TypeDeclarationSymbol* SourceScanner::type_symbol(CXType type)
 
 template <class FuncLikeTypeSymbol> FuncLikeTypeSymbol* SourceScanner::create_func_like_type_symbol(const CXType& type)
 {
-    assert(type.kind == CXType_FunctionProto);
+    assert(type.kind == CXType_FunctionProto || type.kind == CXType_FunctionNoProto);
     auto* parameters = new TupleTypeSymbol();
     int num_arg_types = clang_getNumArgTypes(type);
     assert(num_arg_types >= 0);
@@ -717,6 +717,7 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
         }
 
         case CXType_FunctionProto:
+        case CXType_FunctionNoProto:
             return create_func_like_type_symbol<FuncTypeSymbol>(type);
 
         case CXType_IncompleteArray:
