@@ -152,7 +152,18 @@ def build(args):
         CANGJIE_RUNTIME_INCLUDE_PATH=f"{CANGJIE_HOME}/include"
         CANGJIE_RUNTIME_LIB_PATH=f"{CANGJIE_HOME}/runtime/lib/{runtime}"
 
-        clang_command = ["clang", "-fmodules", "-shared"]
+        LOG.info("GTGT debug prints\n")
+        command("which", "clang", cwd=INTEROPLIB_DIR, env=os.environ.copy())
+        command("clang", "--version", cwd=INTEROPLIB_DIR, env=os.environ.copy())
+        LOG.info("CANGJIE_HOME='" + CANGJIE_HOME + "'\n")
+        LOG.info("GTGT debug CANGJIE_HOME/include\n")
+        command("ls", "-l", f"{CANGJIE_HOME}/include", cwd=INTEROPLIB_DIR, env=os.environ.copy())
+        LOG.info("CANGJIE_RUNTIME_INCLUDE_PATH='" + CANGJIE_RUNTIME_INCLUDE_PATH + "'\n")
+        command("ls", "-l", f"{CANGJIE_RUNTIME_INCLUDE_PATH}", cwd=INTEROPLIB_DIR, env=os.environ.copy())
+        LOG.info("GTGT debug prints DONE\n")
+
+        #clang_command = ["clang", "-fmodules", "-shared"]
+        clang_command = ["clang", "-shared"]
         if not IS_DARWIN:
             clang_command += subprocess.run(['gnustep-config', '--objc-flags'], capture_output=True).stdout.decode().split()
             clang_command += subprocess.run(['gnustep-config', '--objc-libs'], capture_output=True).stdout.decode().split()
@@ -268,6 +279,12 @@ def install(args):
         runtime = runtime_name(args.target)
         LOG.info("begin install interoplib for " + runtime + "\n")
 
+        LOG.info("GTGT debug prints\n")
+        command("which", "cjc", cwd=INTEROPLIB_DIR, env=os.environ.copy())
+        LOG.info("GTGT debug install_path/include\n")
+        command("ls", "-l", f"{install_path}/include", cwd=INTEROPLIB_DIR, env=os.environ.copy())
+        LOG.info("GTGT debug prints DONE\n")
+
         installation_dir = prepare_dir(install_path, "runtime", "lib", runtime)
         install_files(installation_dir,
                       OUT_INTEROPLIB_COMMON_DYLIB,
@@ -296,6 +313,17 @@ def install(args):
         LOG.info("end install interoplib for " + runtime + "\n")
     else:
         LOG.info("begin install objc-interop-gen...")
+
+        LOG.info(f"GTGT debug prints install_path={install_path}\n")
+        command("which", "cjc", cwd=INTEROPLIB_DIR, env=os.environ.copy())
+        cjc_bin = subprocess.Popen("which", "cjc", stdout=PIPE, cwd=INTEROPLIB_DIR, env=os.environ.copy()).stdout.readline()
+        LOG.info("cjc_bin='" + cjc_bin + "'\n")
+        LOG.info("GTGT debug cjc_bin/../include\n")
+        command("ls", "-l", f"{cjc_bin}/../include", cwd=INTEROPLIB_DIR, env=os.environ.copy())
+        LOG.info("GTGT debug install_path/include\n")
+        command("ls", "-l", f"{install_path}/include", cwd=INTEROPLIB_DIR, env=os.environ.copy())
+        LOG.info("GTGT debug prints DONE\n")
+
 
         install_file(prepare_dir(install_path, "tools", "bin"), os.path.join(CMAKE_BUILD_DIR, "ObjCInteropGen"))
 
