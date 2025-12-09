@@ -268,6 +268,16 @@ def install(args):
         runtime = runtime_name(args.target)
         LOG.info("begin install interoplib for " + runtime + "\n")
 
+        LOG.info("GTGT debug prints\n")
+        command("which", "cjc", cwd=INTEROPLIB_DIR, env=os.environ.copy())
+        cjc_bin = subprocess.Popen("which", "cjc", stdout=PIPE, cwd=INTEROPLIB_DIR, env=os.environ.copy()).stdout.readline()
+        LOG.info("cjc_bin='" + cjc_bin + "'\n")
+        LOG.info("GTGT debug cjc_bin/../include\n")
+        command("ls", "-l", f"{cjc_bin}/../include", cwd=INTEROPLIB_DIR, env=os.environ.copy())
+        LOG.info("GTGT debug install_path/include\n")
+        command("ls", "-l", f"{install_path}/include", cwd=INTEROPLIB_DIR, env=os.environ.copy())
+        LOG.info("GTGT debug prints DONE\n")
+
         installation_dir = prepare_dir(install_path, "runtime", "lib", runtime)
         install_files(installation_dir,
                       OUT_INTEROPLIB_COMMON_DYLIB,
