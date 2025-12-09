@@ -60,9 +60,11 @@ int main(int argc, char* argv[])
             return 1;
         }
         if (argc == 2) {
-            show_help(argv[0]);
             std::string_view arg = argv[1];
-            return arg == "--help" || arg == "-?" || arg == "-h" ? 0 : 1;
+            if (arg == "--help" || arg == "-?" || arg == "-h") {
+                show_help(argv[0]);
+                return 0;
+            }
         }
         std::size_t verbosityVal = 0;
         bool config_specified = false;
