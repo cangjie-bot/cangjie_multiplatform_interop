@@ -13,7 +13,7 @@
 bool initCJRuntime(const char* cj_gluecode_lib_name);
 
 /**
- * Calucate override mask for methods in `methods` array of `baseCls` class that may be overridden in `selfCls` class.
+ * Calculate override mask for methods in `methods` array of `baseCls` class that may be overridden in `selfCls` class.
  * The length of `methods` array is passed as `len`. If it is greater than 64 only first 64 methods participate in the mask.
  * The i-th bit of the calculated mask is set to 1, when the i-th method is overridden in `selfCls`.
  */

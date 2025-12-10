@@ -4,7 +4,10 @@
 //
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
+// Cangjie runtime initialization based on Cangjie.h (copied from cangjie_runtime repository) is a temporary solution.
+// Later it should be rewritten using C Invoke Cangjie API when it gets available in Cangjie SDK.
 #import "Cangjie.h"
+#import "stdio.h"
 #import "cjinterop.h"
 
 // ObjC runtime functions used to calculate override-mask
@@ -18,13 +21,13 @@ static struct RuntimeParam defaultCJRuntimeParams = {0};
 bool initCJRuntime(const char* cj_gluecode_lib_name) {
     defaultCJRuntimeParams.logParam.logLevel = RTLOG_ERROR;
     if (InitCJRuntime(&defaultCJRuntimeParams) != E_OK) {
-        NSLog(@"ERROR: Failed to initialize Cangjie runtime");
+        printf("ERROR: Failed to initialize Cangjie runtime\n");
         return false;
     }
 
     if (LoadCJLibraryWithInit(cj_gluecode_lib_name)) {
-        NSLog(@"ERROR: Failed to init cjworld library");
-            return false;
+        printf("ERROR: Failed to init cjworld library\n");
+        return false;
     }
 
     return true;
