@@ -157,7 +157,7 @@ def build(args):
             clang_command += subprocess.run(['gnustep-config', '--objc-flags'], capture_output=True).stdout.decode().split()
             clang_command += subprocess.run(['gnustep-config', '--objc-libs'], capture_output=True).stdout.decode().split()
 
-        clang_command += [f"-I{CANGJIE_RUNTIME_INCLUDE_PATH}", f"-L{CANGJIE_RUNTIME_LIB_PATH}", "-lcangjie-runtime"]
+        clang_command += [f"-L{CANGJIE_RUNTIME_LIB_PATH}", "-lcangjie-runtime"]
         clang_command += ["-I.", "cjinterop.m", f"-o{OUT_INTEROPLIB_OBJCLIB_DYLIB}"]
 
         output = subprocess.Popen(
