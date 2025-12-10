@@ -4,6 +4,8 @@
 //
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
+// Cangjie runtime initialization based on Cangjie.h (copied from cangjie_runtime repository) is a temporary solution.
+// Later it should be rewritten using C Invoke Cangjie API when it gets available in Cangjie SDK.
 #import "Cangjie.h"
 #import "cjinterop.h"
 
