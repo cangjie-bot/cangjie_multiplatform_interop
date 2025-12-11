@@ -7,8 +7,12 @@
 // Cangjie runtime initialization based on Cangjie.h (copied from cangjie_runtime repository) is a temporary solution.
 // Later it should be rewritten using C Invoke Cangjie API when it gets available in Cangjie SDK.
 #import "Cangjie.h"
+#import "pthread.h"
 #import "stdio.h"
 #import "cjinterop.h"
+
+volatile bool runtime_inited = false;
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // ObjC runtime functions used to calculate override-mask
 typedef struct objc_method* Method;
@@ -19,10 +23,18 @@ extern id objc_getClass(const char * name);
 static struct RuntimeParam defaultCJRuntimeParams = {0};
 
 bool initCJRuntime(const char* cj_gluecode_lib_name) {
-    defaultCJRuntimeParams.logParam.logLevel = RTLOG_ERROR;
-    if (InitCJRuntime(&defaultCJRuntimeParams) != E_OK) {
-        printf("ERROR: Failed to initialize Cangjie runtime\n");
-        return false;
+    if (!runtime_inited) {
+        pthread_mutex_lock(&mutex);
+        if (!runtime_inited) {
+            defaultCJRuntimeParams.logParam.logLevel = RTLOG_ERROR;
+            if (InitCJRuntime(&defaultCJRuntimeParams) != E_OK) {
+                printf("ERROR: Failed to initialize Cangjie runtime\n");
+                pthread_mutex_unlock(&mutex);
+                return false;
+            }
+            runtime_inited = true;
+        }
+        pthread_mutex_unlock(&mutex);
     }
 
     if (LoadCJLibraryWithInit(cj_gluecode_lib_name)) {
