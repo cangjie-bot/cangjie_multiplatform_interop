@@ -21,6 +21,14 @@ from enum import Enum
 from logging.handlers import TimedRotatingFileHandler
 from subprocess import PIPE
 
+if 'JAVA_HOME' not in os.environ:
+    print("JAVA_HOME environment variable must be set to JDK 17 or greater", file=sys.stderr)
+    exit(1)
+
+if 'CANGJIE_HOME' not in os.environ:
+    print("CANGJIE_HOME environment variable must be set (are you in Cangjie SDK environment?)", file=sys.stderr)
+    exit(1)
+
 IS_DARWIN = platform.system() == "Darwin"
 IS_WINDOWS = platform.system() == "Windows"
 JAVA_HOME = os.environ['JAVA_HOME']

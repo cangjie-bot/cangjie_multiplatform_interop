@@ -87,8 +87,8 @@ public struct JNINativeInterface_ {
     var ExceptionClear = CFunc<(env: JNIEnv_ptr) -> Unit>(CPointer<Unit>())
     private var FatalError = CPointer<Unit>()
 
-    private var PushLocalFrame = CPointer<Unit>()
-    private var PopLocalFrame = CPointer<Unit>()
+    var PushLocalFrame = CFunc<(env: JNIEnv_ptr, capacity: jint) -> jint>(CPointer<Unit>())
+    var PopLocalFrame = CFunc<(env: JNIEnv_ptr, result: jobject) -> jobject>(CPointer<Unit>())
 
     var NewGlobalRef = CFunc<(env: JNIEnv_ptr, obj: jobject) -> jobject>(CPointer<Unit>())
     var DeleteGlobalRef = CFunc<(env: JNIEnv_ptr, obj: jobject) -> Unit>(CPointer<Unit>())
@@ -2271,20 +2271,21 @@ private func to_jstring(env: JNIEnv_ptr, str: String): jstring {
 }
 
 public func Java_CFFI_get_env(): JNIEnv_ptr {
+    var envPtr = JNIEnv_ptr()
+
     unsafe {
-        let envPtr = CPointer<JNIEnv_ptr>(LibC.malloc<JNIEnv_ptr>(count: 1))
         let javaVM: JNIInvokeInterface_ = jvm.read().read()
         /*
             Thread should be attached as daemon skip waiting for cangjie threads.
             Since cangjie runtime thread is registered (for example, during objects finalization),
             it causes blocking java program finishing.
 
-            Better solution should inclue cangjie thread deattaching from JVM,
+            Better solution should inclue cangjie thread detaching from JVM,
         */
-        javaVM.AttachCurrentThreadAsDaemon(jvm, envPtr, CPointer<Unit>())
-
-        envPtr.read()
+        javaVM.AttachCurrentThreadAsDaemon(jvm, inout envPtr, CPointer<Unit>())
     }
+
+    envPtr
 }
 
 public func Java_CFFI_JavaEntityJobject(jobject: CPointer<Unit>): Java_CFFI_JavaEntity {
@@ -2506,6 +2507,40 @@ public func Java_CFFI_monitorExit(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity): U
         let result = envCJ.MonitorExit(env, jobj)
         if (result != 0) {
             throw InteropLibException("Error entering monitor: ${result}")
+        }
+    }
+}
+
+public func Java_CFFI_withLocalFrame(env: JNIEnv_ptr, capacity: jint, action: () -> Java_CFFI_JavaEntity): Java_CFFI_JavaEntity {
+    unsafe {
+        let envCJ = env.read().read()
+        let status = envCJ.PushLocalFrame(env, capacity)
+        if (status != 0) {
+            throw InteropLibException("Error entering local frame: ${status}")
+        }
+
+        var result = Java_CFFI_JavaEntityJobjectNull()
+        try {
+            result = action()
+        } finally {
+            result = Java_CFFI_JavaEntity(JOBJECT, envCJ.PopLocalFrame(env, result.asJObject()))
+        }
+        return result
+    }
+}
+
+public func Java_CFFI_withLocalFrameUnit(env: JNIEnv_ptr, capacity: jint, action: () -> Unit): Unit {
+    unsafe {
+        let envCJ = env.read().read()
+        let status = envCJ.PushLocalFrame(env, capacity)
+        if (status != 0) {
+            throw InteropLibException("Error entering local frame: ${status}")
+        }
+
+        try {
+            action()
+        } finally {
+            envCJ.PopLocalFrame(env, jobject())
         }
     }
 }
