@@ -2276,11 +2276,11 @@ public func Java_CFFI_get_env(): JNIEnv_ptr {
     unsafe {
         let javaVM: JNIInvokeInterface_ = jvm.read().read()
         /*
-            Thread should be attached as daemon skip waiting for cangjie threads.
-            Since cangjie runtime thread is registered (for example, during objects finalization),
-            it causes blocking java program finishing.
+            Thread should be attached as daemon to prevent waiting for Cangjie threads.
+            Because Cangjie runtime threads are registered (for example, during objects finalization),
+            JVM is blocked from terminating.
 
-            Better solution should inclue cangjie thread detaching from JVM,
+            A better solution is to detach Cangjie thread from JVM.
         */
         javaVM.AttachCurrentThreadAsDaemon(jvm, inout envPtr, CPointer<Unit>())
     }
