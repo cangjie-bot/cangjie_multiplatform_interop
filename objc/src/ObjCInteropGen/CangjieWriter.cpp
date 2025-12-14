@@ -653,6 +653,9 @@ static NonTypeSymbol* get_overridden_property(TypeDeclarationSymbol& decl, const
 static void print_optional(std::ostream& output, const NonTypeSymbol& member)
 {
     if (member.is_optional()) {
+        if (member.is_property() && normal_mode()) {
+            return;
+        }
         if (generate_definitions_mode()) {
             output << "// ";
         }
