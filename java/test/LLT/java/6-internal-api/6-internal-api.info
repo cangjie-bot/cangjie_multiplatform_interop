@@ -1,0 +1,16 @@
+// Copyright (c) Huawei Technologies Co., Ltd. 2025. All rights reserved.
+// This source file is part of the Cangjie project, licensed under Apache-2.0
+// with Runtime Library Exception.
+//
+// See https://cangjie-lang.cn/pages/LICENSE for license information.
+
+// DEPENDENCE: Main.java test.cj
+// RUN-EXEC-0: %compiler -Woff all %compile_shared_lib_opt test.cj -ljava.lang -linteroplib.interop
+// RUN-EXEC-0: %javac %cp_cj_loader_java_interop Main.java -d .
+// RUN-EXEC-0: %java %cp_cj_loader_java_interop -Djava.library.path=. Main 2>&1 | compare ./%f
+
+/* SCAN-IN
+Lorem ipsum dolor sit amet
+Lorem ipsum dolor sit amet
+100
+*/

@@ -11,15 +11,15 @@
 
 /* SCAN-IN
 java.lang.Exception: Exception from Java A gooExceptionStatic
-	at Utils.gooExceptionStatic(Utils.java:4)
+	at Utils.gooExceptionStatic(Utils.java:10)
 	at A.gooImpl(Native Method)
-	at A.goo(A.java:15)
-	at Main.main(Main.java:6)
+	at A.goo(A.java:21)
+	at Main.main(Main.java:12)
 
 java.lang.Exception: CJ Exception thrown from gooCJThrowPut
 	at A.gooCJThrowGetImpl(Native Method)
-	at A.gooCJThrowGet(A.java:19)
-	at Main.main(Main.java:15)
+	at A.gooCJThrowGet(A.java:25)
+	at Main.main(Main.java:21)
 Hello from A goo(). Then we expect gooExceptionStatic thrown and caught exception
 Exception: java.lang.Exception: Exception from Java A gooExceptionStatic
 Hello from A goo(). Then we expect gooExceptionStatic thrown and uncaught exception
