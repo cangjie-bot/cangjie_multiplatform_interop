@@ -30,6 +30,9 @@ import static vendor.com.sun.tools.javac.code.Flags.FINAL;
 import static vendor.com.sun.tools.javac.code.Kinds.Kind.TYP;
 import static vendor.com.sun.tools.javac.code.Kinds.KindSelector.VAL_MTH;
 import static vendor.com.sun.tools.javac.code.TypeTag.TYPEVAR;
+import static vendor.javax.lang.model.element.Modifier.PUBLIC;
+import static vendor.javax.lang.model.element.Modifier.PROTECTED;
+import static vendor.javax.lang.model.element.Modifier.PRIVATE;
 
 import cangjie.interop.cangjie.QualifiedName;
 import cangjie.interop.cangjie.tree.CJTree;
@@ -49,6 +52,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Optional;
@@ -60,7 +64,8 @@ public final class VisitorUtils {
     private static final Set<Symbol.ClassSymbol> symbolsToMangle = new HashSet<>();
     private static Map<String, String> importsMap = new HashMap<>();
 
-    private VisitorUtils() {}
+    private VisitorUtils() {
+    }
 
     public static Set<Symbol.ClassSymbol> getSymbolsToMangle() {
         return symbolsToMangle;
@@ -286,5 +291,105 @@ public final class VisitorUtils {
         }
 
         return suffix;
+    }
+
+    public static boolean hasAppropriateModifiers(Symbol symbol) {
+        final var modifiers = symbol.getModifiers();
+        return modifiers.contains(PUBLIC) || modifiers.contains(PROTECTED);
+    }
+
+    public static boolean isPackagePrivate(Symbol symbol) {
+        if (symbol == null) {
+            return false;
+        }
+        final var modifiers = symbol.getModifiers();
+        return !modifiers.contains(PUBLIC) && !modifiers.contains(PROTECTED) && !modifiers.contains(PRIVATE);
+    }
+
+    public static Symbol.ClassSymbol firstAppropriateSuperClass(Symbol.TypeSymbol symbol) {
+        if (!(symbol instanceof Symbol.ClassSymbol classSymbol)) {
+            return null;
+        }
+
+        final var superClass = classSymbol.getSuperclass();
+        if (superClass == null || superClass.tsym == null) {
+            return null;
+        }
+        if (!(superClass.tsym instanceof Symbol.ClassSymbol superClassSymbol)) {
+            return null;
+        }
+        if (hasAppropriateModifiers(superClassSymbol)) {
+            return superClassSymbol;
+        }
+        return firstAppropriateSuperClass(superClassSymbol);
+    }
+
+    public static boolean isAppropriateType(Symbol.TypeSymbol typeSymbol) {
+        if (typeSymbol == symtab.objectType.tsym) {
+            return true;
+        }
+        if (typeSymbol == symtab.stringType.tsym) {
+            return true;
+        }
+        if (typeSymbol.type.isPrimitiveOrVoid()) {
+            return true;
+        }
+        if (typeSymbol.type instanceof Type.ArrayType arrayType) {
+            var elemType = arrayType.getComponentType();
+            return isAppropriateType(elemType.tsym);
+        }
+        if (!(typeSymbol instanceof Symbol.ClassSymbol classSymbol)) {
+            return true;
+        }
+        return hasAppropriateModifiers(typeSymbol);
+    }
+
+    public static boolean hasOnlyPublicOrProtectedDeps(Symbol symbol, Types types) {
+        if (symbol instanceof Symbol.MethodSymbol methodSymbol) {
+            for (var param : methodSymbol.params()) {
+                final var paramTypeSymbol = erasureType(param.type, types);
+                if (!isAppropriateType(paramTypeSymbol)) {
+                    return false;
+                }
+            }
+            final var returnTypeSymbol = erasureType(methodSymbol.getReturnType(), types);
+            if (!isAppropriateType(returnTypeSymbol)) {
+                return false;
+            }
+        } else if (symbol instanceof Symbol.VarSymbol varSymbol) {
+            return isAppropriateType(erasureType(varSymbol.type, types));
+        }
+        return true;
+    }
+
+    public static List<Type> collectSuperTypes(Symbol.ClassSymbol classSymbol, Types types) {
+        List<Type> result = new ArrayList<>();
+        final var appropriateSuperClass = firstAppropriateSuperClass(classSymbol);
+        if (appropriateSuperClass != null) {
+            result.add(appropriateSuperClass.type);
+        }
+        result.addAll(collectSuperInterfaces(classSymbol, types));
+        return result;
+    }
+
+    public static Collection<Type> collectSuperInterfaces(Symbol.ClassSymbol classSymbol, Types types) {
+        LinkedHashSet<Type> result = new LinkedHashSet<>();
+        final var superInterfaces = classSymbol.getInterfaces();
+        for (Type superInterface : superInterfaces) {
+            if (hasAppropriateModifiers(superInterface.tsym)) {
+                if (!result.contains(superInterface)) {
+                    result.add(superInterface);
+                }
+                continue;
+            }
+            if (isPackagePrivate(superInterface.tsym)) {
+                if (!(superInterface.tsym instanceof Symbol.ClassSymbol superInterfaceSymbol)) {
+                    continue;
+                }
+                final var packagePrivateSupers = collectSuperInterfaces(superInterfaceSymbol, types);
+                result.addAll(packagePrivateSupers.stream().filter(type -> !result.contains(type)).toList());
+            }
+        }
+        return result;
     }
 }

@@ -33,6 +33,9 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+import static cangjie.interop.driver.VisitorUtils.collectSuperInterfaces;
+import static cangjie.interop.driver.VisitorUtils.hasAppropriateModifiers;
+
 public final class DefaultMethods {
     private final Types types;
     private final OverrideChains overrideChains;
@@ -51,14 +54,15 @@ public final class DefaultMethods {
     private List<Symbol.MethodSymbol> getAllDefaultMethods(Symbol.ClassSymbol superInterface) {
         final var result = new ArrayList<Symbol.MethodSymbol>();
 
-        final var interfaces = superInterface.getInterfaces();
+        final var interfaces = collectSuperInterfaces(superInterface, types);
         for (var superType : interfaces) {
             if (superType == null || superType.tsym == null) {
                 continue;
             }
 
             for (var methodSymbol : getAllDefaultMethods((Symbol.ClassSymbol) superType.tsym)) {
-                if (result.stream().anyMatch(s -> overrideChains.overrides(methodSymbol, s))) {
+                if (result.stream().anyMatch(s -> overrideChains.overridesWithFilter(methodSymbol, s) &&
+                        hasAppropriateModifiers(s.owner))) {
                     continue;
                 }
 
@@ -75,7 +79,8 @@ public final class DefaultMethods {
                 continue;
             }
 
-            if (result.stream().anyMatch(s -> overrideChains.overrides(methodSymbol, s))) {
+            if (result.stream().anyMatch(s -> overrideChains.overridesWithFilter(methodSymbol, s) &&
+                    hasAppropriateModifiers(s.owner))) {
                 continue;
             }
 
@@ -91,7 +96,7 @@ public final class DefaultMethods {
         final var result = new LinkedHashSet<Symbol.MethodSymbol>();
         final var visitedSymbols = new HashSet<Symbol.TypeSymbol>();
 
-        final var interfaces = childClass.getInterfaces();
+        final var interfaces = collectSuperInterfaces(childClass, types);
         for (final var leftInterface : interfaces) {
             final var leftMethodList = getAllDefaultMethods((Symbol.ClassSymbol) leftInterface.tsym);
             for (final var leftMethod : leftMethodList) {
@@ -134,7 +139,7 @@ public final class DefaultMethods {
     public Collection<Symbol.MethodSymbol> findAllDefaultMethods(Symbol.ClassSymbol childClass) {
         List<Symbol.MethodSymbol> result = null;
 
-        final var interfaces = childClass.getInterfaces();
+        final var interfaces = collectSuperInterfaces(childClass, types);
         for (var anInterface : interfaces) {
             final var methodList =
                     getAllDefaultMethods((Symbol.ClassSymbol) anInterface.tsym);
@@ -173,13 +178,15 @@ public final class DefaultMethods {
         }
 
         for (final var type : types.closure(childClass.type)) {
-            if (type.tsym instanceof Symbol.ClassSymbol csym && csym != childClass && !csym.isInterface()) {
+            if (type.tsym instanceof Symbol.ClassSymbol csym &&
+                    csym != childClass && !csym.isInterface() && hasAppropriateModifiers(csym)) {
                 final var superMethods = findAllDefaultMethods(csym);
                 if (superMethods.isEmpty()) {
                     continue;
                 }
 
-                result.removeIf(child -> superMethods.stream().anyMatch(base -> overrideChains.overrides(child, base)));
+                result.removeIf(child -> superMethods.stream()
+                        .anyMatch(base -> overrideChains.overridesWithFilter(child, base)));
             }
         }
 
