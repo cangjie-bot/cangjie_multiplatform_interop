@@ -4,9 +4,10 @@
 //
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
-#import <dlfcn.h>
-#import "Cangjie.h"
 #import "A.h"
+
+// Interoplib objc common code (libinterop.objclib.dylib)
+extern bool initCJRuntime(const char*);
 
 // ObjC runtime functions used to calculate override-mask
 typedef struct objc_method* Method;
@@ -37,28 +38,12 @@ extern int32_t CJImpl_ObjC_cjworld_A_fwd_fooI32(int64_t);
 extern A* CJImpl_ObjC_cjworld_A_fwd_fooA(int64_t);
 extern void CJImpl_ObjC_cjworld_A_fwd_paramA(int64_t, int64_t);
 
-static void* CJWorldDLHandle = NULL;
-static struct RuntimeParam defaultCJRuntimeParams = {0};
-
 //@CJMirror
 @implementation A : NSObject
 
 + (void)initialize {
     if (self == [A class]) {
-        defaultCJRuntimeParams.logParam.logLevel = RTLOG_ERROR;
-        if (InitCJRuntime(&defaultCJRuntimeParams) != E_OK) {
-            NSLog(@"ERROR: Failed to initialize Cangjie runtime");
-            exit(1);
-        }
-
-        if (LoadCJLibraryWithInit("libcjworld.dylib")) {
-            NSLog(@"ERROR: Failed to init cjworld library");
-            exit(1);
-        }
-
-        if ((CJWorldDLHandle = dlopen("libcjworld.dylib", RTLD_LAZY)) == NULL) {
-            NSLog(@"ERROR: Failed to open cjworld library ");
-            NSLog(@"%s", dlerror());
+        if (!initCJRuntime("libcjworld.dylib")) {
             exit(1);
         }
     }
@@ -87,7 +72,7 @@ static uint64_t calcMask(Class baseCls, Class selfCls, SEL* methods, int len) {
     if (self = [super init]) {
         self.$registryId = registryId;
         self.$initedFromObjC = false;
-        printf("ObjC: A.initWithRegistryId(%lld) self RC1: %ld\n", registryId, CFGetRetainCount((__bridge CFTypeRef)self));
+        printf("ObjC: A.initWithRegistryId(%lld) self RC1: %ld\n", (long long) registryId, CFGetRetainCount((__bridge CFTypeRef)self));
     }
     return self;
 }
@@ -105,7 +90,7 @@ static uint64_t calcMask(Class baseCls, Class selfCls, SEL* methods, int len) {
         self.$registryId = CJImpl_ObjC_cjworld_A_init((__bridge void*)self, overrideMask);
         self.$initedFromObjC = true;
         [self retain]; // extra RC++
-        printf("ObjC: A.init(%lld) self after +1 RC2: %ld\n", self.$registryId, CFGetRetainCount((__bridge CFTypeRef)self));
+        printf("ObjC: A.init(%lld) self after +1 RC2: %ld\n", (long long) self.$registryId, CFGetRetainCount((__bridge CFTypeRef)self));
     }
     return self;
 }
@@ -116,7 +101,7 @@ static uint64_t calcMask(Class baseCls, Class selfCls, SEL* methods, int len) {
     assert(self.$initedFromObjC == true); // not a part of reference glue-code, do not generate it
     self.$registryId = registryId;
     [self retain]; // do RC++ by extra retain for Distributed-GC protocol
-    printf("ObjC: A.reinitWithRegistryId -1 => %lld self after +1 RC2: %ld (with RC++ by extra retain)\n", registryId, CFGetRetainCount((__bridge CFTypeRef)self));
+    printf("ObjC: A.reinitWithRegistryId -1 => %lld self after +1 RC2: %ld (with RC++ by extra retain)\n", (long long) registryId, CFGetRetainCount((__bridge CFTypeRef)self));
     return self;
 }
 
@@ -129,7 +114,7 @@ static uint64_t calcMask(Class baseCls, Class selfCls, SEL* methods, int len) {
         CJImpl_ObjC_cjworld_A_lockCJObjectFwd(idToDelete);
         if (1 == CFGetRetainCount((__bridge CFTypeRef)self)) { // ensure RC == 1 after the lock is obtained
             // TransitionII
-            printf("ObjC: Transition II for %lld (now resetted to -1)\n", idToDelete);
+            printf("ObjC: Transition II for %lld (now resetted to -1)\n", (long long) idToDelete);
             self.$registryId = -1;
             CJImpl_ObjC_cjworld_A_deleteCJObjectFwd(idToDelete); // the obtained lock is released inside
         } else {
@@ -144,7 +129,7 @@ static uint64_t calcMask(Class baseCls, Class selfCls, SEL* methods, int len) {
 // Reference glue-code should have dealloc method without [super dealloc].
  - (void)dealloc {
     if (!self.$initedFromObjC) {
-        printf("ObjC: objc-twin of pure CJ A object is deallocated for id %lld\n", self.$registryId);
+        printf("ObjC: objc-twin of pure CJ A object is deallocated for id %lld\n", (long long) self.$registryId);
         // The instance does not participate in DistributedGC workflow: just remove the cjObj from the registry, lock is not required.
         CJImpl_ObjC_cjworld_A_deleteCJObject(self.$registryId);
     }

@@ -11,9 +11,9 @@
 int main(int argc, char** argv) {
     @autoreleasepool {
         printf("main: evaluate expr =>\n");
-        printf("expected 2 evaluated: %lld\n", CJEval([Expr Num:2]));
-        printf("expected 7 evaluated: %lld\n", CJEval([Expr Add:[Expr Num:2]:[Expr Num:5]]));
-        printf("expected 3 evaluated: %lld\n", CJEval([Expr Sub:[Expr Num:10]:[Expr Add:[Expr Num:2]:[Expr Num:5]]]));
+        printf("expected 2 evaluated: %lld\n", (long long) CJEval([Expr Num:2]));
+        printf("expected 7 evaluated: %lld\n", (long long) CJEval([Expr Add:[Expr Num:2]:[Expr Num:5]]));
+        printf("expected 3 evaluated: %lld\n", (long long) CJEval([Expr Sub:[Expr Num:10]:[Expr Add:[Expr Num:2]:[Expr Num:5]]]));
     }
     return 0;
 }
