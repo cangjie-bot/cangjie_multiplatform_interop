@@ -143,7 +143,7 @@ def build(args):
             cjpm_env["TARGET_OPTION"] = "--target=" + cjpm_target
         if args.target_sysroot:
             cjpm_env["SYSROOT_OPTION"] = "--sysroot=" + args.target_sysroot
-        # target_toolchain is not used for now
+        # target_toolchain is not used for cjpm
 
         command("cjpm", "build", "--target-dir=" + INTEROPLIB_OUT, CJPM_CONFIG, cwd=INTEROPLIB_DIR, env=cjpm_env)
 
@@ -170,9 +170,13 @@ def build(args):
         clang_command += [f"-L{CANGJIE_RUNTIME_LIB_PATH}", "-lcangjie-runtime"]
         clang_command += ["-I.", "cjinterop.m", f"-o{OUT_INTEROPLIB_OBJCLIB_DYLIB}"]
 
+        clang_env = os.environ.copy()
+        if args.target_toolchain:
+            clang_env['PATH'] = f"{args.target_toolchain}:{clang_env['PATH']}"
+
         output = subprocess.Popen(
             clang_command.copy(),
-            env=os.environ.copy(),
+            env=clang_env,
             cwd=INTEROPLIB_OBJCLIB_DIR,
             stdout=PIPE,
         )
