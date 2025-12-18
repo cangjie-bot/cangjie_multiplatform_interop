@@ -261,11 +261,11 @@ def change_install_names(dylib, dependencies):
     """
     otool_output = subprocess.run(["otool", "-l", dylib], capture_output=True).stdout.decode().splitlines()
     rpath = find_match(otool_output, r"path (.*) \(offset \d*\)")
+    command("install_name_tool", "-id", "@rpath/" + os.path.basename(dylib), dylib)
     if rpath:
         command("install_name_tool", "-rpath", rpath, "@loader_path", dylib)
     else:
         command("install_name_tool", "-add_rpath", "@loader_path", dylib)
-    command("install_name_tool", "-id", "@rpath/" + os.path.basename(dylib), dylib)
     for dependency in dependencies:
         change_dependency_install_name(dylib, otool_output, dependency)
 
