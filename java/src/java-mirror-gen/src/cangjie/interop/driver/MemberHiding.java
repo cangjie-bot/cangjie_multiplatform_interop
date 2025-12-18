@@ -58,7 +58,7 @@ public final class MemberHiding {
             }
 
             if (child.kind == MTH && symbol.kind == MTH) {
-                if (overrideChains.overrides(child, symbol)) {
+                if (overrideChains.overridesWithFilter(child, symbol)) {
                     continue;
                 }
                 if (!types.hasSameArgs(childType, types.erasure(symbol.type))) {

@@ -27,6 +27,7 @@ import vendor.com.sun.tools.javac.code.Kinds;
 import vendor.com.sun.tools.javac.code.Scope;
 import vendor.com.sun.tools.javac.code.Symbol;
 import vendor.com.sun.tools.javac.code.Symtab;
+import vendor.com.sun.tools.javac.code.Type;
 import vendor.com.sun.tools.javac.code.Types;
 import vendor.com.sun.tools.javac.util.Context;
 import vendor.javax.lang.model.element.Modifier;
@@ -35,6 +36,10 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+
+import static cangjie.interop.driver.VisitorUtils.hasAppropriateModifiers;
+import static cangjie.interop.driver.VisitorUtils.hasOnlyPublicOrProtectedDeps;
+import static cangjie.interop.driver.VisitorUtils.isPackagePrivate;
 
 public final class OverrideChains {
     private final Types types;
@@ -49,6 +54,14 @@ public final class OverrideChains {
     public static OverrideChains instance(Context context) {
         final var instance = context.get(OverrideChains.class);
         return instance == null ? new OverrideChains(context) : instance;
+    }
+
+    public boolean overridesWithFilter(Symbol childMethod, Symbol superMethod) {
+        if (!hasOnlyPublicOrProtectedDeps(childMethod, types) ||
+                !hasOnlyPublicOrProtectedDeps(superMethod, types)) {
+            return false;
+        }
+        return overrides(childMethod, superMethod);
     }
 
     /**
@@ -96,7 +109,8 @@ public final class OverrideChains {
                     }
 
                     // N.B.: Modifiers also take default modifier into account, unlike flags.
-                    if (!symbol.getModifiers().contains(Modifier.ABSTRACT)) {
+                    if (!symbol.getModifiers().contains(Modifier.ABSTRACT) &&
+                            hasAppropriateModifiers(symbol.owner)) {
                         return true;
                     }
                 }
@@ -108,7 +122,7 @@ public final class OverrideChains {
 
     public boolean isMethodOverriddenInClass(Symbol.ClassSymbol childClass, Symbol superMethod) {
         for (final var childMethod : childClass.members().getSymbolsByName(superMethod.name)) {
-            if (overrides(childMethod, superMethod)) {
+            if (overridesWithFilter(childMethod, superMethod)) {
                 return true;
             }
         }
@@ -196,10 +210,27 @@ public final class OverrideChains {
     }
 
     public Symbol.MethodSymbol findRootMethod(Symbol.MethodSymbol method, Symbol.ClassSymbol classSymbol) {
+        return findRootMethod(method, classSymbol, true);
+    }
+
+    public Symbol.MethodSymbol findRootMethod(Symbol.MethodSymbol method, Symbol.ClassSymbol classSymbol,
+                                              boolean considerModifiers) {
         final var chains = buildMethodOverrideChains(method, classSymbol);
         assert !chains.isEmpty() : method + " | " + classSymbol;
         // Get any root method
-        return chains.get(0).getLast().get(0);
+        if (!considerModifiers) {
+            return chains.get(0).getLast().get(0);
+        }
+        for (var chain : chains) {
+            List<Symbol.MethodSymbol> last = chain.getLast();
+            Symbol.MethodSymbol superMethod = last.stream().filter(sym ->
+                    hasOnlyPublicOrProtectedDeps(sym, types) &&
+                            hasAppropriateModifiers(sym.owner)).findFirst().orElse(null);
+            if (superMethod != null) {
+                return superMethod;
+            }
+        }
+        return method;
     }
 
     public Symbol.MethodSymbol getImplementationOfSuper(Symbol.MethodSymbol method, Scope classScope) {
@@ -209,7 +240,7 @@ public final class OverrideChains {
                 if (result == methodSymbol) {
                     continue;
                 }
-                if (overrides(result, methodSymbol)) {
+                if (overridesWithFilter(result, methodSymbol)) {
                     result = methodSymbol;
                 }
             }
@@ -248,7 +279,9 @@ public final class OverrideChains {
 
         for (final var rootMethod : chain.getLast()) {
             // All methods at the end of each override chain are root.
-            if (rootMethod == methodSymbol) {
+            if (rootMethod == methodSymbol &&
+                    hasAppropriateModifiers(rootMethod.owner) &&
+                    hasOnlyPublicOrProtectedDeps(rootMethod, types)) {
                 return true;
             }
         }
@@ -269,5 +302,14 @@ public final class OverrideChains {
         }
 
         return false;
+    }
+
+    public boolean isPackagePrivateOverridden(Symbol.MethodSymbol childMethod, Symbol.ClassSymbol classSymbol) {
+        Symbol.MethodSymbol result = childMethod;
+        List<Type> closure = types.closure(classSymbol.type);
+        for (Type type : closure) {
+            result = getImplementationOfSuper(result, type.tsym.members());
+        }
+        return isPackagePrivate(result.owner);
     }
 }

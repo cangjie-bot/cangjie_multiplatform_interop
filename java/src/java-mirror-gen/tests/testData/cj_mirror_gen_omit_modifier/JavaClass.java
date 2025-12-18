@@ -6,16 +6,6 @@
 
 package com;
 
-interface I1 {
-    public static long staticMethod() {
-        return 0;
-    }
-
-    public I1 foo();
-
-    public long foo(I1 i);
-}
-
 public class JavaClass implements I1 {
     public JavaClass() {
         System.out.println("in JavaClass Init");
