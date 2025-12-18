@@ -152,6 +152,15 @@ def build(args):
         CANGJIE_RUNTIME_LIB_PATH=f"{CANGJIE_HOME}/runtime/lib/{runtime}"
 
         clang_command = ["clang", "-shared"]
+        if args.target_lib:
+            clang_target = args.target_lib
+            if clang_target == "ios-aarch64":
+                clang_target = "arm64-apple-ios11"
+            if clang_target == "ios-simulator-aarch64":
+                clang_target = "arm64-apple-ios11-simulator"
+            clang_command += [f"--target={clang_target}"]
+        if args.target_sysroot:
+            clang_command += [f"-isysroot{args.target_sysroot}"]
         if IS_DARWIN:
             clang_command += ["-lobjc"]
         else:
