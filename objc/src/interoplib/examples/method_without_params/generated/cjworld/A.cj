@@ -24,7 +24,7 @@ public class A <: M {
         }}
         println("cj: get Int32 res from objc: ${res0}")
         let res1 = M1(
-            withMethodEnvObj(obj), { receiver, objCSuper => unsafe {
+            withMethodEnvObj(obj, "A"), { receiver, objCSuper => unsafe {
                 CFunc<(CPointer<Unit>, NativeObjCSel) -> NativeObjCId>(
                         objCMsgSendSuper(objCSuper, registerName("foo")))(receiver, registerName("foo"))
             }}

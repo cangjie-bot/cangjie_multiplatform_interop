@@ -126,8 +126,8 @@ public func alloc(className: String): NativeObjCId {
  * 3. To return an object.
  * Note: the result of this call supposed to be sent to a constructor of a desired return result.
  */
-public func withMethodEnvObj(id: NativeObjCId, action: (CPointer<Unit>, NativeObjCSuperPtr) -> NativeObjCId): NativeObjCId {
-    withObjCSuper(id) {
+public func withMethodEnvObj(id: NativeObjCId, objCClassName: String, action: (CPointer<Unit>, NativeObjCSuperPtr) -> NativeObjCId): NativeObjCId {
+    withObjCSuper(id, objCClassName) {
         receiver: CPointer<Unit>, objCSuper: NativeObjCSuperPtr => withAutoreleasePoolObj {
             => action(receiver, objCSuper)
         }
@@ -141,8 +141,8 @@ public func withMethodEnvObj(id: NativeObjCId, action: (CPointer<Unit>, NativeOb
  * 2. To call objc_msgSendSuper with NativeObjCSuperPtr.
  * 3. To return an Objective-C compatible primitive type value.
  */
-public func withMethodEnv<R>(id: NativeObjCId, action: (CPointer<Unit>, NativeObjCSuperPtr) -> R): R where R <: CType {
-    withObjCSuper(id) {
+public func withMethodEnv<R>(id: NativeObjCId, objCClassName: String, action: (CPointer<Unit>, NativeObjCSuperPtr) -> R): R where R <: CType {
+    withObjCSuper(id, objCClassName) {
         receiver: CPointer<Unit>, objCSuper: NativeObjCSuperPtr => withAutoreleasePool {=> action(receiver, objCSuper)}
     }
 }
@@ -155,9 +155,9 @@ public func withMethodEnv<R>(id: NativeObjCId, action: (CPointer<Unit>, NativeOb
  * CFunc<(CPointer<Unit>, NativeObjCSel, ...ArgTypes) -> RetType>(objCMsgSendSuper(objCSuper, sel))(receiver, sel, ...)
  * where: receiver is the first `action` param and objCSuper is the second `action` param
  */
-public func withObjCSuper<R>(id: NativeObjCId, action: (CPointer<Unit>, NativeObjCSuperPtr) -> R): R where R <: CType {
+public func withObjCSuper<R>(id: NativeObjCId, objCClassName: String, action: (CPointer<Unit>, NativeObjCSuperPtr) -> R): R where R <: CType {
     unsafe {
-        let objCSuper = getObjCSuper(id)
+        let objCSuper = getObjCSuper(id, objCClassName)
         try {
             action(CPointer<Unit>(objCSuper), objCSuper)
         } finally {
@@ -174,9 +174,9 @@ public func withObjCSuper<R>(id: NativeObjCId, action: (CPointer<Unit>, NativeOb
  * CFunc<(CPointer<Unit>, NativeObjCSel, ...ArgTypes) -> RetType>(objCMsgSendSuper(objCSuper, sel))(receiver, sel, ...)
  * where: receiver is the first `action` param and objCSuper is the second `action` param
  */
-public func withObjCSuper<R>(id: NativeObjCId, action: (CPointer<Unit>, NativeObjCSuperPtr) -> R): R where R <: CType {
+public func withObjCSuper<R>(id: NativeObjCId, objCClassName: String, action: (CPointer<Unit>, NativeObjCSuperPtr) -> R): R where R <: CType {
     unsafe {
-        let objCSuper = getObjCSuper(id)
+        let objCSuper = getObjCSuper(id, objCClassName)
         try {
             // Note: for linux implementation we need to use `id` as a receiver, see [objCMsgSendSuper]
             action(id, objCSuper)
@@ -433,11 +433,12 @@ public func respondsToSelector(id: NativeObjCId, sel: NativeObjCSel): Bool {
 }
 
 /**
- * Returns objc_super* for `id`.
- * Note: the result must be freed.
+ * Returns objc_super* for `id` and `objCClassName`.
+ * Note: callee is responsible to free the result ptr.
+ * Note: callee is responsible to ensure that `id` is an instance of `objCClassName` class on Objective-C side.
  */
-private unsafe func getObjCSuper(id: NativeObjCId): NativeObjCSuperPtr {
-    let instanceClass = object_getClass(id)
+private unsafe func getObjCSuper(id: NativeObjCId, objCClassName: String): NativeObjCSuperPtr {
+    let instanceClass = getClass(objCClassName)
     let superClass = class_getSuperclass(instanceClass)
 
     let objCSuper = LibC.malloc<NativeObjCSuper>()
