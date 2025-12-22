@@ -149,14 +149,16 @@ public:
     PackageFileScope& operator=(PackageFileScope&& other) noexcept = delete;
 };
 
-std::string symbol_to_import_name(const FileLevelSymbol& symbol)
+static std::string symbol_to_import_name(const NamedTypeSymbol& symbol)
 {
     assert(!current_package_name.empty());
-    const auto& symbol_package_name = symbol.cangjie_package_name();
+    const auto* type = symbol.original();
+    assert(type);
+    const auto& symbol_package_name = type->cangjie_package_name();
     if (!symbol_package_name.empty() && symbol_package_name != current_package_name) {
         auto import_name = symbol_package_name;
         import_name += ".";
-        import_name += symbol.name();
+        import_name += type->name();
         return import_name;
     }
     return {};
@@ -177,10 +179,17 @@ public:
     ImportCollectVisitor& operator=(ImportCollectVisitor&& other) noexcept = delete;
 
 protected:
-    void visit_impl(FileLevelSymbol*, FileLevelSymbol* value, SymbolProperty, bool) override
+    void visit_impl(FileLevelSymbol*, FileLevelSymbol* value, SymbolProperty symbol_property, bool) override
     {
         assert(value);
-        if (auto import_name = symbol_to_import_name(*value); !import_name.empty()) {
+        if (symbol_property == SymbolProperty::TypeArgument) {
+            return;
+        }
+        const auto* type = dynamic_cast<const NamedTypeSymbol*>(value);
+        if (!type) {
+            return;
+        }
+        if (auto import_name = symbol_to_import_name(*type); !import_name.empty()) {
             imports.emplace(std::move(import_name));
         }
     }
@@ -188,7 +197,10 @@ protected:
 
 static void collect_import(TypeLikeSymbol& symbol)
 {
-    ImportCollectVisitor().visit(&symbol);
+    auto* type = dynamic_cast<NamedTypeSymbol*>(&symbol);
+    if (type) {
+        ImportCollectVisitor().visit(type);
+    }
 }
 
 // Currently in the NORMAL mode, Objective-C compatible types are primitives,
