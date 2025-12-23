@@ -29,6 +29,7 @@ import static cangjie.interop.driver.VisitorUtils.addSymbolsToMangle;
 import static cangjie.interop.driver.VisitorUtils.collectImports;
 import static cangjie.interop.driver.VisitorUtils.collectSuperTypes;
 import static cangjie.interop.driver.VisitorUtils.createJavaMirrorAnnotation;
+import static cangjie.interop.driver.VisitorUtils.defaultMethodAnnotationGen;
 import static cangjie.interop.driver.VisitorUtils.defaultValueForToString;
 import static cangjie.interop.driver.VisitorUtils.defaultValueForType;
 import static cangjie.interop.driver.VisitorUtils.erasureType;
@@ -37,13 +38,15 @@ import static cangjie.interop.driver.VisitorUtils.formTypeName;
 import static cangjie.interop.driver.VisitorUtils.getSymbolsToMangle;
 import static cangjie.interop.driver.VisitorUtils.hasAppropriateModifiers;
 import static cangjie.interop.driver.VisitorUtils.hasOnlyPublicOrProtectedDeps;
+import static cangjie.interop.driver.VisitorUtils.hasNotNullAnnotation;
+import static cangjie.interop.driver.VisitorUtils.hasNotNullSigParamAnnotation;
+import static cangjie.interop.driver.VisitorUtils.hasNotNullTypeAnnotation;
 import static cangjie.interop.driver.VisitorUtils.isVarFinal;
 import static cangjie.interop.driver.VisitorUtils.mangleClassName;
 import static cangjie.interop.driver.VisitorUtils.name;
 import static cangjie.interop.driver.VisitorUtils.setImportsMap;
 import static cangjie.interop.driver.VisitorUtils.setNames;
 import static cangjie.interop.driver.VisitorUtils.setSymtab;
-import static cangjie.interop.driver.VisitorUtils.defaultMethodAnnotationGen;
 import static cangjie.interop.util.StdCoreNames.STD_CORE_NAMES;
 import static vendor.com.sun.tools.javac.code.Kinds.Kind.MTH;
 import static vendor.com.sun.tools.javac.code.Kinds.Kind.VAR;
@@ -58,6 +61,7 @@ import vendor.com.sun.tools.javac.code.Flags;
 import vendor.com.sun.tools.javac.code.Scope;
 import vendor.com.sun.tools.javac.code.Symbol;
 import vendor.com.sun.tools.javac.code.Symtab;
+import vendor.com.sun.tools.javac.code.TargetType;
 import vendor.com.sun.tools.javac.code.Type;
 import vendor.com.sun.tools.javac.code.Types;
 import vendor.com.sun.tools.javac.util.Context;
@@ -121,6 +125,7 @@ public final class EmitMirrorVisitor {
     private final String defaultImportsConfig = "imports_config.txt";
     private String importsConfig = System.getProperty("imports.config");
     private boolean limitedDepth = System.getProperty("gen.closure.depth") != null;
+    private boolean considerNotNullAnnotations = System.getProperty("gen.notnull.types") != null;
     private int maxPathLength = Integer.MAX_VALUE;
     private Symbol.ClassSymbol currentClass;
 
@@ -239,12 +244,15 @@ public final class EmitMirrorVisitor {
 
                 if (classSymbol.hasOuterInstance()) {
                     final var outerThisType = types.erasure(classSymbol.type.getEnclosingType());
-                    decl.setType(name(outerThisType));
+                    decl.setType(name(outerThisType, true));
                 }
             } else {
                 Symbol.VarSymbol jParamSymbol = symbol.params().get(i);
                 var erasureType = types.erasure(jParamSymbol.type);
-                decl.setType(name(erasureType));
+                final var hasNotNullAttribute = considerNotNullAnnotations &&
+                        (hasNotNullAnnotation(jParamSymbol) ||
+                                hasNotNullSigParamAnnotation(symbol, TargetType.METHOD_FORMAL_PARAMETER, i));
+                decl.setType(name(erasureType, hasNotNullAttribute));
                 i++;
             }
             methodDecl.valueParameters.add(decl);
@@ -294,7 +302,10 @@ public final class EmitMirrorVisitor {
                 }
             }
             var erasureType = types.erasure(symbol.getReturnType());
-            methodDecl.setReturnType(name(erasureType));
+            final var hasNotNullAttribute = considerNotNullAnnotations &&
+                    (hasNotNullAnnotation(symbol) ||
+                            hasNotNullTypeAnnotation(symbol, TargetType.METHOD_RETURN));
+            methodDecl.setReturnType(name(erasureType, hasNotNullAttribute));
             if (isToString &&
                     methodDecl.getReturnType() instanceof
                             CJTree.Expression.Name.SimpleName.OptionName methodReturnType) {
@@ -417,7 +428,10 @@ public final class EmitMirrorVisitor {
 
         decl.setLet(isVarFinal(varSymbol));
         var erasureType = types.erasure(varSymbol.type);
-        decl.setType(name(erasureType));
+        final var hasNotNullAttribute = !generateDefinition &&
+                (hasNotNullAnnotation(varSymbol) ||
+                        hasNotNullTypeAnnotation(varSymbol, TargetType.FIELD));
+        decl.setType(name(erasureType, hasNotNullAttribute));
         if (generateDefinition) {
             decl.setInitializer(defaultValueForType(erasureType));
         }

@@ -25,6 +25,7 @@ package cangjie.interop.driver;
 import static cangjie.interop.Utils.addBackticksIfNeeded;
 import static cangjie.interop.Utils.addUnderscoresIfNeeded;
 import static cangjie.interop.Utils.getFlatNameWithoutPackage;
+import static cangjie.interop.util.NotNullAnnotations.NOT_NULL_ANNOTATIONS;
 import static vendor.com.sun.tools.javac.code.Flags.EFFECTIVELY_FINAL;
 import static vendor.com.sun.tools.javac.code.Flags.FINAL;
 import static vendor.com.sun.tools.javac.code.Kinds.Kind.TYP;
@@ -37,8 +38,10 @@ import static vendor.javax.lang.model.element.Modifier.PRIVATE;
 import cangjie.interop.cangjie.QualifiedName;
 import cangjie.interop.cangjie.tree.CJTree;
 import cangjie.interop.cangjie.tree.Scanner;
+import vendor.com.sun.tools.javac.code.Attribute;
 import vendor.com.sun.tools.javac.code.Symbol;
 import vendor.com.sun.tools.javac.code.Symtab;
+import vendor.com.sun.tools.javac.code.TargetType;
 import vendor.com.sun.tools.javac.code.Type;
 import vendor.com.sun.tools.javac.code.Types;
 import vendor.com.sun.tools.javac.tree.JCTree;
@@ -117,6 +120,10 @@ public final class VisitorUtils {
     }
 
     public static CJTree.Expression.Name name(Type type) {
+        return name(type, false);
+    }
+
+    public static CJTree.Expression.Name name(Type type, boolean isNotNull) {
         CJTree.Expression.Name result;
         if (type.isPrimitiveOrVoid()) {
             final var ident =
@@ -143,7 +150,9 @@ public final class VisitorUtils {
             final var translatedElemType = name(elemType);
             final var ident = new CJTree.Expression.Name.SimpleName.GenericName("JArray");
             ident.arguments.add(translatedElemType);
-            result = new CJTree.Expression.Name.SimpleName.OptionName(ident);
+            result = isNotNull
+                    ? ident
+                    : new CJTree.Expression.Name.SimpleName.OptionName(ident);
 
             if (translatedElemType.importNames() instanceof QualifiedName qualifiedName) {
                 result.addImport(qualifiedName);
@@ -186,7 +195,9 @@ public final class VisitorUtils {
                 }
             }
 
-            return new CJTree.Expression.Name.SimpleName.OptionName(ident);
+            return isNotNull
+                    ? ident
+                    : new CJTree.Expression.Name.SimpleName.OptionName(ident);
         }
 
         return null;
@@ -391,5 +402,27 @@ public final class VisitorUtils {
             }
         }
         return result;
+    }
+
+    private static boolean isAnnotatedSymbol(Attribute.Compound attribute) {
+        return (attribute != null && attribute.type.tsym instanceof Symbol.ClassSymbol classSymbol) &&
+                NOT_NULL_ANNOTATIONS.contains(classSymbol.flatname.toString());
+    }
+
+    public static boolean hasNotNullAnnotation(Symbol symbol) {
+        return symbol.getDeclarationAttributes().stream().anyMatch(a -> isAnnotatedSymbol(a));
+    }
+
+    public static boolean hasNotNullSigParamAnnotation(Symbol symbol, TargetType targetType, int index) {
+        return symbol.getRawTypeAttributes().stream().anyMatch(a ->
+                isAnnotatedSymbol(a) &&
+                        a.position.type == targetType &&
+                        (targetType == TargetType.METHOD_FORMAL_PARAMETER && a.position.parameter_index == index));
+    }
+
+    public static boolean hasNotNullTypeAnnotation(Symbol symbol, TargetType targetType) {
+        return symbol.getRawTypeAttributes().stream().anyMatch(a ->
+                isAnnotatedSymbol(a) &&
+                        a.position.type == targetType);
     }
 }
