@@ -152,7 +152,7 @@ def copy_with_exclusions(src, dst, exclusions):
 
 def fetch_jdk(target_dir):
     """Download only required folders from bishengjdk-21 repository"""
-    repo_url = "https://gitee.com/openeuler/bishengjdk-21"
+    repo_url = "https://gitcode.com/openeuler/bishengjdk-21"
     tag_name = "jdk-21.0.8-ga-b011"
     required_folders_src = ["jdk.compiler", "java.compiler"]
     required_folders_tools = ["anttasks", "compileproperties", "propertiesparser"]
