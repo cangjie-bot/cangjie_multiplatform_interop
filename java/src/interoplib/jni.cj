@@ -2510,6 +2510,20 @@ public func Java_CFFI_monitorExit(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity): U
     }
 }
 
+public func getJavaLambdaObject(fun : Any, className: String) : jobject {
+    let obj = getIntWIntJavaLambdaEntity(fun, classname)
+    obj.asJObject()
+}
+
+public func getJavaLambdaEntity(fun : Any, className: String) : Java_CFFI_JavaEntity {
+    let cjId = Java_CFFI_put_to_registry_1(fun)
+    let env = Java_CFFI_get_env()
+    let clazz = Java_CFFI_ClassInit(env, className)
+    let methodId = Java_CFFI_MethodIDConstr(env, clazz, "<init>", Java_CFFI_parseMethodSignature("(J)V"));
+    let obj = Java_CFFI_newJavaObject(env, clazz, methodId, [Java_CFFI_JavaEntity(cjId)], Java_CFFI_JavaCallNest(1))
+    obj
+}
+
 public class JavaObjectController<T> {
     var obj: Java_CFFI_JavaEntity
     var cjObj: ?T = None
