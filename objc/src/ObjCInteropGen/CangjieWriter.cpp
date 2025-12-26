@@ -204,8 +204,8 @@ static void collect_import(TypeLikeSymbol& symbol)
 }
 
 // Currently in the NORMAL mode, Objective-C compatible types are primitives,
-// @C structures, ObjCPointer/ObjCFunc, and classes/interfaces.  But not
-// CPointer, CFunc, or VArray.
+// @C structures, ObjCPointer, ObjCFunc, ObjCBlock, and classes/interfaces.
+// But not CPointer, CFunc, or VArray.
 static bool is_objc_compatible(const TypeLikeSymbol& type)
 {
     assert(normal_mode());
@@ -217,7 +217,7 @@ static bool is_objc_compatible(const TypeLikeSymbol& type)
     if (ptr) {
         return is_objc_compatible(ptr->pointee());
     }
-    const auto* func = dynamic_cast<const FuncTypeSymbol*>(&type);
+    const auto* func = dynamic_cast<const FuncLikeTypeSymbol*>(&type);
     if (func) {
         const auto& parameters = *func->parameters();
         auto n = parameters.item_count();
