@@ -5,48 +5,6 @@ package objc.foundation
 import interoplib.objc.*
 import objc.lang.*
 
-foreign func NSHostByteOrder(): Int64
-
-foreign func NSSwapShort(inv: UInt16): UInt16
-
-foreign func NSSwapInt(inv: UInt32): UInt32
-
-foreign func NSSwapLong(inv: UInt64): UInt64
-
-foreign func NSSwapLongLong(inv: UInt64): UInt64
-
-foreign func NSSwapBigShortToHost(x: UInt16): UInt16
-
-foreign func NSSwapBigIntToHost(x: UInt32): UInt32
-
-foreign func NSSwapBigLongToHost(x: UInt64): UInt64
-
-foreign func NSSwapBigLongLongToHost(x: UInt64): UInt64
-
-foreign func NSSwapHostShortToBig(x: UInt16): UInt16
-
-foreign func NSSwapHostIntToBig(x: UInt32): UInt32
-
-foreign func NSSwapHostLongToBig(x: UInt64): UInt64
-
-foreign func NSSwapHostLongLongToBig(x: UInt64): UInt64
-
-foreign func NSSwapLittleShortToHost(x: UInt16): UInt16
-
-foreign func NSSwapLittleIntToHost(x: UInt32): UInt32
-
-foreign func NSSwapLittleLongToHost(x: UInt64): UInt64
-
-foreign func NSSwapLittleLongLongToHost(x: UInt64): UInt64
-
-foreign func NSSwapHostShortToLittle(x: UInt16): UInt16
-
-foreign func NSSwapHostIntToLittle(x: UInt32): UInt32
-
-foreign func NSSwapHostLongToLittle(x: UInt64): UInt64
-
-foreign func NSSwapHostLongLongToLittle(x: UInt64): UInt64
-
 @C
 public struct NSSwappedFloat {
     public var v: UInt32
@@ -56,32 +14,4 @@ public struct NSSwappedFloat {
 public struct NSSwappedDouble {
     public var v: UInt64
 }
-
-foreign func NSConvertHostFloatToSwapped(x: Float32): NSSwappedFloat
-
-foreign func NSConvertSwappedFloatToHost(x: NSSwappedFloat): Float32
-
-foreign func NSConvertHostDoubleToSwapped(x: Float64): NSSwappedDouble
-
-foreign func NSConvertSwappedDoubleToHost(x: NSSwappedDouble): Float64
-
-foreign func NSSwapFloat(x: NSSwappedFloat): NSSwappedFloat
-
-foreign func NSSwapDouble(x: NSSwappedDouble): NSSwappedDouble
-
-foreign func NSSwapBigDoubleToHost(x: NSSwappedDouble): Float64
-
-foreign func NSSwapBigFloatToHost(x: NSSwappedFloat): Float32
-
-foreign func NSSwapHostDoubleToBig(x: Float64): NSSwappedDouble
-
-foreign func NSSwapHostFloatToBig(x: Float32): NSSwappedFloat
-
-foreign func NSSwapLittleDoubleToHost(x: NSSwappedDouble): Float64
-
-foreign func NSSwapLittleFloatToHost(x: NSSwappedFloat): Float32
-
-foreign func NSSwapHostDoubleToLittle(x: Float64): NSSwappedDouble
-
-foreign func NSSwapHostFloatToLittle(x: Float32): NSSwappedFloat
 

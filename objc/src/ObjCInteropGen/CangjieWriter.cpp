@@ -5,7 +5,6 @@
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
 #include "CangjieWriter.h"
-#include "Logging.h"
 
 #include <fstream>
 #include <iostream>
@@ -17,6 +16,7 @@
 #include "Package.h"
 #include "SingleDeclarationSymbolVisitor.h"
 #include "Strings.h"
+#include "Universe.h"
 
 static constexpr char INDENT[] = "    ";
 static constexpr std::size_t INDENT_LENGTH = sizeof(INDENT) - 1;
@@ -209,6 +209,9 @@ static void collect_import(TypeLikeSymbol& symbol)
 static bool is_objc_compatible(const TypeLikeSymbol& type)
 {
     assert(normal_mode());
+    if (&type == &universe.sel()) {
+        return false;
+    }
     if (dynamic_cast<const TypeParameterSymbol*>(&type)) {
         // Type parameters are printed as ObjCId, which is Objective-C compatible
         return true;
@@ -237,11 +240,9 @@ static bool is_objc_compatible(const TypeLikeSymbol& type)
         case NamedTypeSymbol::Kind::Struct:
         case NamedTypeSymbol::Kind::Union:
             return type.is_ctype();
-        case NamedTypeSymbol::Kind::Interface: {
-            const auto& name = type.name();
-            return name != "SEL" && name != "Class" && name != "Protocol";
-        }
-        case NamedTypeSymbol::Kind::TargetPrimitive:
+        case NamedTypeSymbol::Kind::Interface:
+            return type.name() != "Protocol";
+        case NamedTypeSymbol::Kind::Primitive:
         case NamedTypeSymbol::Kind::Protocol:
         case NamedTypeSymbol::Kind::Enum:
             return true;
@@ -295,12 +296,6 @@ static DefaultValuePrinter default_value(
     return DefaultValuePrinter(symbol, SymbolPrinter(type, format));
 }
 
-static bool is_integer_type(std::string_view type_name)
-{
-    return type_name == "Int32" || type_name == "UInt32" || type_name == "Int64" || type_name == "UInt64" ||
-        type_name == "Int16" || type_name == "UInt16" || type_name == "Int8" || type_name == "UInt8";
-}
-
 static void print_tricky_default_value(std::ostream& stream, std::string_view type_name, bool is_nullable)
 {
     if (is_nullable) {
@@ -340,22 +335,28 @@ std::ostream& operator<<(std::ostream& stream, const DefaultValuePrinter& op)
     const auto* named_type = dynamic_cast<const NamedTypeSymbol*>(&type);
     if (named_type) {
         switch (named_type->kind()) {
-            case NamedTypeSymbol::Kind::TargetPrimitive: {
-                auto name = named_type->name();
-                if (name == "Bool") {
-                    return stream << "false";
-                }
+            case NamedTypeSymbol::Kind::Primitive: {
+                assert(dynamic_cast<const PrimitiveTypeSymbol*>(named_type));
+                const auto& primitive_type = static_cast<const PrimitiveTypeSymbol&>(*named_type);
+                switch (primitive_type.category()) {
+                    case PrimitiveTypeCategory::Boolean:
+                        return stream << "false";
 
-                if (is_integer_type(name)) {
-                    return stream << '0';
-                }
+                    case PrimitiveTypeCategory::SignedInteger:
+                    case PrimitiveTypeCategory::UnsignedInteger:
+                        if (primitive_type.size() == PrimitiveSize::Sixteen) {
+                            break;
+                        }
+                        return stream << '0';
 
-                if (name == "Float32" || name == "Float64") {
-                    return stream << "0.0";
-                }
+                    case PrimitiveTypeCategory::FloatingPoint:
+                        return stream << "0.0";
 
-                if (named_type->is_unit()) {
-                    return stream << "()";
+                    case PrimitiveTypeCategory::Unit:
+                        return stream << "()";
+
+                    default:
+                        break;
                 }
                 break;
             }
@@ -364,9 +365,16 @@ std::ostream& operator<<(std::ostream& stream, const DefaultValuePrinter& op)
                 assert(dynamic_cast<const TypeAliasSymbol*>(named_type));
                 const auto* alias = static_cast<const TypeAliasSymbol*>(named_type);
                 const auto* named_target = dynamic_cast<const NamedTypeSymbol*>(alias->root_target());
-                if (named_target && named_target->is(NamedTypeSymbol::Kind::TargetPrimitive) &&
-                    is_integer_type(named_target->name())) {
-                    return stream << "unsafe{zeroValue<" << named_type->name() << ">()}";
+                if (named_target && named_target->is(NamedTypeSymbol::Kind::Primitive)) {
+                    assert(dynamic_cast<const PrimitiveTypeSymbol*>(named_target));
+                    const auto& primitive_target = static_cast<const PrimitiveTypeSymbol&>(*named_target);
+                    switch (primitive_target.category()) {
+                        case PrimitiveTypeCategory::SignedInteger:
+                        case PrimitiveTypeCategory::UnsignedInteger:
+                            return stream << "unsafe{zeroValue<" << named_type->name() << ">()}";
+                        default:
+                            break;
+                    }
                 }
                 const auto& target = alias->canonical_type();
                 return stream << default_value(op.symbol_, target, op.type_printer_.format());
@@ -403,40 +411,47 @@ static void print_enum_constant_value(std::ostream& output, const NonTypeSymbol&
     auto value = symbol.enum_constant_value();
     const auto* named_type = dynamic_cast<const NamedTypeSymbol*>(symbol.return_type());
     if (named_type) {
-        named_type = dynamic_cast<const NamedTypeSymbol*>(&named_type->canonical_type());
-        if (named_type && named_type->kind() == NamedTypeSymbol::Kind::TargetPrimitive) {
-            auto type_name = named_type->name();
+        const auto* primitive_type = dynamic_cast<const PrimitiveTypeSymbol*>(&named_type->canonical_type());
+        if (primitive_type) {
             // Avoid the "number exceeds the value range of type" Cangjie compiler error by
             // printing the value in a type-specific way.
-            if (type_name == "Int8") {
-                output << static_cast<int>(static_cast<int8_t>(value));
-                return;
+            switch (primitive_type->category()) {
+                case PrimitiveTypeCategory::SignedInteger:
+                    switch (primitive_type->size()) {
+                        case PrimitiveSize::One:
+                            output << static_cast<int>(static_cast<int8_t>(value));
+                            return;
+                        case PrimitiveSize::Two:
+                            output << static_cast<int16_t>(value);
+                            return;
+                        case PrimitiveSize::Four:
+                            output << static_cast<int32_t>(value);
+                            return;
+                        case PrimitiveSize::Eight:
+                            output << static_cast<int64_t>(value);
+                            return;
+                        default:
+                            break;
+                    }
+                    break;
+                case PrimitiveTypeCategory::UnsignedInteger:
+                    switch (primitive_type->size()) {
+                        case PrimitiveSize::One:
+                            output << static_cast<uint32_t>(static_cast<uint8_t>(value));
+                            return;
+                        case PrimitiveSize::Two:
+                            output << static_cast<uint16_t>(value);
+                            return;
+                        case PrimitiveSize::Four:
+                            output << static_cast<uint32_t>(value);
+                            return;
+                        default:
+                            break;
+                    }
+                    break;
+                default:
+                    break;
             }
-            if (type_name == "Int16") {
-                output << static_cast<int16_t>(value);
-                return;
-            }
-            if (type_name == "Int32") {
-                output << static_cast<int32_t>(value);
-                return;
-            }
-            if (type_name == "Int64") {
-                output << static_cast<int64_t>(value);
-                return;
-            }
-            if (type_name == "UInt8") {
-                output << static_cast<uint32_t>(static_cast<uint8_t>(value));
-                return;
-            }
-            if (type_name == "UInt16") {
-                output << static_cast<uint16_t>(value);
-                return;
-            }
-            if (type_name == "UInt32") {
-                output << static_cast<uint32_t>(value);
-                return;
-            }
-            // "UInt64" is handled properly by fallback case.
         }
     }
     output << value;
@@ -458,16 +473,6 @@ void write_type(std::ostream& output, const Symbol& symbol, TypeLikeSymbol& type
     output << ": ";
     if (symbol.is_nullable()) {
         output << '?';
-    }
-    if (mode != Mode::EXPERIMENTAL && format == SymbolPrintFormat::EmitCangjieStrict) {
-        auto* alias = dynamic_cast<TypeAliasSymbol*>(&type);
-        if (alias) {
-            const auto& canonical_type = alias->canonical_type();
-            if (canonical_type.is_ctype() && canonical_type.contains_pointer_or_func()) {
-                output << SymbolPrinter(canonical_type, format) << " /*" << emit_cangjie(type) << "*/";
-                return;
-            }
-        }
     }
     output << SymbolPrinter(type, format);
 }
@@ -491,12 +496,12 @@ static void write_method_parameters(std::ostream& output, const NonTypeSymbol& m
     output << ')';
 }
 
-static void write_foreign_name(std::ostream& output, std::string_view attribute, std::string_view value)
+static void write_foreign_name(
+    std::ostream& output, std::string_view attribute, std::string_view value, bool hide_foreign_name)
 {
     // FE supports foreign name attributes in @ObjCMirror classes only.  In the
     // GENERATE_DEFINITIONS mode, where @ObjCMirror is not used, the foreign name
     // attributes are commented out.
-    auto hide_foreign_name = generate_definitions_mode();
     if (hide_foreign_name) {
         output << "/* ";
     }
@@ -517,9 +522,9 @@ static void write_foreign_name(std::ostream& output, const NonTypeSymbol& method
     constexpr std::string_view attribute = "@ForeignName";
     const auto& selector_attribute = method.selector_attribute();
     if (!selector_attribute.empty()) {
-        write_foreign_name(output, attribute, selector_attribute);
+        write_foreign_name(output, attribute, selector_attribute, generate_definitions_mode());
     } else if (method.is_constructor() && method.name() != "init") {
-        write_foreign_name(output, attribute, method.name());
+        write_foreign_name(output, attribute, method.name(), generate_definitions_mode());
     }
 }
 
@@ -686,23 +691,24 @@ static void print_getter_setter_names(std::ostream& output, const NonTypeSymbol&
     const auto& name = prop.name();
     const auto& getter_name = prop.getter();
     bool standard_getter = getter_name == name;
+    auto hide_foreign_name = generate_definitions_mode();
     if (prop.is_readonly()) {
         if (!standard_getter) {
-            write_foreign_name(output, "@ForeignGetterName", getter_name);
+            write_foreign_name(output, "@ForeignGetterName", getter_name, hide_foreign_name);
         }
     } else {
         const auto& setter_name = prop.setter();
         if (is_standard_setter_name(name, setter_name)) {
             if (!standard_getter) {
-                write_foreign_name(output, "@ForeignGetterName", getter_name);
+                write_foreign_name(output, "@ForeignGetterName", getter_name, hide_foreign_name);
             }
         } else if (standard_getter) {
-            write_foreign_name(output, "@ForeignSetterName", setter_name);
+            write_foreign_name(output, "@ForeignSetterName", setter_name, hide_foreign_name);
         } else if (is_standard_setter_name(getter_name, setter_name)) {
-            write_foreign_name(output, "@ForeignName", getter_name);
+            write_foreign_name(output, "@ForeignName", getter_name, hide_foreign_name);
         } else {
-            write_foreign_name(output, "@ForeignGetterName", getter_name);
-            write_foreign_name(output, "@ForeignSetterName", setter_name);
+            write_foreign_name(output, "@ForeignGetterName", getter_name, hide_foreign_name);
+            write_foreign_name(output, "@ForeignSetterName", setter_name, hide_foreign_name);
         }
     }
 }
@@ -721,16 +727,28 @@ static void write_function(
     bool is_ctype = false;
     if (kind == FuncKind::TopLevelFunc) {
         is_ctype = function.is_ctype();
+
+        // Foreign @C functions cannot have a foreign name
+        const auto& selector_attribute = function.selector_attribute();
         if (is_ctype) {
             output << "foreign ";
-        } else if (!generate_definitions_mode()) {
-            output << "@ObjCMirror\n";
-            format = SymbolPrintFormat::EmitCangjieStrict;
+            if (!selector_attribute.empty()) {
+                write_foreign_name(output, "@ForeignName", selector_attribute, true);
+            }
+        } else {
+            auto generate_definitions = generate_definitions_mode();
+            if (!generate_definitions) {
+                output << "@ObjCMirror\n";
+                format = SymbolPrintFormat::EmitCangjieStrict;
+            }
+            if (!selector_attribute.empty()) {
+                write_foreign_name(output, "@ForeignName", selector_attribute, generate_definitions);
+            }
         }
     } else {
         print_optional(output, function);
+        write_foreign_name(output, function);
     }
-    write_foreign_name(output, function);
     if (kind == FuncKind::ClassMethod || (kind == FuncKind::TopLevelFunc && !is_ctype)) {
         output << "public ";
     }
@@ -1153,6 +1171,12 @@ void write_cangjie()
                     assert(dynamic_cast<NonTypeSymbol*>(symbol));
                     auto& top_level = static_cast<NonTypeSymbol&>(*symbol);
                     assert(top_level.kind() == NonTypeSymbol::Kind::GlobalFunction);
+
+                    // Ignore global functions having bodies.  Anyway, we cannot use them in
+                    // Cangjie.
+                    if (top_level.has_body()) {
+                        continue;
+                    }
                     write_function(output, FuncKind::TopLevelFunc, top_level, SymbolPrintFormat::EmitCangjie);
                 }
                 output << std::endl;

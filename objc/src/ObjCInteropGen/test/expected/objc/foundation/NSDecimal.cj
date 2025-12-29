@@ -30,8 +30,6 @@ public struct NSDecimal {
     public var _mantissa: VArray<UInt16, $8>
 }
 
-foreign func NSDecimalIsNotANumber(dcm: CPointer<NSDecimal>): Bool
-
 foreign func NSDecimalCopy(destination: CPointer<NSDecimal>, source: CPointer<NSDecimal>): Unit
 
 foreign func NSDecimalCompact(number: CPointer<NSDecimal>): Unit

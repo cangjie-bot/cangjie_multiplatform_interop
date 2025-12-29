@@ -6,7 +6,7 @@
 
 package objc.foundation
 
-public struct Class /*ObjCClass*/ {
+public struct ObjCClass {
 }
 
 public open interface ObjCId {
@@ -32,4 +32,12 @@ public struct NativeBlockABI {
 
 public struct ObjCBlock<T> {
     public ObjCBlock(let ptr: CPointer<NativeBlockABI>) {}
+}
+
+@C
+public struct ObjCInt128 {
+}
+
+@C
+public struct ObjCUInt128 {
 }

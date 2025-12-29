@@ -36,7 +36,7 @@ public interface NSItemProviderReading <: NSObjectProtocol {
 
 public type NSItemProviderCompletionHandler = ObjCBlock<(NSSecureCoding, NSError) -> Unit>
 
-public type NSItemProviderLoadHandler = ObjCBlock<(NSItemProviderCompletionHandler, Class, NSDictionary/*<KeyType, ObjectType>*/) -> Unit>
+public type NSItemProviderLoadHandler = ObjCBlock<(NSItemProviderCompletionHandler, ObjCClass, NSDictionary/*<KeyType, ObjectType>*/) -> Unit>
 
 @ObjCMirror
 public open class NSItemProvider <: NSObject & NSCopying {
@@ -53,9 +53,9 @@ public open class NSItemProvider <: NSObject & NSCopying {
     public open mut prop suggestedName: ?NSString
     @ForeignName["initWithObject:"] public init(object: NSItemProviderWriting)
     @ForeignName["registerObject:visibility:"] public open func registerObjectVisibility(object: NSItemProviderWriting, visibility: Int32 /*NSItemProviderRepresentationVisibility*/): Unit
-    @ForeignName["registerObjectOfClass:visibility:loadHandler:"] public open func registerObjectOfClassVisibilityLoadHandler(aClass: Class, visibility: Int32 /*NSItemProviderRepresentationVisibility*/, loadHandler: ObjCBlock<(ObjCBlock<(NSItemProviderWriting, NSError) -> Unit>) -> NSProgress>): Unit
-    @ForeignName["canLoadObjectOfClass:"] public open func canLoadObjectOfClass(aClass: Class): Bool
-    @ForeignName["loadObjectOfClass:completionHandler:"] public open func loadObjectOfClassCompletionHandler(aClass: Class, completionHandler: ObjCBlock<(NSItemProviderReading, NSError) -> Unit>): NSProgress
+    @ForeignName["registerObjectOfClass:visibility:loadHandler:"] public open func registerObjectOfClassVisibilityLoadHandler(aClass: ObjCClass, visibility: Int32 /*NSItemProviderRepresentationVisibility*/, loadHandler: ObjCBlock<(ObjCBlock<(NSItemProviderWriting, NSError) -> Unit>) -> NSProgress>): Unit
+    @ForeignName["canLoadObjectOfClass:"] public open func canLoadObjectOfClass(aClass: ObjCClass): Bool
+    @ForeignName["loadObjectOfClass:completionHandler:"] public open func loadObjectOfClassCompletionHandler(aClass: ObjCClass, completionHandler: ObjCBlock<(NSItemProviderReading, NSError) -> Unit>): NSProgress
     @ForeignName["initWithItem:typeIdentifier:"] public init(item: ?NSSecureCoding, typeIdentifier: ?NSString)
     @ForeignName["initWithContentsOfURL:"] public init(fileURL: ?NSURL)
     @ForeignName["registerItemForTypeIdentifier:loadHandler:"] public open func registerItemForTypeIdentifierLoadHandler(typeIdentifier: NSString, loadHandler: NSItemProviderLoadHandler): Unit

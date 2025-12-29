@@ -12,7 +12,7 @@ public open class NSValueTransformer <: NSObject {
     @ForeignName["setValueTransformer:forName:"] public static func setValueTransformerForName(transformer: ?NSValueTransformer, name: NSValueTransformerName): Unit
     @ForeignName["valueTransformerForName:"] public static func valueTransformerForName(name: NSValueTransformerName): ?NSValueTransformer
     public static func valueTransformerNames(): NSArray/*<NSValueTransformerName>*/
-    public static func transformedValueClass(): Class
+    public static func transformedValueClass(): ObjCClass
     public static func allowsReverseTransformation(): Bool
     @ForeignName["transformedValue:"] public open func transformedValue(value: ?ObjCId): ?ObjCId
     @ForeignName["reverseTransformedValue:"] public open func reverseTransformedValue(value: ?ObjCId): ?ObjCId
@@ -20,6 +20,6 @@ public open class NSValueTransformer <: NSObject {
 
 @ObjCMirror
 public open class NSSecureUnarchiveFromDataTransformer <: NSValueTransformer {
-    public static prop allowedTopLevelClasses: NSArray/*<Class>*/
+    public static prop allowedTopLevelClasses: NSArray/*<ObjCClass>*/
 }
 
