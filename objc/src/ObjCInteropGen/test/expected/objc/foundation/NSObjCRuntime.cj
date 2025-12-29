@@ -20,10 +20,10 @@ public func NSStringFromSelector(aSelector: SEL): NSString
 public func NSSelectorFromString(aSelectorName: NSString): SEL
 
 @ObjCMirror
-public func NSStringFromClass(aClass: Class): NSString
+public func NSStringFromClass(aClass: ObjCClass): NSString
 
 @ObjCMirror
-public func NSClassFromString(aClassName: NSString): ?Class
+public func NSClassFromString(aClassName: NSString): ?ObjCClass
 
 @ObjCMirror
 public func NSStringFromProtocol(proto: Protocol): NSString

@@ -54,16 +54,16 @@ public open class NSCoder <: NSObject {
     @ForeignName["encodeInteger:forKey:"] public open func encodeIntegerForKey(value: NSInteger, key: NSString): Unit
     @ForeignName["decodeIntegerForKey:"] public open func decodeIntegerForKey(key: NSString): NSInteger
     public open prop requiresSecureCoding: Bool
-    @ForeignName["decodeObjectOfClass:forKey:"] public open func decodeObjectOfClassForKey(aClass: Class, key: NSString): ?ObjCId
-    @ForeignName["decodeTopLevelObjectOfClass:forKey:error:"] public open func decodeTopLevelObjectOfClassForKeyError(aClass: Class, key: NSString, error: ObjCPointer<NSError>): ?ObjCId
-    @ForeignName["decodeArrayOfObjectsOfClass:forKey:"] public open func decodeArrayOfObjectsOfClassForKey(cls: Class, key: NSString): ?NSArray/*<ObjectType>*/
-    @ForeignName["decodeDictionaryWithKeysOfClass:objectsOfClass:forKey:"] public open func decodeDictionaryWithKeysOfClassObjectsOfClassForKey(keyCls: Class, objectCls: Class, key: NSString): ?NSDictionary/*<KeyType, ObjectType>*/
-    @ForeignName["decodeObjectOfClasses:forKey:"] public open func decodeObjectOfClassesForKey(classes: ?NSSet/*<Class>*/, key: NSString): ?ObjCId
-    @ForeignName["decodeTopLevelObjectOfClasses:forKey:error:"] public open func decodeTopLevelObjectOfClassesForKeyError(classes: ?NSSet/*<Class>*/, key: NSString, error: ObjCPointer<NSError>): ?ObjCId
-    @ForeignName["decodeArrayOfObjectsOfClasses:forKey:"] public open func decodeArrayOfObjectsOfClassesForKey(classes: NSSet/*<Class>*/, key: NSString): ?NSArray/*<ObjectType>*/
-    @ForeignName["decodeDictionaryWithKeysOfClasses:objectsOfClasses:forKey:"] public open func decodeDictionaryWithKeysOfClassesObjectsOfClassesForKey(keyClasses: NSSet/*<Class>*/, objectClasses: NSSet/*<Class>*/, key: NSString): ?NSDictionary/*<KeyType, ObjectType>*/
+    @ForeignName["decodeObjectOfClass:forKey:"] public open func decodeObjectOfClassForKey(aClass: ObjCClass, key: NSString): ?ObjCId
+    @ForeignName["decodeTopLevelObjectOfClass:forKey:error:"] public open func decodeTopLevelObjectOfClassForKeyError(aClass: ObjCClass, key: NSString, error: ObjCPointer<NSError>): ?ObjCId
+    @ForeignName["decodeArrayOfObjectsOfClass:forKey:"] public open func decodeArrayOfObjectsOfClassForKey(cls: ObjCClass, key: NSString): ?NSArray/*<ObjectType>*/
+    @ForeignName["decodeDictionaryWithKeysOfClass:objectsOfClass:forKey:"] public open func decodeDictionaryWithKeysOfClassObjectsOfClassForKey(keyCls: ObjCClass, objectCls: ObjCClass, key: NSString): ?NSDictionary/*<KeyType, ObjectType>*/
+    @ForeignName["decodeObjectOfClasses:forKey:"] public open func decodeObjectOfClassesForKey(classes: ?NSSet/*<ObjCClass>*/, key: NSString): ?ObjCId
+    @ForeignName["decodeTopLevelObjectOfClasses:forKey:error:"] public open func decodeTopLevelObjectOfClassesForKeyError(classes: ?NSSet/*<ObjCClass>*/, key: NSString, error: ObjCPointer<NSError>): ?ObjCId
+    @ForeignName["decodeArrayOfObjectsOfClasses:forKey:"] public open func decodeArrayOfObjectsOfClassesForKey(classes: NSSet/*<ObjCClass>*/, key: NSString): ?NSArray/*<ObjectType>*/
+    @ForeignName["decodeDictionaryWithKeysOfClasses:objectsOfClasses:forKey:"] public open func decodeDictionaryWithKeysOfClassesObjectsOfClassesForKey(keyClasses: NSSet/*<ObjCClass>*/, objectClasses: NSSet/*<ObjCClass>*/, key: NSString): ?NSDictionary/*<KeyType, ObjectType>*/
     @ForeignName["decodePropertyListForKey:"] public open func decodePropertyListForKey(key: NSString): ?ObjCId
-    public open prop allowedClasses: ?NSSet/*<Class>*/
+    public open prop allowedClasses: ?NSSet/*<ObjCClass>*/
     @ForeignName["failWithError:"] public open func failWithError(error: NSError): Unit
     public open prop decodingFailurePolicy: Int32 /*NSDecodingFailurePolicy*/
     public open prop error: ?NSError
