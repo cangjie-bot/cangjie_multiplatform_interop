@@ -120,6 +120,15 @@ public func alloc(className: String): NativeObjCId {
 }
 
 /**
+ * Returns super_class field from NativeObjCSuperPtr
+ */
+public func getSuperClass(objCSuper: NativeObjCSuperPtr): NativeObjCClass {
+    unsafe {
+        return objCSuper.read().super_class
+    }
+}
+
+/**
  * A wrapper for a method or a prop's accessor body (action) if it needs all of the following:
  * 1. To be executed within an @autoreleasepool.
  * 2. To call objc_msgSendSuper with NativeObjCSuperPtr.
