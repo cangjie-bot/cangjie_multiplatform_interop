@@ -228,7 +228,7 @@ public open class NSURLSessionConfiguration <: NSObject & NSCopying {
     public open mut prop URLCredentialStorage: ?NSURLCredentialStorage
     public open mut prop URLCache: ?NSURLCache
     public open mut prop shouldUseExtendedBackgroundIdleMode: Bool
-    public open mut prop protocolClasses: ?NSArray/*<Class>*/
+    public open mut prop protocolClasses: ?NSArray/*<ObjCClass>*/
     public open mut prop multipathServiceType: Int32 /*NSURLSessionMultipathServiceType*/
     public init()
     public static func new(): NSURLSessionConfiguration
