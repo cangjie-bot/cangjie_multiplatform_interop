@@ -15,14 +15,6 @@ public type NSRange = _NSRange
 
 public type NSRangePointer = CPointer<NSRange>
 
-foreign func NSMakeRange(loc: NSUInteger, len: NSUInteger): NSRange
-
-foreign func NSMaxRange(range: NSRange): NSUInteger
-
-foreign func NSLocationInRange(loc: NSUInteger, range: NSRange): Bool
-
-foreign func NSEqualRanges(range1: NSRange, range2: NSRange): Bool
-
 foreign func NSUnionRange(range1: NSRange, range2: NSRange): NSRange
 
 foreign func NSIntersectionRange(range1: NSRange, range2: NSRange): NSRange

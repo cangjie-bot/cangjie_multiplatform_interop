@@ -84,7 +84,7 @@ class SourceScanner final : public ClangVisitor {
     // It doesn't appear there is a way around it, other than to keep track of what we already visited.
     std::unordered_set<CXCursor> visited_;
 
-    // When a function is processed, and the function return a function pointer
+    // When a function is processed, and the function returns a function pointer
     // defined in-place, then the visitor visits the return type parameters as
     // direct children of the function, before the parameters of the function.  That
     // is, when visiting
@@ -171,14 +171,14 @@ class SourceScanner final : public ClangVisitor {
         return symbol;
     }
 
-    Symbol* push_current(NonTypeSymbol* symbol)
+    NonTypeSymbol* push_current(NonTypeSymbol* symbol)
     {
         assert(symbol);
         current_.push_back(symbol);
         return symbol;
     }
 
-    Symbol* push_current(NonTypeSymbol& symbol)
+    NonTypeSymbol* push_current(NonTypeSymbol& symbol)
     {
         return push_current(std::addressof(symbol));
     }
@@ -188,10 +188,14 @@ class SourceScanner final : public ClangVisitor {
         assert(symbol);
         assert(!current_.empty());
         assert(current_.back() == symbol);
+        auto* non_type_symbol = dynamic_cast<NonTypeSymbol*>(current_.back());
+        if (non_type_symbol) {
+            non_type_symbol->finish_creating();
+        }
         current_.pop_back();
     }
 
-    [[nodiscard]] Symbol* push_top_level_function(const CXCursor& cursor, std::string&& name);
+    [[nodiscard]] NonTypeSymbol* push_top_level_function(const CXCursor& cursor, std::string&& name);
 
     [[nodiscard]] Symbol* push_property(
         std::string&& name, std::string&& getter, std::string&& setter, uint8_t modifiers);
@@ -428,7 +432,7 @@ template <class Decl>
     if (cpp->isFloatingType()) {
         return PrimitiveTypeCategory::FloatingPoint;
     }
-    return PrimitiveTypeCategory::Unknown;
+    return PrimitiveTypeCategory::Unit;
 }
 
 NamedTypeSymbol* SourceScanner::named_type_symbol(CXType type)
@@ -485,17 +489,6 @@ TypeLikeSymbol* SourceScanner::add_type(const NamedTypeSymbol::Kind kind, const 
         symbol = new TypeAliasSymbol(name);
     } else {
         symbol = new TypeDeclarationSymbol(kind, name);
-    }
-
-    if (is_builtin(type)) {
-        if (auto* type_decl = dynamic_cast<TypeDeclarationSymbol*>(symbol)) {
-            const auto type_category = get_primitive_category(type);
-            const auto type_size = clang_Type_getSizeOf(type);
-            const PrimitiveTypeInformation type_information(static_cast<size_t>(type_size), type_category);
-            type_decl->set_primitive_information(type_information);
-        } else {
-            assert(false);
-        }
     }
 
     if (const auto decl = clang_getTypeDeclaration(type); decl.kind != CXCursor_NoDeclFound) {
@@ -603,9 +596,7 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
             auto baseCXType = clang_Type_getObjCObjectBaseType(type);
             if (baseCXType.kind == CXType_ObjCId) {
                 // This is an `ObjCId` qualified with a list of protocols
-                auto* id_type = universe.type(NamedTypeSymbol::Kind::Protocol, "ObjCId");
-                assert(id_type);
-                assert(dynamic_cast<TypeDeclarationSymbol*>(id_type));
+                auto* id_type = &universe.id();
                 auto num_protocols = clang_Type_getNumObjCProtocolRefs(type);
                 switch (num_protocols) {
                     case 0:
@@ -616,7 +607,7 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
                         // reference-to-interface.
                         return protocol_symbol(type, 0);
                     default:
-                        auto* result = new ConstructedTypeSymbol(static_cast<TypeDeclarationSymbol*>(id_type));
+                        auto* result = new ConstructedTypeSymbol(id_type);
                         for (decltype(num_protocols) i = 0; i < num_protocols; ++i) {
                             result->add_parameter(protocol_symbol(type, i));
                         }
@@ -657,9 +648,34 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
 
         // Libclang bug? When CXTranslationUnit_IncludeAttributedTypes is specified, the
         // type kind of some objects is unexpectedly and incorrectly reported as
-        // CXType_Unexposed rather than CXType_Attributed.  The assert below ensures
-        // this is actually CXType_Attributed.
-        case CXType_Unexposed:
+        // CXType_Unexposed rather than CXType_Attributed.
+        case CXType_Unexposed: {
+            auto modified_type = clang_Type_getModifiedType(type);
+            if (modified_type.kind == CXType_Invalid) {
+                TypeLikeSymbol* result;
+                auto size = clang_Type_getSizeOf(type);
+                switch (size) {
+                    case 1:
+                    case 2:
+                    case 3:
+                    case 4:
+                    case 8:
+                    case 16:
+                        result =
+                            &universe.primitive_type(PrimitiveTypeCategory::SignedInteger, static_cast<size_t>(size));
+                        break;
+                    default:
+                        result = new VArraySymbol(universe.primitive_type(PrimitiveTypeCategory::SignedInteger, 1),
+                            static_cast<size_t>(size));
+                        break;
+                }
+                std::cerr << as_string(clang_getTypeSpelling(type)) << ": unsupported type. Using '" << raw(*result)
+                          << "' instead." << std::endl;
+                return result;
+            }
+            return type_like_symbol(modified_type);
+        }
+
         case CXType_Attributed: {
             auto modified_type = clang_Type_getModifiedType(type);
             assert(modified_type.kind != CXType_Invalid);
@@ -743,11 +759,11 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
 
     switch (type.kind) {
         case CXType_ObjCId:
-            return universe.type(NamedTypeSymbol::Kind::Protocol, "ObjCId");
+            return &universe.id();
         case CXType_ObjCClass:
-            return universe.type(NamedTypeSymbol::Kind::Interface, "Class" /* "ObjCClass" */);
+            return &universe.clazz();
         case CXType_ObjCSel:
-            return universe.type(NamedTypeSymbol::Kind::Interface, "SEL" /* "ObjCSelector" */);
+            return &universe.sel();
         case CXType_Typedef:
             type_kind = NamedTypeSymbol::Kind::TypeDef;
             type_name = as_string(clang_getTypeSpelling(type));
@@ -804,17 +820,11 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
             break;
         }
 
-            // Anything else is not supported at the moment.
-
         default:
-            if (is_builtin(type)) {
-                type_kind = NamedTypeSymbol::Kind::SourcePrimitive;
-                type_name = as_string(clang_getTypeSpelling(type));
-                break;
-            }
+            assert(is_builtin(type));
 
-            assert(false);
-            return nullptr;
+            return &universe.primitive_type(
+                get_primitive_category(type), static_cast<size_t>(clang_Type_getSizeOf(type)));
     }
 
 #if CLANG_VERSION_MAJOR < 16
@@ -893,6 +903,23 @@ private:
     }
 };
 
+[[nodiscard]] static bool is_attributed_type_nullable(const CXType& type, CXTypeKind modified_type_kind)
+{
+    switch (modified_type_kind) {
+        case CXType_ObjCObjectPointer:
+        case CXType_ObjCId:
+        case CXType_ObjCClass:
+        case CXType_ObjCSel:
+        case CXType_ObjCTypeParam:
+            return clang_Type_getNullability(type) != CXTypeNullability_NonNull;
+        default:
+            // This will be most probably converted to CPointer.  In Objective-C, C pointer
+            // can be annotated as nullable/nonnull.  But in Cangjie, CPointer is always
+            // nullable, there is no sense to make it optional.
+            return false;
+    }
+}
+
 // Return true if the corresponding type in the Cangjie code must be prefixed
 // with '?' (wrapped by `std.Option`).
 static bool is_nullable(CXType type)
@@ -902,24 +929,15 @@ static bool is_nullable(CXType type)
         // type kind of some objects is unexpectedly and incorrectly reported as
         // CXType_Unexposed rather than CXType_Attributed.  The assert below ensures
         // this is actually CXType_Attributed.
-        case CXType_Unexposed:
+        case CXType_Unexposed: {
+            auto modified_type_kind = clang_Type_getModifiedType(type).kind;
+            return modified_type_kind != CXType_Invalid && is_attributed_type_nullable(type, modified_type_kind);
+        }
+
         case CXType_Attributed: {
             auto modified_type_kind = clang_Type_getModifiedType(type).kind;
             assert(modified_type_kind != CXType_Invalid);
-
-            switch (modified_type_kind) {
-                case CXType_ObjCObjectPointer:
-                case CXType_ObjCId:
-                case CXType_ObjCClass:
-                case CXType_ObjCSel:
-                case CXType_ObjCTypeParam:
-                    return clang_Type_getNullability(type) != CXTypeNullability_NonNull;
-                default:
-                    // This will be most probably converted to CPointer.  In Objective-C, C pointer
-                    // can be annotated as nullable/nonnull.  But in Cangjie, CPointer is always
-                    // nullable, there is no sense to make it optional.
-                    return false;
-            }
+            return is_attributed_type_nullable(type, modified_type_kind);
         }
         case CXType_ObjCObjectPointer:
         case CXType_ObjCId:
@@ -947,16 +965,29 @@ static std::optional<CXType> nullable_overridden(CXCursor cursor)
     return std::nullopt;
 }
 
-Symbol* SourceScanner::push_top_level_function(const CXCursor& cursor, std::string&& name)
+[[nodiscard]] static NonTypeSymbol* find_global_func(const std::string& name) noexcept
 {
-    assert(is_on_top_level());
-    auto cx_result_type = clang_getCursorResultType(cursor);
-    auto* result_type = type_like_symbol(cx_result_type);
-    assert(result_type);
-    auto& function = universe.register_top_level_function(
-        std::move(name), *result_type, is_nullable(cx_result_type) ? ModifierNullable : 0);
-    set_definition_location(cursor, &function);
-    return push_current(&function);
+    for (auto& top_level : Universe::top_level()) {
+        if (top_level.is_global_function() && top_level.name() == name) {
+            return &top_level;
+        }
+    }
+    return nullptr;
+}
+
+NonTypeSymbol* SourceScanner::push_top_level_function(const CXCursor& cursor, std::string&& name)
+{
+    auto* function = find_global_func(name);
+    if (!function) {
+        assert(is_on_top_level());
+        auto cx_result_type = clang_getCursorResultType(cursor);
+        auto* result_type = type_like_symbol(cx_result_type);
+        assert(result_type);
+        function = &universe.register_top_level_function(
+            std::move(name), *result_type, is_nullable(cx_result_type) ? ModifierNullable : 0);
+        set_definition_location(cursor, function);
+    }
+    return push_current(function);
 }
 
 Symbol* SourceScanner::push_member_method(CXCursor cursor, std::string&& name, uint8_t modifiers)
@@ -1320,7 +1351,7 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
             assert(is_defining(cursor));
             if (current_top_is_non_type()) {
                 auto& non_type = *current_non_type();
-                if (non_type.is_method()) {
+                if (non_type.is_method() && !non_type.created()) {
                     recurse = false;
 
                     // Omit return func type parameters.  See comments for
@@ -1359,9 +1390,18 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
             break;
         }
         case CXCursor_ObjCImplementationDecl:
-        case CXCursor_CompoundStmt:
-            // Ignore @implementation and function bodies
+            // Ignore @implementation
             return CXChildVisit_Continue;
+        case CXCursor_CompoundStmt: {
+            auto* func_decl = find_global_func(name);
+            if (!func_decl) {
+                func_decl = current_non_type();
+                assert(func_decl);
+                assert(func_decl->is_global_function());
+            }
+            func_decl->set_has_body();
+            return CXChildVisit_Continue;
+        }
         default:;
     }
 

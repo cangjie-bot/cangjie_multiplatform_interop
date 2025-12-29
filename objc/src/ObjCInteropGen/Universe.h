@@ -21,11 +21,6 @@ enum class TypeNamespace : std::uint8_t {
     // protocol names when printing.
     Protocols,
 
-    // These are built-in Cangjie type names, which are keywords.  If an Objective-C
-    // symbol name conflicts with one of them, the conflict will be resolved by
-    // enclosing the name in the `` ticks when printing.
-    Keywords,
-
     // In the C language, type symbols tagged with struct/union/enum can share names
     // with non-tagged symbols.
     Tagged,
@@ -33,38 +28,22 @@ enum class TypeNamespace : std::uint8_t {
     Max = Tagged,
 };
 
-inline TypeNamespace kind_to_typename(const NamedTypeSymbol::Kind kind)
-{
-    switch (kind) {
-        case NamedTypeSymbol::Kind::Protocol:
-            return TypeNamespace::Protocols;
-        case NamedTypeSymbol::Kind::TargetPrimitive:
-            return TypeNamespace::Keywords;
-        case NamedTypeSymbol::Kind::Struct:
-        case NamedTypeSymbol::Kind::Enum:
-        case NamedTypeSymbol::Kind::Union:
-            return TypeNamespace::Tagged;
-        default:
-            return TypeNamespace::Primary;
-    }
-}
-
 constexpr std::uint8_t TYPE_NAMESPACE_COUNT = static_cast<std::uint8_t>(TypeNamespace::Max) + 1;
 
 using type_order_t = std::vector<std::pair<TypeNamespace, std::string>>;
 
-template <bool OnlyType> class UniverseIterator final {
+template <class TypeSymbol> type_order_t::const_iterator find_first(type_order_t::const_iterator it);
+
+template <class TypeSymbol> class UniverseIterator final {
     using iterator_category = std::forward_iterator_tag;
     using difference_type = std::ptrdiff_t;
-    using value_type = std::conditional_t<OnlyType, TypeDeclarationSymbol, NamedTypeSymbol>;
+    using value_type = TypeSymbol;
     using pointer = value_type*;   // or also value_type*
     using reference = value_type&; // or also value_type&
 
     type_order_t::const_iterator it_;
 
     [[nodiscard]] reference get() const;
-
-    void find_next();
 
 public:
     explicit UniverseIterator(type_order_t::const_iterator it) : it_(std::move(it))
@@ -83,16 +62,8 @@ public:
     // Prefix increment
     UniverseIterator& operator++()
     {
-        find_next();
+        it_ = find_first<TypeSymbol>(++it_);
         return *this;
-    }
-
-    // Postfix increment
-    UniverseIterator operator++(int)
-    {
-        UniverseIterator tmp = *this;
-        ++(*this);
-        return tmp;
     }
 
     friend bool operator==(const UniverseIterator& lhs, const UniverseIterator& rhs)
@@ -106,10 +77,10 @@ public:
     }
 };
 
-template <bool OnlyType> struct UniverseTypes final {
-    [[nodiscard]] UniverseIterator<OnlyType> cbegin() const;
+template <class TypeSymbol> struct UniverseTypes final {
+    [[nodiscard]] UniverseIterator<TypeSymbol> cbegin() const;
 
-    [[nodiscard]] UniverseIterator<OnlyType> cend() const;
+    [[nodiscard]] UniverseIterator<TypeSymbol> cend() const;
 
     [[nodiscard]] auto begin() const
     {
@@ -158,12 +129,35 @@ private:
 class Universe final {
     static constexpr int PREALLOCATED_TYPE_COUNT = 8192;
 
+    enum class PrimitiveTypeIndex {
+        Unit,
+        Bool,
+        Int8,
+        Int16,
+        Int32,
+        Int64,
+        UInt8,
+        UInt16,
+        UInt32,
+        UInt64,
+        Float16,
+        Float32,
+        Float64
+    };
+    static constexpr int NumberOfPrimitiveTypes = static_cast<int>(PrimitiveTypeIndex::Float64) + 1;
+
+    enum class BuiltInTypeDeclarationIndex { Int128, UInt128, Class, Id, Sel };
+    static constexpr int NumberOfBuiltInTypeDeclarations = static_cast<int>(BuiltInTypeDeclarationIndex::Sel) + 1;
+
     using type_map_t = std::unordered_map<std::string, NamedTypeSymbol*>;
 
     TopLevel top_level_;
 
     type_map_t types_[TYPE_NAMESPACE_COUNT];
     type_order_t type_order_;
+
+    PrimitiveTypeSymbol primitive_types_[NumberOfPrimitiveTypes];
+    TypeDeclarationSymbol built_in_type_declarations_[NumberOfBuiltInTypeDeclarations];
 
     type_map_t& types_map(const TypeNamespace index)
     {
@@ -175,47 +169,50 @@ class Universe final {
         return types_[static_cast<std::uint8_t>(index)];
     }
 
-    friend class UniverseIterator<false>;
-    friend class UniverseIterator<true>;
-    friend struct UniverseTypes<false>;
-    friend struct UniverseTypes<true>;
+    template <class TypeSymbol> friend class UniverseIterator;
+    template <class TypeSymbol> friend struct UniverseTypes;
+    template <class TypeSymbol> friend type_order_t::const_iterator find_first(type_order_t::const_iterator it);
 
 public:
-    Universe()
-    {
-        for (auto& map : types_) {
-            map.reserve(PREALLOCATED_TYPE_COUNT);
-        }
-        type_order_.reserve(PREALLOCATED_TYPE_COUNT);
-    }
+    Universe();
 
     NonTypeSymbol& register_top_level_function(std::string name, TypeLikeSymbol& return_type, uint8_t modifiers);
 
     void register_type(NamedTypeSymbol* symbol);
 
-    NamedTypeSymbol* type(const NamedTypeSymbol::Kind where, const std::string& name) const
+    [[nodiscard]] NamedTypeSymbol& primitive_type(PrimitiveTypeCategory category, size_t size) noexcept;
+
+    [[nodiscard]] TypeDeclarationSymbol& id() noexcept
     {
-        return this->type(kind_to_typename(where), name);
+        return built_in_type_declarations_[static_cast<int>(BuiltInTypeDeclarationIndex::Id)];
     }
 
-    NamedTypeSymbol* type(const TypeNamespace where, const std::string& name) const
+    [[nodiscard]] TypeDeclarationSymbol& clazz() noexcept
     {
-        auto& types_map = this->types_map(where);
-        const auto it = types_map.find(name);
-        return it == types_map.end() ? nullptr : it->second;
+        return built_in_type_declarations_[static_cast<int>(BuiltInTypeDeclarationIndex::Class)];
     }
 
-    NamedTypeSymbol* type(const std::string& name) const
+    [[nodiscard]] TypeDeclarationSymbol& sel() noexcept
     {
-        NamedTypeSymbol* result = nullptr;
-        for (std::uint8_t i = 0; i < TYPE_NAMESPACE_COUNT; ++i) {
-            if (auto* current = type(static_cast<TypeNamespace>(i), name)) {
-                assert(!result);
-                result = current;
-            }
-        }
-        return result;
+        return built_in_type_declarations_[static_cast<int>(BuiltInTypeDeclarationIndex::Sel)];
     }
+
+    // Find the registered type symbol by its name and kind.  Return nullptr if no
+    // such type has been registered.
+    [[nodiscard]] NamedTypeSymbol* type(NamedTypeSymbol::Kind where, const std::string& name) const noexcept;
+
+    // Find the registered type symbol by its name and namespace.  Return nullptr if
+    // no such type has been registered.
+    [[nodiscard]] NamedTypeSymbol* type(TypeNamespace where, const std::string& name) const;
+
+    // Find a registered type symbol by its name.  Return nullptr if no such type
+    // has been registered.
+    [[nodiscard]] NamedTypeSymbol* type(const std::string& name) const;
+
+    // Find a type by its name.  First, find among primitive and built-in
+    // ObjCInteropGen types.  Then in the Primary - Protocol - Tagged namespaces (in
+    // that particular order).  Return nullptr if no such type can be found.
+    [[nodiscard]] NamedTypeSymbol* any_type(const std::string& name);
 
     void process_rename(NamedTypeSymbol* symbol, const std::string& old_name);
 
@@ -223,53 +220,51 @@ public:
 
     static auto all_declarations()
     {
-        return UniverseTypes<false>{};
+        return UniverseTypes<NamedTypeSymbol>{};
     }
 
     static auto type_definitions()
     {
-        return UniverseTypes<true>{};
+        return UniverseTypes<TypeDeclarationSymbol>{};
     }
 };
 
 extern Universe universe;
 
-template <bool OnlyType> typename UniverseIterator<OnlyType>::reference UniverseIterator<OnlyType>::get() const
+template <class TypeSymbol> typename UniverseIterator<TypeSymbol>::reference UniverseIterator<TypeSymbol>::get() const
 {
     auto* symbol = universe.type(it_->first, it_->second);
     assert(symbol);
-    if constexpr (OnlyType) {
-        auto* type = dynamic_cast<TypeDeclarationSymbol*>(symbol);
-        assert(type);
-        return *type;
-    } else {
+    if constexpr (std::is_same_v<TypeSymbol, NamedTypeSymbol>) {
         return *symbol;
+    } else {
+        assert(dynamic_cast<TypeSymbol*>(symbol));
+        return static_cast<TypeSymbol&>(*symbol);
     }
 }
 
-template <bool OnlyType> void UniverseIterator<OnlyType>::find_next()
+template <class TypeSymbol> type_order_t::const_iterator find_first(type_order_t::const_iterator it)
 {
-    if constexpr (OnlyType) {
-        while (++it_ != universe.type_order_.cend()) {
-            auto* symbol = universe.type(it_->first, it_->second);
+    if constexpr (!std::is_same_v<TypeSymbol, NamedTypeSymbol>) {
+        for (auto e = universe.type_order_.cend(); it != e; ++it) {
+            auto* symbol = universe.type(it->first, it->second);
             assert(symbol);
-            if (dynamic_cast<TypeDeclarationSymbol*>(symbol)) {
-                return;
+            if (dynamic_cast<TypeSymbol*>(symbol)) {
+                break;
             }
         }
-    } else {
-        ++it_;
     }
+    return it;
 }
 
-template <bool OnlyType> UniverseIterator<OnlyType> UniverseTypes<OnlyType>::cbegin() const
+template <class TypeSymbol> UniverseIterator<TypeSymbol> UniverseTypes<TypeSymbol>::cbegin() const
 {
-    return UniverseIterator<OnlyType>{universe.type_order_.cbegin()};
+    return UniverseIterator<TypeSymbol>{find_first<TypeSymbol>(universe.type_order_.cbegin())};
 }
 
-template <bool OnlyType> UniverseIterator<OnlyType> UniverseTypes<OnlyType>::cend() const
+template <class TypeSymbol> UniverseIterator<TypeSymbol> UniverseTypes<TypeSymbol>::cend() const
 {
-    return UniverseIterator<OnlyType>{universe.type_order_.cend()};
+    return UniverseIterator<TypeSymbol>{universe.type_order_.cend()};
 }
 
 #endif // UNIVERSE_H

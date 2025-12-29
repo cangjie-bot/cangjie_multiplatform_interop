@@ -10,6 +10,7 @@
 
 #include "Logging.h"
 #include "Mappings.h"
+#include "Mode.h"
 #include "Package.h"
 #include "Universe.h"
 
@@ -115,19 +116,10 @@ void NamedTypeSymbol::print(std::ostream& stream, SymbolPrintFormat format) cons
                 stream << "Int32 /*" << name << "*/";
             }
             break;
-        case Kind::TargetPrimitive:
+        case Kind::Primitive:
             stream << name;
             break;
         default:
-            if (kind_ == Kind::TypeDef) {
-                assert(dynamic_cast<const TypeAliasSymbol*>(this));
-                const auto* target = static_cast<const TypeAliasSymbol*>(this)->target();
-                if (target && name == target->name()) {
-                    // typedef struct S S;
-                    target->print(stream, format);
-                    return;
-                }
-            }
             stream << escape_keyword(name);
             if (const auto count = parameter_count(); count != 0) {
                 auto no_type_arguments = format != SymbolPrintFormat::Raw;
@@ -215,8 +207,7 @@ NamedTypeSymbol* NamedTypeSymbol::construct(const std::vector<TypeLikeSymbol*>& 
 static bool is_ctype_by_default(NamedTypeSymbol::Kind kind, std::string_view name)
 {
     switch (kind) {
-        case NamedTypeSymbol::Kind::SourcePrimitive:
-        case NamedTypeSymbol::Kind::TargetPrimitive:
+        case NamedTypeSymbol::Kind::Primitive:
         case NamedTypeSymbol::Kind::Enum:
 
         // Empty structures are CType.  If afterwards a non-CType member is added,
@@ -519,8 +510,8 @@ TupleTypeSymbol::TupleTypeSymbol(std::vector<TypeLikeSymbol*> items)
     : TypeLikeSymbol(""),
       items_(std::move(items)),
       is_ctype_(std::all_of(items_.cbegin(), items_.cend(), [](const auto* item) { return item->is_ctype(); })),
-      contains_pointer_or_func_(
-          std::any_of(items.cbegin(), items.cend(), [](const auto* item) { return item->contains_pointer_or_func(); }))
+      contains_pointer_or_func_(std::any_of(
+          items_.cbegin(), items_.cend(), [](const auto* item) { return item->contains_pointer_or_func(); }))
 {
 }
 
@@ -651,6 +642,24 @@ void TypeAliasSymbol::visit_impl(SymbolVisitor& visitor)
     visitor.visit(this, this->target(), SymbolProperty::AliasTarget);
 }
 
+void TypeAliasSymbol::print(std::ostream& stream, SymbolPrintFormat format) const
+{
+    const auto* target = this->target();
+    if (target && name() == target->name()) {
+        // typedef struct S S;
+        target->print(stream, format);
+        return;
+    }
+    if (mode != Mode::EXPERIMENTAL && format == SymbolPrintFormat::EmitCangjieStrict) {
+        const auto& canonical_type = this->canonical_type();
+        if (canonical_type.is_ctype() && canonical_type.contains_pointer_or_func()) {
+            stream << emit_cangjie_strict(canonical_type) << " /*" << emit_cangjie(*this) << "*/";
+            return;
+        }
+    }
+    NamedTypeSymbol::print(stream, format);
+}
+
 TypeLikeSymbol* TypeAliasSymbol::root_target() const
 {
     const TypeAliasSymbol* target = dynamic_cast<const TypeAliasSymbol*>(target_);
@@ -696,49 +705,4 @@ TypeLikeSymbol& pointer(TypeLikeSymbol& pointee)
         return *func;
     }
     return *new PointerTypeSymbol(pointee);
-}
-
-static TypeDeclarationSymbol& add_cangjie_primitive(const std::string& name)
-{
-    auto* symbol = new TypeDeclarationSymbol(NamedTypeSymbol::Kind::TargetPrimitive, name);
-    universe.register_type(symbol);
-    return *symbol;
-}
-
-static TypeDeclarationSymbol& add_cangjie_type_declaration(NamedTypeSymbol::Kind kind, std::string&& name)
-{
-    assert(!universe.type(name));
-    auto* symbol = new TypeDeclarationSymbol(kind, std::move(name));
-    universe.register_type(symbol);
-    return *symbol;
-}
-
-static void add_cangjie_interface(std::string&& name)
-{
-    add_cangjie_type_declaration(NamedTypeSymbol::Kind::Protocol, std::move(name));
-}
-
-static void add_cangjie_class(std::string&& name)
-{
-    add_cangjie_type_declaration(NamedTypeSymbol::Kind::Interface, std::move(name));
-}
-
-void add_builtin_types()
-{
-    add_cangjie_primitive("Unit");
-    add_cangjie_primitive("Bool");
-    add_cangjie_primitive("Int8");
-    add_cangjie_primitive("Int16");
-    add_cangjie_primitive("Int32");
-    add_cangjie_primitive("Int64");
-    add_cangjie_primitive("UInt8");
-    add_cangjie_primitive("UInt16");
-    add_cangjie_primitive("UInt32");
-    add_cangjie_primitive("UInt64");
-    add_cangjie_primitive("Float16");
-    add_cangjie_primitive("Float32");
-    add_cangjie_primitive("Float64");
-    add_cangjie_class("Class" /* "ObjCClass" */);
-    add_cangjie_interface("ObjCId");
-    add_cangjie_class("SEL" /* "ObjCSelector" */);
 }

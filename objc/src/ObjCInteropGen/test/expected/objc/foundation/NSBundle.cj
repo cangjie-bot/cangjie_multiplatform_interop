@@ -12,7 +12,7 @@ public open class NSBundle <: NSObject {
     @ForeignName["initWithPath:"] public init(path: NSString)
     @ForeignName["bundleWithURL:"] public static func bundleWithURL(url: NSURL): NSBundle
     @ForeignName["initWithURL:"] public init(url: NSURL)
-    @ForeignName["bundleForClass:"] public static func bundleForClass(aClass: Class): NSBundle
+    @ForeignName["bundleForClass:"] public static func bundleForClass(aClass: ObjCClass): NSBundle
     @ForeignName["bundleWithIdentifier:"] public static func bundleWithIdentifier(identifier: NSString): ?NSBundle
     public static prop allBundles: NSArray/*<NSBundle>*/
     public static prop allFrameworks: NSArray/*<NSBundle>*/
@@ -58,8 +58,8 @@ public open class NSBundle <: NSObject {
     public open prop infoDictionary: ?NSDictionary/*<NSString, ObjCId>*/
     public open prop localizedInfoDictionary: ?NSDictionary/*<NSString, ObjCId>*/
     @ForeignName["objectForInfoDictionaryKey:"] public open func objectForInfoDictionaryKey(key: NSString): ?ObjCId
-    @ForeignName["classNamed:"] public open func classNamed(className: NSString): ?Class
-    public open prop principalClass: ?Class
+    @ForeignName["classNamed:"] public open func classNamed(className: NSString): ?ObjCClass
+    public open prop principalClass: ?ObjCClass
     public open prop preferredLocalizations: NSArray/*<NSString>*/
     public open prop localizations: NSArray/*<NSString>*/
     public open prop developmentLocalization: ?NSString

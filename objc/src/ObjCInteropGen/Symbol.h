@@ -9,7 +9,6 @@
 #define SYMBOL_H
 
 #include <cassert>
-#include <optional>
 #include <unordered_set>
 
 #include "InputFile.h"
@@ -328,10 +327,9 @@ class TypeLikeSymbol : public FileLevelSymbol {
 public:
     [[nodiscard]] virtual TypeLikeSymbol* map() = 0;
 
-    [[nodiscard]] bool is_unit() const
+    [[nodiscard]] virtual bool is_unit() const noexcept
     {
-        assert(name() != "void");
-        return name() == "Unit";
+        return false;
     }
 
     [[nodiscard]] bool is_instancetype() const
@@ -512,8 +510,7 @@ class NamedTypeSymbol : public TypeLikeSymbol {
 public:
     enum class Kind : std::uint8_t {
         Undefined,
-        SourcePrimitive,
-        TargetPrimitive,
+        Primitive,
         TypeDef,
         Protocol,
         Interface,
@@ -584,31 +581,69 @@ private:
 };
 
 enum class PrimitiveTypeCategory : std::uint8_t {
-    Unknown,
+    Unit,
     SignedInteger,
     UnsignedInteger,
     FloatingPoint,
     Boolean,
 };
 
-class PrimitiveTypeInformation final {
-    std::size_t size_;
-    PrimitiveTypeCategory category_;
+enum class PrimitiveSize : uint8_t { Zero = 0, One = 1, Two = 2, Four = 4, Eight = 8, Sixteen = 16 };
 
+class PrimitiveTypeSymbol final : public NamedTypeSymbol {
 public:
-    [[nodiscard]] PrimitiveTypeInformation(const std::size_t size, const PrimitiveTypeCategory category)
-        : size_(size), category_(category)
+    [[nodiscard]] PrimitiveTypeSymbol(std::string name, PrimitiveTypeCategory category, PrimitiveSize size)
+        : NamedTypeSymbol(NamedTypeSymbol::Kind::Primitive, std::move(name)), size_(size), category_(category)
     {
-    }
-
-    [[nodiscard]] std::size_t size() const
-    {
-        return size_;
     }
 
     [[nodiscard]] PrimitiveTypeCategory category() const
     {
         return category_;
+    }
+
+    [[nodiscard]] PrimitiveSize size() const noexcept
+    {
+        return size_;
+    }
+
+    [[nodiscard]] bool is_unit() const noexcept override
+    {
+        return category_ == PrimitiveTypeCategory::Unit;
+    }
+
+private:
+    PrimitiveSize size_;
+    PrimitiveTypeCategory category_;
+
+    [[nodiscard]] bool is_file_level() const noexcept override
+    {
+        return false;
+    }
+
+    void visit_impl(SymbolVisitor&) override
+    {
+    }
+
+    [[nodiscard]] size_t parameter_count() const override
+    {
+        return 0;
+    }
+
+    [[nodiscard]] TypeLikeSymbol* parameter(size_t) const override
+    {
+        assert(false);
+        return nullptr;
+    }
+
+    [[nodiscard]] PrimitiveTypeSymbol* original() const override
+    {
+        return const_cast<PrimitiveTypeSymbol*>(this);
+    }
+
+    [[nodiscard]] virtual bool is_ctype() const noexcept override
+    {
+        return true;
     }
 };
 
@@ -630,7 +665,6 @@ class TypeDeclarationSymbol : public NamedTypeSymbol {
     std::vector<TypeDeclarationSymbol*> bases_;
     bool is_ctype_;
     bool contains_pointer_or_func_ = false;
-    std::optional<PrimitiveTypeInformation> primitive_information_;
     bool static_instance_clashes_resolved_ = false;
 
 public:
@@ -686,7 +720,7 @@ public:
         }
     };
 
-    [[nodiscard]] explicit TypeDeclarationSymbol(Kind kind, std::string name);
+    [[nodiscard]] TypeDeclarationSymbol(Kind kind, std::string name);
 
     [[nodiscard]] bool is_ctype() const noexcept override
     {
@@ -749,16 +783,6 @@ public:
     [[nodiscard]] BaseCollection bases()
     {
         return BaseCollection(this);
-    }
-
-    [[nodiscard]] std::optional<PrimitiveTypeInformation> primitive_information() const
-    {
-        return primitive_information_;
-    }
-
-    void set_primitive_information(const PrimitiveTypeInformation& primitive_information)
-    {
-        primitive_information_ = primitive_information;
     }
 
     void add_parameter(std::string name);
@@ -1062,6 +1086,7 @@ public:
 
 protected:
     void visit_impl(SymbolVisitor& visitor) override;
+    void print(std::ostream& stream, SymbolPrintFormat format) const override;
 };
 
 class NonTypeSymbol final : public FileLevelSymbol {
@@ -1100,7 +1125,11 @@ private:
 public:
     [[nodiscard]] NonTypeSymbol(
         Private, std::string name, const Kind kind, TypeLikeSymbol* return_type, uint8_t modifiers = 0)
-        : FileLevelSymbol(std::move(name)), kind_(kind), modifiers_(modifiers), return_type_(return_type)
+        : FileLevelSymbol(std::move(name)),
+          kind_(kind),
+          modifiers_(modifiers),
+          return_type_(return_type),
+          has_body_(false)
     {
     }
 
@@ -1286,15 +1315,25 @@ public:
     [[nodiscard]] std::uint64_t enum_constant_value() const
     {
         assert(is_enum_constant());
-        assert(enum_constant_value_.has_value());
-        return *enum_constant_value_;
+        return enum_constant_value_;
     }
 
     void set_enum_constant_value(const std::uint64_t enum_constant_value)
     {
         assert(is_enum_constant());
-        assert(!enum_constant_value_.has_value());
         enum_constant_value_ = enum_constant_value;
+    }
+
+    [[nodiscard]] bool has_body() const noexcept
+    {
+        assert(is_global_function());
+        return has_body_;
+    }
+
+    void set_has_body() noexcept
+    {
+        assert(is_global_function());
+        has_body_ = true;
     }
 
     void set_bit_field_size(uint8_t size) noexcept
@@ -1302,6 +1341,16 @@ public:
         assert(is_instance()); // A bit-field cannot be a static data member.
         assert(size < 0xFF);
         bit_field_size_ = size;
+    }
+
+    [[nodiscard]] bool created() const noexcept
+    {
+        return created_;
+    }
+
+    void finish_creating() noexcept
+    {
+        created_ = true;
     }
 
 protected:
@@ -1319,7 +1368,11 @@ private:
     TypeLikeSymbol* return_type_;
     std::vector<ParameterSymbol> parameters_;
     std::string selector_attribute_;
-    std::optional<std::uint64_t> enum_constant_value_;
+    union {
+        std::uint64_t enum_constant_value_; // Kind::EnumConstant
+        bool has_body_;                     // Kind::GlobalFunction
+    };
+    bool created_ = false;
 
     // Only these classes are allowed to create instances of NonTypeSymbol
     friend class TypeDeclarationSymbol;
@@ -1354,7 +1407,5 @@ public:
 };
 
 [[nodiscard]] TypeLikeSymbol& pointer(TypeLikeSymbol& pointee);
-
-void add_builtin_types();
 
 #endif // SYMBOL_H

@@ -7,9 +7,9 @@ import objc.lang.*
 
 @ObjCMirror
 public open class NSProxy <: NSObjectProtocol {
-    protected var isa: ?Class
+    protected var isa: ?ObjCClass
     public static func alloc(): ObjCId
-    @ForeignName["class"] public static func classStatic(): Class
+    @ForeignName["class"] public static func classStatic(): ObjCClass
     @ForeignName["forwardInvocation:"] public open func forwardInvocation(invocation: NSInvocation): Unit
     @ForeignName["methodSignatureForSelector:"] public open func methodSignatureForSelector(sel: SEL): ?NSMethodSignature
     public open func dealloc(): Unit
