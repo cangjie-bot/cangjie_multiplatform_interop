@@ -9,15 +9,15 @@ import objc.lang.*
 public interface NSObjectProtocol {
     @ForeignName["isEqual:"] func isEqual(object: ?ObjCId): Bool
     prop hash: NSUInteger
-    prop superclass: ?Class
-    func `class`(): ?Class
+    prop superclass: ?ObjCClass
+    func `class`(): ?ObjCClass
     func self(): NSObjectProtocol
     @ForeignName["performSelector:"] func performSelector(aSelector: ?SEL): ?ObjCId
     @ForeignName["performSelector:withObject:"] func performSelectorWithObject(aSelector: ?SEL, object: ?ObjCId): ?ObjCId
     @ForeignName["performSelector:withObject:withObject:"] func performSelectorWithObjectWithObject(aSelector: ?SEL, object1: ?ObjCId, object2: ?ObjCId): ?ObjCId
     func isProxy(): Bool
-    @ForeignName["isKindOfClass:"] func isKindOfClass(aClass: ?Class): Bool
-    @ForeignName["isMemberOfClass:"] func isMemberOfClass(aClass: ?Class): Bool
+    @ForeignName["isKindOfClass:"] func isKindOfClass(aClass: ?ObjCClass): Bool
+    @ForeignName["isMemberOfClass:"] func isMemberOfClass(aClass: ?ObjCClass): Bool
     @ForeignName["conformsToProtocol:"] func conformsToProtocol(aProtocol: ?Protocol): Bool
     @ForeignName["respondsToSelector:"] func respondsToSelector(aSelector: ?SEL): Bool
     prop description: ?NSString
@@ -31,7 +31,7 @@ public struct _NSZone {
 
 @ObjCMirror
 public open class NSObject <: NSObjectProtocol {
-    protected var isa: ?Class
+    protected var isa: ?ObjCClass
     public static func load(): Unit
     public static func initialize(): Unit
     public init()
@@ -51,17 +51,17 @@ public open class NSObject <: NSObjectProtocol {
     @ForeignName["forwardInvocation:"] public open func forwardInvocation(anInvocation: ?NSInvocation): Unit
     @ForeignName["methodSignatureForSelector:"] public open func methodSignatureForSelector(aSelector: ?SEL): ?NSMethodSignature
     @ForeignName["instanceMethodSignatureForSelector:"] public static func instanceMethodSignatureForSelector(aSelector: ?SEL): ?NSMethodSignature
-    @ForeignName["isSubclassOfClass:"] public static func isSubclassOfClass(aClass: ?Class): Bool
+    @ForeignName["isSubclassOfClass:"] public static func isSubclassOfClass(aClass: ?ObjCClass): Bool
     @ForeignName["resolveClassMethod:"] public static func resolveClassMethod(sel: ?SEL): Bool
     @ForeignName["resolveInstanceMethod:"] public static func resolveInstanceMethod(sel: ?SEL): Bool
     @ForeignName["hash"] public static func hashStatic(): NSUInteger
-    @ForeignName["superclass"] public static func superclassStatic(): ?Class
-    @ForeignName["class"] public static func classStatic(): ?Class
+    @ForeignName["superclass"] public static func superclassStatic(): ?ObjCClass
+    @ForeignName["class"] public static func classStatic(): ?ObjCClass
     @ForeignName["description"] public static func descriptionStatic(): ?NSString
     @ForeignName["debugDescription"] public static func debugDescriptionStatic(): ?NSString
     public static func version(): NSInteger
     @ForeignName["setVersion:"] public static func setVersion(aVersion: NSInteger): Unit
-    public open prop classForCoder: Class
+    public open prop classForCoder: ObjCClass
     @ForeignName["replacementObjectForCoder:"] public open func replacementObjectForCoder(coder: NSCoder): ?ObjCId
     @ForeignName["awakeAfterUsingCoder:"] public open func awakeAfterUsingCoder(coder: NSCoder): ?ObjCId
     public open prop autoContentAccessingProxy: ObjCId
@@ -114,10 +114,10 @@ public open class NSObject <: NSObjectProtocol {
     @ForeignName["keyPathsForValuesAffectingValueForKey:"] public static func keyPathsForValuesAffectingValueForKey(key: NSString): NSSet/*<NSString>*/
     @ForeignName["automaticallyNotifiesObserversForKey:"] public static func automaticallyNotifiesObserversForKey(key: NSString): Bool
     public open mut prop observationInfo: ObjCPointer<Unit>
-    public open prop classForKeyedArchiver: ?Class
+    public open prop classForKeyedArchiver: ?ObjCClass
     @ForeignName["replacementObjectForKeyedArchiver:"] public open func replacementObjectForKeyedArchiver(archiver: NSKeyedArchiver): ?ObjCId
     public static func classFallbacksForKeyedArchiver(): NSArray/*<NSString>*/
-    public static func classForKeyedUnarchiver(): Class
+    public static func classForKeyedUnarchiver(): ObjCClass
     @ForeignName["performSelectorOnMainThread:withObject:waitUntilDone:modes:"] public open func performSelectorOnMainThreadWithObjectWaitUntilDoneModes(aSelector: SEL, arg: ?ObjCId, wait: Bool, array: ?NSArray/*<NSString>*/): Unit
     @ForeignName["performSelectorOnMainThread:withObject:waitUntilDone:"] public open func performSelectorOnMainThreadWithObjectWaitUntilDone(aSelector: SEL, arg: ?ObjCId, wait: Bool): Unit
     @ForeignName["performSelector:onThread:withObject:waitUntilDone:modes:"] public open func performSelectorOnThreadWithObjectWaitUntilDoneModes(aSelector: SEL, thr: NSThread, arg: ?ObjCId, wait: Bool, array: ?NSArray/*<NSString>*/): Unit

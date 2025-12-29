@@ -33,13 +33,7 @@ PackageFile* input_to_output(Package* package, const FileLevelSymbol* symbol)
 bool check_symbol(FileLevelSymbol* symbol)
 {
     assert(symbol);
-    if (const auto* named = dynamic_cast<NamedTypeSymbol*>(symbol)) {
-        if (named->is(NamedTypeSymbol::Kind::SourcePrimitive))
-            return false;
-        if (named->is(NamedTypeSymbol::Kind::TargetPrimitive))
-            return false;
-    }
-    return symbol->is_file_level();
+    return !dynamic_cast<PrimitiveTypeSymbol*>(symbol) && symbol->is_file_level();
 }
 
 static bool set_package(FileLevelSymbol& symbol)
@@ -84,10 +78,9 @@ bool mark_roots()
     }
 
     for (auto&& type : Universe::all_declarations()) {
-        // Omit primitive types, as well as types having no definition in source files
-        // (those are built-ins like `id`).
-        if (type.is(NamedTypeSymbol::Kind::SourcePrimitive) || type.is(NamedTypeSymbol::Kind::TargetPrimitive) ||
-            !type.defining_file()) {
+        // Omit types having no definition in source files (those are built-ins like
+        // `id`).
+        if (!type.defining_file()) {
             continue;
         }
 
