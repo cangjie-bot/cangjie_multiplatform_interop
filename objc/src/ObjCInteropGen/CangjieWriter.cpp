@@ -604,17 +604,14 @@ static NonTypeSymbol* get_overridden_method(TypeDeclarationSymbol& decl, const N
     const auto& selector = prop.getter();
     auto is_static = prop.is_static();
     for (auto& base_decl : decl.bases()) {
-        auto* base_type_decl = dynamic_cast<TypeDeclarationSymbol*>(&base_decl);
-        if (base_type_decl) {
-            for (auto& member : base_type_decl->members()) {
-                if (member.is_member_method() && member.is_static() == is_static && member.selector() == selector) {
-                    return &member;
-                }
+        for (auto& member : base_decl.members()) {
+            if (member.is_member_method() && member.is_static() == is_static && member.selector() == selector) {
+                return &member;
             }
-            auto* overridden_method = get_overridden_method(*base_type_decl, prop);
-            if (overridden_method) {
-                return overridden_method;
-            }
+        }
+        auto* overridden_method = get_overridden_method(base_decl, prop);
+        if (overridden_method) {
+            return overridden_method;
         }
     }
     return nullptr;
@@ -646,17 +643,14 @@ static NonTypeSymbol* get_method_by_selector(TypeDeclarationSymbol& decl, const 
 static NonTypeSymbol* get_overridden_property(TypeDeclarationSymbol& decl, const std::string& getter, bool is_static)
 {
     for (auto& base_decl : decl.bases()) {
-        auto* base_type_decl = dynamic_cast<TypeDeclarationSymbol*>(&base_decl);
-        if (base_type_decl) {
-            for (auto& member : base_type_decl->members()) {
-                if (member.is_property() && member.is_static() == is_static && member.getter() == getter) {
-                    return &member;
-                }
+        for (auto& member : base_decl.members()) {
+            if (member.is_property() && member.is_static() == is_static && member.getter() == getter) {
+                return &member;
             }
-            auto* overridden_prop = get_overridden_property(*base_type_decl, getter, is_static);
-            if (overridden_prop) {
-                return overridden_prop;
-            }
+        }
+        auto* overridden_prop = get_overridden_property(base_decl, getter, is_static);
+        if (overridden_prop) {
+            return overridden_prop;
         }
     }
     return nullptr;
@@ -819,6 +813,40 @@ static void print_objcmirror_attribute(std::ostream& output, bool supported)
         output << " */";
     }
     output << '\n';
+}
+
+static bool contains_static_method(TypeDeclarationSymbol& clazz, const std::string& selector)
+{
+    for (auto& base : clazz.bases()) {
+        if (base.kind() == NamedTypeSymbol::Kind::Interface && contains_static_method(base, selector)) {
+            return true;
+        }
+    }
+    for (auto& member : clazz.members()) {
+        if (member.is_member_method() && member.is_static() && member.selector() == selector) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static void print_explicit_static_method_redefinitions(
+    IndentingStringStream& output, TypeDeclarationSymbol& clazz, TypeDeclarationSymbol& protocol)
+{
+    for (auto& base : protocol.bases()) {
+        assert(base.kind() == NamedTypeSymbol::Kind::Protocol);
+        print_explicit_static_method_redefinitions(output, clazz, base);
+    }
+    for (auto& protocol_member : protocol.members()) {
+        if (protocol_member.is_member_method() && protocol_member.is_static()) {
+            const auto& protocol_member_selector = protocol_member.selector();
+            if (!contains_static_method(clazz, protocol_member_selector) &&
+                !get_overridden_property(clazz, protocol_member_selector, true)) {
+                write_function(
+                    output, FuncKind::InterfaceMethod, protocol_member, SymbolPrintFormat::EmitCangjieStrict);
+            }
+        }
+    }
 }
 
 void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol* type)
@@ -1075,6 +1103,17 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
             output << '\n';
         } else {
             assert(false);
+        }
+    }
+
+    if (decl_kind == DeclKind::Class) {
+        // Add explicit redefinitions of static methods declared in base interfaces.
+        // This is a workaround preventing problems when calling static methods declared
+        // in protocols.
+        for (auto& base : type->bases()) {
+            if (base.kind() == NamedTypeSymbol::Kind::Protocol) {
+                print_explicit_static_method_redefinitions(output, *type, base);
+            }
         }
     }
 

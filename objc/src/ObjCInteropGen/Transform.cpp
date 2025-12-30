@@ -43,8 +43,7 @@ static void resolve_static_instance_clashes(TypeDeclarationSymbol& subclass, Typ
     // recursively resolves clashes between `subclass` and each of the ancestors of
     // `superclass`, starting from the root(s), sequentially.
     for (auto& super_superclass : superclass.bases()) {
-        assert(dynamic_cast<TypeDeclarationSymbol*>(&super_superclass));
-        resolve_static_instance_clashes(subclass, static_cast<TypeDeclarationSymbol&>(super_superclass));
+        resolve_static_instance_clashes(subclass, super_superclass);
     }
 
     // This loop resolves clashes between members of `subclass` and `superclass`,
@@ -140,8 +139,7 @@ static void resolve_static_instance_clashes(TypeDeclarationSymbol& type)
     // Recursively call this function for all ancestors, then resolve conflicts
     // between this class and each of the ancestors.
     for (auto& supertype : type.bases()) {
-        assert(dynamic_cast<TypeDeclarationSymbol*>(&supertype));
-        resolve_static_instance_clashes(type, static_cast<TypeDeclarationSymbol&>(supertype));
+        resolve_static_instance_clashes(type, supertype);
     }
 
     // Resolve conflicts inside the class.
