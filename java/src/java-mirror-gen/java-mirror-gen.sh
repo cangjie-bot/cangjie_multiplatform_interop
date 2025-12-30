@@ -8,7 +8,7 @@
 inputClasses=""
 classPath=""
 androidJarPath=""
-outputDirectory=""
+outputDirectory="."
 packageName=""
 jarName=""
 bootClassPath=""
@@ -93,12 +93,13 @@ if [ "$jarMode" = true ]; then
     if [ -n "$packageList" ]; then
         jvmGeneratorArgs="$jvmGeneratorArgs -Djar.mode.packages=$packageList"
     fi;
-    if [ -n "$importsConfig" ]; then
-        if [ -e "$importsConfig" ]; then
-            jvmGeneratorArgs="$jvmGeneratorArgs -Dimports.config=$importsConfig"
-        else
-            jvmGeneratorArgs="$jvmGeneratorArgs -Dimports.config"
-        fi;
+fi;
+
+if [ -n "$importsConfig" ]; then
+    if [ -e "$importsConfig" ]; then
+        jvmGeneratorArgs="$jvmGeneratorArgs -Dimports.config=$importsConfig"
+    else
+        jvmGeneratorArgs="$jvmGeneratorArgs -Dimports.config"
     fi;
 fi;
 
