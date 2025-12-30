@@ -350,9 +350,9 @@ NonTypeSymbol& TypeDeclarationSymbol::add_property(
         NonTypeSymbol::Private(), std::move(name), std::move(getter), std::move(setter), modifiers);
 }
 
-void TypeDeclarationSymbol::add_base(TypeLikeSymbol* base)
+void TypeDeclarationSymbol::add_base(TypeDeclarationSymbol& base)
 {
-    bases_.push_back(base);
+    bases_.push_back(&base);
 }
 
 const std::string& FileLevelSymbol::cangjie_package_name() const
