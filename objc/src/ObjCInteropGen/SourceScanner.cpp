@@ -1201,7 +1201,9 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
             assert(level() == 1);
             assert(current_type_declaration()->is(NamedTypeSymbol::Kind::Interface));
             assert(parent.kind == CXCursor_ObjCInterfaceDecl);
-            current_type_declaration()->add_base(type_like_symbol(type));
+            auto* base = type_like_symbol(type);
+            assert(dynamic_cast<TypeDeclarationSymbol*>(base));
+            current_type_declaration()->add_base(static_cast<TypeDeclarationSymbol&>(*base));
             break;
         }
         case CXCursor_ObjCProtocolRef: {
@@ -1227,7 +1229,8 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
                 assert(is_valid(referenced));
                 const auto referenced_type = as_string(clang_getCursorSpelling(referenced));
                 auto* protocol = universe.type(Kind::Protocol, referenced_type);
-                type_decl->add_base(protocol);
+                assert(dynamic_cast<TypeDeclarationSymbol*>(protocol));
+                type_decl->add_base(static_cast<TypeDeclarationSymbol&>(*protocol));
             }
 
             break;
