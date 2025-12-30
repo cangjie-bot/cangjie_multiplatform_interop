@@ -627,7 +627,7 @@ constexpr uint8_t ModifierOptional = 1 << 7;
 class TypeDeclarationSymbol : public NamedTypeSymbol {
     std::vector<std::unique_ptr<TypeParameterSymbol>> parameters_;
     std::vector<NonTypeSymbol> members_;
-    std::vector<TypeLikeSymbol*> bases_;
+    std::vector<TypeDeclarationSymbol*> bases_;
     bool is_ctype_;
     bool contains_pointer_or_func_ = false;
     std::optional<PrimitiveTypeInformation> primitive_information_;
@@ -668,12 +668,12 @@ public:
         }
     };
 
-    struct BaseCollection final : SymbolChildren<TypeDeclarationSymbol, TypeLikeSymbol> {
+    struct BaseCollection final : SymbolChildren<TypeDeclarationSymbol, TypeDeclarationSymbol> {
         explicit BaseCollection(TypeDeclarationSymbol* self) : SymbolChildren(self)
         {
         }
 
-        [[nodiscard]] TypeLikeSymbol& get(const std::size_t index) const override
+        [[nodiscard]] TypeDeclarationSymbol& get(const std::size_t index) const override
         {
             auto* base = self_->base(index);
             assert(base);
@@ -741,7 +741,7 @@ public:
         return bases_.size();
     }
 
-    [[nodiscard]] TypeLikeSymbol* base(const std::size_t index) const
+    [[nodiscard]] TypeDeclarationSymbol* base(const std::size_t index) const
     {
         return bases_.at(index);
     }
@@ -775,7 +775,7 @@ public:
 
     NonTypeSymbol& add_property(std::string name, std::string getter, std::string setter, uint8_t modifiers);
 
-    void add_base(TypeLikeSymbol* base);
+    void add_base(TypeDeclarationSymbol& base);
 
     [[nodiscard]] TypeDeclarationSymbol* original() const override
     {
