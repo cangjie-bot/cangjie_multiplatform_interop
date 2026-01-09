@@ -1,0 +1,57 @@
+name: Bug report
+description: This template is for bug report
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting bug!
+  - type: textarea
+    attributes:
+      label: Bug Description
+      description: Detailed information will be helpful for bugfix.
+      placeholder: ""
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected behavior
+      description: What is the expected behavior?
+      placeholder: ""
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Reproduce the bug 
+      description: Detailed description will be helpful for bug reproducing.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Additional information
+      description: Additional information,if any
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: cjc version 
+      description: Please provide cjc -v output
+      placeholder: ""
+    validations:
+      required: true
+  - type: checkboxes
+    attributes:
+      label: Branch version information
+      description: In which branch versions does this bug exist?
+      options:
+        - label: dev
+          required: false
+        - label: main
+          required: false
+        - label: release/v1.0.3-cjmp-beta
+          required: false
+        - label: release/OpenHarmony-release-6.0
+          required: false
+    validations:
+      required: true
