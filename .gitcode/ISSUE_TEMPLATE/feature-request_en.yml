@@ -1,0 +1,37 @@
+name: New Feature submit
+description: This template is for new feature submit
+title: "[new feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+         Thank you for your contribution!
+  - type: textarea
+    attributes:
+      label: Feature description
+      description: What is the functionality/improvement in this feature?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: What is the target user scenario for this new feature?
+      description: Value / User scenario description of this new feature.
+    validations:
+      required: false
+  - type: checkboxes
+    id: version
+    attributes:
+      label: Branch versions involved in the new feature
+      description: Please select the branch versions involved.
+      options:
+        - label: dev
+          required: false
+        - label: main
+          required: false
+        - label: release/v1.0.3-cjmp-beta
+          required: false
+        - label: release/OpenHarmony-release-6.0
+          required: false
+    validations:
+      required: true
