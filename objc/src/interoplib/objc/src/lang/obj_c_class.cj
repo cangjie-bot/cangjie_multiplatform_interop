@@ -9,4 +9,4 @@ package objc.lang
 public import interoplib.objc.*
 
 @ObjCMirror
-public interface ObjCClass {}
+public class ObjCClass {}

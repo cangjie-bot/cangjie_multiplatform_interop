@@ -533,7 +533,7 @@ public:
         return kind_;
     }
 
-    [[nodiscard]] virtual std::size_t parameter_count() const = 0;
+    [[nodiscard]] virtual std::size_t parameter_count() const noexcept = 0;
 
     [[nodiscard]] virtual TypeLikeSymbol* parameter(std::size_t index) const = 0;
 
@@ -551,7 +551,7 @@ public:
         mapping_ = mapping;
     }
 
-    [[nodiscard]] virtual NamedTypeSymbol* original() const = 0;
+    [[nodiscard]] virtual NamedTypeSymbol* original() const noexcept = 0;
 
     [[nodiscard]] TypeLikeSymbol* map() override;
 
@@ -593,11 +593,11 @@ enum class PrimitiveSize : uint8_t { Zero = 0, One = 1, Two = 2, Four = 4, Eight
 class PrimitiveTypeSymbol final : public NamedTypeSymbol {
 public:
     [[nodiscard]] PrimitiveTypeSymbol(std::string name, PrimitiveTypeCategory category, PrimitiveSize size)
-        : NamedTypeSymbol(NamedTypeSymbol::Kind::Primitive, std::move(name)), size_(size), category_(category)
+        : NamedTypeSymbol(NamedTypeSymbol::Kind::Primitive, std::move(name)), category_(category), size_(size)
     {
     }
 
-    [[nodiscard]] PrimitiveTypeCategory category() const
+    [[nodiscard]] PrimitiveTypeCategory category() const noexcept
     {
         return category_;
     }
@@ -613,8 +613,8 @@ public:
     }
 
 private:
-    PrimitiveSize size_;
     PrimitiveTypeCategory category_;
+    PrimitiveSize size_;
 
     [[nodiscard]] bool is_file_level() const noexcept override
     {
@@ -625,7 +625,7 @@ private:
     {
     }
 
-    [[nodiscard]] size_t parameter_count() const override
+    [[nodiscard]] size_t parameter_count() const noexcept override
     {
         return 0;
     }
@@ -636,7 +636,7 @@ private:
         return nullptr;
     }
 
-    [[nodiscard]] PrimitiveTypeSymbol* original() const override
+    [[nodiscard]] PrimitiveTypeSymbol* original() const noexcept override
     {
         return const_cast<PrimitiveTypeSymbol*>(this);
     }
@@ -732,7 +732,7 @@ public:
         return contains_pointer_or_func_;
     }
 
-    [[nodiscard]] std::size_t parameter_count() const override
+    [[nodiscard]] std::size_t parameter_count() const noexcept override
     {
         return parameters_.size();
     }
@@ -801,7 +801,7 @@ public:
 
     void add_base(TypeDeclarationSymbol& base);
 
-    [[nodiscard]] TypeDeclarationSymbol* original() const override
+    [[nodiscard]] TypeDeclarationSymbol* original() const noexcept override
     {
         return const_cast<TypeDeclarationSymbol*>(this);
     }
@@ -992,7 +992,7 @@ public:
         return original_ && original_->contains_pointer_or_func();
     }
 
-    [[nodiscard]] std::size_t parameter_count() const override
+    [[nodiscard]] std::size_t parameter_count() const noexcept override
     {
         return parameters_.size();
     }
@@ -1005,7 +1005,7 @@ public:
         parameters_.push_back(parameter);
     }
 
-    [[nodiscard]] TypeDeclarationSymbol* original() const override
+    [[nodiscard]] TypeDeclarationSymbol* original() const noexcept override
     {
         return original_;
     }
@@ -1040,7 +1040,7 @@ public:
         return target_ && target_->contains_pointer_or_func();
     }
 
-    [[nodiscard]] std::size_t parameter_count() const override
+    [[nodiscard]] std::size_t parameter_count() const noexcept override
     {
         return 0;
     }
@@ -1065,7 +1065,7 @@ public:
         target_ = target;
     }
 
-    [[nodiscard]] TypeAliasSymbol* original() const override
+    [[nodiscard]] TypeAliasSymbol* original() const noexcept override
     {
         return const_cast<TypeAliasSymbol*>(this);
     }
@@ -1266,7 +1266,7 @@ public:
         return_type_ = return_type;
     }
 
-    [[nodiscard]] std::size_t parameter_count() const
+    [[nodiscard]] std::size_t parameter_count() const noexcept
     {
         return parameters_.size();
     }

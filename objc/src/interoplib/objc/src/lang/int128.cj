@@ -10,18 +10,12 @@ public import interoplib.objc.*
 
 @C
 public struct ObjCInt128 {
-    public let lo: Int64
-    public let hi: Int64
-
-    public init(lo: Int64, hi: Int64) { this.lo = lo; this.hi = hi }
-    public init() { this.lo = 0; this.hi = 0 }
+    public ObjCInt128(public let lo!: Int64, public let hi!: Int64) {}
+    public init() { this(lo: 0, hi: 0) }
 }
 
 @C
 public struct ObjCUInt128 {
-    public let lo: UInt64
-    public let hi: UInt64
-
-    public init(lo: UInt64, hi: UInt64) { this.lo = lo; this.hi = hi }
-    public init() { this.lo = 0; this.hi = 0 }
+    public ObjCUInt128(public let lo!: Int64, public let hi!: Int64) {}
+    public init() { this(lo: 0, hi: 0) }
 }
