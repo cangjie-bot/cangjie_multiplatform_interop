@@ -37,8 +37,8 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
-import static cangjie.interop.driver.VisitorUtils.hasAppropriateModifiers;
-import static cangjie.interop.driver.VisitorUtils.hasOnlyPublicOrProtectedDeps;
+import static cangjie.interop.driver.VisitorUtils.shouldBeGenerated;
+import static cangjie.interop.driver.VisitorUtils.hasOnlyAppropriateDeps;
 import static cangjie.interop.driver.VisitorUtils.isPackagePrivate;
 
 public final class OverrideChains {
@@ -57,8 +57,8 @@ public final class OverrideChains {
     }
 
     public boolean overridesWithFilter(Symbol childMethod, Symbol superMethod) {
-        if (!hasOnlyPublicOrProtectedDeps(childMethod, types) ||
-                !hasOnlyPublicOrProtectedDeps(superMethod, types)) {
+        if (!hasOnlyAppropriateDeps(childMethod, types) ||
+                !hasOnlyAppropriateDeps(superMethod, types)) {
             return false;
         }
         return overrides(childMethod, superMethod);
@@ -110,7 +110,7 @@ public final class OverrideChains {
 
                     // N.B.: Modifiers also take default modifier into account, unlike flags.
                     if (!symbol.getModifiers().contains(Modifier.ABSTRACT) &&
-                            hasAppropriateModifiers(symbol.owner)) {
+                            shouldBeGenerated(symbol.owner)) {
                         return true;
                     }
                 }
@@ -192,11 +192,10 @@ public final class OverrideChains {
         }
 
         if (currentMethods != null) {
-            if (result == null || result.isEmpty()) {
-                if (result == null) {
-                    result = new ArrayList<>();
-                }
-
+            if (result == null) {
+                result = new ArrayList<>();
+            }
+            if (result.isEmpty()) {
                 result.add(new ArrayDeque<>());
             }
 
@@ -224,8 +223,8 @@ public final class OverrideChains {
         for (var chain : chains) {
             List<Symbol.MethodSymbol> last = chain.getLast();
             Symbol.MethodSymbol superMethod = last.stream().filter(sym ->
-                    hasOnlyPublicOrProtectedDeps(sym, types) &&
-                            hasAppropriateModifiers(sym.owner)).findFirst().orElse(null);
+                    hasOnlyAppropriateDeps(sym, types) &&
+                            shouldBeGenerated(sym.owner)).findFirst().orElse(null);
             if (superMethod != null) {
                 return superMethod;
             }
@@ -280,8 +279,8 @@ public final class OverrideChains {
         for (final var rootMethod : chain.getLast()) {
             // All methods at the end of each override chain are root.
             if (rootMethod == methodSymbol &&
-                    hasAppropriateModifiers(rootMethod.owner) &&
-                    hasOnlyPublicOrProtectedDeps(rootMethod, types)) {
+                    shouldBeGenerated(rootMethod.owner) &&
+                    hasOnlyAppropriateDeps(rootMethod, types)) {
                 return true;
             }
         }

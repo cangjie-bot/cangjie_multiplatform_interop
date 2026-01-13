@@ -157,6 +157,9 @@
         <mkdir dir="${tests.bin}/${cj.mirror.gen}_default_method"/>
         <mkdir dir="${tests.bin}/${cj.mirror.gen}_package_private"/>
         <mkdir dir="${tests.bin}/${cj.mirror.gen}_pp_interface"/>
+        <mkdir dir="${tests.bin}/${cj.mirror.gen}_pp_keep_api"/>
+        <mkdir dir="${tests.bin}/${cj.mirror.gen}_pp_abstract"/>
+        <mkdir dir="${tests.bin}/${cj.mirror.gen}_pp_default_methods"/>
 
         <javac srcdir="${cj.mirror.src}_simple" destdir="${tests.bin}/${cj.mirror.gen}_simple" includeantruntime="false"/>
         <echo file="javac.args"
@@ -318,6 +321,39 @@
         </javac>
         <echo file="javac.args"
               message="-d ${tests.bin}/${cj.mirror.gen}_pp_interface -cp ${tests.bin}/${cj.mirror.gen}_pp_interface I2"/>
+        <j2cj.javac>
+            <jvmarg value="-Dgenerate.definition=false"/>
+            <arg line="@javac.args"/>
+        </j2cj.javac>
+
+        <javac srcdir="${cj.mirror.src}_pp_keep_api" destdir="${tests.bin}/${cj.mirror.gen}_pp_keep_api"
+               includeantruntime="false">
+            <compilerarg value="-parameters"/>
+        </javac>
+        <echo file="javac.args"
+              message="-d ${tests.bin}/${cj.mirror.gen}_pp_keep_api -cp ${tests.bin}/${cj.mirror.gen}_pp_keep_api Main"/>
+        <j2cj.javac>
+            <jvmarg value="-Dgenerate.definition=false"/>
+            <arg line="@javac.args"/>
+        </j2cj.javac>
+
+        <javac srcdir="${cj.mirror.src}_pp_abstract" destdir="${tests.bin}/${cj.mirror.gen}_pp_abstract"
+               includeantruntime="false">
+            <compilerarg value="-parameters"/>
+        </javac>
+        <echo file="javac.args"
+              message="-d ${tests.bin}/${cj.mirror.gen}_pp_abstract -cp ${tests.bin}/${cj.mirror.gen}_pp_abstract package1.JavaClass"/>
+        <j2cj.javac>
+            <jvmarg value="-Dgenerate.definition=false"/>
+            <arg line="@javac.args"/>
+        </j2cj.javac>
+
+        <javac srcdir="${cj.mirror.src}_pp_default_methods" destdir="${tests.bin}/${cj.mirror.gen}_pp_default_methods"
+               includeantruntime="false">
+            <compilerarg value="-parameters"/>
+        </javac>
+        <echo file="javac.args"
+              message="-d ${tests.bin}/${cj.mirror.gen}_pp_default_methods -cp ${tests.bin}/${cj.mirror.gen}_pp_default_methods B2"/>
         <j2cj.javac>
             <jvmarg value="-Dgenerate.definition=false"/>
             <arg line="@javac.args"/>

@@ -1,0 +1,26 @@
+// Copyright (c) Huawei Technologies Co., Ltd. 2025. All rights reserved.
+// This source file is part of the Cangjie project, licensed under Apache-2.0
+// with Runtime Library Exception.
+//
+// See https://cangjie-lang.cn/pages/LICENSE for license information.
+
+package package1;
+
+class ppA {
+    public int fPublic;
+    protected int fProtected;
+    private int fPrivate;
+    int fPackagePrivate;
+
+    public void fooPublic() {
+    }
+
+    protected void fooProtected() {
+    }
+
+    private void fooPrivate() {
+    }
+
+    void fooPackagePrivate() {
+    }
+}
