@@ -304,7 +304,17 @@ public final class VisitorUtils {
         return suffix;
     }
 
-    public static boolean hasAppropriateModifiers(Symbol symbol) {
+    public static boolean shouldBeGenerated(Symbol symbol) {
+        if (hasAppropriateModifiers(symbol)) {
+            return true;
+        }
+        if (symbol instanceof Symbol.ClassSymbol classSymbol && isPackagePrivate(classSymbol)) {
+            return classSymbol.members().anyMatch(s -> hasAppropriateModifiers(s));
+        }
+        return false;
+    }
+
+    private static boolean hasAppropriateModifiers(Symbol symbol) {
         final var modifiers = symbol.getModifiers();
         return modifiers.contains(PUBLIC) || modifiers.contains(PROTECTED);
     }
@@ -329,7 +339,7 @@ public final class VisitorUtils {
         if (!(superClass.tsym instanceof Symbol.ClassSymbol superClassSymbol)) {
             return null;
         }
-        if (hasAppropriateModifiers(superClassSymbol)) {
+        if (shouldBeGenerated(superClassSymbol)) {
             return superClassSymbol;
         }
         return firstAppropriateSuperClass(superClassSymbol);
@@ -355,7 +365,7 @@ public final class VisitorUtils {
         return hasAppropriateModifiers(typeSymbol);
     }
 
-    public static boolean hasOnlyPublicOrProtectedDeps(Symbol symbol, Types types) {
+    public static boolean hasOnlyAppropriateDeps(Symbol symbol, Types types) {
         if (symbol instanceof Symbol.MethodSymbol methodSymbol) {
             for (var param : methodSymbol.params()) {
                 final var paramTypeSymbol = erasureType(param.type, types);
@@ -387,7 +397,7 @@ public final class VisitorUtils {
         LinkedHashSet<Type> result = new LinkedHashSet<>();
         final var superInterfaces = classSymbol.getInterfaces();
         for (Type superInterface : superInterfaces) {
-            if (hasAppropriateModifiers(superInterface.tsym)) {
+            if (shouldBeGenerated(superInterface.tsym)) {
                 if (!result.contains(superInterface)) {
                     result.add(superInterface);
                 }

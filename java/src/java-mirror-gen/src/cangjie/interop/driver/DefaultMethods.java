@@ -34,7 +34,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 
 import static cangjie.interop.driver.VisitorUtils.collectSuperInterfaces;
-import static cangjie.interop.driver.VisitorUtils.hasAppropriateModifiers;
+import static cangjie.interop.driver.VisitorUtils.shouldBeGenerated;
 
 public final class DefaultMethods {
     private final Types types;
@@ -62,7 +62,7 @@ public final class DefaultMethods {
 
             for (var methodSymbol : getAllDefaultMethods((Symbol.ClassSymbol) superType.tsym)) {
                 if (result.stream().anyMatch(s -> overrideChains.overridesWithFilter(methodSymbol, s) &&
-                        hasAppropriateModifiers(s.owner))) {
+                        shouldBeGenerated(s.owner))) {
                     continue;
                 }
 
@@ -80,7 +80,7 @@ public final class DefaultMethods {
             }
 
             if (result.stream().anyMatch(s -> overrideChains.overridesWithFilter(methodSymbol, s) &&
-                    hasAppropriateModifiers(s.owner))) {
+                    shouldBeGenerated(s.owner))) {
                 continue;
             }
 
@@ -179,7 +179,7 @@ public final class DefaultMethods {
 
         for (final var type : types.closure(childClass.type)) {
             if (type.tsym instanceof Symbol.ClassSymbol csym &&
-                    csym != childClass && !csym.isInterface() && hasAppropriateModifiers(csym)) {
+                    csym != childClass && !csym.isInterface() && shouldBeGenerated(csym)) {
                 final var superMethods = findAllDefaultMethods(csym);
                 if (superMethods.isEmpty()) {
                     continue;
