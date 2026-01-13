@@ -722,7 +722,7 @@ static void print_getter_setter_names(std::ostream& output, const NonTypeSymbol&
     }
 }
 
-enum class FuncKind { TopLevelFunc, InterfaceMethod, ClassMethod };
+enum class FuncKind { TopLevelFunc, InterfaceMethod, ClassMethod, StaticRedefinition };
 
 static void write_function(
     IndentingStringStream& output, FuncKind kind, NonTypeSymbol& function, SymbolPrintFormat format)
@@ -733,21 +733,38 @@ static void write_function(
     if (!supported) {
         output.set_comment();
     }
-    bool is_ctype = false;
-    if (kind == FuncKind::TopLevelFunc) {
-        is_ctype = function.is_ctype();
-        if (is_ctype) {
-            output << "foreign ";
-        } else if (!generate_definitions_mode()) {
-            output << "@ObjCMirror\n";
-            format = SymbolPrintFormat::EmitCangjieStrict;
+    bool is_ctype;
+    switch (kind) {
+        case FuncKind::TopLevelFunc: {
+            is_ctype = function.is_ctype();
+            if (is_ctype) {
+                output << "foreign ";
+                write_foreign_name(output, function);
+            } else {
+                if (!generate_definitions_mode()) {
+                    output << "@ObjCMirror\n";
+                    format = SymbolPrintFormat::EmitCangjieStrict;
+                }
+                write_foreign_name(output, function);
+                output << "public ";
+            }
+            break;
         }
-    } else {
-        print_optional(output, function);
-    }
-    write_foreign_name(output, function);
-    if (kind == FuncKind::ClassMethod || (kind == FuncKind::TopLevelFunc && !is_ctype)) {
-        output << "public ";
+        case FuncKind::InterfaceMethod:
+            is_ctype = false;
+            print_optional(output, function);
+            write_foreign_name(output, function);
+            break;
+        case FuncKind::ClassMethod:
+            is_ctype = false;
+            write_foreign_name(output, function);
+            output << "public ";
+            break;
+        default:
+            assert(kind == FuncKind::StaticRedefinition);
+            is_ctype = false;
+            output << "public ";
+            break;
     }
     if (function.is_static()) {
         // In Objective-C, the overridden static method can have different parameter
@@ -858,7 +875,7 @@ static void print_explicit_static_method_redefinitions(
             if (!contains_static_method(clazz, protocol_member_selector) &&
                 !get_overridden_property(clazz, protocol_member_selector, true)) {
                 write_function(
-                    output, FuncKind::InterfaceMethod, protocol_member, SymbolPrintFormat::EmitCangjieStrict);
+                    output, FuncKind::StaticRedefinition, protocol_member, SymbolPrintFormat::EmitCangjieStrict);
             }
         }
     }
@@ -975,7 +992,13 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
                 if (!supported) {
                     output.set_comment();
                 }
-                print_optional(output, member);
+
+                // Only interfaces can have @ObjCOptional members, not classes
+                assert(!member.is_optional() || decl_kind == DeclKind::Interface);
+                if (decl_kind == DeclKind::Interface) {
+                    print_optional(output, member);
+                }
+
                 print_getter_setter_names(output, member);
                 if (decl_kind != DeclKind::Interface) {
                     output << "public ";
