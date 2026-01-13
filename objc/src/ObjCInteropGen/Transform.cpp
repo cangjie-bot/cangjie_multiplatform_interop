@@ -207,8 +207,7 @@ void do_rename()
 
     for (auto&& type : type_definitions) {
         if (type.is(NamedTypeSymbol::Kind::Protocol)) {
-            const auto& name = type.name();
-            for (;;) {
+            for (const auto& name = type.name();;) {
                 bool clashing = false;
                 for (uint8_t ns = 0; ns < TYPE_NAMESPACE_COUNT; ++ns) {
                     auto namespaze = static_cast<TypeNamespace>(ns);
@@ -222,6 +221,7 @@ void do_rename()
                             }
                             type.rename(new_name);
                             clashing = true;
+                            break;
                         }
                     }
                 }
