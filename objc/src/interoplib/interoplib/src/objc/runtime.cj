@@ -432,12 +432,22 @@ public func conformsToProtocol(id: NativeObjCId, proto: NativeObjCProtocol): Boo
 }
 
 /**
- * Checks if a given object responds to a given selector
+ * Checks if a given class instances respond to a given selector.
+ * Effectively exports Objective-C runtime `class_respondsToSelector` function.
  */
-public func respondsToSelector(id: NativeObjCId, sel: NativeObjCSel): Bool {
+public func respondsToSelector(cls: NativeObjCClass, sel: NativeObjCSel): Bool {
     unsafe {
-        var realClass = object_getClass(id)
-        return class_respondsToSelector(realClass, sel)
+        class_respondsToSelector(cls, sel)
+    }
+}
+
+/**
+ * Checks if a given class instances respond to a given selector.
+ * Effectively exports Objective-C runtime `object_getClass` function.
+ */
+public func objectGetClass(id: NativeObjCId): NativeObjCClass {
+    unsafe {
+        object_getClass(id)
     }
 }
 
