@@ -27,7 +27,7 @@ public type NSTextCheckingKey = NSString
 
 @ObjCMirror
 public open class NSTextCheckingResult <: NSObject & NSCopying & NSSecureCoding {
-    public open prop resultType: Int32 /*NSTextCheckingType*/
+    public open prop resultType: uint64_t /*NSTextCheckingType*/
     public open prop range: NSRange
     public open prop orthography: ?NSOrthography
     public open prop grammarDetails: ?NSArray/*<NSDictionary<NSString, ObjCId>>*/

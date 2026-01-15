@@ -19,9 +19,9 @@ public abstract sealed class NSRelativeDateTimeFormatterUnitsStyle {
 
 @ObjCMirror
 public open class NSRelativeDateTimeFormatter <: NSFormatter {
-    public open mut prop dateTimeStyle: Int32 /*NSRelativeDateTimeFormatterStyle*/
-    public open mut prop unitsStyle: Int32 /*NSRelativeDateTimeFormatterUnitsStyle*/
-    public open mut prop formattingContext: Int32 /*NSFormattingContext*/
+    public open mut prop dateTimeStyle: NSInteger /*NSRelativeDateTimeFormatterStyle*/
+    public open mut prop unitsStyle: NSInteger /*NSRelativeDateTimeFormatterUnitsStyle*/
+    public open mut prop formattingContext: NSInteger /*NSFormattingContext*/
     public open mut prop calendar: NSCalendar
     public open mut prop locale: NSLocale
     @ForeignName["localizedStringFromDateComponents:"] public open func localizedStringFromDateComponents(dateComponents: NSDateComponents): NSString

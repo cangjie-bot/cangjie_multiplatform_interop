@@ -22,19 +22,19 @@ public open class NSAttributedString <: NSObject & NSCopying & NSMutableCopying 
     @ForeignName["initWithString:"] public init(str: NSString)
     @ForeignName["initWithString:attributes:"] public init(str: NSString, attrs: ?NSDictionary/*<NSAttributedStringKey, ObjCId>*/)
     @ForeignName["initWithAttributedString:"] public init(attrStr: NSAttributedString)
-    @ForeignName["enumerateAttributesInRange:options:usingBlock:"] public open func enumerateAttributesInRangeOptionsUsingBlock(enumerationRange: NSRange, opts: Int32 /*NSAttributedStringEnumerationOptions*/, block: ObjCBlock<(NSDictionary/*<NSAttributedStringKey, ObjCId>*/, NSRange, ObjCPointer<Bool>) -> Unit>): Unit
-    @ForeignName["enumerateAttribute:inRange:options:usingBlock:"] public open func enumerateAttributeInRangeOptionsUsingBlock(attrName: NSAttributedStringKey, enumerationRange: NSRange, opts: Int32 /*NSAttributedStringEnumerationOptions*/, block: ObjCBlock<(ObjCId, NSRange, ObjCPointer<Bool>) -> Unit>): Unit
+    @ForeignName["enumerateAttributesInRange:options:usingBlock:"] public open func enumerateAttributesInRangeOptionsUsingBlock(enumerationRange: NSRange, opts: NSUInteger /*NSAttributedStringEnumerationOptions*/, block: ObjCBlock<(NSDictionary/*<NSAttributedStringKey, ObjCId>*/, NSRange, ObjCPointer<Bool>) -> Unit>): Unit
+    @ForeignName["enumerateAttribute:inRange:options:usingBlock:"] public open func enumerateAttributeInRangeOptionsUsingBlock(attrName: NSAttributedStringKey, enumerationRange: NSRange, opts: NSUInteger /*NSAttributedStringEnumerationOptions*/, block: ObjCBlock<(ObjCId, NSRange, ObjCPointer<Bool>) -> Unit>): Unit
     @ForeignName["initWithContentsOfMarkdownFileAtURL:options:baseURL:error:"] public init(markdownFile: NSURL, options: ?NSAttributedStringMarkdownParsingOptions, baseURL: ?NSURL, error: ObjCPointer<NSError>)
     @ForeignName["initWithMarkdown:options:baseURL:error:"] public init(markdown: NSData, options: ?NSAttributedStringMarkdownParsingOptions, baseURL: ?NSURL, error: ObjCPointer<NSError>)
     @ForeignName["initWithMarkdownString:options:baseURL:error:"] public init(markdownString: NSString, options: ?NSAttributedStringMarkdownParsingOptions, baseURL: ?NSURL, error: ObjCPointer<NSError>)
-    @ForeignName["initWithFormat:options:locale:"] public init(format: NSAttributedString, options: Int32 /*NSAttributedStringFormattingOptions*/, locale: ?NSLocale)
-    @ForeignName["initWithFormat:options:locale:arguments:"] public init(format: NSAttributedString, options: Int32 /*NSAttributedStringFormattingOptions*/, locale: ?NSLocale, arguments: va_list)
+    @ForeignName["initWithFormat:options:locale:"] public init(format: NSAttributedString, options: NSUInteger /*NSAttributedStringFormattingOptions*/, locale: ?NSLocale)
+    @ForeignName["initWithFormat:options:locale:arguments:"] public init(format: NSAttributedString, options: NSUInteger /*NSAttributedStringFormattingOptions*/, locale: ?NSLocale, arguments: va_list)
     @ForeignName["localizedAttributedStringWithFormat:"] public static func localizedAttributedStringWithFormat(format: NSAttributedString): NSAttributedString
-    @ForeignName["localizedAttributedStringWithFormat:options:"] public static func localizedAttributedStringWithFormatOptions(format: NSAttributedString, options: Int32 /*NSAttributedStringFormattingOptions*/): NSAttributedString
-    @ForeignName["initWithFormat:options:locale:context:"] public init(format: NSAttributedString, options: Int32 /*NSAttributedStringFormattingOptions*/, locale: ?NSLocale, context: NSDictionary/*<NSAttributedStringFormattingContextKey, ObjCId>*/)
-    @ForeignName["initWithFormat:options:locale:context:arguments:"] public init(format: NSAttributedString, options: Int32 /*NSAttributedStringFormattingOptions*/, locale: ?NSLocale, context: NSDictionary/*<NSAttributedStringFormattingContextKey, ObjCId>*/, arguments: va_list)
+    @ForeignName["localizedAttributedStringWithFormat:options:"] public static func localizedAttributedStringWithFormatOptions(format: NSAttributedString, options: NSUInteger /*NSAttributedStringFormattingOptions*/): NSAttributedString
+    @ForeignName["initWithFormat:options:locale:context:"] public init(format: NSAttributedString, options: NSUInteger /*NSAttributedStringFormattingOptions*/, locale: ?NSLocale, context: NSDictionary/*<NSAttributedStringFormattingContextKey, ObjCId>*/)
+    @ForeignName["initWithFormat:options:locale:context:arguments:"] public init(format: NSAttributedString, options: NSUInteger /*NSAttributedStringFormattingOptions*/, locale: ?NSLocale, context: NSDictionary/*<NSAttributedStringFormattingContextKey, ObjCId>*/, arguments: va_list)
     @ForeignName["localizedAttributedStringWithFormat:context:"] public static func localizedAttributedStringWithFormatContext(format: NSAttributedString, context: NSDictionary/*<NSAttributedStringFormattingContextKey, ObjCId>*/): NSAttributedString
-    @ForeignName["localizedAttributedStringWithFormat:options:context:"] public static func localizedAttributedStringWithFormatOptionsContext(format: NSAttributedString, options: Int32 /*NSAttributedStringFormattingOptions*/, context: NSDictionary/*<NSAttributedStringFormattingContextKey, ObjCId>*/): NSAttributedString
+    @ForeignName["localizedAttributedStringWithFormat:options:context:"] public static func localizedAttributedStringWithFormatOptionsContext(format: NSAttributedString, options: NSUInteger /*NSAttributedStringFormattingOptions*/, context: NSDictionary/*<NSAttributedStringFormattingContextKey, ObjCId>*/): NSAttributedString
     public open func attributedStringByInflectingString(): NSAttributedString
 }
 
@@ -97,8 +97,8 @@ public open class NSAttributedStringMarkdownSourcePosition <: NSObject & NSCopyi
 public open class NSAttributedStringMarkdownParsingOptions <: NSObject & NSCopying {
     public init()
     public open mut prop allowsExtendedAttributes: Bool
-    public open mut prop interpretedSyntax: Int32 /*NSAttributedStringMarkdownInterpretedSyntax*/
-    public open mut prop failurePolicy: Int32 /*NSAttributedStringMarkdownParsingFailurePolicy*/
+    public open mut prop interpretedSyntax: NSInteger /*NSAttributedStringMarkdownInterpretedSyntax*/
+    public open mut prop failurePolicy: NSInteger /*NSAttributedStringMarkdownParsingFailurePolicy*/
     public open mut prop languageCode: ?NSString
     public open mut prop appliesSourcePositionAttributes: Bool
 }
@@ -131,7 +131,7 @@ public abstract sealed class NSPresentationIntentTableColumnAlignment {
 
 @ObjCMirror
 public open class NSPresentationIntent <: NSObject & NSCopying & NSSecureCoding {
-    public open prop intentKind: Int32 /*NSPresentationIntentKind*/
+    public open prop intentKind: NSInteger /*NSPresentationIntentKind*/
     public open prop parentIntent: ?NSPresentationIntent
     @ForeignName["paragraphIntentWithIdentity:nestedInsideIntent:"] public static func paragraphIntentWithIdentityNestedInsideIntent(identity: NSInteger, parent: ?NSPresentationIntent): NSPresentationIntent
     @ForeignName["headerIntentWithIdentity:level:nestedInsideIntent:"] public static func headerIntentWithIdentityLevelNestedInsideIntent(identity: NSInteger, level: NSInteger, parent: ?NSPresentationIntent): NSPresentationIntent

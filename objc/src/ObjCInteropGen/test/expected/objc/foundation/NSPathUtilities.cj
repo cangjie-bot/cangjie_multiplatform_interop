@@ -62,5 +62,5 @@ public abstract sealed class NSSearchPathDomainMask {
 }
 
 @ObjCMirror
-public func NSSearchPathForDirectoriesInDomains(directory: Int32 /*NSSearchPathDirectory*/, domainMask: Int32 /*NSSearchPathDomainMask*/, expandTilde: Bool): NSArray/*<NSString>*/
+public func NSSearchPathForDirectoriesInDomains(directory: NSUInteger /*NSSearchPathDirectory*/, domainMask: NSUInteger /*NSSearchPathDomainMask*/, expandTilde: Bool): NSArray/*<NSString>*/
 

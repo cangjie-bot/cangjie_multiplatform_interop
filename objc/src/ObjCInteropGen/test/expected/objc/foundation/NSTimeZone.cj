@@ -27,7 +27,7 @@ public open class NSTimeZone <: NSObject & NSCopying & NSSecureCoding {
     public open prop daylightSavingTimeOffset: NSTimeInterval
     public open prop nextDaylightSavingTimeTransition: ?NSDate
     @ForeignName["isEqualToTimeZone:"] public open func isEqualToTimeZone(aTimeZone: NSTimeZone): Bool
-    @ForeignName["localizedName:locale:"] public open func localizedNameLocale(style: Int32 /*NSTimeZoneNameStyle*/, locale: ?NSLocale): ?NSString
+    @ForeignName["localizedName:locale:"] public open func localizedNameLocale(style: NSInteger /*NSTimeZoneNameStyle*/, locale: ?NSLocale): ?NSString
     @ForeignName["timeZoneWithName:"] public static func timeZoneWithName(tzName: NSString): NSTimeZone
     @ForeignName["timeZoneWithName:data:"] public static func timeZoneWithNameData(tzName: NSString, aData: ?NSData): NSTimeZone
     @ForeignName["initWithName:"] public init(tzName: NSString)

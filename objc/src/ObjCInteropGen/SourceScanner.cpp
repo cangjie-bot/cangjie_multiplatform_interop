@@ -10,6 +10,7 @@
 #include <deque>
 #include <filesystem>
 #include <iostream>
+#include <optional>
 
 #include <clang-c/Index.h>
 #include <clang/AST/DeclBase.h>
@@ -171,16 +172,21 @@ class SourceScanner final : public ClangVisitor {
         return symbol;
     }
 
-    NonTypeSymbol* push_current(NonTypeSymbol* symbol)
+    Symbol* push_current(NonTypeSymbol* symbol)
     {
         assert(symbol);
         current_.push_back(symbol);
         return symbol;
     }
 
-    NonTypeSymbol* push_current(NonTypeSymbol& symbol)
+    Symbol* push_current(NonTypeSymbol& symbol)
     {
         return push_current(std::addressof(symbol));
+    }
+
+    auto* push_current(EnumConstantSymbol& constant)
+    {
+        return current_.emplace_back(&constant);
     }
 
     void pop_current([[maybe_unused]] Symbol* symbol)
@@ -188,19 +194,15 @@ class SourceScanner final : public ClangVisitor {
         assert(symbol);
         assert(!current_.empty());
         assert(current_.back() == symbol);
-        auto* non_type_symbol = dynamic_cast<NonTypeSymbol*>(current_.back());
-        if (non_type_symbol) {
-            non_type_symbol->finish_creating();
-        }
         current_.pop_back();
     }
 
-    [[nodiscard]] NonTypeSymbol* push_top_level_function(const CXCursor& cursor, std::string&& name);
+    [[nodiscard]] Symbol* push_top_level_function(const CXCursor& cursor, std::string&& name);
 
     [[nodiscard]] Symbol* push_property(
-        std::string&& name, std::string&& getter, std::string&& setter, uint8_t modifiers);
+        std::string&& name, std::string&& getter, std::string&& setter, uint16_t modifiers);
 
-    [[nodiscard]] Symbol* push_member_method(CXCursor cursor, std::string&& name, uint8_t modifiers);
+    [[nodiscard]] Symbol* push_member_method(CXCursor cursor, std::string&& name, uint16_t modifiers);
 
     [[nodiscard]] Symbol* push_constructor(CXCursor cursor, std::string&& name);
 
@@ -485,10 +487,16 @@ std::string SourceScanner::new_anonymous_name(CXCursor decl)
 TypeLikeSymbol* SourceScanner::add_type(const NamedTypeSymbol::Kind kind, const std::string& name, const CXType& type)
 {
     NamedTypeSymbol* symbol;
-    if (kind == NamedTypeSymbol::Kind::TypeDef) {
-        symbol = new TypeAliasSymbol(name);
-    } else {
-        symbol = new TypeDeclarationSymbol(kind, name);
+    switch (kind) {
+        case NamedTypeSymbol::Kind::TypeDef:
+            symbol = new TypeAliasSymbol(name);
+            break;
+        case NamedTypeSymbol::Kind::Enum:
+            symbol = new EnumDeclarationSymbol(name);
+            break;
+        default:
+            symbol = new TypeDeclarationSymbol(kind, name);
+            break;
     }
 
     if (const auto decl = clang_getTypeDeclaration(type); decl.kind != CXCursor_NoDeclFound) {
@@ -575,6 +583,20 @@ static UndecorateResult undecorate_parameter_type_name(const std::string& decora
               without_prefix.substr(opening_bracket + 1, without_prefix.size() - opening_bracket - 2)};
 }
 
+[[nodiscard]] std::string get_type_name(const CXType& type)
+{
+    auto type_name = as_string(clang_getTypeSpelling(type));
+#if CLANG_VERSION_MAJOR < 16
+    remove_prefix_in_place(type_name, "const ");
+    remove_prefix_in_place(type_name, "volatile ");
+    if (ends_with(type_name, "*restrict")) {
+        remove_prefix_in_place(type_name, "restrict");
+    }
+#endif
+    remove_prefix_in_place(type_name, "__strong ");
+    return type_name;
+}
+
 TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
 {
     assert(type.kind != CXType_Invalid);
@@ -655,6 +677,9 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
                 TypeLikeSymbol* result;
                 auto size = clang_Type_getSizeOf(type);
                 switch (size) {
+                    case CXTypeLayoutError_Incomplete:
+                        result = &universe.unit();
+                        break;
                     case 1:
                     case 2:
                     case 3:
@@ -665,13 +690,14 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
                             &universe.primitive_type(PrimitiveTypeCategory::SignedInteger, static_cast<size_t>(size));
                         break;
                     default:
-                        result = new VArraySymbol(universe.primitive_type(PrimitiveTypeCategory::SignedInteger, 1),
-                            static_cast<size_t>(size));
+                        if (size <= 0) {
+                            result = &universe.unit();
+                        } else {
+                            result = new VArraySymbol(universe.byte(), static_cast<size_t>(size));
+                        }
                         break;
                 }
-                std::cerr << as_string(clang_getTypeSpelling(type)) << ": unsupported type. Using '" << raw(*result)
-                          << "' instead." << std::endl;
-                return result;
+                return new UnexposedTypeSymbol(get_type_name(type), *result);
             }
             return type_like_symbol(modified_type);
         }
@@ -755,7 +781,7 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
     // This is a type which requires definition.
 
     std::string type_name;
-    auto type_kind = NamedTypeSymbol::Kind::Undefined;
+    NamedTypeSymbol::Kind type_kind;
 
     switch (type.kind) {
         case CXType_ObjCId:
@@ -766,12 +792,12 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
             return &universe.sel();
         case CXType_Typedef:
             type_kind = NamedTypeSymbol::Kind::TypeDef;
-            type_name = as_string(clang_getTypeSpelling(type));
+            type_name = get_type_name(type);
             // TODO: clang_getCanonicalType(type) if needed
             break;
 
         case CXType_ObjCInterface: {
-            type_name = as_string(clang_getTypeSpelling(type));
+            type_name = get_type_name(type);
             type_kind = NamedTypeSymbol::Kind::Interface;
             assert(clang_getCanonicalType(type) == type);
             break;
@@ -780,29 +806,21 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
         case CXType_Record: {
             const auto decl = clang_getTypeDeclaration(type);
             assert(is_valid(decl));
-            switch (decl.kind) {
-                case CXCursor_StructDecl:
-                    type_kind = NamedTypeSymbol::Kind::Struct;
-                    break;
-                case CXCursor_UnionDecl:
-                    type_kind = NamedTypeSymbol::Kind::Union;
-                    break;
-                default:
-                    assert(false);
+            if (decl.kind == CXCursor_UnionDecl) {
+                type_kind = NamedTypeSymbol::Kind::Union;
+            } else {
+                assert(decl.kind == CXCursor_StructDecl);
+                type_kind = NamedTypeSymbol::Kind::Struct;
             }
             if (is_anonymous(decl)) {
                 type_name = new_anonymous_name(decl);
             } else {
-                type_name = as_string(clang_getTypeSpelling(type));
-                switch (type_kind) {
-                    case NamedTypeSymbol::Kind::Struct:
-                        remove_prefix_in_place(type_name, "struct ");
-                        break;
-                    case NamedTypeSymbol::Kind::Union:
-                        remove_prefix_in_place(type_name, "union ");
-                        break;
-                    default:
-                        assert(false);
+                type_name = get_type_name(type);
+                if (type_kind == NamedTypeSymbol::Kind::Union) {
+                    remove_prefix_in_place(type_name, "union ");
+                } else {
+                    assert(type_kind == NamedTypeSymbol::Kind::Struct);
+                    remove_prefix_in_place(type_name, "struct ");
                 }
             }
             break;
@@ -814,27 +832,35 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
             if (is_anonymous(decl)) {
                 type_name = new_anonymous_name(decl);
             } else {
-                type_name = as_string(clang_getTypeSpelling(type));
+                type_name = get_type_name(type);
                 remove_prefix_in_place(type_name, "enum ");
             }
             break;
         }
 
-        default:
+        default: {
             assert(is_builtin(type));
 
-            return &universe.primitive_type(
-                get_primitive_category(type), static_cast<size_t>(clang_Type_getSizeOf(type)));
+            auto size = clang_Type_getSizeOf(type);
+            switch (size) {
+                case CXTypeLayoutError_Incomplete:
+                    return &universe.unit();
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 8:
+                    return &universe.primitive_type(get_primitive_category(type), static_cast<size_t>(size));
+                case 16:
+                    // Cangjie does not natively support 128-bit primitives
+                    return new UnexposedTypeSymbol(get_type_name(type),
+                        universe.primitive_type(get_primitive_category(type), static_cast<size_t>(size)));
+                default:
+                    assert(size <= 0);
+                    return new UnexposedTypeSymbol(get_type_name(type), universe.unit());
+            }
+        }
     }
-
-#if CLANG_VERSION_MAJOR < 16
-    remove_prefix_in_place(type_name, "const ");
-    remove_prefix_in_place(type_name, "volatile ");
-    if (ends_with(type_name, "*restrict")) {
-        remove_prefix_in_place(type_name, "restrict");
-    }
-#endif
-    remove_prefix_in_place(type_name, "__strong ");
 
     if (auto* type_symbol = universe.type(type_kind, type_name)) {
         return type_symbol;
@@ -843,7 +869,7 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
     return this->add_type(type_kind, type_name, type);
 }
 
-Symbol* SourceScanner::push_property(std::string&& name, std::string&& getter, std::string&& setter, uint8_t modifiers)
+Symbol* SourceScanner::push_property(std::string&& name, std::string&& getter, std::string&& setter, uint16_t modifiers)
 {
     assert(current_top_is_type());
     auto* decl = current_type_declaration();
@@ -965,32 +991,25 @@ static std::optional<CXType> nullable_overridden(CXCursor cursor)
     return std::nullopt;
 }
 
-[[nodiscard]] static NonTypeSymbol* find_global_func(const std::string& name) noexcept
+Symbol* SourceScanner::push_top_level_function(const CXCursor& cursor, std::string&& name)
 {
-    for (auto& top_level : Universe::top_level()) {
-        if (top_level.is_global_function() && top_level.name() == name) {
-            return &top_level;
-        }
+    assert(is_on_top_level());
+    auto cx_result_type = clang_getCursorResultType(cursor);
+    auto* result_type = type_like_symbol(cx_result_type);
+    assert(result_type);
+    uint16_t modifiers = 0;
+    if (is_nullable(cx_result_type)) {
+        modifiers |= ModifierNullable;
     }
-    return nullptr;
+    if (clang_getCursorLinkage(cursor) == CXLinkage_Internal) {
+        modifiers |= ModifierInternalLinkage;
+    }
+    auto& function = universe.register_top_level_function(std::move(name), *result_type, modifiers);
+    set_definition_location(cursor, &function);
+    return push_current(&function);
 }
 
-NonTypeSymbol* SourceScanner::push_top_level_function(const CXCursor& cursor, std::string&& name)
-{
-    auto* function = find_global_func(name);
-    if (!function) {
-        assert(is_on_top_level());
-        auto cx_result_type = clang_getCursorResultType(cursor);
-        auto* result_type = type_like_symbol(cx_result_type);
-        assert(result_type);
-        function = &universe.register_top_level_function(
-            std::move(name), *result_type, is_nullable(cx_result_type) ? ModifierNullable : 0);
-        set_definition_location(cursor, function);
-    }
-    return push_current(function);
-}
-
-Symbol* SourceScanner::push_member_method(CXCursor cursor, std::string&& name, uint8_t modifiers)
+Symbol* SourceScanner::push_member_method(CXCursor cursor, std::string&& name, uint16_t modifiers)
 {
     assert(current_top_is_type() || current_top_is_property());
     auto* decl = current_type_declaration();
@@ -1038,6 +1057,15 @@ Symbol* SourceScanner::push_constructor(CXCursor cursor, std::string&& name)
         decl = static_cast<CategoryDeclarationSymbol*>(decl)->interface();
     }
     return push_current(decl->add_constructor(std::move(name), type_like_symbol(result_type)));
+}
+
+[[nodiscard]] static std::array<uint64_t, 2> get_enum_constant_value(const CXCursor& cursor)
+{
+    static_assert(llvm::APInt::APINT_WORD_SIZE == sizeof(uint64_t));
+    auto val = cursor_to_decl<clang::EnumConstantDecl>(cursor).getInitVal();
+    assert(val.getNumWords() <= 2);
+    const auto* raw_value = val.getRawData();
+    return {raw_value[0], val.getBitWidth() <= llvm::APInt::APINT_BITS_PER_WORD ? 0 : raw_value[1]};
 }
 
 CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
@@ -1274,7 +1302,7 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
             break;
         }
         case CXCursor_ObjCClassMethodDecl: {
-            uint8_t modifiers = ModifierStatic;
+            uint16_t modifiers = ModifierStatic;
             if (clang_Cursor_isObjCOptional(cursor)) {
                 modifiers |= ModifierOptional;
             }
@@ -1283,7 +1311,7 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
             break;
         }
         case CXCursor_ObjCPropertyDecl: {
-            uint8_t modifiers = 0;
+            uint16_t modifiers = 0;
             auto attributes = clang_Cursor_getObjCPropertyAttributes(cursor, 0);
             if (attributes & CXObjCPropertyAttr_class) {
                 modifiers |= ModifierStatic;
@@ -1341,9 +1369,11 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
             assert(current_top_is_type());
             assert(is_canonical(cursor));
             assert(is_defining(cursor));
-            auto& constant = current_type_declaration()->add_enum_constant(name, type_like_symbol(type));
-            pushed = push_current(constant);
-            constant.set_enum_constant_value(clang_getEnumConstantDeclUnsignedValue(cursor));
+            auto* decl = current_type();
+            assert(dynamic_cast<const EnumDeclarationSymbol*>(decl));
+            auto& enum_decl = static_cast<EnumDeclarationSymbol&>(*decl);
+            pushed = push_current(
+                enum_decl.add_constant(std::move(name), *named_type_symbol(type), get_enum_constant_value(cursor)));
             break;
         }
         case CXCursor_ParmDecl: {
@@ -1351,7 +1381,7 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
             assert(is_defining(cursor));
             if (current_top_is_non_type()) {
                 auto& non_type = *current_non_type();
-                if (non_type.is_method() && !non_type.created()) {
+                if (non_type.is_method()) {
                     recurse = false;
 
                     // Omit return func type parameters.  See comments for
@@ -1390,18 +1420,9 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
             break;
         }
         case CXCursor_ObjCImplementationDecl:
-            // Ignore @implementation
+        case CXCursor_CompoundStmt:
+            // Ignore @implementation and function bodies
             return CXChildVisit_Continue;
-        case CXCursor_CompoundStmt: {
-            auto* func_decl = find_global_func(name);
-            if (!func_decl) {
-                func_decl = current_non_type();
-                assert(func_decl);
-                assert(func_decl->is_global_function());
-            }
-            func_decl->set_has_body();
-            return CXChildVisit_Continue;
-        }
         default:;
     }
 

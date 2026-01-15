@@ -21,8 +21,8 @@ public abstract sealed class NSNotificationCoalescing {
 public open class NSNotificationQueue <: NSObject {
     public static prop defaultQueue: NSNotificationQueue
     @ForeignName["initWithNotificationCenter:"] public init(notificationCenter: NSNotificationCenter)
-    @ForeignName["enqueueNotification:postingStyle:"] public open func enqueueNotificationPostingStyle(notification: NSNotification, postingStyle: Int32 /*NSPostingStyle*/): Unit
-    @ForeignName["enqueueNotification:postingStyle:coalesceMask:forModes:"] public open func enqueueNotificationPostingStyleCoalesceMaskForModes(notification: NSNotification, postingStyle: Int32 /*NSPostingStyle*/, coalesceMask: Int32 /*NSNotificationCoalescing*/, modes: ?NSArray/*<NSRunLoopMode>*/): Unit
+    @ForeignName["enqueueNotification:postingStyle:"] public open func enqueueNotificationPostingStyle(notification: NSNotification, postingStyle: NSUInteger /*NSPostingStyle*/): Unit
+    @ForeignName["enqueueNotification:postingStyle:coalesceMask:forModes:"] public open func enqueueNotificationPostingStyleCoalesceMaskForModes(notification: NSNotification, postingStyle: NSUInteger /*NSPostingStyle*/, coalesceMask: NSUInteger /*NSNotificationCoalescing*/, modes: ?NSArray/*<NSRunLoopMode>*/): Unit
     @ForeignName["dequeueNotificationsMatching:coalesceMask:"] public open func dequeueNotificationsMatchingCoalesceMask(notification: NSNotification, coalesceMask: NSUInteger): Unit
 }
 

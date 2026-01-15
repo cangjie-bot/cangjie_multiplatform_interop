@@ -59,8 +59,8 @@ public open class NSLocale <: NSObject & NSCopying & NSSecureCoding {
     @ForeignName["canonicalLanguageIdentifierFromString:"] public static func canonicalLanguageIdentifierFromString(string: NSString): NSString
     @ForeignName["localeIdentifierFromWindowsLocaleCode:"] public static func localeIdentifierFromWindowsLocaleCode(lcid: uint32_t): ?NSString
     @ForeignName["windowsLocaleCodeFromLocaleIdentifier:"] public static func windowsLocaleCodeFromLocaleIdentifier(localeIdentifier: NSString): uint32_t
-    @ForeignName["characterDirectionForLanguage:"] public static func characterDirectionForLanguage(isoLangCode: NSString): Int32 /*NSLocaleLanguageDirection*/
-    @ForeignName["lineDirectionForLanguage:"] public static func lineDirectionForLanguage(isoLangCode: NSString): Int32 /*NSLocaleLanguageDirection*/
+    @ForeignName["characterDirectionForLanguage:"] public static func characterDirectionForLanguage(isoLangCode: NSString): NSUInteger /*NSLocaleLanguageDirection*/
+    @ForeignName["lineDirectionForLanguage:"] public static func lineDirectionForLanguage(isoLangCode: NSString): NSUInteger /*NSLocaleLanguageDirection*/
 }
 
 public abstract sealed class NSLocaleLanguageDirection {

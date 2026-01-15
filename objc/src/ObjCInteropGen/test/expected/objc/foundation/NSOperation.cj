@@ -19,11 +19,11 @@ public open class NSOperation <: NSObject {
     @ForeignName["addDependency:"] public open func addDependency(op: NSOperation): Unit
     @ForeignName["removeDependency:"] public open func removeDependency(op: NSOperation): Unit
     public open prop dependencies: NSArray/*<NSOperation>*/
-    public open mut prop queuePriority: Int32 /*NSOperationQueuePriority*/
+    public open mut prop queuePriority: NSInteger /*NSOperationQueuePriority*/
     public open mut prop completionBlock: ObjCBlock<() -> Unit>
     public open func waitUntilFinished(): Unit
     public open mut prop threadPriority: Float64
-    public open mut prop qualityOfService: Int32 /*NSQualityOfService*/
+    public open mut prop qualityOfService: NSInteger /*NSQualityOfService*/
     public open mut prop name: ?NSString
 }
 
@@ -59,7 +59,7 @@ public open class NSOperationQueue <: NSObject & NSProgressReporting {
     public open mut prop maxConcurrentOperationCount: NSInteger
     @ForeignGetterName["isSuspended"] public open mut prop suspended: Bool
     public open mut prop name: ?NSString
-    public open mut prop qualityOfService: Int32 /*NSQualityOfService*/
+    public open mut prop qualityOfService: NSInteger /*NSQualityOfService*/
     public open mut prop underlyingQueue: dispatch_queue_t
     public open func cancelAllOperations(): Unit
     public open func waitUntilAllOperationsAreFinished(): Unit

@@ -36,16 +36,16 @@ public abstract sealed class NSPredicateOperatorType {
 
 @ObjCMirror
 public open class NSComparisonPredicate <: NSPredicate {
-    @ForeignName["predicateWithLeftExpression:rightExpression:modifier:type:options:"] public static func predicateWithLeftExpressionRightExpressionModifierTypeOptions(lhs: NSExpression, rhs: NSExpression, modifier: Int32 /*NSComparisonPredicateModifier*/, `type`: Int32 /*NSPredicateOperatorType*/, options: Int32 /*NSComparisonPredicateOptions*/): NSComparisonPredicate
+    @ForeignName["predicateWithLeftExpression:rightExpression:modifier:type:options:"] public static func predicateWithLeftExpressionRightExpressionModifierTypeOptions(lhs: NSExpression, rhs: NSExpression, modifier: NSUInteger /*NSComparisonPredicateModifier*/, `type`: NSUInteger /*NSPredicateOperatorType*/, options: NSUInteger /*NSComparisonPredicateOptions*/): NSComparisonPredicate
     @ForeignName["predicateWithLeftExpression:rightExpression:customSelector:"] public static func predicateWithLeftExpressionRightExpressionCustomSelector(lhs: NSExpression, rhs: NSExpression, selector: SEL): NSComparisonPredicate
-    @ForeignName["initWithLeftExpression:rightExpression:modifier:type:options:"] public init(lhs: NSExpression, rhs: NSExpression, modifier: Int32 /*NSComparisonPredicateModifier*/, `type`: Int32 /*NSPredicateOperatorType*/, options: Int32 /*NSComparisonPredicateOptions*/)
+    @ForeignName["initWithLeftExpression:rightExpression:modifier:type:options:"] public init(lhs: NSExpression, rhs: NSExpression, modifier: NSUInteger /*NSComparisonPredicateModifier*/, `type`: NSUInteger /*NSPredicateOperatorType*/, options: NSUInteger /*NSComparisonPredicateOptions*/)
     @ForeignName["initWithLeftExpression:rightExpression:customSelector:"] public init(lhs: NSExpression, rhs: NSExpression, selector: SEL)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
-    public open prop predicateOperatorType: Int32 /*NSPredicateOperatorType*/
-    public open prop comparisonPredicateModifier: Int32 /*NSComparisonPredicateModifier*/
+    public open prop predicateOperatorType: NSUInteger /*NSPredicateOperatorType*/
+    public open prop comparisonPredicateModifier: NSUInteger /*NSComparisonPredicateModifier*/
     public open prop leftExpression: NSExpression
     public open prop rightExpression: NSExpression
     public open prop customSelector: ?SEL
-    public open prop options: Int32 /*NSComparisonPredicateOptions*/
+    public open prop options: NSUInteger /*NSComparisonPredicateOptions*/
 }
 

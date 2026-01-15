@@ -21,7 +21,7 @@ public open class NSHTTPCookieStorage <: NSObject {
     @ForeignName["removeCookiesSinceDate:"] public open func removeCookiesSinceDate(date: NSDate): Unit
     @ForeignName["cookiesForURL:"] public open func cookiesForURL(URL: NSURL): ?NSArray/*<NSHTTPCookie>*/
     @ForeignName["setCookies:forURL:mainDocumentURL:"] public open func setCookiesForURLMainDocumentURL(cookies: NSArray/*<NSHTTPCookie>*/, URL: ?NSURL, mainDocumentURL: ?NSURL): Unit
-    public open mut prop cookieAcceptPolicy: Int32 /*NSHTTPCookieAcceptPolicy*/
+    public open mut prop cookieAcceptPolicy: NSUInteger /*NSHTTPCookieAcceptPolicy*/
     @ForeignName["sortedCookiesUsingDescriptors:"] public open func sortedCookiesUsingDescriptors(sortOrder: NSArray/*<NSSortDescriptor>*/): NSArray/*<NSHTTPCookie>*/
     @ForeignName["storeCookies:forTask:"] public open func storeCookiesForTask(cookies: NSArray/*<NSHTTPCookie>*/, task: NSURLSessionTask): Unit
     @ForeignName["getCookiesForTask:completionHandler:"] public open func getCookiesForTaskCompletionHandler(task: NSURLSessionTask, completionHandler: ObjCBlock<(NSArray/*<NSHTTPCookie>*/) -> Unit>): Unit

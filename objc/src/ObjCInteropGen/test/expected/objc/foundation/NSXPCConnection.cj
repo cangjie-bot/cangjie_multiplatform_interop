@@ -27,7 +27,7 @@ public abstract sealed class NSXPCConnectionOptions {
 public open class NSXPCConnection <: NSObject & NSXPCProxyCreating {
     @ForeignName["initWithServiceName:"] public init(serviceName: NSString)
     public open prop serviceName: ?NSString
-    @ForeignName["initWithMachServiceName:options:"] public init(name: NSString, options: Int32 /*NSXPCConnectionOptions*/)
+    @ForeignName["initWithMachServiceName:options:"] public init(name: NSString, options: NSUInteger /*NSXPCConnectionOptions*/)
     @ForeignName["initWithListenerEndpoint:"] public init(endpoint: NSXPCListenerEndpoint)
     public open prop endpoint: NSXPCListenerEndpoint
     public open mut prop exportedInterface: ?NSXPCInterface

@@ -50,7 +50,7 @@ std::ostream& operator<<(std::ostream& stream, const KeywordEscaper& op)
     return stream;
 }
 
-Symbol::Symbol(std::string name) : name_(std::move(name))
+Symbol::Symbol(std::string name) noexcept : name_(std::move(name))
 {
 }
 
@@ -112,8 +112,9 @@ void NamedTypeSymbol::print(std::ostream& stream, SymbolPrintFormat format) cons
             if (format == SymbolPrintFormat::Raw) {
                 stream << name;
             } else {
-                // TODO: print real underlying type instead of hardcoded Int32
-                stream << "Int32 /*" << name << "*/";
+                assert(dynamic_cast<const EnumDeclarationSymbol*>(this));
+                static_cast<const EnumDeclarationSymbol&>(*this).underlying_type().print(stream, format);
+                stream << " /*" << name << "*/";
             }
             break;
         case Kind::Primitive:
@@ -204,6 +205,17 @@ NamedTypeSymbol* NamedTypeSymbol::construct(const std::vector<TypeLikeSymbol*>& 
     return const_cast<NamedTypeSymbol*>(this);
 }
 
+NamedTypeSymbol& EnumDeclarationSymbol::underlying_type() const noexcept
+{
+    return underlying_type_ ? *underlying_type_ : universe.primitive_type(PrimitiveTypeCategory::SignedInteger, 32);
+}
+
+void UnexposedTypeSymbol::print(std::ostream& stream, SymbolPrintFormat format) const
+{
+    canonical_type().print(stream, format);
+    stream << " /*" << name() << "*/";
+}
+
 static bool is_ctype_by_default(NamedTypeSymbol::Kind kind, std::string_view name)
 {
     switch (kind) {
@@ -276,7 +288,7 @@ void TypeDeclarationSymbol::add_parameter(std::string name)
 }
 
 NonTypeSymbol& TypeDeclarationSymbol::add_member_method(
-    std::string name, TypeLikeSymbol* return_type, uint8_t modifiers)
+    std::string name, TypeLikeSymbol* return_type, uint16_t modifiers)
 {
     // No clash detection, otherwise might assert on method overloads
 
@@ -308,7 +320,7 @@ NonTypeSymbol& TypeDeclarationSymbol::add_field(std::string name, TypeLikeSymbol
     return member;
 }
 
-NonTypeSymbol& TypeDeclarationSymbol::add_instance_variable(std::string name, TypeLikeSymbol* type, uint8_t modifiers)
+NonTypeSymbol& TypeDeclarationSymbol::add_instance_variable(std::string name, TypeLikeSymbol* type, uint16_t modifiers)
 {
     assert(kind() == Kind::Interface);
     assert(all_of_members([&name](const auto& member) { return member.name() != name; }));
@@ -324,16 +336,23 @@ NonTypeSymbol& TypeDeclarationSymbol::add_instance_variable(std::string name, Ty
     return ivar;
 }
 
-NonTypeSymbol& TypeDeclarationSymbol::add_enum_constant(std::string name, TypeLikeSymbol* type)
+EnumConstantSymbol& EnumDeclarationSymbol::add_constant(
+    std::string name, NamedTypeSymbol& underlying_type, const std::array<uint64_t, 2>& value)
 {
-    assert(kind() == Kind::Enum);
-    assert(all_of_members([&name](const auto& member) { return !member.is_enum_constant() || member.name() != name; }));
+    if (constants_.empty()) {
+        assert(!underlying_type_);
+        underlying_type_ = &underlying_type;
+    } else {
+        assert(underlying_type_);
+        assert(std::all_of(
+            constants_.begin(), constants_.end(), [name](const auto& constant) { return constant.name() != name; }));
+    }
 
-    return members_.emplace_back(NonTypeSymbol::Private(), std::move(name), NonTypeSymbol::Kind::EnumConstant, type);
+    return constants_.emplace_back(std::move(name), value);
 }
 
 NonTypeSymbol& TypeDeclarationSymbol::add_property(
-    std::string name, std::string getter, std::string setter, uint8_t modifiers)
+    std::string name, std::string getter, std::string setter, uint16_t modifiers)
 {
     assert(kind() == Kind::Interface || kind() == Kind::Protocol);
 
@@ -658,12 +677,6 @@ void TypeAliasSymbol::print(std::ostream& stream, SymbolPrintFormat format) cons
         }
     }
     NamedTypeSymbol::print(stream, format);
-}
-
-TypeLikeSymbol* TypeAliasSymbol::root_target() const
-{
-    const TypeAliasSymbol* target = dynamic_cast<const TypeAliasSymbol*>(target_);
-    return target ? target->root_target() : target_;
 }
 
 const TypeLikeSymbol& TypeAliasSymbol::canonical_type() const

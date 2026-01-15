@@ -19,12 +19,12 @@ public abstract sealed class NSLengthFormatterUnit {
 @ObjCMirror
 public open class NSLengthFormatter <: NSFormatter {
     public open mut prop numberFormatter: NSNumberFormatter
-    public open mut prop unitStyle: Int32 /*NSFormattingUnitStyle*/
+    public open mut prop unitStyle: NSInteger /*NSFormattingUnitStyle*/
     @ForeignGetterName["isForPersonHeightUse"] public open mut prop forPersonHeightUse: Bool
-    @ForeignName["stringFromValue:unit:"] public open func stringFromValueUnit(value: Float64, unit: Int32 /*NSLengthFormatterUnit*/): NSString
+    @ForeignName["stringFromValue:unit:"] public open func stringFromValueUnit(value: Float64, unit: NSInteger /*NSLengthFormatterUnit*/): NSString
     @ForeignName["stringFromMeters:"] public open func stringFromMeters(numberInMeters: Float64): NSString
-    @ForeignName["unitStringFromValue:unit:"] public open func unitStringFromValueUnit(value: Float64, unit: Int32 /*NSLengthFormatterUnit*/): NSString
-    @ForeignName["unitStringFromMeters:usedUnit:"] public open func unitStringFromMetersUsedUnit(numberInMeters: Float64, unitp: ObjCPointer<Int32 /*NSLengthFormatterUnit*/>): NSString
+    @ForeignName["unitStringFromValue:unit:"] public open func unitStringFromValueUnit(value: Float64, unit: NSInteger /*NSLengthFormatterUnit*/): NSString
+    @ForeignName["unitStringFromMeters:usedUnit:"] public open func unitStringFromMetersUsedUnit(numberInMeters: Float64, unitp: ObjCPointer<NSInteger /*NSLengthFormatterUnit*/>): NSString
     public open func getObjectValueForStringErrorDescription(obj: ObjCPointer<ObjCId>, string: NSString, error: ObjCPointer<NSString>): Bool
 }
 

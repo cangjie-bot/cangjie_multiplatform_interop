@@ -35,13 +35,13 @@ public open class NSProcessInfo <: NSObject {
     @ForeignName["disableAutomaticTermination:"] public open func disableAutomaticTermination(reason: NSString): Unit
     @ForeignName["enableAutomaticTermination:"] public open func enableAutomaticTermination(reason: NSString): Unit
     public open mut prop automaticTerminationSupportEnabled: Bool
-    @ForeignName["beginActivityWithOptions:reason:"] public open func beginActivityWithOptionsReason(options: Int32 /*NSActivityOptions*/, reason: NSString): NSObjectProtocol
+    @ForeignName["beginActivityWithOptions:reason:"] public open func beginActivityWithOptionsReason(options: uint64_t /*NSActivityOptions*/, reason: NSString): NSObjectProtocol
     @ForeignName["endActivity:"] public open func endActivity(activity: NSObjectProtocol): Unit
-    @ForeignName["performActivityWithOptions:reason:usingBlock:"] public open func performActivityWithOptionsReasonUsingBlock(options: Int32 /*NSActivityOptions*/, reason: NSString, block: ObjCBlock<() -> Unit>): Unit
+    @ForeignName["performActivityWithOptions:reason:usingBlock:"] public open func performActivityWithOptionsReasonUsingBlock(options: uint64_t /*NSActivityOptions*/, reason: NSString, block: ObjCBlock<() -> Unit>): Unit
     @ForeignName["performExpiringActivityWithReason:usingBlock:"] public open func performExpiringActivityWithReasonUsingBlock(reason: NSString, block: ObjCBlock<(Bool) -> Unit>): Unit
     public open prop userName: NSString
     public open prop fullUserName: NSString
-    public open prop thermalState: Int32 /*NSProcessInfoThermalState*/
+    public open prop thermalState: NSInteger /*NSProcessInfoThermalState*/
     @ForeignGetterName["isLowPowerModeEnabled"] public open prop lowPowerModeEnabled: Bool
     @ForeignGetterName["isMacCatalystApp"] public open prop macCatalystApp: Bool
     @ForeignGetterName["isiOSAppOnMac"] public open prop iOSAppOnMac: Bool

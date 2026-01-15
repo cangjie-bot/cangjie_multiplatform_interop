@@ -8,7 +8,7 @@
 
 Universe universe;
 
-NonTypeSymbol& TopLevel::add_function(std::string name, TypeLikeSymbol& return_type, uint8_t modifiers)
+NonTypeSymbol& TopLevel::add_function(std::string name, TypeLikeSymbol& return_type, uint16_t modifiers)
 {
     return members_.emplace_back(
         NonTypeSymbol::Private(), std::move(name), NonTypeSymbol::Kind::GlobalFunction, &return_type, modifiers);
@@ -43,7 +43,7 @@ Universe::Universe()
     type_order_.reserve(PREALLOCATED_TYPE_COUNT);
 }
 
-NonTypeSymbol& Universe::register_top_level_function(std::string name, TypeLikeSymbol& return_type, uint8_t modifiers)
+NonTypeSymbol& Universe::register_top_level_function(std::string name, TypeLikeSymbol& return_type, uint16_t modifiers)
 {
     return top_level_.add_function(std::move(name), return_type, modifiers);
 }
@@ -80,6 +80,7 @@ NamedTypeSymbol& Universe::primitive_type(PrimitiveTypeCategory category, size_t
 {
     switch (category) {
         case PrimitiveTypeCategory::Boolean:
+            assert(size == 1);
             return primitive_types_[static_cast<int>(PrimitiveTypeIndex::Bool)];
         case PrimitiveTypeCategory::SignedInteger:
             switch (size) {
@@ -93,7 +94,7 @@ NamedTypeSymbol& Universe::primitive_type(PrimitiveTypeCategory category, size_t
                     return primitive_types_[static_cast<int>(PrimitiveTypeIndex::Int64)];
                 default:
                     assert(size == 16);
-                    return built_in_type_declarations_[static_cast<int>(BuiltInTypeDeclarationIndex::Int128)];
+                    return int128();
             }
         case PrimitiveTypeCategory::UnsignedInteger:
             switch (size) {
@@ -107,7 +108,7 @@ NamedTypeSymbol& Universe::primitive_type(PrimitiveTypeCategory category, size_t
                     return primitive_types_[static_cast<int>(PrimitiveTypeIndex::UInt64)];
                 default:
                     assert(size == 16);
-                    return built_in_type_declarations_[static_cast<int>(BuiltInTypeDeclarationIndex::UInt128)];
+                    return uint128();
             }
         case PrimitiveTypeCategory::FloatingPoint:
             switch (size) {
@@ -123,6 +124,7 @@ NamedTypeSymbol& Universe::primitive_type(PrimitiveTypeCategory category, size_t
             }
         default:
             assert(category == PrimitiveTypeCategory::Unit);
+            assert(size == 0);
             return primitive_types_[static_cast<int>(PrimitiveTypeIndex::Unit)];
     }
 }
