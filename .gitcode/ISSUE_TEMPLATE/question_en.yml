@@ -1,23 +1,23 @@
-name: 问题咨询|Question
-description: 如果您对Cangjie社区有疑问，欢迎反馈咨询。
-title: "[问题咨询]: "
+name: Question
+description: This template is for Questions.
+title: "[Qustions]: "
 labels: ["question"]
 body:
   - type: markdown
     attributes:
       value: |
-        感谢提出问题，我们将安排人答复！
+        Welcome to ask questions.
   - type: textarea
     attributes:
-      label: 问题描述
-      description: 请描述下您的问题
+      label: What is the question
+      description: Detailed question description
     validations:
       required: true
   - type: checkboxes
     id: version
     attributes:
-      label: 受影响的分支版本
-      description: 请选择您的问题涉及的分支版本：
+      label: Affected Branch Versions
+      description: Please select the branch versions related to your question.
       options:
         - label: dev
           required: false
