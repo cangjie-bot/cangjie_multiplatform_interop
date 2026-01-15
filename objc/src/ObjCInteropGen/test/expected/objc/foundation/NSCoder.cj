@@ -65,7 +65,7 @@ public open class NSCoder <: NSObject {
     @ForeignName["decodePropertyListForKey:"] public open func decodePropertyListForKey(key: NSString): ?ObjCId
     public open prop allowedClasses: ?NSSet/*<ObjCClass>*/
     @ForeignName["failWithError:"] public open func failWithError(error: NSError): Unit
-    public open prop decodingFailurePolicy: Int32 /*NSDecodingFailurePolicy*/
+    public open prop decodingFailurePolicy: NSInteger /*NSDecodingFailurePolicy*/
     public open prop error: ?NSError
     @ForeignName["decodeValueOfObjCType:at:"] public open func decodeValueOfObjCTypeAt(`type`: ObjCPointer<Int8>, data: ObjCPointer<Unit>): Unit
 }

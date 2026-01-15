@@ -120,7 +120,7 @@ public:
         return TopLevelIterator(members_);
     }
 
-    NonTypeSymbol& add_function(std::string name, TypeLikeSymbol& return_type, uint8_t modifiers);
+    NonTypeSymbol& add_function(std::string name, TypeLikeSymbol& return_type, uint16_t modifiers);
 
 private:
     std::deque<NonTypeSymbol> members_;
@@ -176,9 +176,29 @@ class Universe final {
 public:
     Universe();
 
-    NonTypeSymbol& register_top_level_function(std::string name, TypeLikeSymbol& return_type, uint8_t modifiers);
+    NonTypeSymbol& register_top_level_function(std::string name, TypeLikeSymbol& return_type, uint16_t modifiers);
 
     void register_type(NamedTypeSymbol* symbol);
+
+    [[nodiscard]] NamedTypeSymbol& unit() noexcept
+    {
+        return primitive_types_[static_cast<int>(PrimitiveTypeIndex::Unit)];
+    }
+
+    [[nodiscard]] NamedTypeSymbol& byte() noexcept
+    {
+        return primitive_types_[static_cast<int>(PrimitiveTypeIndex::Int8)];
+    }
+
+    [[nodiscard]] NamedTypeSymbol& int128() noexcept
+    {
+        return built_in_type_declarations_[static_cast<int>(BuiltInTypeDeclarationIndex::Int128)];
+    }
+
+    [[nodiscard]] NamedTypeSymbol& uint128() noexcept
+    {
+        return built_in_type_declarations_[static_cast<int>(BuiltInTypeDeclarationIndex::UInt128)];
+    }
 
     [[nodiscard]] NamedTypeSymbol& primitive_type(PrimitiveTypeCategory category, size_t size) noexcept;
 

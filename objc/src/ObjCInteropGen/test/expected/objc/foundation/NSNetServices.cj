@@ -77,7 +77,7 @@ public open class NSNetService <: NSObject {
     public open prop addresses: ?NSArray/*<NSData>*/
     public open prop port: NSInteger
     public open func publish(): Unit
-    @ForeignName["publishWithOptions:"] public open func publishWithOptions(options: Int32 /*NSNetServiceOptions*/): Unit
+    @ForeignName["publishWithOptions:"] public open func publishWithOptions(options: NSUInteger /*NSNetServiceOptions*/): Unit
     public open func resolve(): Unit
     public open func stop(): Unit
     @ForeignName["dictionaryFromTXTRecordData:"] public static func dictionaryFromTXTRecordData(txtData: NSData): NSDictionary/*<NSString, NSData>*/

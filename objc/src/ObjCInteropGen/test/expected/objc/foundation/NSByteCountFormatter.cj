@@ -28,19 +28,19 @@ public abstract sealed class NSByteCountFormatterCountStyle {
 
 @ObjCMirror
 public open class NSByteCountFormatter <: NSFormatter {
-    @ForeignName["stringFromByteCount:countStyle:"] public static func stringFromByteCountCountStyle(byteCount: Int64, countStyle: Int32 /*NSByteCountFormatterCountStyle*/): NSString
+    @ForeignName["stringFromByteCount:countStyle:"] public static func stringFromByteCountCountStyle(byteCount: Int64, countStyle: NSInteger /*NSByteCountFormatterCountStyle*/): NSString
     @ForeignName["stringFromByteCount:"] public open func stringFromByteCount(byteCount: Int64): NSString
-    @ForeignName["stringFromMeasurement:countStyle:"] public static func stringFromMeasurementCountStyle(measurement: NSMeasurement/*<NSUnitInformationStorage>*/, countStyle: Int32 /*NSByteCountFormatterCountStyle*/): NSString
+    @ForeignName["stringFromMeasurement:countStyle:"] public static func stringFromMeasurementCountStyle(measurement: NSMeasurement/*<NSUnitInformationStorage>*/, countStyle: NSInteger /*NSByteCountFormatterCountStyle*/): NSString
     @ForeignName["stringFromMeasurement:"] public open func stringFromMeasurement(measurement: NSMeasurement/*<NSUnitInformationStorage>*/): NSString
     public open func stringForObjectValue(obj: ?ObjCId): ?NSString
-    public open mut prop allowedUnits: Int32 /*NSByteCountFormatterUnits*/
-    public open mut prop countStyle: Int32 /*NSByteCountFormatterCountStyle*/
+    public open mut prop allowedUnits: NSUInteger /*NSByteCountFormatterUnits*/
+    public open mut prop countStyle: NSInteger /*NSByteCountFormatterCountStyle*/
     public open mut prop allowsNonnumericFormatting: Bool
     public open mut prop includesUnit: Bool
     public open mut prop includesCount: Bool
     public open mut prop includesActualByteCount: Bool
     @ForeignGetterName["isAdaptive"] public open mut prop adaptive: Bool
     public open mut prop zeroPadsFractionDigits: Bool
-    public open mut prop formattingContext: Int32 /*NSFormattingContext*/
+    public open mut prop formattingContext: NSInteger /*NSFormattingContext*/
 }
 

@@ -344,9 +344,6 @@ std::ostream& operator<<(std::ostream& stream, const DefaultValuePrinter& op)
 
                     case PrimitiveTypeCategory::SignedInteger:
                     case PrimitiveTypeCategory::UnsignedInteger:
-                        if (primitive_type.size() == PrimitiveSize::Sixteen) {
-                            break;
-                        }
                         return stream << '0';
 
                     case PrimitiveTypeCategory::FloatingPoint:
@@ -361,10 +358,9 @@ std::ostream& operator<<(std::ostream& stream, const DefaultValuePrinter& op)
                 break;
             }
             case NamedTypeSymbol::Kind::TypeDef: {
-                // Some time later it should be simplified to be just
                 assert(dynamic_cast<const TypeAliasSymbol*>(named_type));
-                const auto* alias = static_cast<const TypeAliasSymbol*>(named_type);
-                const auto* named_target = dynamic_cast<const NamedTypeSymbol*>(alias->root_target());
+                const auto& target = named_type->canonical_type();
+                const auto* named_target = dynamic_cast<const NamedTypeSymbol*>(&target);
                 if (named_target && named_target->is(NamedTypeSymbol::Kind::Primitive)) {
                     assert(dynamic_cast<const PrimitiveTypeSymbol*>(named_target));
                     const auto& primitive_target = static_cast<const PrimitiveTypeSymbol&>(*named_target);
@@ -376,11 +372,16 @@ std::ostream& operator<<(std::ostream& stream, const DefaultValuePrinter& op)
                             break;
                     }
                 }
-                const auto& target = alias->canonical_type();
                 return stream << default_value(op.symbol_, target, op.type_printer_.format());
             }
+            case NamedTypeSymbol::Kind::Unexposed:
+                assert(dynamic_cast<const UnexposedTypeSymbol*>(named_type));
+                return stream << default_value(op.symbol_, named_type->canonical_type(), op.type_printer_.format());
             case NamedTypeSymbol::Kind::Enum:
-                return stream << '0';
+                assert(dynamic_cast<const EnumDeclarationSymbol*>(named_type));
+                return stream << default_value(op.symbol_,
+                           static_cast<const EnumDeclarationSymbol&>(*named_type).underlying_type(),
+                           op.type_printer_.format());
             case NamedTypeSymbol::Kind::Interface:
             case NamedTypeSymbol::Kind::Protocol:
                 print_tricky_default_value(stream, named_type->name(), op.symbol_.is_nullable());
@@ -405,56 +406,60 @@ std::ostream& operator<<(std::ostream& stream, const DefaultValuePrinter& op)
     return stream << emit_cangjie(type) << "()";
 }
 
-static void print_enum_constant_value(std::ostream& output, const NonTypeSymbol& symbol)
+static void print_enum_constant_value(
+    std::ostream& output, const NamedTypeSymbol& underlying_type, const EnumConstantSymbol& constant)
 {
-    assert(symbol.kind() == NonTypeSymbol::Kind::EnumConstant);
-    auto value = symbol.enum_constant_value();
-    const auto* named_type = dynamic_cast<const NamedTypeSymbol*>(symbol.return_type());
-    if (named_type) {
-        const auto* primitive_type = dynamic_cast<const PrimitiveTypeSymbol*>(&named_type->canonical_type());
-        if (primitive_type) {
-            // Avoid the "number exceeds the value range of type" Cangjie compiler error by
-            // printing the value in a type-specific way.
-            switch (primitive_type->category()) {
-                case PrimitiveTypeCategory::SignedInteger:
-                    switch (primitive_type->size()) {
-                        case PrimitiveSize::One:
-                            output << static_cast<int>(static_cast<int8_t>(value));
-                            return;
-                        case PrimitiveSize::Two:
-                            output << static_cast<int16_t>(value);
-                            return;
-                        case PrimitiveSize::Four:
-                            output << static_cast<int32_t>(value);
-                            return;
-                        case PrimitiveSize::Eight:
-                            output << static_cast<int64_t>(value);
-                            return;
-                        default:
-                            break;
-                    }
-                    break;
-                case PrimitiveTypeCategory::UnsignedInteger:
-                    switch (primitive_type->size()) {
-                        case PrimitiveSize::One:
-                            output << static_cast<uint32_t>(static_cast<uint8_t>(value));
-                            return;
-                        case PrimitiveSize::Two:
-                            output << static_cast<uint16_t>(value);
-                            return;
-                        case PrimitiveSize::Four:
-                            output << static_cast<uint32_t>(value);
-                            return;
-                        default:
-                            break;
-                    }
-                    break;
-                default:
-                    break;
-            }
+    const auto& canonical_type = underlying_type.canonical_type();
+    const auto* primitive_type = dynamic_cast<const PrimitiveTypeSymbol*>(&canonical_type);
+    if (primitive_type) {
+        // Avoid the "number exceeds the value range of type" Cangjie compiler error by
+        // printing the value in a type-specific way.
+        switch (primitive_type->category()) {
+            case PrimitiveTypeCategory::SignedInteger:
+                switch (primitive_type->size()) {
+                    case PrimitiveSize::One:
+                        output << static_cast<int>(constant.value<int8_t>());
+                        return;
+                    case PrimitiveSize::Two:
+                        output << constant.value<int16_t>();
+                        return;
+                    case PrimitiveSize::Four:
+                        output << constant.value<int32_t>();
+                        return;
+                    case PrimitiveSize::Eight:
+                        output << constant.value<int64_t>();
+                        return;
+                    default:
+                        break;
+                }
+                break;
+            case PrimitiveTypeCategory::UnsignedInteger:
+                switch (primitive_type->size()) {
+                    case PrimitiveSize::One:
+                        output << static_cast<uint32_t>(constant.value<uint8_t>());
+                        return;
+                    case PrimitiveSize::Two:
+                        output << constant.value<uint16_t>();
+                        return;
+                    case PrimitiveSize::Four:
+                        output << constant.value<uint32_t>();
+                        return;
+                    // PrimitiveSize::Eight is handled properly by fallback case.
+                    default:
+                        break;
+                }
+                break;
+            default:
+                break;
         }
+    } else if (&canonical_type == &universe.int128()) {
+        output << "ObjCInt128(" << constant.value128_lo<int64_t>() << ", " << constant.value128_hi<int64_t>() << ')';
+        return;
+    } else if (&canonical_type == &universe.uint128()) {
+        output << "ObjCUInt128(" << constant.value128_lo<uint64_t>() << ", " << constant.value128_hi<uint64_t>() << ')';
+        return;
     }
-    output << value;
+    output << constant.value<uint64_t>();
 }
 
 static bool is_objc_compatible_parameters(NonTypeSymbol& method) noexcept
@@ -729,7 +734,6 @@ static void write_function(
         case FuncKind::TopLevelFunc: {
             is_ctype = function.is_ctype();
 
-
             // Foreign @C functions cannot have a foreign name
             const auto& selector_attribute = function.selector_attribute();
             if (is_ctype) {
@@ -738,7 +742,7 @@ static void write_function(
                     write_foreign_name(output, "@ForeignName", selector_attribute, true);
                 }
             } else {
-                 auto generate_definitions = generate_definitions_mode();
+                auto generate_definitions = generate_definitions_mode();
                 if (!generate_definitions) {
                     output << "@ObjCMirror\n";
                     format = SymbolPrintFormat::EmitCangjieStrict;
@@ -807,7 +811,7 @@ static void write_function(
     output << '\n';
 }
 
-enum class DeclKind { Enum, CStruct, ObjCStruct, Interface, Class };
+enum class DeclKind { CStruct, ObjCStruct, Interface, Class };
 
 // Whether a property or field with the specified type and name is currently
 // supported by FE in declarations of the specified kind.  If not, then in the
@@ -901,13 +905,6 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
             format = SymbolPrintFormat::EmitCangjieStrict;
             print_objcmirror_attribute(output, !generate_definitions_mode());
             break;
-        case NamedTypeSymbol::Kind::Enum:
-            decl_kind = DeclKind::Enum;
-
-            // Can be EmitCangjieStrict, does not matter here
-            format = SymbolPrintFormat::EmitCangjie;
-
-            break;
         case NamedTypeSymbol::Kind::Struct:
         case NamedTypeSymbol::Kind::Union:
             if (type->is_ctype()) {
@@ -935,9 +932,6 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
         case DeclKind::CStruct:
         case DeclKind::ObjCStruct:
             output << "struct";
-            break;
-        case DeclKind::Enum:
-            output << "abstract sealed class";
             break;
         default:
             assert(decl_kind == DeclKind::Class);
@@ -1128,17 +1122,6 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
                 output.reset_comment();
             }
             output << '\n';
-        } else if (member.is_enum_constant()) {
-            assert(decl_kind == DeclKind::Enum);
-            auto* return_type = member.return_type();
-            assert(return_type);
-            assert(!return_type->is_unit());
-            output << "public static const " << escape_keyword(member.name());
-            write_type(output, member, *return_type, format);
-            output << " = ";
-            collect_import(*return_type);
-            print_enum_constant_value(output, member);
-            output << '\n';
         } else {
             assert(false);
         }
@@ -1167,6 +1150,25 @@ void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol
     output << "}" << std::endl;
 }
 
+static void write_enum_declaration(IndentingStringStream& output, const EnumDeclarationSymbol& enum_decl)
+{
+    // Can be EmitCangjieStrict, does not matter here
+    auto format = SymbolPrintFormat::EmitCangjie;
+
+    output << "public abstract sealed class " << escape_keyword(enum_decl.name()) << " {\n";
+    auto& underlying_type = enum_decl.underlying_type();
+    collect_import(underlying_type);
+    output.indent();
+    enum_decl.for_each_constant([&output, format, &underlying_type](const auto& constant) {
+        output << "public static const " << escape_keyword(constant.name()) << ": "
+               << SymbolPrinter(underlying_type, format) << " = ";
+        print_enum_constant_value(output, underlying_type, constant);
+        output << '\n';
+    });
+    output.dedent();
+    output << '}' << std::endl;
+}
+
 void write_cangjie()
 {
     std::uint64_t generated_files = 0;
@@ -1187,16 +1189,19 @@ void write_cangjie()
                     }
                 } else if (auto* type = dynamic_cast<TypeDeclarationSymbol*>(symbol)) {
                     write_type_declaration(output, type);
+                } else if (const auto* enum_decl = dynamic_cast<const EnumDeclarationSymbol*>(symbol)) {
+                    write_enum_declaration(output, *enum_decl);
                 } else {
                     assert(dynamic_cast<NonTypeSymbol*>(symbol));
                     auto& top_level = static_cast<NonTypeSymbol&>(*symbol);
                     assert(top_level.kind() == NonTypeSymbol::Kind::GlobalFunction);
 
-                    // Ignore global functions having bodies.  Anyway, we cannot use them in
+                    // Ignore global functions with internal linkage.  Anyway, we cannot use them in
                     // Cangjie.
-                    if (top_level.has_body()) {
+                    if (top_level.has_internal_linkage()) {
                         continue;
                     }
+
                     write_function(output, FuncKind::TopLevelFunc, top_level, SymbolPrintFormat::EmitCangjie);
                 }
                 output << std::endl;

@@ -12,14 +12,14 @@ public abstract sealed class NSCollectionChangeType {
 
 @ObjCMirror
 public open class NSOrderedCollectionChange/*<ObjectType>*/ <: NSObject {
-    @ForeignName["changeWithObject:type:index:"] public static func changeWithObjectTypeIndex(anObject: ?ObjCId /*ObjectType*/, `type`: Int32 /*NSCollectionChangeType*/, index: NSUInteger): NSOrderedCollectionChange/*<ObjectType>*/
-    @ForeignName["changeWithObject:type:index:associatedIndex:"] public static func changeWithObjectTypeIndexAssociatedIndex(anObject: ?ObjCId /*ObjectType*/, `type`: Int32 /*NSCollectionChangeType*/, index: NSUInteger, associatedIndex: NSUInteger): NSOrderedCollectionChange/*<ObjectType>*/
+    @ForeignName["changeWithObject:type:index:"] public static func changeWithObjectTypeIndex(anObject: ?ObjCId /*ObjectType*/, `type`: NSInteger /*NSCollectionChangeType*/, index: NSUInteger): NSOrderedCollectionChange/*<ObjectType>*/
+    @ForeignName["changeWithObject:type:index:associatedIndex:"] public static func changeWithObjectTypeIndexAssociatedIndex(anObject: ?ObjCId /*ObjectType*/, `type`: NSInteger /*NSCollectionChangeType*/, index: NSUInteger, associatedIndex: NSUInteger): NSOrderedCollectionChange/*<ObjectType>*/
     public open prop object: ?ObjCId /*ObjectType*/
-    public open prop changeType: Int32 /*NSCollectionChangeType*/
+    public open prop changeType: NSInteger /*NSCollectionChangeType*/
     public open prop index: NSUInteger
     public open prop associatedIndex: NSUInteger
     public init()
-    @ForeignName["initWithObject:type:index:"] public init(anObject: ?ObjCId /*ObjectType*/, `type`: Int32 /*NSCollectionChangeType*/, index: NSUInteger)
-    @ForeignName["initWithObject:type:index:associatedIndex:"] public init(anObject: ?ObjCId /*ObjectType*/, `type`: Int32 /*NSCollectionChangeType*/, index: NSUInteger, associatedIndex: NSUInteger)
+    @ForeignName["initWithObject:type:index:"] public init(anObject: ?ObjCId /*ObjectType*/, `type`: NSInteger /*NSCollectionChangeType*/, index: NSUInteger)
+    @ForeignName["initWithObject:type:index:associatedIndex:"] public init(anObject: ?ObjCId /*ObjectType*/, `type`: NSInteger /*NSCollectionChangeType*/, index: NSUInteger, associatedIndex: NSUInteger)
 }
 

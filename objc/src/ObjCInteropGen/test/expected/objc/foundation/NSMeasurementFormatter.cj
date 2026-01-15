@@ -13,8 +13,8 @@ public abstract sealed class NSMeasurementFormatterUnitOptions {
 
 @ObjCMirror
 public open class NSMeasurementFormatter <: NSFormatter & NSSecureCoding {
-    public open mut prop unitOptions: Int32 /*NSMeasurementFormatterUnitOptions*/
-    public open mut prop unitStyle: Int32 /*NSFormattingUnitStyle*/
+    public open mut prop unitOptions: NSUInteger /*NSMeasurementFormatterUnitOptions*/
+    public open mut prop unitStyle: NSInteger /*NSFormattingUnitStyle*/
     public open mut prop locale: NSLocale
     public open mut prop numberFormatter: NSNumberFormatter
     @ForeignName["stringFromMeasurement:"] public open func stringFromMeasurement(measurement: NSMeasurement/*<UnitType>*/): NSString

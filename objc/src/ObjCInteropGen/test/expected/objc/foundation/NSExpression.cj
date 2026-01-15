@@ -40,9 +40,9 @@ public open class NSExpression <: NSObject & NSSecureCoding & NSCopying {
     public static func expressionForAnyKey(): NSExpression
     @ForeignName["expressionForBlock:arguments:"] public static func expressionForBlockArguments(block: ObjCBlock<(ObjCId, NSArray/*<NSExpression>*/, NSMutableDictionary/*<KeyType, ObjectType>*/) -> ObjCId>, arguments: ?NSArray/*<NSExpression>*/): NSExpression
     @ForeignName["expressionForConditional:trueExpression:falseExpression:"] public static func expressionForConditionalTrueExpressionFalseExpression(predicate: NSPredicate, trueExpression: NSExpression, falseExpression: NSExpression): NSExpression
-    @ForeignName["initWithExpressionType:"] public init(`type`: Int32 /*NSExpressionType*/)
+    @ForeignName["initWithExpressionType:"] public init(`type`: NSUInteger /*NSExpressionType*/)
     @ForeignName["initWithCoder:"] public init(coder: NSCoder)
-    public open prop expressionType: Int32 /*NSExpressionType*/
+    public open prop expressionType: NSUInteger /*NSExpressionType*/
     public open prop constantValue: ?ObjCId
     public open prop keyPath: NSString
     public open prop function: NSString

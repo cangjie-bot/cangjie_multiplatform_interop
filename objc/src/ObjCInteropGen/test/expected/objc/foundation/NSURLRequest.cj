@@ -35,19 +35,19 @@ public abstract sealed class NSURLRequestAttribution {
 @ObjCMirror
 public open class NSURLRequest <: NSObject & NSSecureCoding & NSCopying & NSMutableCopying {
     @ForeignName["requestWithURL:"] public static func requestWithURL(URL: NSURL): NSURLRequest
-    @ForeignName["requestWithURL:cachePolicy:timeoutInterval:"] public static func requestWithURLCachePolicyTimeoutInterval(URL: NSURL, cachePolicy: Int32 /*NSURLRequestCachePolicy*/, timeoutInterval: NSTimeInterval): NSURLRequest
+    @ForeignName["requestWithURL:cachePolicy:timeoutInterval:"] public static func requestWithURLCachePolicyTimeoutInterval(URL: NSURL, cachePolicy: NSUInteger /*NSURLRequestCachePolicy*/, timeoutInterval: NSTimeInterval): NSURLRequest
     @ForeignName["initWithURL:"] public init(URL: NSURL)
-    @ForeignName["initWithURL:cachePolicy:timeoutInterval:"] public init(URL: NSURL, cachePolicy: Int32 /*NSURLRequestCachePolicy*/, timeoutInterval: NSTimeInterval)
+    @ForeignName["initWithURL:cachePolicy:timeoutInterval:"] public init(URL: NSURL, cachePolicy: NSUInteger /*NSURLRequestCachePolicy*/, timeoutInterval: NSTimeInterval)
     public open prop URL: ?NSURL
-    public open prop cachePolicy: Int32 /*NSURLRequestCachePolicy*/
+    public open prop cachePolicy: NSUInteger /*NSURLRequestCachePolicy*/
     public open prop timeoutInterval: NSTimeInterval
     public open prop mainDocumentURL: ?NSURL
-    public open prop networkServiceType: Int32 /*NSURLRequestNetworkServiceType*/
+    public open prop networkServiceType: NSUInteger /*NSURLRequestNetworkServiceType*/
     public open prop allowsCellularAccess: Bool
     public open prop allowsExpensiveNetworkAccess: Bool
     public open prop allowsConstrainedNetworkAccess: Bool
     public open prop assumesHTTP3Capable: Bool
-    public open prop attribution: Int32 /*NSURLRequestAttribution*/
+    public open prop attribution: NSUInteger /*NSURLRequestAttribution*/
     public open prop requiresDNSSECValidation: Bool
     public open prop HTTPMethod: ?NSString
     public open prop allHTTPHeaderFields: ?NSDictionary/*<NSString, NSString>*/

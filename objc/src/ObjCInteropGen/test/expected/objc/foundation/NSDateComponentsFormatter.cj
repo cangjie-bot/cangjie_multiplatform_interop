@@ -30,10 +30,10 @@ public open class NSDateComponentsFormatter <: NSFormatter {
     @ForeignName["stringFromDateComponents:"] public open func stringFromDateComponents(components: NSDateComponents): ?NSString
     @ForeignName["stringFromDate:toDate:"] public open func stringFromDateToDate(startDate: NSDate, endDate: NSDate): ?NSString
     @ForeignName["stringFromTimeInterval:"] public open func stringFromTimeInterval(ti: NSTimeInterval): ?NSString
-    @ForeignName["localizedStringFromDateComponents:unitsStyle:"] public static func localizedStringFromDateComponentsUnitsStyle(components: NSDateComponents, unitsStyle: Int32 /*NSDateComponentsFormatterUnitsStyle*/): ?NSString
-    public open mut prop unitsStyle: Int32 /*NSDateComponentsFormatterUnitsStyle*/
-    public open mut prop allowedUnits: Int32 /*NSCalendarUnit*/
-    public open mut prop zeroFormattingBehavior: Int32 /*NSDateComponentsFormatterZeroFormattingBehavior*/
+    @ForeignName["localizedStringFromDateComponents:unitsStyle:"] public static func localizedStringFromDateComponentsUnitsStyle(components: NSDateComponents, unitsStyle: NSInteger /*NSDateComponentsFormatterUnitsStyle*/): ?NSString
+    public open mut prop unitsStyle: NSInteger /*NSDateComponentsFormatterUnitsStyle*/
+    public open mut prop allowedUnits: NSUInteger /*NSCalendarUnit*/
+    public open mut prop zeroFormattingBehavior: NSUInteger /*NSDateComponentsFormatterZeroFormattingBehavior*/
     public open mut prop calendar: ?NSCalendar
     public open mut prop referenceDate: ?NSDate
     public open mut prop allowsFractionalUnits: Bool
@@ -41,7 +41,7 @@ public open class NSDateComponentsFormatter <: NSFormatter {
     public open mut prop collapsesLargestUnit: Bool
     public open mut prop includesApproximationPhrase: Bool
     public open mut prop includesTimeRemainingPhrase: Bool
-    public open mut prop formattingContext: Int32 /*NSFormattingContext*/
+    public open mut prop formattingContext: NSInteger /*NSFormattingContext*/
     public open func getObjectValueForStringErrorDescription(obj: ObjCPointer<ObjCId>, string: NSString, error: ObjCPointer<NSString>): Bool
 }
 

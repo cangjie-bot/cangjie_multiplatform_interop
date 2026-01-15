@@ -86,14 +86,14 @@ public abstract sealed class NSGrammaticalDefiniteness {
 
 @ObjCMirror
 public open class NSMorphology <: NSObject & NSCopying & NSSecureCoding {
-    public open mut prop grammaticalGender: Int32 /*NSGrammaticalGender*/
-    public open mut prop partOfSpeech: Int32 /*NSGrammaticalPartOfSpeech*/
-    public open mut prop number: Int32 /*NSGrammaticalNumber*/
-    public open mut prop grammaticalCase: Int32 /*NSGrammaticalCase*/
-    public open mut prop determination: Int32 /*NSGrammaticalDetermination*/
-    public open mut prop grammaticalPerson: Int32 /*NSGrammaticalPerson*/
-    public open mut prop pronounType: Int32 /*NSGrammaticalPronounType*/
-    public open mut prop definiteness: Int32 /*NSGrammaticalDefiniteness*/
+    public open mut prop grammaticalGender: NSInteger /*NSGrammaticalGender*/
+    public open mut prop partOfSpeech: NSInteger /*NSGrammaticalPartOfSpeech*/
+    public open mut prop number: NSInteger /*NSGrammaticalNumber*/
+    public open mut prop grammaticalCase: NSInteger /*NSGrammaticalCase*/
+    public open mut prop determination: NSInteger /*NSGrammaticalDetermination*/
+    public open mut prop grammaticalPerson: NSInteger /*NSGrammaticalPerson*/
+    public open mut prop pronounType: NSInteger /*NSGrammaticalPronounType*/
+    public open mut prop definiteness: NSInteger /*NSGrammaticalDefiniteness*/
     @ForeignName["customPronounForLanguage:"] public open func customPronounForLanguage(language: NSString): ?NSMorphologyCustomPronoun
     @ForeignName["setCustomPronoun:forLanguage:error:"] public open func setCustomPronounForLanguageError(features: ?NSMorphologyCustomPronoun, language: NSString, error: ObjCPointer<NSError>): Bool
     @ForeignGetterName["isUnspecified"] public open prop unspecified: Bool
