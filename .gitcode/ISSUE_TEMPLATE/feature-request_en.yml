@@ -1,29 +1,29 @@
-name: 新需求|Feature
-description: 您需要反馈或实现一个新需求时，使用此模板。
-title: "[新需求]: "
+name: New Feature submit
+description: This template is for new feature submit
+title: "[new feature]: "
 labels: ["enhancement"]
 body:
   - type: markdown
     attributes:
       value: |
-        感谢提出新需求。
+         Thank you for your contribution!
   - type: textarea
     attributes:
-      label: 新需求提供了什么功能？
-      description: 请描述下新需求的功能是什么，解决了什么问题：
+      label: Feature description
+      description: What is the functionality/improvement in this feature?
     validations:
       required: true
   - type: textarea
     attributes:
-      label: 该需求带来的价值、应用场景？
-      description: 请描述下该需求的价值，应用场景等：
+      label: What is the target user scenario for this new feature?
+      description: Value / User scenario description of this new feature.
     validations:
       required: false
   - type: checkboxes
     id: version
     attributes:
-      label: 新需求涉及的分支版本
-      description: 请选择涉及的分支版本：
+      label: Branch versions involved in the new feature
+      description: Please select the branch versions involved.
       options:
         - label: dev
           required: false
