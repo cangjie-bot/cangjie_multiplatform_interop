@@ -1,0 +1,31 @@
+name: Question
+description: This template is for Questions.
+title: "[Qustions]: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Welcome to ask questions.
+  - type: textarea
+    attributes:
+      label: What is the question
+      description: Detailed question description
+    validations:
+      required: true
+  - type: checkboxes
+    id: version
+    attributes:
+      label: Affected Branch Versions
+      description: Please select the branch versions related to your question.
+      options:
+        - label: dev
+          required: false
+        - label: main
+          required: false
+        - label: release/v1.0.3-cjmp-beta
+          required: false
+        - label: release/OpenHarmony-release-6.0
+          required: false
+    validations:
+      required: true
