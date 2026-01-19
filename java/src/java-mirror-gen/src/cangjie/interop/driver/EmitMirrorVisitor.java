@@ -36,8 +36,7 @@ import static cangjie.interop.driver.VisitorUtils.erasureType;
 import static cangjie.interop.driver.VisitorUtils.foreignNameAnnotationGen;
 import static cangjie.interop.driver.VisitorUtils.formTypeName;
 import static cangjie.interop.driver.VisitorUtils.getSymbolsToMangle;
-import static cangjie.interop.driver.VisitorUtils.hasAppropriateModifiers;
-import static cangjie.interop.driver.VisitorUtils.hasOnlyPublicOrProtectedDeps;
+import static cangjie.interop.driver.VisitorUtils.hasOnlyAppropriateDeps;
 import static cangjie.interop.driver.VisitorUtils.hasNotNullAnnotation;
 import static cangjie.interop.driver.VisitorUtils.hasNotNullSigParamAnnotation;
 import static cangjie.interop.driver.VisitorUtils.hasNotNullTypeAnnotation;
@@ -47,6 +46,7 @@ import static cangjie.interop.driver.VisitorUtils.name;
 import static cangjie.interop.driver.VisitorUtils.setImportsMap;
 import static cangjie.interop.driver.VisitorUtils.setNames;
 import static cangjie.interop.driver.VisitorUtils.setSymtab;
+import static cangjie.interop.driver.VisitorUtils.shouldBeGenerated;
 import static cangjie.interop.util.StdCoreNames.STD_CORE_NAMES;
 import static vendor.com.sun.tools.javac.code.Kinds.Kind.MTH;
 import static vendor.com.sun.tools.javac.code.Kinds.Kind.VAR;
@@ -344,7 +344,7 @@ public final class EmitMirrorVisitor {
     }
 
     public CJTree translate(Symbol.ClassSymbol classSymbol) {
-        assert hasAppropriateModifiers(classSymbol) : classSymbol;
+        assert shouldBeGenerated(classSymbol) : classSymbol;
 
         final var name = getSymbolsToMangle().contains(classSymbol)
                 ? mangleClassName(classSymbol)
@@ -450,7 +450,7 @@ public final class EmitMirrorVisitor {
             return;
         }
         if (typeSymbol instanceof Symbol.ClassSymbol paramSymbol && !paramSymbol.type.isPrimitiveOrVoid()) {
-            if (!hasAppropriateModifiers(typeSymbol)) {
+            if (!shouldBeGenerated(typeSymbol)) {
                 return;
             }
             queue.add(paramSymbol);
@@ -517,7 +517,7 @@ public final class EmitMirrorVisitor {
 
         final var visitedMethods = new LinkedHashSet<Symbol.MethodSymbol>();
         for (Symbol element : tmpScope.getSymbols()) {
-            if (!hasAppropriateModifiers(element)) {
+            if (!shouldBeGenerated(element)) {
                 continue;
             }
             if (element instanceof Symbol.MethodSymbol symbol) {
@@ -527,7 +527,7 @@ public final class EmitMirrorVisitor {
                     continue;
                 }
 
-                if (!hasOnlyPublicOrProtectedDeps(symbol, types)) {
+                if (!hasOnlyAppropriateDeps(symbol, types)) {
                     continue;
                 }
 
@@ -550,7 +550,7 @@ public final class EmitMirrorVisitor {
                 if (hasExceededMaxDepthPath(methodSymbol, depth)) {
                     continue;
                 }
-                if (!hasOnlyPublicOrProtectedDeps(methodSymbol, types)) {
+                if (!hasOnlyAppropriateDeps(methodSymbol, types)) {
                     continue;
                 }
 
@@ -565,7 +565,7 @@ public final class EmitMirrorVisitor {
                 if (hasExceededMaxDepthPath(varSymbol, depth)) {
                     continue;
                 }
-                if (!hasOnlyPublicOrProtectedDeps(varSymbol, types)) {
+                if (!hasOnlyAppropriateDeps(varSymbol, types)) {
                     continue;
                 }
                 members.add(varSymbol);
@@ -585,23 +585,14 @@ public final class EmitMirrorVisitor {
         final List<Symbol> members = getMembers(classSymbol);
         final var depth = traversalPathMap.get(classSymbol);
 
-        for (Symbol.MethodSymbol methodSymbol : defaultMethods.findAllDefaultMethods(classSymbol)) {
+        final var mergeDefaultMethods = defaultMethods.mergeMultipleInterfaceDefaultMethods(classSymbol);
+        mergeDefaultMethods.removeIf(members::contains);
+
+        for (Symbol.MethodSymbol methodSymbol : mergeDefaultMethods) {
             if (hasExceededMaxDepthPath(methodSymbol, depth)) {
                 continue;
             }
             members.add(methodSymbol);
-        }
-
-        if (generateDefinition) {
-            final var mergeDefaultMethods = defaultMethods.mergeMultipleInterfaceDefaultMethods(classSymbol);
-            mergeDefaultMethods.removeIf(members::contains);
-
-            for (Symbol.MethodSymbol methodSymbol : mergeDefaultMethods) {
-                if (hasExceededMaxDepthPath(methodSymbol, depth)) {
-                    continue;
-                }
-                members.add(methodSymbol);
-            }
         }
         for (Symbol element : members) {
             final var originalName = element.name;
@@ -857,7 +848,7 @@ public final class EmitMirrorVisitor {
     }
 
     public void traverseClassSymbol(Symbol.ClassSymbol classSymbol) {
-        if (!hasAppropriateModifiers(classSymbol)) {
+        if (!shouldBeGenerated(classSymbol)) {
             return;
         }
 
@@ -875,7 +866,10 @@ public final class EmitMirrorVisitor {
         final List<Symbol> members = getMembers(classSymbol);
 
         if (limitedDepth) {
-            for (Symbol.MethodSymbol methodSymbol : defaultMethods.findAllDefaultMethods(classSymbol)) {
+            final var mergeDefaultMethods = defaultMethods.mergeMultipleInterfaceDefaultMethods(classSymbol);
+            mergeDefaultMethods.removeIf(members::contains);
+
+            for (Symbol.MethodSymbol methodSymbol : mergeDefaultMethods) {
                 if (hasExceededMaxDepthPath(methodSymbol, depth)) {
                     continue;
                 }
@@ -938,7 +932,7 @@ public final class EmitMirrorVisitor {
 
     public void traverseDependenciesClosure(Symbol.ClassSymbol classSymbol) {
         if (classSymbol != null) {
-            if (!hasAppropriateModifiers(classSymbol)) {
+            if (!shouldBeGenerated(classSymbol)) {
                 String message = "Class " + classSymbol.flatname +
                         "has inappropriate access modifier so it is skipped for mirrors generation.";
                 System.out.println(message);
