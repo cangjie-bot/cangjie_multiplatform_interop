@@ -20,6 +20,12 @@ verbose=""
 jarMode=false
 optionValue=false
 pathSeparator=":"
+javaMirrorGen=`find -L ${CANGJIE_HOME} -name java-mirror-gen.jar`
+
+if [ -z "$javaMirrorGen" ]; then
+    echo "java-mirror-gen.jar is not found in PATH"
+    exit 1
+fi;
 
 if [ "$(uname)" = "WindowsNT" ]; then
     pathSeparator=";";
@@ -160,5 +166,5 @@ Please set the JAVA_HOME variable in your environment to match the
 location of your Java installation."
 fi
 
-echo "$jvmGeneratorArgs -jar java-mirror-gen.jar $generatorArgs $inputClasses" > javac.args
+echo "$jvmGeneratorArgs -jar $javaMirrorGen $generatorArgs $inputClasses" > javac.args
 $JAVACMD @javac.args

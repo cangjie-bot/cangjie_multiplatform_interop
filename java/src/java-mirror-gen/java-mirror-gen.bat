@@ -16,6 +16,16 @@ SET JAVACMD=%JAVA_HOME%\bin\java
 SET pathSeparator=;
 SET jarMode=false
 
+SET javaMirrorGen=
+FOR /F "delims=" %%i IN ('WHERE java-mirror-gen.jar') DO (
+    SET javaMirrorGen=%%i
+)
+
+IF NOT EXIST "%javaMirrorGen%" (
+    ECHO "java-mirror-gen.jar is not found in PATH"
+    EXIT /B 1
+)
+
 SETLOCAL
 SET ERRORLEVEL=
 
@@ -152,7 +162,7 @@ IF NOT "%classPath%"=="" (
 :generatorRun
 call :setJavaCommand
 
-echo %jvmGeneratorArgs% -jar java-mirror-gen.jar %generatorArgs% %inputClasses% > javac.args
+echo %jvmGeneratorArgs% -jar %javaMirrorGen% %generatorArgs% %inputClasses% > javac.args
 %JAVACMD% @javac.args
 
 EXIT /B 0
