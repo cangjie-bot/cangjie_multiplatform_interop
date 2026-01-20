@@ -25,6 +25,7 @@ package cangjie.interop.driver;
 import static cangjie.interop.Utils.addBackticksIfNeeded;
 import static cangjie.interop.Utils.addUnderscoresIfNeeded;
 import static cangjie.interop.Utils.getFlatNameWithoutPackage;
+import static cangjie.interop.Utils.syntheticParameterName;
 import static cangjie.interop.driver.VisitorUtils.addSymbolsToMangle;
 import static cangjie.interop.driver.VisitorUtils.collectImports;
 import static cangjie.interop.driver.VisitorUtils.collectSuperTypes;
