@@ -51,9 +51,9 @@ for arg in "$@"; do
         "-i") set -- "$@" "$arg"; optionValue=true ;;
         "--closure-depth-limit") set -- "$@" "-c"; optionValue=true ;;
         "-c") set -- "$@" "$arg"; optionValue=true ;;
-        "--help") set -- "$@" "-h"; optionValue=true ;;
-        "-?") set -- "$@" "-h"; optionValue=true ;;
-        "-h") set -- "$@" "$arg"; optionValue=true ;;
+        "--help") set -- "$@" "-h"; optionValue=false ;;
+        "-?") set -- "$@" "-h"; optionValue=false ;;
+        "-h") set -- "$@" "$arg"; optionValue=false ;;
         "--verbose") set -- "$@"; optionValue=false; verbose="true" ;;
         "-verbose") set -- "$@"; optionValue=false; verbose="true" ;;
         "-v") set -- "$@"; optionValue=false; verbose="true" ;;
@@ -67,7 +67,7 @@ for arg in "$@"; do
     esac
 done
 
-while getopts "a:t:d:p:j:l:i:c:h:" option
+while getopts "a:t:d:p:j:l:i:c:h" option
 do
     case "${option}"
         in
@@ -79,7 +79,7 @@ do
         l)packageList=${OPTARG};;
         i)importsConfig=${OPTARG};;
         c)closureDepthLimit=${OPTARG};;
-        h)help=${OPTARG};;
+        h)help="true";;
         *);;
     esac
 done
@@ -136,9 +136,57 @@ if [ -n "$classPath" ]; then
 fi;
 
 if [ -n "$help" ]; then
-    jvmGeneratorArgs=""
-    generatorArgs="--help"
-    inputClasses=""
+    echo "Usage: Java mirror generator [options] [type-names]
+    The Java mirror generator can be run in two ways:
+      sh ./java-mirror-gen.sh [options] [type-names]
+    or
+      sh ./java-mirror-gen.sh [options] -jar jar-file (single-jar mode)
+    where
+      [type-names] are the fully qualified names of Java classes and interfaces
+      [jar-file] is the pathname of a single jar file
+      possible [options] include:
+        --android-jar <pathname>, -a <pathname>    (mandatory when Android API is used)
+          <pathname> must point to the android.jar file from the Android SDK
+
+        --destination <directory>, -d <directory>
+          Specify output directory for generated mirrors files.
+          If this option is not specified, the current directory is assumed.
+
+        --class-path <path>, -cp <path>
+          <path> is list of pathname of directories, .jar files and .zip files, separated with semicolons : to
+          containing input .class files or .jar file dependencies.
+
+        --package-name <name>, -p <name>
+          <name> is the name of the Cangjie package into which all generated mirror types will be placed.
+          If this option is not specified, package name will be UNNAMED.
+
+        --closure-depth-limit <number>, -c <number>
+          <number> is a non-negative decimal integer limiting the depth of dependency graph
+          scanning when determining the set of types and their members that will be mirrored.
+
+        -jar jar-file
+          jar-file is the pathname of the jar file to be processed in the "single-jar" mode.
+
+        --package-list <pathname>, -l <pathname>
+          <pathname> is the pathname of a plain text file containing a list of package names.
+          Only the class files that belong to the listed packages and their dependencies will be mirrored.
+          Requires -jar.
+
+        --imports <pathname>, --import-mappings <pathname>, -i <pathname>
+          <pathname> is the pathname of a plain text file containing mirror type mappings
+          accumulated during previous mirror generator runs.
+          Requires -l and -jar.
+
+        --help, -h, -?
+          Prints a help message with a brief description of the command-line syntax and all options and exits.
+
+        --verbose, -v
+          Instructs the mirror generator to emit messages about what it is doing.
+
+        For example, to generate mirrors types for java.util.HashMap run:
+          sh ./java-mirror-gen.sh -d hmpackage -p hashmap java.util.HashMap
+    "
+    exit 0
 fi;
 
 if [ -n "$verbose" ]; then
