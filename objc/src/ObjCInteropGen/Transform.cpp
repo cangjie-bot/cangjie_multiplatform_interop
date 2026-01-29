@@ -12,6 +12,8 @@
 #include "Mappings.h"
 #include "Universe.h"
 
+namespace objcgen {
+
 static void append_name(Symbol& symbol, std::string_view suffix)
 {
     symbol.rename(std::string(symbol.name()).append(suffix));
@@ -169,9 +171,10 @@ static void remove_duplicates(TypeDeclarationSymbol& type)
     }
 }
 
-void do_rename()
+static void do_rename()
 {
-    auto type_definitions = Universe::type_definitions();
+    auto& universe = Universe::get();
+    auto type_definitions = universe.type_definitions();
 
     for (auto&& type : type_definitions) {
         if (type.is(NamedTypeSymbol::Kind::Protocol)) {
@@ -215,9 +218,9 @@ void do_rename()
     }
 }
 
-void set_type_mappings()
+static void set_type_mappings()
 {
-    for (auto&& type : Universe::all_declarations()) {
+    for (auto&& type : Universe::get().all_declarations()) {
         for (auto&& mapping_ptr : mappings) {
             auto& mapping = *mapping_ptr;
             if (mapping.can_map(&type)) {
@@ -229,7 +232,7 @@ void set_type_mappings()
 
 static void do_type_map()
 {
-    for (auto&& decl : Universe::all_declarations()) {
+    for (auto&& decl : Universe::get().all_declarations()) {
         if (auto* type = dynamic_cast<TypeDeclarationSymbol*>(&decl)) {
             for (auto&& member : type->members()) {
                 if (member.is_property()) {
@@ -262,3 +265,5 @@ void apply_transforms()
     set_type_mappings();
     do_type_map();
 }
+
+} // namespace objcgen

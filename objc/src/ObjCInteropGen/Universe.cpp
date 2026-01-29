@@ -6,7 +6,13 @@
 
 #include "Universe.h"
 
-Universe universe;
+namespace objcgen {
+
+Universe& Universe::get()
+{
+    static Universe universe;
+    return universe;
+}
 
 void Universe::register_type(NamedTypeSymbol* symbol)
 {
@@ -55,3 +61,5 @@ void Universe::process_rename(NamedTypeSymbol* symbol, const std::string& old_na
 
     assert(changed);
 }
+
+} // namespace objcgen

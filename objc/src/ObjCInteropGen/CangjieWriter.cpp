@@ -18,6 +18,8 @@
 #include "SingleDeclarationSymbolVisitor.h"
 #include "Strings.h"
 
+namespace objcgen {
+
 static constexpr char INDENT[] = "    ";
 static constexpr std::size_t INDENT_LENGTH = sizeof(INDENT) - 1;
 
@@ -118,8 +120,8 @@ private:
     IndentingStringBuf fos_buf;
 };
 
-std::string_view current_package_name;
-std::set<std::string> imports;
+static std::string_view current_package_name;
+static std::set<std::string> imports;
 
 class PackageFileScope final {
     const std::string_view package_name_;
@@ -317,6 +319,9 @@ static bool write_type_alias(IndentingStringStream& output, TypeAliasSymbol& ali
     return true;
 }
 
+class DefaultValuePrinter;
+static std::ostream& operator<<(std::ostream& stream, const DefaultValuePrinter& op);
+
 class DefaultValuePrinter {
 public:
     explicit DefaultValuePrinter(const TypeLikeSymbol& type) noexcept : type(type)
@@ -348,7 +353,7 @@ static void print_tricky_default_value(std::ostream& stream, std::string_view ty
     stream << "Option<" << type_name << ">.None.getOrThrow()";
 }
 
-std::ostream& operator<<(std::ostream& stream, const DefaultValuePrinter& op)
+static std::ostream& operator<<(std::ostream& stream, const DefaultValuePrinter& op)
 {
     if (dynamic_cast<const TypeParameterSymbol*>(&op.type)) {
         print_tricky_default_value(stream, "id");
@@ -383,16 +388,16 @@ std::ostream& operator<<(std::ostream& stream, const DefaultValuePrinter& op)
             case NamedTypeSymbol::Kind::TypeDef: {
                 // Some time later it should be simplified to be just
                 assert(dynamic_cast<const TypeAliasSymbol*>(named_type));
-                    const auto* alias = static_cast<const TypeAliasSymbol*>(named_type);
-                    const auto* named_target = dynamic_cast<const NamedTypeSymbol*>(alias->root_target());
-                    if (named_target && named_target->is(NamedTypeSymbol::Kind::TargetPrimitive) &&
-                        is_integer_type(named_target->name())) {
-                        return stream << "unsafe{zeroValue<" << named_type->name() << ">()}";
-                    }
-                    const auto* target = alias->target();
-                    assert(target);
-                    return stream << default_value(*target);
+                const auto* alias = static_cast<const TypeAliasSymbol*>(named_type);
+                const auto* named_target = dynamic_cast<const NamedTypeSymbol*>(alias->root_target());
+                if (named_target && named_target->is(NamedTypeSymbol::Kind::TargetPrimitive) &&
+                    is_integer_type(named_target->name())) {
+                    return stream << "unsafe{zeroValue<" << named_type->name() << ">()}";
                 }
+                const auto* target = alias->target();
+                assert(target);
+                return stream << default_value(*target);
+            }
             case NamedTypeSymbol::Kind::Enum:
                 return stream << '0';
             case NamedTypeSymbol::Kind::Interface:
@@ -479,7 +484,6 @@ static bool is_objc_compatible_parameters(NonTypeSymbol& method) noexcept
     return true;
 }
 
-namespace {
 template <class Symbol> void write_result_type(std::ostream& output, const Symbol& symbol, const TypeLikeSymbol& type)
 {
     output << ": ";
@@ -488,7 +492,6 @@ template <class Symbol> void write_result_type(std::ostream& output, const Symbo
     }
     output << emit_cangjie(type);
 }
-} // namespace
 
 static void write_method_parameters(std::ostream& output, const NonTypeSymbol& method)
 {
@@ -716,7 +719,7 @@ static bool is_hidden(const TypeDeclarationSymbol& decl, TypeLikeSymbol& type, c
     }
 }
 
-void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol* type)
+static void write_type_declaration(IndentingStringStream& output, TypeDeclarationSymbol* type)
 {
     auto is_interface = type->is(NamedTypeSymbol::Kind::Protocol);
     const auto is_enum = type->is(NamedTypeSymbol::Kind::Enum);
@@ -1031,3 +1034,5 @@ void write_cangjie()
         }
     }
 }
+
+} // namespace objcgen

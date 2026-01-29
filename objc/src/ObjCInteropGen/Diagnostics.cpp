@@ -11,9 +11,11 @@
 #include "InputFile.h"
 #include "Universe.h"
 
+namespace objcgen {
+
 void check_marked_symbols()
 {
-    for (auto&& type : Universe::all_declarations()) {
+    for (auto&& type : Universe::get().all_declarations()) {
         if (type.package()) {
             assert(!type.is(NamedTypeSymbol::Kind::SourcePrimitive));
             assert(!type.is(NamedTypeSymbol::Kind::TargetPrimitive));
@@ -36,3 +38,5 @@ void check_marked_symbols()
         }
     }
 }
+
+} // namespace objcgen

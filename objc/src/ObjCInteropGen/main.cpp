@@ -22,6 +22,8 @@
 
 // clang -fobjc-runtime=gnustep `gnustep-config --objc-flags` -Xclang -ast-dump -c M.m -o M.o -v > ast.txt
 
+using namespace objcgen;
+
 static void show_help(const char* executable)
 {
     std::cout << "Usage: " << (executable ? std::filesystem::path(executable).filename().string() : "ObjCInteropGen")
@@ -138,6 +140,9 @@ int main(int argc, char* argv[])
         write_cangjie();
     } catch (const toml::parse_error& e) {
         std::cerr << e << std::endl;
+        return 1;
+    } catch (const FatalException&) {
+        // FatalException is assumed to print the error message before throwing
         return 1;
     } catch (const std::exception& e) {
         std::cerr << stage << ":\n" << e.what() << std::endl;

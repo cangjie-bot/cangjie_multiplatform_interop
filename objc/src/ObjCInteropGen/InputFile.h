@@ -24,6 +24,8 @@
 #endif
 #endif
 
+namespace objcgen {
+
 class FileLevelSymbol;
 class InputDirectory;
 
@@ -42,13 +44,17 @@ struct LineCol {
     }
 };
 
-template <> struct std::hash<LineCol> {
-    size_t operator()(const LineCol& pos) const noexcept
+} // namespace objcgen
+
+template <> struct std::hash<objcgen::LineCol> {
+    size_t operator()(const objcgen::LineCol& pos) const noexcept
     {
         constexpr auto half_width = sizeof(size_t) * CHAR_BIT / 2;
         return (static_cast<size_t>(pos.line_) << half_width) + pos.line_;
     }
 };
+
+namespace objcgen {
 
 struct Location : LineCol {
     std::filesystem::path file_;
@@ -188,5 +194,7 @@ public:
 };
 
 extern Inputs inputs;
+
+} // namespace objcgen
 
 #endif // INPUTFILE_H
