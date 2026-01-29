@@ -8,12 +8,15 @@
 
 #include "Universe.h"
 
+namespace objcgen {
+
 std::vector<TypeMapping*> mappings;
 
-TypeLikeSymbol* find(const std::string& name)
+static TypeLikeSymbol* find(const std::string& name)
 {
     // Find the target type symbol by its name.  If both a Cangjie primitive type
     // and a type declared in Objective-C is found, the primitive type is preferred.
+    const auto& universe = Universe::get();
     auto* result = universe.type(NamedTypeSymbol::Kind::TargetPrimitive, name);
     if (!result) {
         result = universe.type(name);
@@ -127,3 +130,5 @@ NonGenericMapping& add_non_generic_mapping(const std::string_view to)
     mappings.push_back(mapping);
     return *mapping;
 }
+
+} // namespace objcgen

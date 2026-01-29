@@ -14,7 +14,9 @@
 #include "SingleDeclarationSymbolVisitor.h"
 #include "Universe.h"
 
-PackageFile* input_to_output(Package* package, const InputFile* input)
+namespace objcgen {
+
+static PackageFile* input_to_output(Package* package, const InputFile* input)
 {
     const auto file_name = input->path().stem().u8string();
     if (auto* file = (*package)[file_name]) {
@@ -23,14 +25,14 @@ PackageFile* input_to_output(Package* package, const InputFile* input)
     return new PackageFile(file_name, package);
 }
 
-PackageFile* input_to_output(Package* package, const FileLevelSymbol* symbol)
+static PackageFile* input_to_output(Package* package, const FileLevelSymbol* symbol)
 {
     auto* input_file = symbol->defining_file();
     assert(input_file);
     return input_to_output(package, input_file);
 }
 
-bool check_symbol(FileLevelSymbol* symbol)
+static bool check_symbol(FileLevelSymbol* symbol)
 {
     assert(symbol);
     if (const auto* named = dynamic_cast<NamedTypeSymbol*>(symbol)) {
@@ -42,11 +44,11 @@ bool check_symbol(FileLevelSymbol* symbol)
     return symbol->is_file_level();
 }
 
-bool mark_roots()
+static bool mark_roots()
 {
     auto success = true;
 
-    for (auto&& type : Universe::all_declarations()) {
+    for (auto&& type : Universe::get().all_declarations()) {
         // Omit primitive types, as well as types having no definition in source files
         // (those are built-ins like `id`).
         if (type.is(NamedTypeSymbol::Kind::SourcePrimitive) || type.is(NamedTypeSymbol::Kind::TargetPrimitive) ||
@@ -124,7 +126,7 @@ private:
     std::vector<FileLevelSymbol*> symbols_;
 };
 
-void add_all_symbol_references()
+static void add_all_symbol_references()
 {
     SymbolReferenceCollector collector;
 
@@ -197,7 +199,7 @@ public:
     }
 };
 
-ScopeBuilderStatus symbol_references_to_packages_pass(bool aggressive)
+static ScopeBuilderStatus symbol_references_to_packages_pass(bool aggressive)
 {
     ScopeBuilderStatus status;
 
@@ -292,7 +294,7 @@ ScopeBuilderStatus symbol_references_to_packages_pass(bool aggressive)
     return status;
 }
 
-bool symbol_references_to_packages()
+static bool symbol_references_to_packages()
 {
     while (true) {
         auto status = symbol_references_to_packages_pass(false);
@@ -321,7 +323,7 @@ bool symbol_references_to_packages()
     }
 }
 
-void register_symbols_in_declaration_order()
+static void register_symbols_in_declaration_order()
 {
     for (const auto* input_directory : inputs) {
         for (const auto* input_file : *input_directory) {
@@ -360,7 +362,7 @@ static TypeLikeSymbol& get_element_type(const VArraySymbol& varray) noexcept
  */
 static void decay_parameter_types()
 {
-    for (auto& type : Universe::all_declarations()) {
+    for (auto& type : Universe::get().all_declarations()) {
         auto* decl = dynamic_cast<TypeDeclarationSymbol*>(&type);
         if (decl) {
             for (auto& member : decl->members()) {
@@ -396,3 +398,5 @@ bool mark_package()
 
     return true;
 }
+
+} // namespace objcgen

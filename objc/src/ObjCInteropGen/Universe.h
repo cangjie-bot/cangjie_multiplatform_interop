@@ -12,6 +12,8 @@
 
 #include "Symbol.h"
 
+namespace objcgen {
+
 enum class TypeNamespace : std::uint8_t {
     Primary,
 
@@ -80,11 +82,7 @@ public:
     }
 
     // Prefix increment
-    UniverseIterator& operator++()
-    {
-        find_next();
-        return *this;
-    }
+    UniverseIterator& operator++();
 
     // Postfix increment
     UniverseIterator operator++(int)
@@ -122,12 +120,22 @@ template <bool OnlyType> struct UniverseTypes final {
 };
 
 class Universe final {
-    static constexpr int PREALLOCATED_TYPE_COUNT = 8192;
-
     using type_map_t = std::unordered_map<std::string, NamedTypeSymbol*>;
 
-    type_map_t types_[TYPE_NAMESPACE_COUNT];
-    type_order_t type_order_;
+    friend class UniverseIterator<false>;
+    friend class UniverseIterator<true>;
+    friend struct UniverseTypes<false>;
+    friend struct UniverseTypes<true>;
+
+    static constexpr int PREALLOCATED_TYPE_COUNT = 8192;
+
+    Universe()
+    {
+        for (auto& map : types_) {
+            map.reserve(PREALLOCATED_TYPE_COUNT);
+        }
+        type_order_.reserve(PREALLOCATED_TYPE_COUNT);
+    }
 
     type_map_t& types_map(const TypeNamespace index)
     {
@@ -139,19 +147,11 @@ class Universe final {
         return types_[static_cast<std::uint8_t>(index)];
     }
 
-    friend class UniverseIterator<false>;
-    friend class UniverseIterator<true>;
-    friend struct UniverseTypes<false>;
-    friend struct UniverseTypes<true>;
+    type_map_t types_[TYPE_NAMESPACE_COUNT];
+    type_order_t type_order_;
 
 public:
-    Universe()
-    {
-        for (auto& map : types_) {
-            map.reserve(PREALLOCATED_TYPE_COUNT);
-        }
-        type_order_.reserve(PREALLOCATED_TYPE_COUNT);
-    }
+    static Universe& get();
 
     void register_type(NamedTypeSymbol* symbol);
 
@@ -181,22 +181,20 @@ public:
 
     void process_rename(NamedTypeSymbol* symbol, const std::string& old_name);
 
-    static auto all_declarations()
+    auto all_declarations()
     {
         return UniverseTypes<false>{};
     }
 
-    static auto type_definitions()
+    auto type_definitions()
     {
         return UniverseTypes<true>{};
     }
 };
 
-extern Universe universe;
-
 template <bool OnlyType> typename UniverseIterator<OnlyType>::reference UniverseIterator<OnlyType>::get() const
 {
-    auto* symbol = universe.type(it_->first, it_->second);
+    auto* symbol = Universe::get().type(it_->first, it_->second);
     assert(symbol);
     if constexpr (OnlyType) {
         auto* type = dynamic_cast<TypeDeclarationSymbol*>(symbol);
@@ -210,6 +208,7 @@ template <bool OnlyType> typename UniverseIterator<OnlyType>::reference Universe
 template <bool OnlyType> void UniverseIterator<OnlyType>::find_next()
 {
     if constexpr (OnlyType) {
+        const auto& universe = Universe::get();
         while (++it_ != universe.type_order_.cend()) {
             auto* symbol = universe.type(it_->first, it_->second);
             assert(symbol);
@@ -222,14 +221,22 @@ template <bool OnlyType> void UniverseIterator<OnlyType>::find_next()
     }
 }
 
+template <bool OnlyType> UniverseIterator<OnlyType>& UniverseIterator<OnlyType>::operator++()
+{
+    find_next();
+    return *this;
+}
+
 template <bool OnlyType> UniverseIterator<OnlyType> UniverseTypes<OnlyType>::cbegin() const
 {
-    return UniverseIterator<OnlyType>{universe.type_order_.cbegin()};
+    return UniverseIterator<OnlyType>{Universe::get().type_order_.cbegin()};
 }
 
 template <bool OnlyType> UniverseIterator<OnlyType> UniverseTypes<OnlyType>::cend() const
 {
-    return UniverseIterator<OnlyType>{universe.type_order_.cend()};
+    return UniverseIterator<OnlyType>{Universe::get().type_order_.cend()};
 }
+
+} // namespace objcgen
 
 #endif // UNIVERSE_H

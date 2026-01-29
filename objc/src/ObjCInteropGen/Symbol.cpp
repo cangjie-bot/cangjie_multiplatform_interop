@@ -14,6 +14,8 @@
 #include "Package.h"
 #include "Universe.h"
 
+namespace objcgen {
+
 std::ostream& operator<<(std::ostream& stream, const KeywordEscaper& op)
 {
     // Do not include keywords common for Cangjie and C/Objective-C
@@ -78,7 +80,7 @@ void NamedTypeSymbol::rename(const std::string_view new_name)
 {
     const auto old_name = name();
     TypeLikeSymbol::rename(new_name);
-    universe.process_rename(this, old_name);
+    Universe::get().process_rename(this, old_name);
 }
 
 template <class UnaryPred>
@@ -623,15 +625,15 @@ void NonTypeSymbol::visit_impl(SymbolVisitor& visitor)
 
 static NamedTypeSymbol* construct_symbol(NamedTypeSymbol::Kind kind, const std::string& name, TypeLikeSymbol* parameter)
 {
-    return universe.type(kind, name)->construct({parameter});
+    return Universe::get().type(kind, name)->construct({parameter});
 }
 
-NamedTypeSymbol* cpointer(TypeLikeSymbol* symbol)
+static NamedTypeSymbol* cpointer(TypeLikeSymbol* symbol)
 {
     return construct_symbol(NamedTypeSymbol::Kind::TargetPrimitive, "CPointer", symbol);
 }
 
-NamedTypeSymbol* objc_pointer(TypeLikeSymbol* symbol)
+static NamedTypeSymbol* objc_pointer(TypeLikeSymbol* symbol)
 {
     return construct_symbol(NamedTypeSymbol::Kind::Struct, "ObjCPointer", symbol);
 }
@@ -664,15 +666,15 @@ NamedTypeSymbol& pointer(TypeLikeSymbol& pointee)
 static TypeDeclarationSymbol& add_cangjie_primitive(const std::string& name)
 {
     auto* symbol = new TypeDeclarationSymbol(NamedTypeSymbol::Kind::TargetPrimitive, name);
-    universe.register_type(symbol);
+    Universe::get().register_type(symbol);
     return *symbol;
 }
 
 static TypeDeclarationSymbol& add_cangjie_type_declaration(NamedTypeSymbol::Kind kind, std::string&& name)
 {
-    assert(!universe.type(name));
+    assert(!Universe::get().type(name));
     auto* symbol = new TypeDeclarationSymbol(kind, std::move(name));
-    universe.register_type(symbol);
+    Universe::get().register_type(symbol);
     return *symbol;
 }
 
@@ -727,3 +729,5 @@ void add_builtin_types()
     add_cangjie_interface("id" /* "ObjCId" */);
     add_cangjie_class("SEL" /* "ObjCSelector" */);
 }
+
+} // namespace objcgen

@@ -13,7 +13,11 @@
 
 #include "ClangSession.h"
 
+namespace objcgen {
+
 void parse_sources(
     const std::vector<std::string>& files, const std::vector<std::string>& arguments, const ClangSession& session);
+
+} // namespace objcgen
 
 #endif // SOURCESCANNER_H

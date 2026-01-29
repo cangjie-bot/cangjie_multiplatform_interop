@@ -10,6 +10,8 @@
 
 #include <memory>
 
+namespace objcgen {
+
 class ClangSessionImpl;
 
 class ClangSession final {
@@ -22,5 +24,7 @@ public:
 
     [[nodiscard]] ClangSessionImpl& impl() const;
 };
+
+} // namespace objcgen
 
 #endif // CLANGSESSION_H
