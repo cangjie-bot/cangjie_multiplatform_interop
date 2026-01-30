@@ -9,20 +9,21 @@
 #define CLANGSESSION_H
 
 #include <memory>
+#include <string>
+#include <vector>
 
 namespace objcgen {
 
-class ClangSessionImpl;
-
-class ClangSession final {
-    std::unique_ptr<ClangSessionImpl> impl_;
-
+class ClangSession {
 public:
-    [[nodiscard]] explicit ClangSession();
+    [[nodiscard]] static std::unique_ptr<ClangSession> create();
 
-    ~ClangSession();
+    virtual ~ClangSession() = default;
 
-    [[nodiscard]] ClangSessionImpl& impl() const;
+    virtual void parse_sources(const std::vector<std::string>& files, const std::vector<std::string>& arguments) = 0;
+
+protected:
+    [[nodiscard]] explicit ClangSession() = default;
 };
 
 } // namespace objcgen

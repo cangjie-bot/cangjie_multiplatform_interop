@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include "Config.h"
+#include "FatalException.h"
 #include "Logging.h"
 #include "Mappings.h"
 

@@ -9,6 +9,7 @@
 #include <iostream>
 #include <regex>
 
+#include "FatalException.h"
 #include "Logging.h"
 
 namespace objcgen {

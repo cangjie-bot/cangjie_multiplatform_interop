@@ -9,7 +9,7 @@
 #include <iostream>
 
 #include "Config.h"
-#include "Logging.h"
+#include "FatalException.h"
 
 namespace objcgen {
 

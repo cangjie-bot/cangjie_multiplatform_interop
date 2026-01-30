@@ -4,13 +4,15 @@
 //
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
-#include "SourceScanner.h"
+#include "SourceScannerConfig.h"
 
 #include <cassert>
 #include <iostream>
 #include <regex>
 
+#include "ClangSession.h"
 #include "Config.h"
+#include "FatalException.h"
 #include "Logging.h"
 
 namespace objcgen {
@@ -160,7 +162,7 @@ static void parse_sources(const toml::table& options, const std::string& source_
     toml_array_to_vector(options, source_name, arguments, "arguments");
     toml_array_to_vector(options, source_name, arguments, "arguments-append");
 
-    parse_sources(files, arguments, session);
+    session.parse_sources(files, arguments);
 }
 
 void parse_sources()
@@ -168,7 +170,7 @@ void parse_sources()
     const auto* mixins_any = config.get("sources-mixins");
 
     if (auto* sources = config.get_as<toml::table>("sources")) {
-        ClangSession session;
+        auto session = ClangSession::create();
 
         for (auto&& [source_name, source_any] : *sources) {
             if (const auto* source = source_any.as_table()) {
@@ -179,7 +181,7 @@ void parse_sources()
                 }
 
                 auto source_name_string = std::string(source_name.str());
-                parse_sources(entry, source_name_string, session);
+                parse_sources(entry, source_name_string, *session);
             } else {
                 fatal("`sources` entry `", source_name, "` is not a TOML table");
             }

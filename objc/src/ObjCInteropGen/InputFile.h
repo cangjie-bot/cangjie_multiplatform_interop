@@ -14,16 +14,6 @@
 #include <unordered_set>
 #include <vector>
 
-#ifdef OBJCINTEROPGEN_NO_WARNINGS
-#// [[nodiscard]] is ignored in C++17 when being applied to constructors.  Older
-#// GCC issues warnings on that.
-#if __has_cpp_attribute(nodiscard) > 201603L
-#define OBJCINTEROPGEN_NODISCARD_CONSTRUCTOR [[nodiscard]]
-#else
-#define OBJCINTEROPGEN_NODISCARD_CONSTRUCTOR
-#endif
-#endif
-
 namespace objcgen {
 
 class FileLevelSymbol;

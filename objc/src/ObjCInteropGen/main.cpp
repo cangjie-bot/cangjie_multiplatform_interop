@@ -10,6 +10,7 @@
 #include "CangjieWriter.h"
 #include "Config.h"
 #include "Diagnostics.h"
+#include "FatalException.h"
 #include "Logging.h"
 #include "Mappings.h"
 #include "MarkPackage.h"
