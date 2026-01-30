@@ -10,7 +10,7 @@
 
 #include <iostream>
 
-#include "Logging.h"
+#include "FatalException.h"
 #include "Package.h"
 #include "toml.hpp"
 

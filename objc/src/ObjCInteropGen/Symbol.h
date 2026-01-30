@@ -958,6 +958,10 @@ protected:
 };
 
 class NonTypeSymbol final : public FileLevelSymbol {
+    struct Private {
+        explicit Private() = default;
+    };
+
 public:
     enum class Kind : std::uint8_t {
         Field,
@@ -985,12 +989,6 @@ public:
         }
     };
 
-private:
-    struct Private {
-        explicit Private() = default;
-    };
-
-public:
     [[nodiscard]] NonTypeSymbol(
         Private, std::string name, const Kind kind, TypeLikeSymbol* return_type, uint8_t modifiers = 0)
         : FileLevelSymbol(std::move(name)), kind_(kind), modifiers_(modifiers), return_type_(return_type)
@@ -1189,6 +1187,8 @@ protected:
     void visit_impl(SymbolVisitor& visitor) override;
 
 private:
+    friend class TypeDeclarationSymbol;
+
     Kind kind_;
     uint8_t modifiers_;
 
@@ -1201,8 +1201,6 @@ private:
     std::vector<ParameterSymbol> parameters_;
     std::string selector_attribute_;
     std::optional<std::uint64_t> enum_constant_value_;
-
-    friend class TypeDeclarationSymbol;
 };
 
 class ParameterSymbol final : public Symbol {

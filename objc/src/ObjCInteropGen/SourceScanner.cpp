@@ -4,7 +4,7 @@
 //
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
-#include "SourceScanner.h"
+#include "ClangSession.h"
 
 #include <cassert>
 #include <deque>
@@ -16,6 +16,7 @@
 #include <clang/AST/DeclObjC.h>
 #include <clang/Basic/Version.h>
 
+#include "FatalException.h"
 #include "InputFile.h"
 #include "Logging.h"
 #include "Strings.h"
@@ -217,7 +218,7 @@ protected:
     CXChildVisitResult visit_impl(CXCursor cursor, CXCursor parent) override;
 };
 
-class ClangSessionImpl final {
+class ClangSessionImpl final : public ClangSession {
     CXIndex index_;
     SourceScanner scanner_;
 
@@ -227,7 +228,7 @@ public:
         index_ = clang_createIndex(0, 1);
     }
 
-    ~ClangSessionImpl() = default;
+    ~ClangSessionImpl();
 
     ClangSessionImpl(const ClangSessionImpl& other) = delete;
 
@@ -246,20 +247,19 @@ public:
     {
         return scanner_;
     }
+
+private:
+    void parse_sources(const std::vector<std::string>& files, const std::vector<std::string>& arguments) override;
 };
 
-ClangSession::ClangSession() : impl_(std::make_unique<ClangSessionImpl>())
+std::unique_ptr<ClangSession> ClangSession::create()
 {
+    return std::make_unique<ClangSessionImpl>();
 }
 
-ClangSession::~ClangSession()
+ClangSessionImpl::~ClangSessionImpl()
 {
-    clang_disposeIndex(impl_->index());
-}
-
-ClangSessionImpl& ClangSession::impl() const
-{
-    return *impl_.get();
+    clang_disposeIndex(index());
 }
 
 [[nodiscard]] static std::string as_string(CXString string)
@@ -1364,8 +1364,7 @@ static bool parse_source(CXIndex index, const std::string& file, std::vector<con
     return true;
 }
 
-void parse_sources(
-    const std::vector<std::string>& files, const std::vector<std::string>& arguments, const ClangSession& session)
+void ClangSessionImpl::parse_sources(const std::vector<std::string>& files, const std::vector<std::string>& arguments)
 {
     std::vector args = {"-xobjective-c", "-fobjc-arc"};
 
@@ -1373,15 +1372,11 @@ void parse_sources(
         args.push_back(argument.c_str());
     }
 
-    auto& session_impl = session.impl();
-    const auto index = session_impl.index();
-    auto& visitor = session_impl.scanner();
-
     auto all_file_names_are_empty = true;
     for (auto&& file : files) {
         if (!file.empty()) {
             all_file_names_are_empty = false;
-            if (!parse_source(index, file, args, visitor)) {
+            if (!parse_source(index_, file, args, scanner_)) {
                 fatal("Parsing failed because of compiler errors");
             }
         }

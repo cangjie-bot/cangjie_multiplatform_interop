@@ -10,6 +10,7 @@
 #include <iostream>
 #include <unordered_set>
 
+#include "FatalException.h"
 #include "Logging.h"
 
 namespace objcgen {
