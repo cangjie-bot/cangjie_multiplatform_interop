@@ -228,7 +228,7 @@ public:
         index_ = clang_createIndex(0, 1);
     }
 
-    ~ClangSessionImpl();
+    ~ClangSessionImpl() override;
 
     ClangSessionImpl(const ClangSessionImpl& other) = delete;
 
