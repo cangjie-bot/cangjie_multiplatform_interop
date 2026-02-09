@@ -701,14 +701,14 @@ public:
     {
     }
 
-    [[nodiscard]] PrimitiveSize size() const noexcept
-    {
-        return size_;
-    }
-
     [[nodiscard]] PrimitiveTypeCategory category() const noexcept
     {
         return category_;
+    }
+
+    [[nodiscard]] PrimitiveSize size() const noexcept
+    {
+        return size_;
     }
 
     [[nodiscard]] bool is_unit() const noexcept override

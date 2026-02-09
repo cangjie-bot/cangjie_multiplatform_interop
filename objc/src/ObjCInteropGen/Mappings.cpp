@@ -15,7 +15,7 @@ std::vector<TypeMapping*> mappings;
 TypeLikeSymbol* NonGenericMapping::map([[maybe_unused]] NamedTypeSymbol* type)
 {
     assert(can_map(type));
-    auto* result = universe.any_type(to_);
+    auto* result = universe.type(to_);
     if (!result) {
         std::cerr << "Unknown type " << to_ << " specified in [[mappings]]" << std::endl;
         exit(1);

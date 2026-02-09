@@ -207,7 +207,8 @@ void do_rename()
 
     for (auto&& type : type_definitions) {
         if (type.is(NamedTypeSymbol::Kind::Protocol)) {
-            for (const auto& name = type.name();;) {
+            for (;;) {
+                const auto& name = type.name();
                 bool clashing = false;
                 for (uint8_t ns = 0; ns < TYPE_NAMESPACE_COUNT; ++ns) {
                     auto namespaze = static_cast<TypeNamespace>(ns);
@@ -277,7 +278,7 @@ void do_rename()
 void set_type_mappings()
 {
     for (auto&& type : Universe::all_declarations()) {
-        for (auto&& mapping_ptr : mappings) {
+        for (auto mapping_ptr : mappings) {
             auto& mapping = *mapping_ptr;
             if (mapping.can_map(&type)) {
                 type.set_mapping(&mapping);

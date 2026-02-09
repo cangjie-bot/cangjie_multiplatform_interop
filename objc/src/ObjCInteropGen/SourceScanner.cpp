@@ -673,33 +673,25 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
         // CXType_Unexposed rather than CXType_Attributed.
         case CXType_Unexposed: {
             auto modified_type = clang_Type_getModifiedType(type);
-            if (modified_type.kind == CXType_Invalid) {
-                TypeLikeSymbol* result;
-                auto size = clang_Type_getSizeOf(type);
-                switch (size) {
-                    case CXTypeLayoutError_Incomplete:
-                        result = &universe.unit();
-                        break;
-                    case 1:
-                    case 2:
-                    case 3:
-                    case 4:
-                    case 8:
-                    case 16:
-                        result =
-                            &universe.primitive_type(PrimitiveTypeCategory::SignedInteger, static_cast<size_t>(size));
-                        break;
-                    default:
-                        if (size <= 0) {
-                            result = &universe.unit();
-                        } else {
-                            result = new VArraySymbol(universe.byte(), static_cast<size_t>(size));
-                        }
-                        break;
-                }
-                return new UnexposedTypeSymbol(get_type_name(type), *result);
+            if (modified_type.kind != CXType_Invalid) {
+                // Assume this is actually CXType_Attributed
+                return type_like_symbol(modified_type);
             }
-            return type_like_symbol(modified_type);
+            auto type_name = get_type_name(type);
+            TypeLikeSymbol* result = universe.type(type_name);
+            if (!result) {
+                auto size = clang_Type_getSizeOf(type);
+                result =
+                    universe.primitive_type(get_primitive_category(type), static_cast<size_t>(size < 0 ? 0 : size));
+                if (!result) {
+                    if (size <= 0) {
+                        result = &universe.unit();
+                    } else {
+                        result = new VArraySymbol(universe.int8(), static_cast<size_t>(size));
+                    }
+                }
+            }
+            return new UnexposedTypeSymbol(type_name, *result);
         }
 
         case CXType_Attributed: {
@@ -840,25 +832,12 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
 
         default: {
             assert(is_builtin(type));
-
+            type_name = get_type_name(type);
             auto size = clang_Type_getSizeOf(type);
-            switch (size) {
-                case CXTypeLayoutError_Incomplete:
-                    return &universe.unit();
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 8:
-                    return &universe.primitive_type(get_primitive_category(type), static_cast<size_t>(size));
-                case 16:
-                    // Cangjie does not natively support 128-bit primitives
-                    return new UnexposedTypeSymbol(get_type_name(type),
-                        universe.primitive_type(get_primitive_category(type), static_cast<size_t>(size)));
-                default:
-                    assert(size <= 0);
-                    return new UnexposedTypeSymbol(get_type_name(type), universe.unit());
-            }
+            auto* primitive_symbol =
+                universe.primitive_type(get_primitive_category(type), static_cast<size_t>(size < 0 ? 0 : size));
+            assert(primitive_symbol);
+            return primitive_symbol;
         }
     }
 

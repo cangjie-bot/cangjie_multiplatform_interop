@@ -20,27 +20,47 @@ TopLevelIterator Universe::top_level() noexcept
 }
 
 Universe::Universe()
-    : primitive_types_{{"Unit", PrimitiveTypeCategory::Unit, PrimitiveSize::Zero},
-          {"Bool", PrimitiveTypeCategory::Boolean, PrimitiveSize::One},
-          {"Int8", PrimitiveTypeCategory::SignedInteger, PrimitiveSize::One},
-          {"Int16", PrimitiveTypeCategory::SignedInteger, PrimitiveSize::Two},
-          {"Int32", PrimitiveTypeCategory::SignedInteger, PrimitiveSize::Four},
-          {"Int64", PrimitiveTypeCategory::SignedInteger, PrimitiveSize::Eight},
-          {"UInt8", PrimitiveTypeCategory::UnsignedInteger, PrimitiveSize::One},
-          {"UInt16", PrimitiveTypeCategory::UnsignedInteger, PrimitiveSize::Two},
-          {"UInt32", PrimitiveTypeCategory::UnsignedInteger, PrimitiveSize::Four},
-          {"UInt64", PrimitiveTypeCategory::UnsignedInteger, PrimitiveSize::Eight},
-          {"Float16", PrimitiveTypeCategory::FloatingPoint, PrimitiveSize::Two},
-          {"Float32", PrimitiveTypeCategory::FloatingPoint, PrimitiveSize::Four},
-          {"Float64", PrimitiveTypeCategory::FloatingPoint, PrimitiveSize::Eight}},
-      built_in_type_declarations_{{NamedTypeSymbol::Kind::Struct, "ObjCInt128"},
-          {NamedTypeSymbol::Kind::Struct, "ObjCUInt128"}, {NamedTypeSymbol::Kind::Interface, "ObjCClass"},
-          {NamedTypeSymbol::Kind::Protocol, "ObjCId"}, {NamedTypeSymbol::Kind::Interface, "SEL" /* "ObjCSelector" */}}
+    : unit_{"Unit", PrimitiveTypeCategory::Unit, PrimitiveSize::Zero},
+      bool_{"Bool", PrimitiveTypeCategory::Boolean, PrimitiveSize::One},
+      int8_{"Int8", PrimitiveTypeCategory::SignedInteger, PrimitiveSize::One},
+      int16_{"Int16", PrimitiveTypeCategory::SignedInteger, PrimitiveSize::Two},
+      int32_{"Int32", PrimitiveTypeCategory::SignedInteger, PrimitiveSize::Four},
+      int64_{"Int64", PrimitiveTypeCategory::SignedInteger, PrimitiveSize::Eight},
+      uint8_{"UInt8", PrimitiveTypeCategory::UnsignedInteger, PrimitiveSize::One},
+      uint16_{"UInt16", PrimitiveTypeCategory::UnsignedInteger, PrimitiveSize::Two},
+      uint32_{"UInt32", PrimitiveTypeCategory::UnsignedInteger, PrimitiveSize::Four},
+      uint64_{"UInt64", PrimitiveTypeCategory::UnsignedInteger, PrimitiveSize::Eight},
+      float16_{"Float16", PrimitiveTypeCategory::FloatingPoint, PrimitiveSize::Two},
+      float32_{"Float32", PrimitiveTypeCategory::FloatingPoint, PrimitiveSize::Four},
+      float64_{"Float64", PrimitiveTypeCategory::FloatingPoint, PrimitiveSize::Eight},
+      int128_{NamedTypeSymbol::Kind::Struct, "ObjCInt128"},
+      uint128_{NamedTypeSymbol::Kind::Struct, "ObjCUInt128"},
+      class_{NamedTypeSymbol::Kind::Interface, "ObjCClass"},
+      id_{NamedTypeSymbol::Kind::Protocol, "ObjCId"},
+      sel_{NamedTypeSymbol::Kind::Interface, "SEL" /* "ObjCSelector" */}
 {
     for (auto& map : types_) {
         map.reserve(PREALLOCATED_TYPE_COUNT);
     }
     type_order_.reserve(PREALLOCATED_TYPE_COUNT);
+    register_type(&unit_);
+    register_type(&bool_);
+    register_type(&int8_);
+    register_type(&int16_);
+    register_type(&int32_);
+    register_type(&int64_);
+    register_type(&uint8_);
+    register_type(&uint16_);
+    register_type(&uint32_);
+    register_type(&uint64_);
+    register_type(&float16_);
+    register_type(&float32_);
+    register_type(&float64_);
+    register_type(&int128_);
+    register_type(&uint128_);
+    register_type(&class_);
+    register_type(&id_);
+    register_type(&sel_);
 }
 
 NonTypeSymbol& Universe::register_top_level_function(std::string name, TypeLikeSymbol& return_type, uint16_t modifiers)
@@ -53,6 +73,8 @@ NonTypeSymbol& Universe::register_top_level_function(std::string name, TypeLikeS
     switch (kind) {
         case NamedTypeSymbol::Kind::Protocol:
             return TypeNamespace::Protocols;
+        case NamedTypeSymbol::Kind::Primitive:
+            return TypeNamespace::Keywords;
         case NamedTypeSymbol::Kind::Struct:
         case NamedTypeSymbol::Kind::Enum:
         case NamedTypeSymbol::Kind::Union:
@@ -76,56 +98,50 @@ void Universe::register_type(NamedTypeSymbol* symbol)
     type_order_.emplace_back(type_namespace, name);
 }
 
-NamedTypeSymbol& Universe::primitive_type(PrimitiveTypeCategory category, size_t size) noexcept
+NamedTypeSymbol* Universe::primitive_type(PrimitiveTypeCategory category, size_t size) noexcept
 {
     switch (category) {
         case PrimitiveTypeCategory::Boolean:
-            assert(size == 1);
-            return primitive_types_[static_cast<int>(PrimitiveTypeIndex::Bool)];
+            return size == 1 ? &boolean() : nullptr;
         case PrimitiveTypeCategory::SignedInteger:
             switch (size) {
                 case 1:
-                    return primitive_types_[static_cast<int>(PrimitiveTypeIndex::Int8)];
+                    return &int8();
                 case 2:
-                    return primitive_types_[static_cast<int>(PrimitiveTypeIndex::Int16)];
+                    return &int16();
                 case 4:
-                    return primitive_types_[static_cast<int>(PrimitiveTypeIndex::Int32)];
+                    return &int32();
                 case 8:
-                    return primitive_types_[static_cast<int>(PrimitiveTypeIndex::Int64)];
+                    return &int64();
                 default:
-                    assert(size == 16);
-                    return int128();
+                    return size == 16 ? &int128() : nullptr;
             }
         case PrimitiveTypeCategory::UnsignedInteger:
             switch (size) {
                 case 1:
-                    return primitive_types_[static_cast<int>(PrimitiveTypeIndex::UInt8)];
+                    return &uint8();
                 case 2:
-                    return primitive_types_[static_cast<int>(PrimitiveTypeIndex::UInt16)];
+                    return &uint16();
                 case 4:
-                    return primitive_types_[static_cast<int>(PrimitiveTypeIndex::UInt32)];
+                    return &uint32();
                 case 8:
-                    return primitive_types_[static_cast<int>(PrimitiveTypeIndex::UInt64)];
+                    return &uint64();
                 default:
-                    assert(size == 16);
-                    return uint128();
+                    return size == 16 ? &uint128() : nullptr;
             }
         case PrimitiveTypeCategory::FloatingPoint:
             switch (size) {
                 case 2:
-                    return primitive_types_[static_cast<int>(PrimitiveTypeIndex::Float16)];
+                    return &float16();
                 case 4:
-                    return primitive_types_[static_cast<int>(PrimitiveTypeIndex::Float32)];
+                    return &float32();
                 case 8:
-                    return primitive_types_[static_cast<int>(PrimitiveTypeIndex::Float64)];
+                    return &float64();
                 default:
-                    assert(size == 16);
-                    return built_in_type_declarations_[static_cast<int>(BuiltInTypeDeclarationIndex::Int128)];
+                    return nullptr;
             }
         default:
-            assert(category == PrimitiveTypeCategory::Unit);
-            assert(size == 0);
-            return primitive_types_[static_cast<int>(PrimitiveTypeIndex::Unit)];
+            return category == PrimitiveTypeCategory::Unit && size == 0 ? &unit() : nullptr;
     }
 }
 
@@ -150,21 +166,6 @@ NamedTypeSymbol* Universe::type(const std::string& name) const
         }
     }
     return nullptr;
-}
-
-NamedTypeSymbol* Universe::any_type(const std::string& name)
-{
-    for (int i = 0; i < NumberOfPrimitiveTypes; ++i) {
-        if (primitive_types_[i].name() == name) {
-            return &primitive_types_[i];
-        };
-    }
-    for (int i = 0; i < NumberOfBuiltInTypeDeclarations; ++i) {
-        if (built_in_type_declarations_[i].name() == name) {
-            return &built_in_type_declarations_[i];
-        };
-    }
-    return type(name);
 }
 
 void Universe::process_rename(NamedTypeSymbol* symbol, const std::string& old_name)

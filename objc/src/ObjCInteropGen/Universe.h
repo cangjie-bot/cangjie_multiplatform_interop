@@ -21,6 +21,11 @@ enum class TypeNamespace : std::uint8_t {
     // protocol names when printing.
     Protocols,
 
+    // These are built-in Cangjie type names, which are keywords.  If an Objective-C
+    // symbol name conflicts with one of them, the conflict will be resolved by
+    // enclosing the name in the `` ticks when printing.
+    Keywords,
+
     // In the C language, type symbols tagged with struct/union/enum can share names
     // with non-tagged symbols.
     Tagged,
@@ -129,26 +134,6 @@ private:
 class Universe final {
     static constexpr int PREALLOCATED_TYPE_COUNT = 8192;
 
-    enum class PrimitiveTypeIndex {
-        Unit,
-        Bool,
-        Int8,
-        Int16,
-        Int32,
-        Int64,
-        UInt8,
-        UInt16,
-        UInt32,
-        UInt64,
-        Float16,
-        Float32,
-        Float64
-    };
-    static constexpr int NumberOfPrimitiveTypes = static_cast<int>(PrimitiveTypeIndex::Float64) + 1;
-
-    enum class BuiltInTypeDeclarationIndex { Int128, UInt128, Class, Id, Sel };
-    static constexpr int NumberOfBuiltInTypeDeclarations = static_cast<int>(BuiltInTypeDeclarationIndex::Sel) + 1;
-
     using type_map_t = std::unordered_map<std::string, NamedTypeSymbol*>;
 
     TopLevel top_level_;
@@ -156,8 +141,24 @@ class Universe final {
     type_map_t types_[TYPE_NAMESPACE_COUNT];
     type_order_t type_order_;
 
-    PrimitiveTypeSymbol primitive_types_[NumberOfPrimitiveTypes];
-    TypeDeclarationSymbol built_in_type_declarations_[NumberOfBuiltInTypeDeclarations];
+    PrimitiveTypeSymbol unit_;
+    PrimitiveTypeSymbol bool_;
+    PrimitiveTypeSymbol int8_;
+    PrimitiveTypeSymbol int16_;
+    PrimitiveTypeSymbol int32_;
+    PrimitiveTypeSymbol int64_;
+    PrimitiveTypeSymbol uint8_;
+    PrimitiveTypeSymbol uint16_;
+    PrimitiveTypeSymbol uint32_;
+    PrimitiveTypeSymbol uint64_;
+    PrimitiveTypeSymbol float16_;
+    PrimitiveTypeSymbol float32_;
+    PrimitiveTypeSymbol float64_;
+    TypeDeclarationSymbol int128_;
+    TypeDeclarationSymbol uint128_;
+    TypeDeclarationSymbol class_;
+    TypeDeclarationSymbol id_;
+    TypeDeclarationSymbol sel_;
 
     type_map_t& types_map(const TypeNamespace index)
     {
@@ -180,42 +181,97 @@ public:
 
     void register_type(NamedTypeSymbol* symbol);
 
-    [[nodiscard]] NamedTypeSymbol& unit() noexcept
+    [[nodiscard]] auto& unit() noexcept
     {
-        return primitive_types_[static_cast<int>(PrimitiveTypeIndex::Unit)];
+        return unit_;
     }
 
-    [[nodiscard]] NamedTypeSymbol& byte() noexcept
+    [[nodiscard]] auto& boolean() noexcept
     {
-        return primitive_types_[static_cast<int>(PrimitiveTypeIndex::Int8)];
+        return bool_;
     }
 
-    [[nodiscard]] NamedTypeSymbol& int128() noexcept
+    [[nodiscard]] auto& int8() noexcept
     {
-        return built_in_type_declarations_[static_cast<int>(BuiltInTypeDeclarationIndex::Int128)];
+        return int8_;
     }
 
-    [[nodiscard]] NamedTypeSymbol& uint128() noexcept
+    [[nodiscard]] auto& int16() noexcept
     {
-        return built_in_type_declarations_[static_cast<int>(BuiltInTypeDeclarationIndex::UInt128)];
+        return int16_;
     }
 
-    [[nodiscard]] NamedTypeSymbol& primitive_type(PrimitiveTypeCategory category, size_t size) noexcept;
-
-    [[nodiscard]] TypeDeclarationSymbol& id() noexcept
+    [[nodiscard]] auto& int32() noexcept
     {
-        return built_in_type_declarations_[static_cast<int>(BuiltInTypeDeclarationIndex::Id)];
+        return int32_;
     }
 
-    [[nodiscard]] TypeDeclarationSymbol& clazz() noexcept
+    [[nodiscard]] auto& int64() noexcept
     {
-        return built_in_type_declarations_[static_cast<int>(BuiltInTypeDeclarationIndex::Class)];
+        return int64_;
     }
 
-    [[nodiscard]] TypeDeclarationSymbol& sel() noexcept
+    [[nodiscard]] auto& uint8() noexcept
     {
-        return built_in_type_declarations_[static_cast<int>(BuiltInTypeDeclarationIndex::Sel)];
+        return uint8_;
     }
+
+    [[nodiscard]] auto& uint16() noexcept
+    {
+        return uint16_;
+    }
+
+    [[nodiscard]] auto& uint32() noexcept
+    {
+        return uint32_;
+    }
+
+    [[nodiscard]] auto& uint64() noexcept
+    {
+        return uint64_;
+    }
+
+    [[nodiscard]] auto& float16() noexcept
+    {
+        return float16_;
+    }
+
+    [[nodiscard]] auto& float32() noexcept
+    {
+        return float32_;
+    }
+
+    [[nodiscard]] auto& float64() noexcept
+    {
+        return float64_;
+    }
+
+    [[nodiscard]] auto& int128() noexcept
+    {
+        return int128_;
+    }
+
+    [[nodiscard]] auto& uint128() noexcept
+    {
+        return uint128_;
+    }
+
+    [[nodiscard]] auto& clazz() noexcept
+    {
+        return class_;
+    }
+
+    [[nodiscard]] auto& id() noexcept
+    {
+        return id_;
+    }
+
+    [[nodiscard]] auto& sel() noexcept
+    {
+        return sel_;
+    }
+
+    [[nodiscard]] NamedTypeSymbol* primitive_type(PrimitiveTypeCategory category, size_t size) noexcept;
 
     // Find the registered type symbol by its name and kind.  Return nullptr if no
     // such type has been registered.
@@ -228,11 +284,6 @@ public:
     // Find a registered type symbol by its name.  Return nullptr if no such type
     // has been registered.
     [[nodiscard]] NamedTypeSymbol* type(const std::string& name) const;
-
-    // Find a type by its name.  First, find among primitive and built-in
-    // ObjCInteropGen types.  Then in the Primary - Protocol - Tagged namespaces (in
-    // that particular order).  Return nullptr if no such type can be found.
-    [[nodiscard]] NamedTypeSymbol* any_type(const std::string& name);
 
     void process_rename(NamedTypeSymbol* symbol, const std::string& old_name);
 

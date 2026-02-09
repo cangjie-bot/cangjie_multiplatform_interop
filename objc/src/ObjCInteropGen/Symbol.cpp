@@ -207,7 +207,7 @@ NamedTypeSymbol* NamedTypeSymbol::construct(const std::vector<TypeLikeSymbol*>& 
 
 NamedTypeSymbol& EnumDeclarationSymbol::underlying_type() const noexcept
 {
-    return underlying_type_ ? *underlying_type_ : universe.primitive_type(PrimitiveTypeCategory::SignedInteger, 32);
+    return underlying_type_ ? *underlying_type_ : universe.int32();
 }
 
 void UnexposedTypeSymbol::print(std::ostream& stream, SymbolPrintFormat format) const
