@@ -23,8 +23,8 @@ public abstract sealed class NSPointerFunctionsOptions {
 
 @ObjCMirror
 public open class NSPointerFunctions <: NSObject & NSCopying {
-    @ForeignName["initWithOptions:"] public init(options: Int32 /*NSPointerFunctionsOptions*/)
-    @ForeignName["pointerFunctionsWithOptions:"] public static func pointerFunctionsWithOptions(options: Int32 /*NSPointerFunctionsOptions*/): NSPointerFunctions
+    @ForeignName["initWithOptions:"] public init(options: NSUInteger /*NSPointerFunctionsOptions*/)
+    @ForeignName["pointerFunctionsWithOptions:"] public static func pointerFunctionsWithOptions(options: NSUInteger /*NSPointerFunctionsOptions*/): NSPointerFunctions
     public open mut prop hashFunction: ObjCFunc<(ObjCPointer<Unit>, ObjCFunc<(ObjCPointer<Unit>) -> NSUInteger>) -> NSUInteger>
     public open mut prop isEqualFunction: ObjCFunc<(ObjCPointer<Unit>, ObjCPointer<Unit>, ObjCFunc<(ObjCPointer<Unit>) -> NSUInteger>) -> Bool>
     public open mut prop sizeFunction: ObjCFunc<(ObjCPointer<Unit>) -> NSUInteger>

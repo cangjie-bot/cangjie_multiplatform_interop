@@ -64,7 +64,7 @@ public open class NSXMLParser <: NSObject {
     public open mut prop delegate: ?NSXMLParserDelegate
     public open mut prop shouldProcessNamespaces: Bool
     public open mut prop shouldReportNamespacePrefixes: Bool
-    public open mut prop externalEntityResolvingPolicy: Int32 /*NSXMLParserExternalEntityResolvingPolicy*/
+    public open mut prop externalEntityResolvingPolicy: NSUInteger /*NSXMLParserExternalEntityResolvingPolicy*/
     public open mut prop allowedExternalEntityURLs: ?NSSet/*<NSURL>*/
     public open func parse(): Bool
     public open func abortParsing(): Unit

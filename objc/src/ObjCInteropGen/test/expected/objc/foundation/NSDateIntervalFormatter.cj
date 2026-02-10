@@ -19,8 +19,8 @@ public open class NSDateIntervalFormatter <: NSFormatter {
     public open mut prop calendar: NSCalendar
     public open mut prop timeZone: NSTimeZone
     public open mut prop dateTemplate: NSString
-    public open mut prop dateStyle: Int32 /*NSDateIntervalFormatterStyle*/
-    public open mut prop timeStyle: Int32 /*NSDateIntervalFormatterStyle*/
+    public open mut prop dateStyle: NSUInteger /*NSDateIntervalFormatterStyle*/
+    public open mut prop timeStyle: NSUInteger /*NSDateIntervalFormatterStyle*/
     @ForeignName["stringFromDate:toDate:"] public open func stringFromDateToDate(fromDate: NSDate, toDate: NSDate): NSString
     @ForeignName["stringFromDateInterval:"] public open func stringFromDateInterval(dateInterval: NSDateInterval): ?NSString
 }

@@ -12,17 +12,17 @@ public abstract sealed class NSNumberFormatterBehavior {
 
 @ObjCMirror
 public open class NSNumberFormatter <: NSFormatter {
-    public open mut prop formattingContext: Int32 /*NSFormattingContext*/
+    public open mut prop formattingContext: NSInteger /*NSFormattingContext*/
     @ForeignName["getObjectValue:forString:range:error:"] public open func getObjectValueForStringRangeError(obj: ObjCPointer<ObjCId>, string: NSString, rangep: ObjCPointer<NSRange>, error: ObjCPointer<NSError>): Bool
     @ForeignName["stringFromNumber:"] public open func stringFromNumber(number: NSNumber): ?NSString
     @ForeignName["numberFromString:"] public open func numberFromString(string: NSString): ?NSNumber
-    @ForeignName["localizedStringFromNumber:numberStyle:"] public static func localizedStringFromNumberNumberStyle(num: NSNumber, nstyle: Int32 /*NSNumberFormatterStyle*/): NSString
-    public static func defaultFormatterBehavior(): Int32 /*NSNumberFormatterBehavior*/
-    @ForeignName["setDefaultFormatterBehavior:"] public static func setDefaultFormatterBehavior(behavior: Int32 /*NSNumberFormatterBehavior*/): Unit
-    public open mut prop numberStyle: Int32 /*NSNumberFormatterStyle*/
+    @ForeignName["localizedStringFromNumber:numberStyle:"] public static func localizedStringFromNumberNumberStyle(num: NSNumber, nstyle: NSUInteger /*NSNumberFormatterStyle*/): NSString
+    public static func defaultFormatterBehavior(): NSUInteger /*NSNumberFormatterBehavior*/
+    @ForeignName["setDefaultFormatterBehavior:"] public static func setDefaultFormatterBehavior(behavior: NSUInteger /*NSNumberFormatterBehavior*/): Unit
+    public open mut prop numberStyle: NSUInteger /*NSNumberFormatterStyle*/
     public open mut prop locale: NSLocale
     public open mut prop generatesDecimalNumbers: Bool
-    public open mut prop formatterBehavior: Int32 /*NSNumberFormatterBehavior*/
+    public open mut prop formatterBehavior: NSUInteger /*NSNumberFormatterBehavior*/
     public open mut prop negativeFormat: NSString
     public open mut prop textAttributesForNegativeValues: ?NSDictionary/*<NSString, ObjCId>*/
     public open mut prop positiveFormat: NSString
@@ -60,8 +60,8 @@ public open class NSNumberFormatter <: NSFormatter {
     public open mut prop multiplier: ?NSNumber
     public open mut prop formatWidth: NSUInteger
     public open mut prop paddingCharacter: NSString
-    public open mut prop paddingPosition: Int32 /*NSNumberFormatterPadPosition*/
-    public open mut prop roundingMode: Int32 /*NSNumberFormatterRoundingMode*/
+    public open mut prop paddingPosition: NSUInteger /*NSNumberFormatterPadPosition*/
+    public open mut prop roundingMode: NSUInteger /*NSNumberFormatterRoundingMode*/
     public open mut prop roundingIncrement: NSNumber
     public open mut prop minimumIntegerDigits: NSUInteger
     public open mut prop maximumIntegerDigits: NSUInteger

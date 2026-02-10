@@ -27,7 +27,7 @@ public abstract sealed class NSXPCConnectionOptions {
 public open class NSXPCConnection <: NSObject & NSXPCProxyCreating {
     @ForeignName["initWithServiceName:"] public init(serviceName: NSString)
     public open prop serviceName: ?NSString
-    @ForeignName["initWithMachServiceName:options:"] public init(name: NSString, options: Int32 /*NSXPCConnectionOptions*/)
+    @ForeignName["initWithMachServiceName:options:"] public init(name: NSString, options: NSUInteger /*NSXPCConnectionOptions*/)
     @ForeignName["initWithListenerEndpoint:"] public init(endpoint: NSXPCListenerEndpoint)
     public open prop endpoint: NSXPCListenerEndpoint
     public open mut prop exportedInterface: ?NSXPCInterface
@@ -68,8 +68,8 @@ public open class NSXPCListener <: NSObject {
 public open class NSXPCInterface <: NSObject {
     @ForeignName["interfaceWithProtocol:"] public static func interfaceWithProtocol(protocol: Protocol): NSXPCInterface
     public open mut prop protocol: Protocol
-    @ForeignName["setClasses:forSelector:argumentIndex:ofReply:"] public open func setClassesForSelectorArgumentIndexOfReply(classes: NSSet/*<Class>*/, sel: SEL, arg: NSUInteger, ofReply: Bool): Unit
-    @ForeignName["classesForSelector:argumentIndex:ofReply:"] public open func classesForSelectorArgumentIndexOfReply(sel: SEL, arg: NSUInteger, ofReply: Bool): NSSet/*<Class>*/
+    @ForeignName["setClasses:forSelector:argumentIndex:ofReply:"] public open func setClassesForSelectorArgumentIndexOfReply(classes: NSSet/*<ObjCClass>*/, sel: SEL, arg: NSUInteger, ofReply: Bool): Unit
+    @ForeignName["classesForSelector:argumentIndex:ofReply:"] public open func classesForSelectorArgumentIndexOfReply(sel: SEL, arg: NSUInteger, ofReply: Bool): NSSet/*<ObjCClass>*/
     @ForeignName["setInterface:forSelector:argumentIndex:ofReply:"] public open func setInterfaceForSelectorArgumentIndexOfReply(ifc: NSXPCInterface, sel: SEL, arg: NSUInteger, ofReply: Bool): Unit
     @ForeignName["interfaceForSelector:argumentIndex:ofReply:"] public open func interfaceForSelectorArgumentIndexOfReply(sel: SEL, arg: NSUInteger, ofReply: Bool): ?NSXPCInterface
     @ForeignName["setXPCType:forSelector:argumentIndex:ofReply:"] public open func setXPCTypeForSelectorArgumentIndexOfReply(`type`: xpc_type_t, sel: SEL, arg: NSUInteger, ofReply: Bool): Unit

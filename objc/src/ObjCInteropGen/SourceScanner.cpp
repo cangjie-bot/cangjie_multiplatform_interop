@@ -10,6 +10,7 @@
 #include <deque>
 #include <filesystem>
 #include <iostream>
+#include <optional>
 
 #include <clang-c/Index.h>
 #include <clang/AST/DeclBase.h>
@@ -84,7 +85,7 @@ class SourceScanner final : public ClangVisitor {
     // It doesn't appear there is a way around it, other than to keep track of what we already visited.
     std::unordered_set<CXCursor> visited_;
 
-    // When a function is processed, and the function return a function pointer
+    // When a function is processed, and the function returns a function pointer
     // defined in-place, then the visitor visits the return type parameters as
     // direct children of the function, before the parameters of the function.  That
     // is, when visiting
@@ -183,6 +184,11 @@ class SourceScanner final : public ClangVisitor {
         return push_current(std::addressof(symbol));
     }
 
+    auto* push_current(EnumConstantSymbol& constant)
+    {
+        return current_.emplace_back(&constant);
+    }
+
     void pop_current([[maybe_unused]] Symbol* symbol)
     {
         assert(symbol);
@@ -194,9 +200,9 @@ class SourceScanner final : public ClangVisitor {
     [[nodiscard]] Symbol* push_top_level_function(const CXCursor& cursor, std::string&& name);
 
     [[nodiscard]] Symbol* push_property(
-        std::string&& name, std::string&& getter, std::string&& setter, uint8_t modifiers);
+        std::string&& name, std::string&& getter, std::string&& setter, uint16_t modifiers);
 
-    [[nodiscard]] Symbol* push_member_method(CXCursor cursor, std::string&& name, uint8_t modifiers);
+    [[nodiscard]] Symbol* push_member_method(CXCursor cursor, std::string&& name, uint16_t modifiers);
 
     [[nodiscard]] Symbol* push_constructor(CXCursor cursor, std::string&& name);
 
@@ -428,7 +434,7 @@ template <class Decl>
     if (cpp->isFloatingType()) {
         return PrimitiveTypeCategory::FloatingPoint;
     }
-    return PrimitiveTypeCategory::Unknown;
+    return PrimitiveTypeCategory::Unit;
 }
 
 NamedTypeSymbol* SourceScanner::named_type_symbol(CXType type)
@@ -481,21 +487,16 @@ std::string SourceScanner::new_anonymous_name(CXCursor decl)
 TypeLikeSymbol* SourceScanner::add_type(const NamedTypeSymbol::Kind kind, const std::string& name, const CXType& type)
 {
     NamedTypeSymbol* symbol;
-    if (kind == NamedTypeSymbol::Kind::TypeDef) {
-        symbol = new TypeAliasSymbol(name);
-    } else {
-        symbol = new TypeDeclarationSymbol(kind, name);
-    }
-
-    if (is_builtin(type)) {
-        if (auto* type_decl = dynamic_cast<TypeDeclarationSymbol*>(symbol)) {
-            const auto type_category = get_primitive_category(type);
-            const auto type_size = clang_Type_getSizeOf(type);
-            const PrimitiveTypeInformation type_information(static_cast<size_t>(type_size), type_category);
-            type_decl->set_primitive_information(type_information);
-        } else {
-            assert(false);
-        }
+    switch (kind) {
+        case NamedTypeSymbol::Kind::TypeDef:
+            symbol = new TypeAliasSymbol(name);
+            break;
+        case NamedTypeSymbol::Kind::Enum:
+            symbol = new EnumDeclarationSymbol(name);
+            break;
+        default:
+            symbol = new TypeDeclarationSymbol(kind, name);
+            break;
     }
 
     if (const auto decl = clang_getTypeDeclaration(type); decl.kind != CXCursor_NoDeclFound) {
@@ -582,6 +583,20 @@ static UndecorateResult undecorate_parameter_type_name(const std::string& decora
               without_prefix.substr(opening_bracket + 1, without_prefix.size() - opening_bracket - 2)};
 }
 
+[[nodiscard]] std::string get_type_name(const CXType& type)
+{
+    auto type_name = as_string(clang_getTypeSpelling(type));
+#if CLANG_VERSION_MAJOR < 16
+    remove_prefix_in_place(type_name, "const ");
+    remove_prefix_in_place(type_name, "volatile ");
+    if (ends_with(type_name, "*restrict")) {
+        remove_prefix_in_place(type_name, "restrict");
+    }
+#endif
+    remove_prefix_in_place(type_name, "__strong ");
+    return type_name;
+}
+
 TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
 {
     assert(type.kind != CXType_Invalid);
@@ -603,9 +618,7 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
             auto baseCXType = clang_Type_getObjCObjectBaseType(type);
             if (baseCXType.kind == CXType_ObjCId) {
                 // This is an `ObjCId` qualified with a list of protocols
-                auto* id_type = universe.type(NamedTypeSymbol::Kind::Protocol, "ObjCId");
-                assert(id_type);
-                assert(dynamic_cast<TypeDeclarationSymbol*>(id_type));
+                auto* id_type = &universe.id();
                 auto num_protocols = clang_Type_getNumObjCProtocolRefs(type);
                 switch (num_protocols) {
                     case 0:
@@ -616,7 +629,7 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
                         // reference-to-interface.
                         return protocol_symbol(type, 0);
                     default:
-                        auto* result = new ConstructedTypeSymbol(static_cast<TypeDeclarationSymbol*>(id_type));
+                        auto* result = new ConstructedTypeSymbol(id_type);
                         for (decltype(num_protocols) i = 0; i < num_protocols; ++i) {
                             result->add_parameter(protocol_symbol(type, i));
                         }
@@ -657,9 +670,30 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
 
         // Libclang bug? When CXTranslationUnit_IncludeAttributedTypes is specified, the
         // type kind of some objects is unexpectedly and incorrectly reported as
-        // CXType_Unexposed rather than CXType_Attributed.  The assert below ensures
-        // this is actually CXType_Attributed.
-        case CXType_Unexposed:
+        // CXType_Unexposed rather than CXType_Attributed.
+        case CXType_Unexposed: {
+            auto modified_type = clang_Type_getModifiedType(type);
+            if (modified_type.kind != CXType_Invalid) {
+                // Assume this is actually CXType_Attributed
+                return type_like_symbol(modified_type);
+            }
+            auto type_name = get_type_name(type);
+            TypeLikeSymbol* result = universe.type(type_name);
+            if (!result) {
+                auto size = clang_Type_getSizeOf(type);
+                result =
+                    universe.primitive_type(get_primitive_category(type), static_cast<size_t>(size < 0 ? 0 : size));
+                if (!result) {
+                    if (size <= 0) {
+                        result = &universe.unit();
+                    } else {
+                        result = new VArraySymbol(universe.int8(), static_cast<size_t>(size));
+                    }
+                }
+            }
+            return new UnexposedTypeSymbol(type_name, *result);
+        }
+
         case CXType_Attributed: {
             auto modified_type = clang_Type_getModifiedType(type);
             assert(modified_type.kind != CXType_Invalid);
@@ -739,23 +773,23 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
     // This is a type which requires definition.
 
     std::string type_name;
-    auto type_kind = NamedTypeSymbol::Kind::Undefined;
+    NamedTypeSymbol::Kind type_kind;
 
     switch (type.kind) {
         case CXType_ObjCId:
-            return universe.type(NamedTypeSymbol::Kind::Protocol, "ObjCId");
+            return &universe.id();
         case CXType_ObjCClass:
-            return universe.type(NamedTypeSymbol::Kind::Interface, "Class" /* "ObjCClass" */);
+            return &universe.clazz();
         case CXType_ObjCSel:
-            return universe.type(NamedTypeSymbol::Kind::Interface, "SEL" /* "ObjCSelector" */);
+            return &universe.sel();
         case CXType_Typedef:
             type_kind = NamedTypeSymbol::Kind::TypeDef;
-            type_name = as_string(clang_getTypeSpelling(type));
+            type_name = get_type_name(type);
             // TODO: clang_getCanonicalType(type) if needed
             break;
 
         case CXType_ObjCInterface: {
-            type_name = as_string(clang_getTypeSpelling(type));
+            type_name = get_type_name(type);
             type_kind = NamedTypeSymbol::Kind::Interface;
             assert(clang_getCanonicalType(type) == type);
             break;
@@ -764,29 +798,21 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
         case CXType_Record: {
             const auto decl = clang_getTypeDeclaration(type);
             assert(is_valid(decl));
-            switch (decl.kind) {
-                case CXCursor_StructDecl:
-                    type_kind = NamedTypeSymbol::Kind::Struct;
-                    break;
-                case CXCursor_UnionDecl:
-                    type_kind = NamedTypeSymbol::Kind::Union;
-                    break;
-                default:
-                    assert(false);
+            if (decl.kind == CXCursor_UnionDecl) {
+                type_kind = NamedTypeSymbol::Kind::Union;
+            } else {
+                assert(decl.kind == CXCursor_StructDecl);
+                type_kind = NamedTypeSymbol::Kind::Struct;
             }
             if (is_anonymous(decl)) {
                 type_name = new_anonymous_name(decl);
             } else {
-                type_name = as_string(clang_getTypeSpelling(type));
-                switch (type_kind) {
-                    case NamedTypeSymbol::Kind::Struct:
-                        remove_prefix_in_place(type_name, "struct ");
-                        break;
-                    case NamedTypeSymbol::Kind::Union:
-                        remove_prefix_in_place(type_name, "union ");
-                        break;
-                    default:
-                        assert(false);
+                type_name = get_type_name(type);
+                if (type_kind == NamedTypeSymbol::Kind::Union) {
+                    remove_prefix_in_place(type_name, "union ");
+                } else {
+                    assert(type_kind == NamedTypeSymbol::Kind::Struct);
+                    remove_prefix_in_place(type_name, "struct ");
                 }
             }
             break;
@@ -798,33 +824,22 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
             if (is_anonymous(decl)) {
                 type_name = new_anonymous_name(decl);
             } else {
-                type_name = as_string(clang_getTypeSpelling(type));
+                type_name = get_type_name(type);
                 remove_prefix_in_place(type_name, "enum ");
             }
             break;
         }
 
-            // Anything else is not supported at the moment.
-
-        default:
-            if (is_builtin(type)) {
-                type_kind = NamedTypeSymbol::Kind::SourcePrimitive;
-                type_name = as_string(clang_getTypeSpelling(type));
-                break;
-            }
-
-            assert(false);
-            return nullptr;
+        default: {
+            assert(is_builtin(type));
+            type_name = get_type_name(type);
+            auto size = clang_Type_getSizeOf(type);
+            auto* primitive_symbol =
+                universe.primitive_type(get_primitive_category(type), static_cast<size_t>(size < 0 ? 0 : size));
+            assert(primitive_symbol);
+            return primitive_symbol;
+        }
     }
-
-#if CLANG_VERSION_MAJOR < 16
-    remove_prefix_in_place(type_name, "const ");
-    remove_prefix_in_place(type_name, "volatile ");
-    if (ends_with(type_name, "*restrict")) {
-        remove_prefix_in_place(type_name, "restrict");
-    }
-#endif
-    remove_prefix_in_place(type_name, "__strong ");
 
     if (auto* type_symbol = universe.type(type_kind, type_name)) {
         return type_symbol;
@@ -833,7 +848,7 @@ TypeLikeSymbol* SourceScanner::type_like_symbol(CXType type)
     return this->add_type(type_kind, type_name, type);
 }
 
-Symbol* SourceScanner::push_property(std::string&& name, std::string&& getter, std::string&& setter, uint8_t modifiers)
+Symbol* SourceScanner::push_property(std::string&& name, std::string&& getter, std::string&& setter, uint16_t modifiers)
 {
     assert(current_top_is_type());
     auto* decl = current_type_declaration();
@@ -893,6 +908,23 @@ private:
     }
 };
 
+[[nodiscard]] static bool is_attributed_type_nullable(const CXType& type, CXTypeKind modified_type_kind)
+{
+    switch (modified_type_kind) {
+        case CXType_ObjCObjectPointer:
+        case CXType_ObjCId:
+        case CXType_ObjCClass:
+        case CXType_ObjCSel:
+        case CXType_ObjCTypeParam:
+            return clang_Type_getNullability(type) != CXTypeNullability_NonNull;
+        default:
+            // This will be most probably converted to CPointer.  In Objective-C, C pointer
+            // can be annotated as nullable/nonnull.  But in Cangjie, CPointer is always
+            // nullable, there is no sense to make it optional.
+            return false;
+    }
+}
+
 // Return true if the corresponding type in the Cangjie code must be prefixed
 // with '?' (wrapped by `std.Option`).
 static bool is_nullable(CXType type)
@@ -902,24 +934,15 @@ static bool is_nullable(CXType type)
         // type kind of some objects is unexpectedly and incorrectly reported as
         // CXType_Unexposed rather than CXType_Attributed.  The assert below ensures
         // this is actually CXType_Attributed.
-        case CXType_Unexposed:
+        case CXType_Unexposed: {
+            auto modified_type_kind = clang_Type_getModifiedType(type).kind;
+            return modified_type_kind != CXType_Invalid && is_attributed_type_nullable(type, modified_type_kind);
+        }
+
         case CXType_Attributed: {
             auto modified_type_kind = clang_Type_getModifiedType(type).kind;
             assert(modified_type_kind != CXType_Invalid);
-
-            switch (modified_type_kind) {
-                case CXType_ObjCObjectPointer:
-                case CXType_ObjCId:
-                case CXType_ObjCClass:
-                case CXType_ObjCSel:
-                case CXType_ObjCTypeParam:
-                    return clang_Type_getNullability(type) != CXTypeNullability_NonNull;
-                default:
-                    // This will be most probably converted to CPointer.  In Objective-C, C pointer
-                    // can be annotated as nullable/nonnull.  But in Cangjie, CPointer is always
-                    // nullable, there is no sense to make it optional.
-                    return false;
-            }
+            return is_attributed_type_nullable(type, modified_type_kind);
         }
         case CXType_ObjCObjectPointer:
         case CXType_ObjCId:
@@ -953,13 +976,19 @@ Symbol* SourceScanner::push_top_level_function(const CXCursor& cursor, std::stri
     auto cx_result_type = clang_getCursorResultType(cursor);
     auto* result_type = type_like_symbol(cx_result_type);
     assert(result_type);
-    auto& function = universe.register_top_level_function(
-        std::move(name), *result_type, is_nullable(cx_result_type) ? ModifierNullable : 0);
+    uint16_t modifiers = 0;
+    if (is_nullable(cx_result_type)) {
+        modifiers |= ModifierNullable;
+    }
+    if (clang_getCursorLinkage(cursor) == CXLinkage_Internal) {
+        modifiers |= ModifierInternalLinkage;
+    }
+    auto& function = universe.register_top_level_function(std::move(name), *result_type, modifiers);
     set_definition_location(cursor, &function);
     return push_current(&function);
 }
 
-Symbol* SourceScanner::push_member_method(CXCursor cursor, std::string&& name, uint8_t modifiers)
+Symbol* SourceScanner::push_member_method(CXCursor cursor, std::string&& name, uint16_t modifiers)
 {
     assert(current_top_is_type() || current_top_is_property());
     auto* decl = current_type_declaration();
@@ -1007,6 +1036,15 @@ Symbol* SourceScanner::push_constructor(CXCursor cursor, std::string&& name)
         decl = static_cast<CategoryDeclarationSymbol*>(decl)->interface();
     }
     return push_current(decl->add_constructor(std::move(name), type_like_symbol(result_type)));
+}
+
+[[nodiscard]] static std::array<uint64_t, 2> get_enum_constant_value(const CXCursor& cursor)
+{
+    static_assert(llvm::APInt::APINT_WORD_SIZE == sizeof(uint64_t));
+    auto val = cursor_to_decl<clang::EnumConstantDecl>(cursor).getInitVal();
+    assert(val.getNumWords() <= 2);
+    const auto* raw_value = val.getRawData();
+    return {raw_value[0], val.getBitWidth() <= llvm::APInt::APINT_BITS_PER_WORD ? 0 : raw_value[1]};
 }
 
 CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
@@ -1243,7 +1281,7 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
             break;
         }
         case CXCursor_ObjCClassMethodDecl: {
-            uint8_t modifiers = ModifierStatic;
+            uint16_t modifiers = ModifierStatic;
             if (clang_Cursor_isObjCOptional(cursor)) {
                 modifiers |= ModifierOptional;
             }
@@ -1252,7 +1290,7 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
             break;
         }
         case CXCursor_ObjCPropertyDecl: {
-            uint8_t modifiers = 0;
+            uint16_t modifiers = 0;
             auto attributes = clang_Cursor_getObjCPropertyAttributes(cursor, 0);
             if (attributes & CXObjCPropertyAttr_class) {
                 modifiers |= ModifierStatic;
@@ -1310,9 +1348,11 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
             assert(current_top_is_type());
             assert(is_canonical(cursor));
             assert(is_defining(cursor));
-            auto& constant = current_type_declaration()->add_enum_constant(name, type_like_symbol(type));
-            pushed = push_current(constant);
-            constant.set_enum_constant_value(clang_getEnumConstantDeclUnsignedValue(cursor));
+            auto* decl = current_type();
+            assert(dynamic_cast<const EnumDeclarationSymbol*>(decl));
+            auto& enum_decl = static_cast<EnumDeclarationSymbol&>(*decl);
+            pushed = push_current(
+                enum_decl.add_constant(std::move(name), *named_type_symbol(type), get_enum_constant_value(cursor)));
             break;
         }
         case CXCursor_ParmDecl: {

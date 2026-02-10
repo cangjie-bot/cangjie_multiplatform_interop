@@ -207,13 +207,28 @@ void do_rename()
 
     for (auto&& type : type_definitions) {
         if (type.is(NamedTypeSymbol::Kind::Protocol)) {
-            auto name = std::string(type.name());
-            if (universe.type(TypeNamespace::Primary, name)) {
-                auto new_name = name + "Protocol";
-                if (verbosity >= LogLevel::INFO) {
-                    std::cerr << "Renaming clashing protocol `" << name << "` to `" << new_name << "`" << std::endl;
+            for (;;) {
+                const auto& name = type.name();
+                bool clashing = false;
+                for (uint8_t ns = 0; ns < TYPE_NAMESPACE_COUNT; ++ns) {
+                    auto namespaze = static_cast<TypeNamespace>(ns);
+                    if (namespaze != TypeNamespace::Protocols) {
+                        const auto* non_protocol_type = universe.type(namespaze, name);
+                        if (non_protocol_type && non_protocol_type->package() == type.package()) {
+                            auto new_name = name + "Protocol";
+                            if (verbosity >= LogLevel::INFO) {
+                                std::cerr << "Renaming clashing protocol `" << name << "` to `" << new_name << "`"
+                                          << std::endl;
+                            }
+                            type.rename(new_name);
+                            clashing = true;
+                            break;
+                        }
+                    }
                 }
-                type.rename(new_name);
+                if (!clashing) {
+                    break;
+                }
             }
         }
 
@@ -245,12 +260,25 @@ void do_rename()
     for (auto& type : type_definitions) {
         resolve_static_instance_clashes(type);
     }
+
+    // In Objective-C, a global function can share the same name with a
+    // structure/class/protocol.  In Cangjie, it cannot.  Resolve the conflict by
+    // adding the `Func` suffix to the name of the global function.
+    for (auto& top_level : Universe::top_level()) {
+        if (top_level.is_global_function()) {
+            const auto& name = top_level.name();
+            const auto* type = universe.type(name);
+            if (type && type->package() == top_level.package()) {
+                top_level.rename(name + "Func");
+            }
+        }
+    }
 }
 
 void set_type_mappings()
 {
     for (auto&& type : Universe::all_declarations()) {
-        for (auto&& mapping_ptr : mappings) {
+        for (auto mapping_ptr : mappings) {
             auto& mapping = *mapping_ptr;
             if (mapping.can_map(&type)) {
                 type.set_mapping(&mapping);

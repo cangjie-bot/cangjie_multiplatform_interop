@@ -9,9 +9,9 @@ public type NSMapTableOptions = NSUInteger
 
 @ObjCMirror
 public open class NSMapTable/*<KeyType, ObjectType>*/ <: NSObject & NSCopying & NSSecureCoding & NSFastEnumeration {
-    @ForeignName["initWithKeyOptions:valueOptions:capacity:"] public init(keyOptions: Int32 /*NSPointerFunctionsOptions*/, valueOptions: Int32 /*NSPointerFunctionsOptions*/, initialCapacity: NSUInteger)
+    @ForeignName["initWithKeyOptions:valueOptions:capacity:"] public init(keyOptions: NSUInteger /*NSPointerFunctionsOptions*/, valueOptions: NSUInteger /*NSPointerFunctionsOptions*/, initialCapacity: NSUInteger)
     @ForeignName["initWithKeyPointerFunctions:valuePointerFunctions:capacity:"] public init(keyFunctions: NSPointerFunctions, valueFunctions: NSPointerFunctions, initialCapacity: NSUInteger)
-    @ForeignName["mapTableWithKeyOptions:valueOptions:"] public static func mapTableWithKeyOptionsValueOptions(keyOptions: Int32 /*NSPointerFunctionsOptions*/, valueOptions: Int32 /*NSPointerFunctionsOptions*/): NSMapTable/*<KeyType, ObjectType>*/
+    @ForeignName["mapTableWithKeyOptions:valueOptions:"] public static func mapTableWithKeyOptionsValueOptions(keyOptions: NSUInteger /*NSPointerFunctionsOptions*/, valueOptions: NSUInteger /*NSPointerFunctionsOptions*/): NSMapTable/*<KeyType, ObjectType>*/
     public static func mapTableWithStrongToStrongObjects(): ObjCId
     public static func mapTableWithWeakToStrongObjects(): ObjCId
     public static func mapTableWithStrongToWeakObjects(): ObjCId

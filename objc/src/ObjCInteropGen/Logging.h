@@ -11,13 +11,7 @@
 #include <regex>
 #include <string_view>
 
-enum class LogLevel {
-    WARNING = 0,
-    INFO = 1,
-    DIAGNOSTIC = 2,
-    DEBUG = 3,
-    TRACE = 4
-};
+enum class LogLevel { WARNING = 0, INFO = 1, DIAGNOSTIC = 2, DEBUG = 3, TRACE = 4 };
 
 extern LogLevel verbosity;
 

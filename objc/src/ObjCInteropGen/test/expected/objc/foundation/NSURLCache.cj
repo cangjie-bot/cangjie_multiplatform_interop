@@ -14,11 +14,11 @@ public abstract sealed class NSURLCacheStoragePolicy {
 @ObjCMirror
 public open class NSCachedURLResponse <: NSObject & NSSecureCoding & NSCopying {
     @ForeignName["initWithResponse:data:"] public init(response: NSURLResponse, data: NSData)
-    @ForeignName["initWithResponse:data:userInfo:storagePolicy:"] public init(response: NSURLResponse, data: NSData, userInfo: ?NSDictionary/*<KeyType, ObjectType>*/, storagePolicy: Int32 /*NSURLCacheStoragePolicy*/)
+    @ForeignName["initWithResponse:data:userInfo:storagePolicy:"] public init(response: NSURLResponse, data: NSData, userInfo: ?NSDictionary/*<KeyType, ObjectType>*/, storagePolicy: NSUInteger /*NSURLCacheStoragePolicy*/)
     public open prop response: NSURLResponse
     public open prop data: NSData
     public open prop userInfo: ?NSDictionary/*<KeyType, ObjectType>*/
-    public open prop storagePolicy: Int32 /*NSURLCacheStoragePolicy*/
+    public open prop storagePolicy: NSUInteger /*NSURLCacheStoragePolicy*/
 }
 
 @ObjCMirror

@@ -9,7 +9,7 @@ import objc.lang.*
 public interface NSURLProtocolClient <: NSObjectProtocol {
     @ForeignName["URLProtocol:wasRedirectedToRequest:redirectResponse:"] func URLProtocolWasRedirectedToRequestRedirectResponse(protocol: NSURLProtocol, request: NSURLRequest, redirectResponse: NSURLResponse): Unit
     @ForeignName["URLProtocol:cachedResponseIsValid:"] func URLProtocolCachedResponseIsValid(protocol: NSURLProtocol, cachedResponse: NSCachedURLResponse): Unit
-    @ForeignName["URLProtocol:didReceiveResponse:cacheStoragePolicy:"] func URLProtocolDidReceiveResponseCacheStoragePolicy(protocol: NSURLProtocol, response: NSURLResponse, policy: Int32 /*NSURLCacheStoragePolicy*/): Unit
+    @ForeignName["URLProtocol:didReceiveResponse:cacheStoragePolicy:"] func URLProtocolDidReceiveResponseCacheStoragePolicy(protocol: NSURLProtocol, response: NSURLResponse, policy: NSUInteger /*NSURLCacheStoragePolicy*/): Unit
     @ForeignName["URLProtocol:didLoadData:"] func URLProtocolDidLoadData(protocol: NSURLProtocol, data: NSData): Unit
     @ForeignName["URLProtocolDidFinishLoading:"] func URLProtocolDidFinishLoading(protocol: NSURLProtocol): Unit
     @ForeignName["URLProtocol:didFailWithError:"] func URLProtocolDidFailWithError(protocol: NSURLProtocol, error: NSError): Unit
@@ -31,8 +31,8 @@ public open class NSURLProtocol <: NSObject {
     @ForeignName["propertyForKey:inRequest:"] public static func propertyForKeyInRequest(key: NSString, request: NSURLRequest): ?ObjCId
     @ForeignName["setProperty:forKey:inRequest:"] public static func setPropertyForKeyInRequest(value: ObjCId, key: NSString, request: NSMutableURLRequest): Unit
     @ForeignName["removePropertyForKey:inRequest:"] public static func removePropertyForKeyInRequest(key: NSString, request: NSMutableURLRequest): Unit
-    @ForeignName["registerClass:"] public static func registerClass(protocolClass: Class): Bool
-    @ForeignName["unregisterClass:"] public static func unregisterClass(protocolClass: Class): Unit
+    @ForeignName["registerClass:"] public static func registerClass(protocolClass: ObjCClass): Bool
+    @ForeignName["unregisterClass:"] public static func unregisterClass(protocolClass: ObjCClass): Unit
     @ForeignName["canInitWithTask:"] public static func canInitWithTask(task: NSURLSessionTask): Bool
     @ForeignName["initWithTask:cachedResponse:client:"] public init(task: NSURLSessionTask, cachedResponse: ?NSCachedURLResponse, client: ?NSURLProtocolClient)
     public open prop task: ?NSURLSessionTask

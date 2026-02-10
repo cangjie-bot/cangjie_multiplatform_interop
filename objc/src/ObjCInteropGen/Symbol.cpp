@@ -10,6 +10,7 @@
 
 #include "Logging.h"
 #include "Mappings.h"
+#include "Mode.h"
 #include "Package.h"
 #include "Universe.h"
 
@@ -49,7 +50,7 @@ std::ostream& operator<<(std::ostream& stream, const KeywordEscaper& op)
     return stream;
 }
 
-Symbol::Symbol(std::string name) : name_(std::move(name))
+Symbol::Symbol(std::string name) noexcept : name_(std::move(name))
 {
 }
 
@@ -111,23 +112,15 @@ void NamedTypeSymbol::print(std::ostream& stream, SymbolPrintFormat format) cons
             if (format == SymbolPrintFormat::Raw) {
                 stream << name;
             } else {
-                // TODO: print real underlying type instead of hardcoded Int32
-                stream << "Int32 /*" << name << "*/";
+                assert(dynamic_cast<const EnumDeclarationSymbol*>(this));
+                static_cast<const EnumDeclarationSymbol&>(*this).underlying_type().print(stream, format);
+                stream << " /*" << name << "*/";
             }
             break;
-        case Kind::TargetPrimitive:
+        case Kind::Primitive:
             stream << name;
             break;
         default:
-            if (kind_ == Kind::TypeDef) {
-                assert(dynamic_cast<const TypeAliasSymbol*>(this));
-                const auto* target = static_cast<const TypeAliasSymbol*>(this)->target();
-                if (target && name == target->name()) {
-                    // typedef struct S S;
-                    target->print(stream, format);
-                    return;
-                }
-            }
             stream << escape_keyword(name);
             if (const auto count = parameter_count(); count != 0) {
                 auto no_type_arguments = format != SymbolPrintFormat::Raw;
@@ -212,11 +205,21 @@ NamedTypeSymbol* NamedTypeSymbol::construct(const std::vector<TypeLikeSymbol*>& 
     return const_cast<NamedTypeSymbol*>(this);
 }
 
+NamedTypeSymbol& EnumDeclarationSymbol::underlying_type() const noexcept
+{
+    return underlying_type_ ? *underlying_type_ : universe.int32();
+}
+
+void UnexposedTypeSymbol::print(std::ostream& stream, SymbolPrintFormat format) const
+{
+    canonical_type().print(stream, format);
+    stream << " /*" << name() << "*/";
+}
+
 static bool is_ctype_by_default(NamedTypeSymbol::Kind kind, std::string_view name)
 {
     switch (kind) {
-        case NamedTypeSymbol::Kind::SourcePrimitive:
-        case NamedTypeSymbol::Kind::TargetPrimitive:
+        case NamedTypeSymbol::Kind::Primitive:
         case NamedTypeSymbol::Kind::Enum:
 
         // Empty structures are CType.  If afterwards a non-CType member is added,
@@ -285,7 +288,7 @@ void TypeDeclarationSymbol::add_parameter(std::string name)
 }
 
 NonTypeSymbol& TypeDeclarationSymbol::add_member_method(
-    std::string name, TypeLikeSymbol* return_type, uint8_t modifiers)
+    std::string name, TypeLikeSymbol* return_type, uint16_t modifiers)
 {
     // No clash detection, otherwise might assert on method overloads
 
@@ -317,7 +320,7 @@ NonTypeSymbol& TypeDeclarationSymbol::add_field(std::string name, TypeLikeSymbol
     return member;
 }
 
-NonTypeSymbol& TypeDeclarationSymbol::add_instance_variable(std::string name, TypeLikeSymbol* type, uint8_t modifiers)
+NonTypeSymbol& TypeDeclarationSymbol::add_instance_variable(std::string name, TypeLikeSymbol* type, uint16_t modifiers)
 {
     assert(kind() == Kind::Interface);
     assert(all_of_members([&name](const auto& member) { return member.name() != name; }));
@@ -333,16 +336,23 @@ NonTypeSymbol& TypeDeclarationSymbol::add_instance_variable(std::string name, Ty
     return ivar;
 }
 
-NonTypeSymbol& TypeDeclarationSymbol::add_enum_constant(std::string name, TypeLikeSymbol* type)
+EnumConstantSymbol& EnumDeclarationSymbol::add_constant(
+    std::string name, NamedTypeSymbol& underlying_type, const std::array<uint64_t, 2>& value)
 {
-    assert(kind() == Kind::Enum);
-    assert(all_of_members([&name](const auto& member) { return !member.is_enum_constant() || member.name() != name; }));
+    if (constants_.empty()) {
+        assert(!underlying_type_);
+        underlying_type_ = &underlying_type;
+    } else {
+        assert(underlying_type_);
+        assert(std::all_of(
+            constants_.begin(), constants_.end(), [name](const auto& constant) { return constant.name() != name; }));
+    }
 
-    return members_.emplace_back(NonTypeSymbol::Private(), std::move(name), NonTypeSymbol::Kind::EnumConstant, type);
+    return constants_.emplace_back(std::move(name), value);
 }
 
 NonTypeSymbol& TypeDeclarationSymbol::add_property(
-    std::string name, std::string getter, std::string setter, uint8_t modifiers)
+    std::string name, std::string getter, std::string setter, uint16_t modifiers)
 {
     assert(kind() == Kind::Interface || kind() == Kind::Protocol);
 
@@ -519,8 +529,8 @@ TupleTypeSymbol::TupleTypeSymbol(std::vector<TypeLikeSymbol*> items)
     : TypeLikeSymbol(""),
       items_(std::move(items)),
       is_ctype_(std::all_of(items_.cbegin(), items_.cend(), [](const auto* item) { return item->is_ctype(); })),
-      contains_pointer_or_func_(
-          std::any_of(items.cbegin(), items.cend(), [](const auto* item) { return item->contains_pointer_or_func(); }))
+      contains_pointer_or_func_(std::any_of(
+          items_.cbegin(), items_.cend(), [](const auto* item) { return item->contains_pointer_or_func(); }))
 {
 }
 
@@ -651,10 +661,22 @@ void TypeAliasSymbol::visit_impl(SymbolVisitor& visitor)
     visitor.visit(this, this->target(), SymbolProperty::AliasTarget);
 }
 
-TypeLikeSymbol* TypeAliasSymbol::root_target() const
+void TypeAliasSymbol::print(std::ostream& stream, SymbolPrintFormat format) const
 {
-    const TypeAliasSymbol* target = dynamic_cast<const TypeAliasSymbol*>(target_);
-    return target ? target->root_target() : target_;
+    const auto* target = this->target();
+    if (target && name() == target->name()) {
+        // typedef struct S S;
+        target->print(stream, format);
+        return;
+    }
+    if (mode != Mode::EXPERIMENTAL && format == SymbolPrintFormat::EmitCangjieStrict) {
+        const auto& canonical_type = this->canonical_type();
+        if (canonical_type.is_ctype() && canonical_type.contains_pointer_or_func()) {
+            stream << emit_cangjie_strict(canonical_type) << " /*" << emit_cangjie(*this) << "*/";
+            return;
+        }
+    }
+    NamedTypeSymbol::print(stream, format);
 }
 
 const TypeLikeSymbol& TypeAliasSymbol::canonical_type() const
@@ -696,49 +718,4 @@ TypeLikeSymbol& pointer(TypeLikeSymbol& pointee)
         return *func;
     }
     return *new PointerTypeSymbol(pointee);
-}
-
-static TypeDeclarationSymbol& add_cangjie_primitive(const std::string& name)
-{
-    auto* symbol = new TypeDeclarationSymbol(NamedTypeSymbol::Kind::TargetPrimitive, name);
-    universe.register_type(symbol);
-    return *symbol;
-}
-
-static TypeDeclarationSymbol& add_cangjie_type_declaration(NamedTypeSymbol::Kind kind, std::string&& name)
-{
-    assert(!universe.type(name));
-    auto* symbol = new TypeDeclarationSymbol(kind, std::move(name));
-    universe.register_type(symbol);
-    return *symbol;
-}
-
-static void add_cangjie_interface(std::string&& name)
-{
-    add_cangjie_type_declaration(NamedTypeSymbol::Kind::Protocol, std::move(name));
-}
-
-static void add_cangjie_class(std::string&& name)
-{
-    add_cangjie_type_declaration(NamedTypeSymbol::Kind::Interface, std::move(name));
-}
-
-void add_builtin_types()
-{
-    add_cangjie_primitive("Unit");
-    add_cangjie_primitive("Bool");
-    add_cangjie_primitive("Int8");
-    add_cangjie_primitive("Int16");
-    add_cangjie_primitive("Int32");
-    add_cangjie_primitive("Int64");
-    add_cangjie_primitive("UInt8");
-    add_cangjie_primitive("UInt16");
-    add_cangjie_primitive("UInt32");
-    add_cangjie_primitive("UInt64");
-    add_cangjie_primitive("Float16");
-    add_cangjie_primitive("Float32");
-    add_cangjie_primitive("Float64");
-    add_cangjie_class("Class" /* "ObjCClass" */);
-    add_cangjie_interface("ObjCId");
-    add_cangjie_class("SEL" /* "ObjCSelector" */);
 }

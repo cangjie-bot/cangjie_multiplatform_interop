@@ -16,12 +16,12 @@ public abstract sealed class NSMassFormatterUnit {
 @ObjCMirror
 public open class NSMassFormatter <: NSFormatter {
     public open mut prop numberFormatter: NSNumberFormatter
-    public open mut prop unitStyle: Int32 /*NSFormattingUnitStyle*/
+    public open mut prop unitStyle: NSInteger /*NSFormattingUnitStyle*/
     @ForeignGetterName["isForPersonMassUse"] public open mut prop forPersonMassUse: Bool
-    @ForeignName["stringFromValue:unit:"] public open func stringFromValueUnit(value: Float64, unit: Int32 /*NSMassFormatterUnit*/): NSString
+    @ForeignName["stringFromValue:unit:"] public open func stringFromValueUnit(value: Float64, unit: NSInteger /*NSMassFormatterUnit*/): NSString
     @ForeignName["stringFromKilograms:"] public open func stringFromKilograms(numberInKilograms: Float64): NSString
-    @ForeignName["unitStringFromValue:unit:"] public open func unitStringFromValueUnit(value: Float64, unit: Int32 /*NSMassFormatterUnit*/): NSString
-    @ForeignName["unitStringFromKilograms:usedUnit:"] public open func unitStringFromKilogramsUsedUnit(numberInKilograms: Float64, unitp: ObjCPointer<Int32 /*NSMassFormatterUnit*/>): NSString
+    @ForeignName["unitStringFromValue:unit:"] public open func unitStringFromValueUnit(value: Float64, unit: NSInteger /*NSMassFormatterUnit*/): NSString
+    @ForeignName["unitStringFromKilograms:usedUnit:"] public open func unitStringFromKilogramsUsedUnit(numberInKilograms: Float64, unitp: ObjCPointer<NSInteger /*NSMassFormatterUnit*/>): NSString
     public open func getObjectValueForStringErrorDescription(obj: ObjCPointer<ObjCId>, string: NSString, error: ObjCPointer<NSString>): Bool
 }
 

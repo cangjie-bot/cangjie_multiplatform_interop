@@ -9,15 +9,15 @@ import objc.lang.*
 public interface NSObjectProtocol {
     @ForeignName["isEqual:"] func isEqual(object: ?ObjCId): Bool
     prop hash: NSUInteger
-    prop superclass: ?Class
-    func `class`(): ?Class
+    prop superclass: ?ObjCClass
+    func `class`(): ?ObjCClass
     func self(): NSObjectProtocol
     @ForeignName["performSelector:"] func performSelector(aSelector: ?SEL): ?ObjCId
     @ForeignName["performSelector:withObject:"] func performSelectorWithObject(aSelector: ?SEL, object: ?ObjCId): ?ObjCId
     @ForeignName["performSelector:withObject:withObject:"] func performSelectorWithObjectWithObject(aSelector: ?SEL, object1: ?ObjCId, object2: ?ObjCId): ?ObjCId
     func isProxy(): Bool
-    @ForeignName["isKindOfClass:"] func isKindOfClass(aClass: ?Class): Bool
-    @ForeignName["isMemberOfClass:"] func isMemberOfClass(aClass: ?Class): Bool
+    @ForeignName["isKindOfClass:"] func isKindOfClass(aClass: ?ObjCClass): Bool
+    @ForeignName["isMemberOfClass:"] func isMemberOfClass(aClass: ?ObjCClass): Bool
     @ForeignName["conformsToProtocol:"] func conformsToProtocol(aProtocol: ?Protocol): Bool
     @ForeignName["respondsToSelector:"] func respondsToSelector(aSelector: ?SEL): Bool
     prop description: ?NSString
@@ -31,7 +31,7 @@ public struct _NSZone {
 
 @ObjCMirror
 public open class NSObject <: NSObjectProtocol {
-    protected var isa: ?Class
+    protected var isa: ?ObjCClass
     public static func load(): Unit
     public static func initialize(): Unit
     public init()
@@ -51,17 +51,17 @@ public open class NSObject <: NSObjectProtocol {
     @ForeignName["forwardInvocation:"] public open func forwardInvocation(anInvocation: ?NSInvocation): Unit
     @ForeignName["methodSignatureForSelector:"] public open func methodSignatureForSelector(aSelector: ?SEL): ?NSMethodSignature
     @ForeignName["instanceMethodSignatureForSelector:"] public static func instanceMethodSignatureForSelector(aSelector: ?SEL): ?NSMethodSignature
-    @ForeignName["isSubclassOfClass:"] public static func isSubclassOfClass(aClass: ?Class): Bool
+    @ForeignName["isSubclassOfClass:"] public static func isSubclassOfClass(aClass: ?ObjCClass): Bool
     @ForeignName["resolveClassMethod:"] public static func resolveClassMethod(sel: ?SEL): Bool
     @ForeignName["resolveInstanceMethod:"] public static func resolveInstanceMethod(sel: ?SEL): Bool
     @ForeignName["hash"] public static func hashStatic(): NSUInteger
-    @ForeignName["superclass"] public static func superclassStatic(): ?Class
-    @ForeignName["class"] public static func classStatic(): ?Class
+    @ForeignName["superclass"] public static func superclassStatic(): ?ObjCClass
+    @ForeignName["class"] public static func classStatic(): ?ObjCClass
     @ForeignName["description"] public static func descriptionStatic(): ?NSString
     @ForeignName["debugDescription"] public static func debugDescriptionStatic(): ?NSString
     public static func version(): NSInteger
     @ForeignName["setVersion:"] public static func setVersion(aVersion: NSInteger): Unit
-    public open prop classForCoder: Class
+    public open prop classForCoder: ObjCClass
     @ForeignName["replacementObjectForCoder:"] public open func replacementObjectForCoder(coder: NSCoder): ?ObjCId
     @ForeignName["awakeAfterUsingCoder:"] public open func awakeAfterUsingCoder(coder: NSCoder): ?ObjCId
     public open prop autoContentAccessingProxy: ObjCId
@@ -102,22 +102,22 @@ public open class NSObject <: NSObjectProtocol {
     @ForeignName["valuesForKeys:"] public open func valuesForKeys(keys: NSArray/*<ObjectType>*/): NSDictionary/*<KeyType, ObjectType>*/
     @ForeignName["takeValuesFromDictionary:"] public open func takeValuesFromDictionary(properties: NSDictionary/*<KeyType, ObjectType>*/): Unit
     @ForeignName["observeValueForKeyPath:ofObject:change:context:"] public open func observeValueForKeyPathOfObjectChangeContext(keyPath: ?NSString, object: ?ObjCId, change: ?NSDictionary/*<NSKeyValueChangeKey, ObjCId>*/, context: ObjCPointer<Unit>): Unit
-    @ForeignName["addObserver:forKeyPath:options:context:"] public open func addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: NSString, options: Int32 /*NSKeyValueObservingOptions*/, context: ObjCPointer<Unit>): Unit
+    @ForeignName["addObserver:forKeyPath:options:context:"] public open func addObserverForKeyPathOptionsContext(observer: NSObject, keyPath: NSString, options: NSUInteger /*NSKeyValueObservingOptions*/, context: ObjCPointer<Unit>): Unit
     @ForeignName["removeObserver:forKeyPath:context:"] public open func removeObserverForKeyPathContext(observer: NSObject, keyPath: NSString, context: ObjCPointer<Unit>): Unit
     @ForeignName["removeObserver:forKeyPath:"] public open func removeObserverForKeyPath(observer: NSObject, keyPath: NSString): Unit
     @ForeignName["willChangeValueForKey:"] public open func willChangeValueForKey(key: NSString): Unit
     @ForeignName["didChangeValueForKey:"] public open func didChangeValueForKey(key: NSString): Unit
-    @ForeignName["willChange:valuesAtIndexes:forKey:"] public open func willChangeValuesAtIndexesForKey(changeKind: Int32 /*NSKeyValueChange*/, indexes: NSIndexSet, key: NSString): Unit
-    @ForeignName["didChange:valuesAtIndexes:forKey:"] public open func didChangeValuesAtIndexesForKey(changeKind: Int32 /*NSKeyValueChange*/, indexes: NSIndexSet, key: NSString): Unit
-    @ForeignName["willChangeValueForKey:withSetMutation:usingObjects:"] public open func willChangeValueForKeyWithSetMutationUsingObjects(key: NSString, mutationKind: Int32 /*NSKeyValueSetMutationKind*/, objects: NSSet/*<ObjectType>*/): Unit
-    @ForeignName["didChangeValueForKey:withSetMutation:usingObjects:"] public open func didChangeValueForKeyWithSetMutationUsingObjects(key: NSString, mutationKind: Int32 /*NSKeyValueSetMutationKind*/, objects: NSSet/*<ObjectType>*/): Unit
+    @ForeignName["willChange:valuesAtIndexes:forKey:"] public open func willChangeValuesAtIndexesForKey(changeKind: NSUInteger /*NSKeyValueChange*/, indexes: NSIndexSet, key: NSString): Unit
+    @ForeignName["didChange:valuesAtIndexes:forKey:"] public open func didChangeValuesAtIndexesForKey(changeKind: NSUInteger /*NSKeyValueChange*/, indexes: NSIndexSet, key: NSString): Unit
+    @ForeignName["willChangeValueForKey:withSetMutation:usingObjects:"] public open func willChangeValueForKeyWithSetMutationUsingObjects(key: NSString, mutationKind: NSUInteger /*NSKeyValueSetMutationKind*/, objects: NSSet/*<ObjectType>*/): Unit
+    @ForeignName["didChangeValueForKey:withSetMutation:usingObjects:"] public open func didChangeValueForKeyWithSetMutationUsingObjects(key: NSString, mutationKind: NSUInteger /*NSKeyValueSetMutationKind*/, objects: NSSet/*<ObjectType>*/): Unit
     @ForeignName["keyPathsForValuesAffectingValueForKey:"] public static func keyPathsForValuesAffectingValueForKey(key: NSString): NSSet/*<NSString>*/
     @ForeignName["automaticallyNotifiesObserversForKey:"] public static func automaticallyNotifiesObserversForKey(key: NSString): Bool
     public open mut prop observationInfo: ObjCPointer<Unit>
-    public open prop classForKeyedArchiver: ?Class
+    public open prop classForKeyedArchiver: ?ObjCClass
     @ForeignName["replacementObjectForKeyedArchiver:"] public open func replacementObjectForKeyedArchiver(archiver: NSKeyedArchiver): ?ObjCId
     public static func classFallbacksForKeyedArchiver(): NSArray/*<NSString>*/
-    public static func classForKeyedUnarchiver(): Class
+    public static func classForKeyedUnarchiver(): ObjCClass
     @ForeignName["performSelectorOnMainThread:withObject:waitUntilDone:modes:"] public open func performSelectorOnMainThreadWithObjectWaitUntilDoneModes(aSelector: SEL, arg: ?ObjCId, wait: Bool, array: ?NSArray/*<NSString>*/): Unit
     @ForeignName["performSelectorOnMainThread:withObject:waitUntilDone:"] public open func performSelectorOnMainThreadWithObjectWaitUntilDone(aSelector: SEL, arg: ?ObjCId, wait: Bool): Unit
     @ForeignName["performSelector:onThread:withObject:waitUntilDone:modes:"] public open func performSelectorOnThreadWithObjectWaitUntilDoneModes(aSelector: SEL, thr: NSThread, arg: ?ObjCId, wait: Bool, array: ?NSArray/*<NSString>*/): Unit

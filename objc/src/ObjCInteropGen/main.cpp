@@ -115,9 +115,6 @@ int main(int argc, char* argv[])
             return 1;
         }
 
-        stage = "Adding built-in types";
-        add_builtin_types();
-
         stage = "Parsing Objective-C sources";
         parse_sources();
 
