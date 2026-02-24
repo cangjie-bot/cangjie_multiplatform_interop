@@ -74,6 +74,11 @@ public class ObjCUnreachableCodeException <: Exception {}
  */
 public class ObjCOptionalMethodUnimplementedException <: Exception {}
 
+/**
+ * An exception that has to be used when runtime calls static methods directly on interfaces (protocols).
+ */
+public class ObjCStaticMethodCallOnInterfaceException <: Exception {}
+
 @Frozen
 /**
  * Gets a Cangjie object of type R from registry by the pointer of its Objective-C counterpart.
