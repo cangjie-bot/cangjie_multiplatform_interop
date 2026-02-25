@@ -729,7 +729,7 @@ static void print_getter_setter_names(std::ostream& output, const NonTypeSymbol&
     }
 }
 
-enum class FuncKind { TopLevelFunc, InterfaceMethod, ClassMethod, StaticRedefinition };
+enum class FuncKind { TopLevelFunc, InterfaceMethod, ClassMethod };
 
 static void write_function(
     IndentingStringStream& output, FuncKind kind, NonTypeSymbol& function, SymbolPrintFormat format)
@@ -770,14 +770,10 @@ static void write_function(
             print_optional(output, function);
             write_foreign_name(output, function);
             break;
-        case FuncKind::ClassMethod:
+        default:
+            assert(kind == FuncKind::ClassMethod);
             is_ctype = false;
             write_foreign_name(output, function);
-            output << "public ";
-            break;
-        default:
-            assert(kind == FuncKind::StaticRedefinition);
-            is_ctype = false;
             output << "public ";
             break;
     }
@@ -862,21 +858,6 @@ static void print_objcmirror_attribute(std::ostream& output, bool supported)
     output << '\n';
 }
 
-static bool contains_static_method(TypeDeclarationSymbol& clazz, const std::string& selector)
-{
-    for (auto& member : clazz.members()) {
-        if ((member.is_member_method() && member.is_static()) && (member.selector() == selector)) {
-            return true;
-        }
-    }
-    for (auto& base : clazz.bases()) {
-        if (base.kind() == NamedTypeSymbol::Kind::Interface && contains_static_method(base, selector)) {
-            return true;
-        }
-    }
-    return false;
-}
-
 class TypeDeclarationWriter {
 public:
     TypeDeclarationWriter(IndentingStringStream& output, TypeDeclarationSymbol& type) noexcept;
@@ -886,7 +867,6 @@ public:
 private:
     void write_property(const NonTypeSymbol& prop);
     void write_constructor(NonTypeSymbol& constructor);
-    void print_explicit_static_method_redefinitions(TypeDeclarationSymbol& protocol);
     void write_instance_variable(const NonTypeSymbol& ivar);
     void write_field(const NonTypeSymbol& field);
 
@@ -901,24 +881,6 @@ private:
 TypeDeclarationWriter::TypeDeclarationWriter(IndentingStringStream& output, TypeDeclarationSymbol& type) noexcept
     : output_(output), type_(type), any_constructor_exists_(false), default_constructor_exists_(false)
 {
-}
-
-void TypeDeclarationWriter::print_explicit_static_method_redefinitions(TypeDeclarationSymbol& protocol)
-{
-    for (auto& base : protocol.bases()) {
-        assert(base.kind() == NamedTypeSymbol::Kind::Protocol);
-        print_explicit_static_method_redefinitions(base);
-    }
-    for (auto& protocol_member : protocol.members()) {
-        if (protocol_member.is_member_method() && protocol_member.is_static()) {
-            const auto& protocol_member_selector = protocol_member.selector();
-            if (!contains_static_method(type_, protocol_member_selector) &&
-                !get_overridden_property(type_, protocol_member_selector, true)) {
-                write_function(
-                    output_, FuncKind::StaticRedefinition, protocol_member, SymbolPrintFormat::EmitCangjieStrict);
-            }
-        }
-    }
 }
 
 void TypeDeclarationWriter::write_property(const NonTypeSymbol& prop)
@@ -1179,17 +1141,6 @@ void TypeDeclarationWriter::write()
             write_field(member);
         } else {
             assert(false);
-        }
-    }
-
-    if (decl_kind_ == DeclKind::Class) {
-        // Add explicit redefinitions of static methods declared in base interfaces.
-        // This is a workaround preventing problems when calling static methods declared
-        // in protocols.
-        for (auto& base : type_.bases()) {
-            if (base.kind() == NamedTypeSymbol::Kind::Protocol) {
-                print_explicit_static_method_redefinitions(base);
-            }
         }
     }
 
