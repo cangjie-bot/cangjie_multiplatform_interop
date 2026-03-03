@@ -165,7 +165,7 @@ void parse_sources()
         }
         const auto& source_table = source_any.as<toml::Table>();
         if (mixins_any) {
-            auto entry = source_table;
+            toml::Table entry = source_table;
 
             apply_mixins(*mixins_any, source_name, entry);
 
