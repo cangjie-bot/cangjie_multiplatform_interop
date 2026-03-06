@@ -17,6 +17,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tarfile
 from enum import Enum
 from logging.handlers import TimedRotatingFileHandler
 from subprocess import PIPE
@@ -33,7 +34,8 @@ DEFAULT_INSTALL_DIR = os.path.join(HOME_DIR, 'dist')
 INTEROPLIB_DIR = os.path.join(HOME_DIR, 'src', 'interoplib')
 INTEROPLIB_OUT = os.path.join(INTEROPLIB_DIR, 'output')
 DYLIB_EXT = "dylib" if IS_DARWIN else "so"
-OBJC_INTEROP_THIRD_PARTY = os.path.join(HOME_DIR, 'third_party')
+
+INTEROPLIB_OBJCLIB_DIR = os.path.join(INTEROPLIB_DIR, 'src', 'objclib')
 
 RELEASE = "release"
 INTEROPLIB_NAME_IN_TOML = "interoplib"
@@ -49,6 +51,8 @@ OUT_INTEROPLIB_OBJC_CJO   = os.path.join(INTEROPLIB_OUT_PREFIX, "interoplib.objc
 
 OUT_OBJC_LANG_DYLIB = os.path.join(OBJC_OUT_PREFIX, f"libobjc.lang.{DYLIB_EXT}")
 OUT_OBJC_LANG_CJO   = os.path.join(OBJC_OUT_PREFIX, "objc.lang.cjo")
+
+OUT_INTEROPLIB_OBJCLIB_DYLIB = os.path.join(INTEROPLIB_OUT_PREFIX, f"libinteroplib.objclib.{DYLIB_EXT}")
 
 LOG_DIR = os.path.join(BUILD_DIR, 'logs')
 LOG_FILE = os.path.join(LOG_DIR, 'ObjCInteropGen.log')
@@ -112,18 +116,66 @@ def command(*args, cwd=None, env=None):
 def runtime_name(target):
     return target+"_cjnative"
 
-def fetch_tomlplusplus(target_dir):
-    """Fetch tomlplusplus from GitHub if it doesn't exist"""
-    tomlplusplus_dir = os.path.join(target_dir, 'tomlplusplus')
-    if not os.path.exists(tomlplusplus_dir):
-        LOG.info('Fetching tomlplusplus from GitHub...\n')
-        command(
-            "git", "clone", "--depth=1", "-b", "v3.4.0", "https://gitee.com/mirrors_marzer/tomlplusplus.git",
-            tomlplusplus_dir
-        )
-        LOG.info('Finished fetching tomlplusplus\n')
-    else:
-        LOG.info('tomlplusplus directory already exists, skipping fetch\n')
+def download_and_patch_tinytoml():
+    """Set up the tinytoml third-party library"""
+    TINYTOML_DIR = os.path.join(HOME_DIR, "third_party", "tinytoml")
+    PATCH_FILE = os.path.join(TINYTOML_DIR, "fixFloatEqualError.patch")
+    TAR_PATH = os.path.join(TINYTOML_DIR, "tinytoml-0.4.tar.gz")
+    TINYTOMLTAR_PATH = os.path.join(TINYTOML_DIR, "tinytoml-0.4")
+
+    LOG.info("Setting up tinytoml...")
+
+    # Create Parent Directory
+    os.makedirs(os.path.dirname(TINYTOML_DIR), exist_ok=True)
+
+    try:
+
+        if not os.path.exists(TAR_PATH):
+            # Fetch tinytoml from the remote repostory
+            subprocess.run(
+                ["git", "clone", "https://gitee.com/src-openeuler/tinytoml.git",
+                 TINYTOML_DIR],
+                 check=True
+            )
+            # Switch to the specified tag
+            subprocess.run(
+                ["git", "checkout", "openEuler-24.03-LTS-SP1"],
+                cwd=TINYTOML_DIR,
+                check=True
+            )
+
+        # Extract the package
+        LOG.info("Extracting tinytoml package...")
+        with tarfile.open(TAR_PATH) as tar:
+            tar.extractall(path=TINYTOML_DIR)
+
+        # Apply Patch
+        patch_file_exists = os.path.exists(PATCH_FILE)
+        target_dir_exists = os.path.exists(TINYTOMLTAR_PATH) and os.path.isdir(TINYTOMLTAR_PATH)
+        if patch_file_exists and target_dir_exists:
+            LOG.info("Applying tinytoml patch...")
+            subprocess.run(
+                f"patch -p0 -l -f < {PATCH_FILE}",
+                cwd=TINYTOMLTAR_PATH,
+                shell=True,
+                check=True
+            )
+        else:
+            LOG.warning(f"Patch file not found: {PATCH_FILE}")
+
+        TOML_H_SRC = os.path.join(TINYTOMLTAR_PATH, "include", "toml", "toml.h")
+        TOML_H_DST = os.path.join(TINYTOML_DIR, "toml.h")
+
+        if os.path.exists(TOML_H_SRC):
+            LOG.info(f"Copying toml.h from {TOML_H_SRC} to {TOML_H_DST}")
+            shutil.copy2(TOML_H_SRC, TOML_H_DST)
+
+    except subprocess.CalledProcessError as e:
+        LOG.error(f"Failed to setup tinytoml: {str(e)}")
+        # Clean Files
+        if os.path.exists(TINYTOML_DIR):
+            shutil.rmtree(TINYTOML_DIR)
+        raise
 
 def build(args):
     """interoplib or objc-interop-gen build"""
@@ -131,6 +183,7 @@ def build(args):
         runtime = runtime_name(args.target)
         LOG.info('begin build interoplib for ' + runtime + '\n')
 
+        # cj-code of interoplib is built by cjpm
         CJPM_CONFIG = "--cfg_darwin_objc" if IS_DARWIN else "--cfg_linux_objc"
 
         cjpm_env = os.environ.copy()
@@ -144,16 +197,53 @@ def build(args):
             cjpm_env["TARGET_OPTION"] = "--target=" + cjpm_target
         if args.target_sysroot:
             cjpm_env["SYSROOT_OPTION"] = "--sysroot=" + args.target_sysroot
-        # target_toolchain is not used for now
+        # target_toolchain is not used for cjpm
 
         command("cjpm", "build", "--target-dir=" + INTEROPLIB_OUT, CJPM_CONFIG, cwd=INTEROPLIB_DIR, env=cjpm_env)
+
+        # objc-code of interoplib is built by clang
+        CANGJIE_HOME=os.environ['CANGJIE_HOME']
+        CANGJIE_RUNTIME_LIB_PATH=f"{CANGJIE_HOME}/runtime/lib/{runtime}"
+
+        clang_command = ["clang", "-shared"]
+        if args.target_lib:
+            clang_target = args.target_lib
+            if clang_target == "ios-aarch64":
+                clang_target = "arm64-apple-ios11"
+            if clang_target == "ios-simulator-aarch64":
+                clang_target = "arm64-apple-ios11-simulator"
+            clang_command += [f"--target={clang_target}"]
+        if args.target_sysroot:
+            clang_command += [f"-isysroot{args.target_sysroot}"]
+        if IS_DARWIN:
+            clang_command += ["-lobjc"]
+        else:
+            clang_command += subprocess.run(['gnustep-config', '--objc-flags'], capture_output=True).stdout.decode().split()
+            clang_command += subprocess.run(['gnustep-config', '--objc-libs'], capture_output=True).stdout.decode().split()
+
+        clang_command += [f"-L{CANGJIE_RUNTIME_LIB_PATH}", "-lcangjie-runtime"]
+        clang_command += ["-I.", "cjinterop.m", f"-o{OUT_INTEROPLIB_OBJCLIB_DYLIB}"]
+
+        clang_env = os.environ.copy()
+        if args.target_toolchain:
+            clang_env['PATH'] = f"{args.target_toolchain}:{clang_env['PATH']}"
+
+        output = subprocess.Popen(
+            clang_command.copy(),
+            env=clang_env,
+            cwd=INTEROPLIB_OBJCLIB_DIR,
+            stdout=PIPE,
+        )
+        log_output(output)
 
         LOG.info('end build interoplib for ' + runtime + '\n')
     else:
         LOG.info('begin build objc-interop-gen...\n')
 
-        # Fetch tomlplusplus before building
-        fetch_tomlplusplus(OBJC_INTEROP_THIRD_PARTY)
+        # Add the tinytoml third-party library for acquisition and customize code application.
+        tinytoml_target = os.path.join(HOME_DIR, "third_party", "tinytoml", "toml.h")
+        if not os.path.exists(tinytoml_target):
+            download_and_patch_tinytoml()
 
         command("cmake", "-B", CMAKE_BUILD_DIR, '-DCMAKE_BUILD_TYPE=' + args.build_type.value, cwd=OBJC_INTEROP_GEN_DIR)
 
@@ -249,7 +339,11 @@ def install(args):
         LOG.info("begin install interoplib for " + runtime + "\n")
 
         installation_dir = prepare_dir(install_path, "runtime", "lib", runtime)
-        install_files(installation_dir, OUT_INTEROPLIB_COMMON_DYLIB, OUT_INTEROPLIB_OBJC_DYLIB, OUT_OBJC_LANG_DYLIB)
+        install_files(installation_dir,
+                      OUT_INTEROPLIB_COMMON_DYLIB,
+                      OUT_INTEROPLIB_OBJC_DYLIB,
+                      OUT_OBJC_LANG_DYLIB,
+                      OUT_INTEROPLIB_OBJCLIB_DYLIB)
         if IS_DARWIN:
             change_install_names(os.path.join(installation_dir, "libinteroplib.common.dylib"), [])
             change_install_names(
@@ -260,6 +354,7 @@ def install(args):
                 os.path.join(installation_dir, "libobjc.lang.dylib"),
                 ["libinteroplib.common.dylib", "libinteroplib.objc.dylib"]
             )
+            change_install_names(os.path.join(installation_dir, "libinteroplib.objclib.dylib"), [])
 
         install_files(
             prepare_dir(install_path, "modules", runtime),
