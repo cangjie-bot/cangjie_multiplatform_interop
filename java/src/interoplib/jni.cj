@@ -8,6 +8,7 @@ package interoplib.interop
 
 import std.collection.ArrayQueue
 import std.sync.AtomicBool
+import std.sync.AtomicOptionReference
 import std.sync.Mutex
 
 public type jobject = CPointer<Unit>
@@ -52,29 +53,17 @@ public class JNIException <: Exception {
 public const INTEROPLIB_VERSION: Int64 = 9
 
 var jvm = CPointer<JavaVM>()
+var classLoading = AtomicOptionReference<ClassLoading>()
 
-@C
-func setJavaVM(javaVM: CPointer<JavaVM>): Unit {
-    jvm = javaVM
-}
-
-var classLoading = ClassLoading()
-
-public struct ClassLoading {
+public class ClassLoading {
     private let classLoader: jobject
     private let loadClassID: jmethodID
-    let initialized: Bool
-
-    init() {
-        this.classLoader = jobject()
-        this.loadClassID = jmethodID()
-        this.initialized = false
-    }
 
     init(classLoader: jobject, loadClassID: jmethodID) {
+        assert(!classLoader.isNull())
+        assert(!loadClassID.isNull())
         this.classLoader = classLoader
         this.loadClassID = loadClassID
-        this.initialized = true
     }
 
     /**
@@ -83,18 +72,12 @@ public struct ClassLoading {
      * @return local reference to the loaded class, or null if the class wasn't found
      */
     func loadClass(env: JNIEnv_ptr, name: String): jclass {
-        assert(initialized)
         var result = jclass()
         unsafe {
             try (searchName = LibC.mallocCString(name.replace("/", ".")).asResource()) {
                 let envCJ = env.read().read()
-                let callArgs: Array<jvalue> = [
-                  reinterpret_cast<jvalue, jstring>(envCJ.NewStringUTF(env, searchName.value))
-                ]
-                result = withPinnedArray(callArgs) { argsPtr =>
-                    let envCJ = env.read().read()
-                    jclass(envCJ.CallObjectMethodA(env, classLoader, loadClassID, argsPtr))
-                }
+                var callArg = reinterpret_cast<jvalue, jstring>(envCJ.NewStringUTF(env, searchName.value))
+                result = jclass(envCJ.CallObjectMethodA(env, classLoader, loadClassID, inout callArg))
             }
         }
         handlePendingException(env)
@@ -103,22 +86,14 @@ public struct ClassLoading {
 }
 
 @C
-func initClassLoading(env: JNIEnv_ptr, classLoader: jobject): Unit {
-    if (classLoading.initialized) { return }
+func setJavaVmAndInitClassLoading(javaVM: CPointer<JavaVM>, env: JNIEnv_ptr, classLoader: jobject, methodID: jmethodID): Unit {
+    jvm = javaVM
 
-    assert(!classLoader.isNull())
-    unsafe {
-        try (
-          methodName = LibC.mallocCString("loadClass").asResource(),
-          methodSig = LibC.mallocCString("(Ljava/lang/String;)Ljava/lang/Class;").asResource()
-        ) {
-            let envCJ = env.read().read()
-            let clazz = envCJ.GetObjectClass(env, classLoader)
-            let methodID = envCJ.GetMethodID(env, clazz, methodName.value, methodSig.value)
-            assert(!methodID.isNull())
-            classLoading = ClassLoading(envCJ.NewGlobalRef(env, classLoader), methodID)
-        }
+    let classLoaderRef = unsafe {
+        let envCJ = env.read().read()
+        envCJ.NewGlobalRef(env, classLoader)
     }
+    classLoading.store(ClassLoading(classLoaderRef, methodID))
 }
 
 @C
@@ -822,7 +797,7 @@ public class Java_CFFI_Class <: ToString {
             name
         }
 
-        obj = classLoading.loadClass(env, this.name)
+        obj = classLoading.load().getOrThrow().loadClass(env, this.name)
 
         if (obj.isNull()) {
             throw InteropLibException("Cannot find class ${name}")

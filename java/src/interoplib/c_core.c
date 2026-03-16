@@ -212,8 +212,7 @@ static enum RTLogLevel InitLogLevel()
 
 extern int InitCJRuntime(const struct RuntimeParam* param);
 extern int LoadCJLibraryWithInit(const char* libName);
-extern void setJavaVM(JavaVM *vm);
-extern void initClassLoading(JNIEnv *env, jobject classLoader);
+extern void setJavaVmAndInitClassLoading(JavaVM *vm, JNIEnv *env, jobject classLoader, jmethodID methodID);
 
 struct SignalAction {
     union {
@@ -245,7 +244,7 @@ static void setEmptyDefaultSIGSEGVHandler() {
     AddHandlerToSignalStack(SIGSEGV, &sa);
 }
 
-JNIEXPORT void JNICALL Java_cangjie_lang_LibraryLoader_nativeLoadCJLibrary(JNIEnv *env, jclass clazz, jstring libName, jobject classLoader) {
+JNIEXPORT void JNICALL Java_cangjie_lang_LibraryLoader_nativeLoadCJLibrary(JNIEnv *env, jclass unused, jstring libName, jobject classLoader) {
     JavaVM *vm = NULL;
     jboolean isCopy = false;
     const char *cjLibraryName = (*env)->GetStringUTFChars(env, libName, &isCopy);
@@ -256,8 +255,11 @@ JNIEXPORT void JNICALL Java_cangjie_lang_LibraryLoader_nativeLoadCJLibrary(JNIEn
     (*env)->ReleaseStringUTFChars(env, libName, cjLibraryName);
 
     (*env)->GetJavaVM(env, &vm);
-    setJavaVM(vm);
-    initClassLoading(env, classLoader);
+
+    jclass clazz = (*env)->GetObjectClass(env, classLoader);
+    jmethodID methodID = (*env)->GetMethodID(env, clazz, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
+
+    setJavaVmAndInitClassLoading(vm, env, classLoader, methodID);
 }
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
