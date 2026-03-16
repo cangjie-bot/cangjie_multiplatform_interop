@@ -598,12 +598,12 @@ static UndecorateResult undecorate_parameter_type_name(const std::string& decora
 {
     auto size = clang_Type_getSizeOf(type);
     auto& universe = Universe::get();
-    auto* type_symbol = universe.primitive_type(get_primitive_category(type), static_cast<size_t>(size < 0 ? 0 : size));
-    if (type_symbol) {
-        return *type_symbol;
-    }
     if (size <= 0) {
         return universe.unit();
+    }
+    auto* type_symbol = universe.primitive_type(get_primitive_category(type), static_cast<size_t>(size));
+    if (type_symbol) {
+        return *type_symbol;
     }
     return *new VArraySymbol(universe.int8(), static_cast<size_t>(size));
 }
