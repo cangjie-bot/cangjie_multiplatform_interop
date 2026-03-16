@@ -76,7 +76,7 @@ public class ClassLoading {
         unsafe {
             try (searchName = LibC.mallocCString(name.replace("/", ".")).asResource()) {
                 let envCJ = env.read().read()
-                var callArg = reinterpret_cast<jvalue, jstring>(envCJ.NewStringUTF(env, searchName.value))
+                var callArg = UInt64(envCJ.NewStringUTF(env, searchName.value).toUIntNative())
                 result = jclass(envCJ.CallObjectMethodA(env, classLoader, loadClassID, inout callArg))
             }
         }
