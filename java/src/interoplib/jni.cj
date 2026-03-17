@@ -55,15 +55,15 @@ public const INTEROPLIB_VERSION: Int64 = 9
 var jvm = CPointer<JavaVM>()
 var classLoading = AtomicOptionReference<ClassLoading>()
 
-public class ClassLoading {
+class ClassLoading {
     private let classLoader: jobject
-    private let loadClassID: jmethodID
+    private let loadClassMethodID: jmethodID
 
-    init(classLoader: jobject, loadClassID: jmethodID) {
+    init(classLoader: jobject, loadClassMethodID: jmethodID) {
         assert(!classLoader.isNull())
-        assert(!loadClassID.isNull())
+        assert(!loadClassMethodID.isNull())
         this.classLoader = classLoader
-        this.loadClassID = loadClassID
+        this.loadClassMethodID = loadClassMethodID
     }
 
     /**
@@ -77,7 +77,7 @@ public class ClassLoading {
             try (searchName = LibC.mallocCString(name.replace("/", ".")).asResource()) {
                 let envCJ = env.read().read()
                 var callArg = UInt64(envCJ.NewStringUTF(env, searchName.value).toUIntNative())
-                result = jclass(envCJ.CallObjectMethodA(env, classLoader, loadClassID, inout callArg))
+                result = jclass(envCJ.CallObjectMethodA(env, classLoader, loadClassMethodID, inout callArg))
             }
         }
         handlePendingException(env)
