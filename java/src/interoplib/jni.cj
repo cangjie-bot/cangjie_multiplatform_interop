@@ -8,6 +8,7 @@ package interoplib.interop
 
 import std.collection.ArrayQueue
 import std.sync.AtomicBool
+import std.sync.AtomicOptionReference
 import std.sync.Mutex
 
 public type jobject = CPointer<Unit>
@@ -52,10 +53,47 @@ public class JNIException <: Exception {
 public const INTEROPLIB_VERSION: Int64 = 9
 
 var jvm = CPointer<JavaVM>()
+var classLoading = AtomicOptionReference<ClassLoading>()
+
+class ClassLoading {
+    private let classLoader: jobject
+    private let loadClassMethodID: jmethodID
+
+    init(classLoader: jobject, loadClassMethodID: jmethodID) {
+        assert(!classLoader.isNull())
+        assert(!loadClassMethodID.isNull())
+        this.classLoader = classLoader
+        this.loadClassMethodID = loadClassMethodID
+    }
+
+    /**
+     * Loads class by its fully-qualified name.
+     *
+     * @return local reference to the loaded class, or null if the class wasn't found
+     */
+    func loadClass(env: JNIEnv_ptr, name: String): jclass {
+        var result = jclass()
+        unsafe {
+            try (searchName = LibC.mallocCString(name.replace("/", ".")).asResource()) {
+                let envCJ = env.read().read()
+                var callArg = UInt64(envCJ.NewStringUTF(env, searchName.value).toUIntNative())
+                result = jclass(envCJ.CallObjectMethodA(env, classLoader, loadClassMethodID, inout callArg))
+            }
+        }
+        handlePendingException(env)
+        result
+    }
+}
 
 @C
-func setJavaVM(javaVM: CPointer<JavaVM>): Unit {
+func setJavaVmAndInitClassLoading(javaVM: CPointer<JavaVM>, env: JNIEnv_ptr, classLoader: jobject, methodID: jmethodID): Unit {
     jvm = javaVM
+
+    let classLoaderRef = unsafe {
+        let envCJ = env.read().read()
+        envCJ.NewGlobalRef(env, classLoader)
+    }
+    classLoading.store(ClassLoading(classLoaderRef, methodID))
 }
 
 @C
@@ -759,12 +797,7 @@ public class Java_CFFI_Class <: ToString {
             name
         }
 
-        unsafe {
-            let envCJ = env.read().read()
-            let cName = LibC.mallocCString(this.name)
-            obj = envCJ.FindClass(env, cName)
-            LibC.free(cName)
-        }
+        obj = classLoading.load().getOrThrow().loadClass(env, this.name)
 
         if (obj.isNull()) {
             throw InteropLibException("Cannot find class ${name}")

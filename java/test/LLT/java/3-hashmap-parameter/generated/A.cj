@@ -78,9 +78,11 @@ public open class A {
         let a = A(env, 5)
         Java_CFFI_putToRegistry(env, a.obj, a)
 
-        let sizeSignature = Java_CFFI_parseMethodSignature("()I")
-        let sizeId = Java_CFFI_MethodID.constr(env, hashMapClazz, "size", sizeSignature)
-        let intSize = Java_CFFI_callVirtualMethod(env, map, sizeId, [], Java_CFFI_JavaCallNest(0)).asJInt()
+        let intSize = unsafe {
+            let sizeSignature = Java_CFFI_parseMethodSignature("()I")
+            let sizeId = Java_CFFI_MethodID.constr(env, hashMapClazz, "size", sizeSignature)
+            Java_CFFI_callVirtualMethod(env, map, sizeId, [], Java_CFFI_JavaCallNest(0)).asJInt()
+        }
         let floatSize = Float32(intSize)
         let doubleSize = a.boo(env, floatSize)
         println("A.boo -> ${doubleSize}");
@@ -89,10 +91,12 @@ public open class A {
     public func boo(env: JNIEnv_ptr, size: jfloat): jdouble {
         println("Hello from A.boo(${size})")
 
-        let clazz = Java_CFFI_Class(env, "M")
-        let signature = Java_CFFI_parseMethodSignature("(F)D")
-        let id = Java_CFFI_MethodID.constr(env, clazz, "boo", signature)
-        let callNest = Java_CFFI_JavaCallNest(1)
-        return Java_CFFI_callMethod(env, obj, id, [Java_CFFI_JavaEntity(JFLOAT, size)], callNest).asJDouble()
+        return unsafe {
+            let clazz = Java_CFFI_Class(env, "M")
+            let signature = Java_CFFI_parseMethodSignature("(F)D")
+            let id = Java_CFFI_MethodID.constr(env, clazz, "boo", signature)
+            let callNest = Java_CFFI_JavaCallNest(1)
+            Java_CFFI_callMethod(env, obj, id, [Java_CFFI_JavaEntity(JFLOAT, size)], callNest).asJDouble()
+        }
     }
 }
