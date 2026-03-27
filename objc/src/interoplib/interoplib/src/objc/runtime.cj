@@ -284,6 +284,18 @@ public unsafe func getClass(className: String): NativeObjCId {
 }
 
 /**
+ * Gets a protocol NativeObjCProtocol by it's name.
+ * Effectively a wrapper around objc_getProtocol(protoname), but with Cangjie String as a parameter for convenience.
+ */
+public unsafe func getProtocol(protoName: String): NativeObjCProtocol {
+    let protoCName = LibC.mallocCString(protoName)
+    let proto = objc_getProtocol(protoCName)
+    LibC.free(protoCName)
+
+    proto
+}
+
+/**
  * Returns a pointer to objc_msgSend implementation.
  * The result should be cast to proper CFunc<(NativeObjCId, NativeObjCSel, ...ArgTypes) -> RetType>(...) type before use.
  */
@@ -443,6 +455,13 @@ foreign func objc_msgSend(): Unit
  * super: NativeObjCSuperPtr, sel: NativeObjCSel, ...
  */
 foreign func objc_msgSendSuper(): Unit
+
+@FastNative
+/**
+ * Returns the protocol with the specified name, if one has been registered with
+ * the runtime, or nil if one does not exist.
+ */
+foreign func objc_getProtocol(name: CString): NativeObjCProtocol
 
 @FastNative
 /**
