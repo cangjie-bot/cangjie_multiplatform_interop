@@ -351,7 +351,6 @@ def build(args):
         DYLIB_PREF = dylib_pref(args.target_lib)
         DYLIB_EXT = dylib_ext(args.target_lib)
         OUT_CINTEROPLIB_O = os.path.join(DIST_DIR, "cinteroplib.o")
-        OUT_CINTEROPLIB_SO = os.path.join(DIST_DIR, f"{DYLIB_PREF}cinteroplib.{DYLIB_EXT}")
 
         if not os.path.exists(DIST_DIR):
             os.makedirs(DIST_DIR)
@@ -373,12 +372,6 @@ def build(args):
         clang_O += ["c_core.c"]
         command(*clang_O, cwd=INTEROPLIB_DIR)
 
-        clang_SO = clang_args.copy() + ["-shared"]
-        clang_SO += ["-Wl,-U,_setJavaVM"] if IS_DARWIN else ["-Wl,-z,relro,-z,now"]
-        clang_SO += [f"-o{OUT_CINTEROPLIB_SO}", OUT_CINTEROPLIB_O]
-        clang_SO += [f"-L{os.path.join(CJ_RUNTIME_LIB, args.target_lib)}", "-lcangjie-runtime"]
-        command(*clang_SO, cwd=INTEROPLIB_DIR)
-
         #cjc jni.cj registry.cj
         cjc_args = ["cjc"] + list(CJC_BASE_ARGS)
         if args.target:
@@ -392,7 +385,7 @@ def build(args):
         cjc_SO = cjc_args.copy() + ["--output-type=dylib"]
 
         command(*(cjc_A.copy() + ["jni.cj", "registry.cj"]), cwd=INTEROPLIB_DIR)
-        command(*(cjc_SO.copy() + ["jni.cj", "registry.cj", "-L" + DIST_DIR, "-lcinteroplib"]), cwd=INTEROPLIB_DIR)
+        command(*(cjc_SO.copy() + ["jni.cj", "registry.cj", OUT_CINTEROPLIB_O]), cwd=INTEROPLIB_DIR)
 
         javalib_args = [f"--import-path={DIST_DIR}"] + list(glob.glob(os.path.join(INTEROPLIB_DIR, "javalib") + "/*.cj", recursive=False))
         command(*(cjc_A.copy() + javalib_args.copy()), cwd=INTEROPLIB_DIR)
@@ -479,7 +472,6 @@ def install(args):
         DYLIB_PREF = dylib_pref(args.target)
         DYLIB_EXT = dylib_ext(args.target)
         OUT_CINTEROPLIB_O = os.path.join(DIST_DIR, "cinteroplib.o")
-        OUT_CINTEROPLIB_SO = os.path.join(DIST_DIR, f"{DYLIB_PREF}cinteroplib.{DYLIB_EXT}")
         OUT_INTEROPLIB_A = os.path.join(DIST_DIR, f"{DYLIB_PREF}interoplib.interop.a")
         OUT_INTEROPLIB_SO = os.path.join(DIST_DIR, f"{DYLIB_PREF}interoplib.interop.{DYLIB_EXT}")
         OUT_JAVA_LANG_A = os.path.join(DIST_DIR, f"{DYLIB_PREF}java.lang.a")
@@ -496,7 +488,6 @@ def install(args):
         DEST_DYLIB = prepare_dir(install_path, "runtime", "lib", runtime)
         install_files(
             DEST_DYLIB,
-            OUT_CINTEROPLIB_SO,
             OUT_INTEROPLIB_SO,
             OUT_JAVA_LANG_SO
         )
