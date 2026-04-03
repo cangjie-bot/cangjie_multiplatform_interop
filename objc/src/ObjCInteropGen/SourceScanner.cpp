@@ -1467,7 +1467,12 @@ static bool parse_source(CXIndex index, const std::string& file, std::vector<con
 
 void ClangSessionImpl::parse_sources(const std::vector<std::string>& files, const std::vector<std::string>& arguments)
 {
-    std::vector args = {"-xobjective-c", "-fobjc-arc"};
+    std::vector args = {
+        "-xobjective-c",
+        "-fobjc-nonfragile-abi", // Required by GNUstep built for non-fragile ABI
+        "-fobjc-arc",            // Prevents adding low-level staff like retain/release/NSAutoreleasePool
+        "-fblocks"               // Required by GNUstep on Windows if blocks are processed
+    };
 
     for (auto&& argument : arguments) {
         args.push_back(argument.c_str());
