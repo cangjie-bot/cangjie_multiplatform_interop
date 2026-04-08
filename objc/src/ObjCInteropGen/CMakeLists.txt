@@ -97,7 +97,7 @@ if(UNIX AND NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 if(NOT TOML_DIR)
-    set(TOML_DIR, ../../third_party/tinytoml)
+    set(TOML_DIR ../../third_party/tinytoml)
 endif()
 
 target_include_directories(ObjCInteropGen SYSTEM PRIVATE "${TOML_DIR}")
