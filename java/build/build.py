@@ -337,6 +337,11 @@ def fetch_jdk(target_dir):
     else:
         LOG.info('jdk directory already exists, skipping fetch\n')
 
+def is_android_64bit(target):
+    if "android" in target:
+        return ("aarch64" in target) or ("x86_64" in target)
+    return False
+
 def build(args):
     """Java binding generator or interoplib build"""
     """ target-lib is a marker that interoplib should be built """
@@ -356,6 +361,8 @@ def build(args):
             clang_args += ["-D_XOPEN_SOURCE=600"]
         if args.target:
             clang_args += ["--target=" + args.target]
+            if is_android_64bit(args.target):
+                clang_args += ["-Wl,-z,max-page-size=16384"]
         if args.target_sysroot:
             clang_args += ["-isysroot", args.target_sysroot]
 
