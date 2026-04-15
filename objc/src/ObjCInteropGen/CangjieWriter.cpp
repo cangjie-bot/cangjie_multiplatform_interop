@@ -317,6 +317,68 @@ static std::ostream& operator<<(std::ostream& stream, const DefaultValuePrinter&
     return stream;
 }
 
+static void print_enum_constant_value(
+    std::ostream& output, NamedTypeSymbol& underlying_type, const EnumConstantSymbol& constant)
+{
+    const auto& canonical_type = underlying_type.canonical_type();
+    const auto* primitive_type = dynamic_cast<const PrimitiveTypeSymbol*>(&canonical_type);
+    if (primitive_type) {
+        // Avoid the "number exceeds the value range of type" Cangjie compiler error by
+        // printing the value in a type-specific way.
+        switch (primitive_type->category()) {
+            case PrimitiveTypeCategory::SignedInteger:
+                switch (primitive_type->size()) {
+                    case PrimitiveSize::One:
+                        output << static_cast<int>(constant.value<int8_t>());
+                        return;
+                    case PrimitiveSize::Two:
+                        output << constant.value<int16_t>();
+                        return;
+                    case PrimitiveSize::Four:
+                        output << constant.value<int32_t>();
+                        return;
+                    case PrimitiveSize::Eight:
+                        output << constant.value<int64_t>();
+                        return;
+                    default:
+                        break;
+                }
+                break;
+            case PrimitiveTypeCategory::UnsignedInteger:
+                switch (primitive_type->size()) {
+                    case PrimitiveSize::One:
+                        output << static_cast<uint32_t>(constant.value<uint8_t>());
+                        return;
+                    case PrimitiveSize::Two:
+                        output << constant.value<uint16_t>();
+                        return;
+                    case PrimitiveSize::Four:
+                        output << constant.value<uint32_t>();
+                        return;
+                    // PrimitiveSize::Eight is handled properly by fallback case.
+                    default:
+                        break;
+                }
+                break;
+            default:
+                break;
+        }
+    } else {
+        auto& universe = Universe::get();
+        if (&canonical_type == &universe.int128()) {
+            output << "ObjCInt128(" << constant.value128_lo<int64_t>() << ", " << constant.value128_hi<int64_t>()
+                   << ')';
+            return;
+        }
+        if (&canonical_type == &universe.uint128()) {
+            output << "ObjCUInt128(" << constant.value128_lo<uint64_t>() << ", " << constant.value128_hi<uint64_t>()
+                   << ')';
+            return;
+        }
+    }
+    output << constant.value<uint64_t>();
+}
+
 static bool is_objc_compatible_parameters(NonTypeSymbol& method) noexcept
 {
     for (const auto& parameter : method.parameters()) {
@@ -1008,9 +1070,18 @@ void TypeDeclarationWriter::write()
 
 static void write_enum_declaration(IndentingStringStream& output, EnumDeclarationSymbol& enum_decl)
 {
+    // Can be EmitCangjieStrict, does not matter here
+    auto format = SymbolPrintFormat::EmitCangjie;
+
     auto& underlying_type = enum_decl.underlying_type();
     collect_import(underlying_type);
     output << "public type " << emit_cangjie(enum_decl) << " = " << emit_cangjie(underlying_type) << '\n';
+    enum_decl.for_each_constant([&output, format, &enum_decl, &underlying_type](const auto& constant) {
+        output << "public const " << escape_keyword(constant.name()) << ": "
+               << SymbolPrinter(enum_decl, format) << " = ";
+        print_enum_constant_value(output, underlying_type, constant);
+        output << '\n';
+    });
 }
 
 static void add_package_dependencies(const FileLevelSymbol& symbol)
