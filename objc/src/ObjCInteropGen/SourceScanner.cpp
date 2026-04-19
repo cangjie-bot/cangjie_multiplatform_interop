@@ -109,7 +109,7 @@ private:
     {
         auto* named_type = current_type();
         assert(named_type);
-        return as<TypeDeclarationSymbol&>(*named_type);
+        return named_type->as<TypeDeclarationSymbol>();
     }
 
     [[nodiscard]] std::size_t level() const noexcept
@@ -518,7 +518,7 @@ template <CXTypeKind type_kind> Type SourceScanner::get_type_symbol(const CXType
     auto& universe = Universe::get();
     auto* result = universe.type(kind, name);
     if (result) {
-        return as<TypeDeclarationSymbol&>(*result);
+        return result->as<TypeDeclarationSymbol>();
     }
     auto& new_result = *new TypeDeclarationSymbol(kind, name);
     universe.register_type(new_result);
@@ -545,7 +545,7 @@ struct UndecorateResult {
 {
     auto& universe = Universe::get();
     auto* protocol = universe.type(NamedTypeSymbol::Kind::Protocol, std::string(name));
-    return protocol ? as<TypeDeclarationSymbol&>(*protocol) : universe.id();
+    return protocol ? protocol->as<TypeDeclarationSymbol>() : universe.id();
 }
 
 /**
@@ -868,7 +868,7 @@ Type SourceScanner::type_like_symbol(const CXType& type, Nullability nullability
 TypeDeclarationSymbol& SourceScanner::get_target_type_declaration()
 {
     auto& decl = current_type_declaration();
-    return decl.is(NamedTypeSymbol::Kind::Category) ? as<CategoryDeclarationSymbol&>(decl).interface() : decl;
+    return decl.is(NamedTypeSymbol::Kind::Category) ? decl.as<CategoryDeclarationSymbol>().interface() : decl;
 }
 
 NonTypeSymbol& SourceScanner::push_property(
@@ -1027,7 +1027,7 @@ CXChildVisitResult SourceScanner::visit_impl(const CXCursor& cursor, const CXCur
             assert(is_on_top_level());
             assert(is_defining(cursor));
             auto def = type_like_symbol(type);
-            auto& def_symbol = as<NamedTypeSymbol&>(def.symbol());
+            auto& def_symbol = def.symbol().as<NamedTypeSymbol>();
             switch (def_symbol.kind()) {
                 case NamedTypeSymbol::Kind::TypeDef: {
                     auto target = type_like_symbol(clang_getTypedefDeclUnderlyingType(cursor));
@@ -1040,7 +1040,7 @@ CXChildVisitResult SourceScanner::visit_impl(const CXCursor& cursor, const CXCur
                         target_as_alias->target().nullability() == Nullability::Nullable) {
                         target.set_nullability(Nullability::Nonnull);
                     }
-                    as<TypeAliasSymbol&>(def_symbol).set_target(std::move(target));
+                    def_symbol.as<TypeAliasSymbol>().set_target(std::move(target));
                     break;
                 }
                 case NamedTypeSymbol::Kind::Protocol:
@@ -1118,22 +1118,22 @@ CXChildVisitResult SourceScanner::visit_impl(const CXCursor& cursor, const CXCur
             assert(interface_type.kind == CXType_ObjCInterface);
             auto decl = type_like_symbol(interface_type);
             pushed = &push_current(
-                *new CategoryDeclarationSymbol(std::string(cpp.getName()), as<TypeDeclarationSymbol&>(decl.symbol())),
+                *new CategoryDeclarationSymbol(std::string(cpp.getName()), decl.symbol().as<TypeDeclarationSymbol>()),
                 true);
             break;
         }
         case CXCursor_StructDecl:
         case CXCursor_UnionDecl: {
             assert(type.kind == CXType_Record);
-            pushed = &push_current(as<TypeDeclarationSymbol&>(type_like_symbol(type).symbol()), false);
+            pushed = &push_current(type_like_symbol(type).symbol().as<TypeDeclarationSymbol>(), false);
             break;
         }
         case CXCursor_EnumDecl: {
             assert(type.kind == CXType_Enum);
-            auto& decl = as<EnumDeclarationSymbol&>(type_like_symbol(type).symbol());
+            auto& decl = type_like_symbol(type).symbol().as<EnumDeclarationSymbol>();
             auto underlying_type = clang_getEnumDeclIntegerType(cursor);
             assert(is_valid(underlying_type));
-            decl.set_underlying_type(as<NamedTypeSymbol&>(type_like_symbol(underlying_type).symbol()));
+            decl.set_underlying_type(type_like_symbol(underlying_type).symbol().as<NamedTypeSymbol>());
             pushed = &push_current(decl, false);
             break;
         }
@@ -1142,7 +1142,7 @@ CXChildVisitResult SourceScanner::visit_impl(const CXCursor& cursor, const CXCur
             assert(level() == 1);
             assert(current_type_declaration().is(NamedTypeSymbol::Kind::Interface));
             assert(parent.kind == CXCursor_ObjCInterfaceDecl);
-            current_type_declaration().add_base(as<TypeDeclarationSymbol&>(type_like_symbol(type).symbol()));
+            current_type_declaration().add_base(type_like_symbol(type).symbol().as<TypeDeclarationSymbol>());
             break;
         case CXCursor_ObjCProtocolRef: {
             if (parent.kind == CXCursor_TranslationUnit && is_on_top_level()) {
@@ -1165,8 +1165,9 @@ CXChildVisitResult SourceScanner::visit_impl(const CXCursor& cursor, const CXCur
                     (is_protocol && type_decl.kind() == Kind::Protocol));
                 const auto referenced = clang_getCursorReferenced(cursor);
                 assert(is_valid(referenced));
-                type_decl.add_base(as<TypeDeclarationSymbol&>(
-                    *Universe::get().type(Kind::Protocol, as_string(clang_getCursorSpelling(referenced)))));
+                type_decl.add_base(Universe::get()
+                        .type(Kind::Protocol, as_string(clang_getCursorSpelling(referenced)))
+                        ->as<TypeDeclarationSymbol>());
             }
 
             break;
@@ -1238,8 +1239,8 @@ CXChildVisitResult SourceScanner::visit_impl(const CXCursor& cursor, const CXCur
             assert(current_top_is_type());
             assert(is_canonical(cursor));
             assert(is_defining(cursor));
-            pushed = push_current(as<EnumDeclarationSymbol&>(*current_type())
-                    .add_constant(std::move(name), get_enum_constant_value(cursor)));
+            pushed = push_current(current_type()->as<EnumDeclarationSymbol>().add_constant(
+                std::move(name), get_enum_constant_value(cursor)));
             break;
         case CXCursor_ParmDecl:
             assert(is_canonical(cursor));
