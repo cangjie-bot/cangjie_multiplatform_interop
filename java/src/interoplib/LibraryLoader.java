@@ -13,5 +13,5 @@ public class LibraryLoader {
         nativeLoadCJLibrary(systemLibName);
     }
 
-    public static native void nativeLoadCJLibrary(String libName);
+    private static native void nativeLoadCJLibrary(String libName);
 }
