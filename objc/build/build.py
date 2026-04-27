@@ -136,6 +136,13 @@ def command(*args, cwd=None, env=None):
     if output.returncode:
         fatal('"' + ' '.join(args) + '" returned ' + output.returncode)
 
+def adjust_target(target):
+    match target:
+        case "ios-aarch64": return "arm64-apple-ios11"
+        case "ios-simulator-aarch64": return "arm64-apple-ios11-simulator"
+        case "ios-simulator-x86_64": return "x86_64-apple-ios11-simulator"
+        case _: return target
+
 def runtime_name(target):
     return target+"_cjnative"
 
@@ -218,11 +225,7 @@ def build(args):
         cjpm_env = os.environ.copy()
         # interoplib/cjpm.toml passes these _OPTION to cjc via CJPM_CONFIG
         if args.target_lib:
-            cjpm_target = args.target_lib
-            if cjpm_target == "ios-aarch64":
-                cjpm_target = "arm64-apple-ios11"
-            if cjpm_target == "ios-simulator-aarch64":
-                cjpm_target = "arm64-apple-ios11-simulator"
+            cjpm_target = adjust_target(args.target_lib)
             cjpm_env["TARGET_OPTION"] = "--target=" + cjpm_target
         if args.target_sysroot:
             cjpm_env["SYSROOT_OPTION"] = "--sysroot=" + args.target_sysroot
@@ -246,11 +249,7 @@ def build(args):
         clang_compiler = check_clang(args)
         clang_opts = []
         if args.target_lib:
-            clang_target = args.target_lib
-            if clang_target == "ios-aarch64":
-                clang_target = "arm64-apple-ios11"
-            if clang_target == "ios-simulator-aarch64":
-                clang_target = "arm64-apple-ios11-simulator"
+            clang_target = adjust_target(args.target_lib)
             clang_opts += [f"--target={clang_target}"]
         if args.target_sysroot:
             clang_opts += [f"-isysroot{args.target_sysroot}"]
