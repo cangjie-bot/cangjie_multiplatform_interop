@@ -1292,10 +1292,10 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
             auto* decl = named_type_symbol(type);
             auto underlying_type = clang_getEnumDeclIntegerType(cursor);
             assert(is_valid(underlying_type));
-            auto* named_underlying_type = named_type_symbol(underlying_type);
-            assert(named_underlying_type);
+            auto* underlying_type_symbol = type_like_symbol(underlying_type);
+            assert(underlying_type_symbol);
             assert(dynamic_cast<const EnumDeclarationSymbol*>(decl));
-            static_cast<EnumDeclarationSymbol&>(*decl).set_underlying_type(*named_underlying_type);
+            static_cast<EnumDeclarationSymbol&>(*decl).set_underlying_type(*underlying_type_symbol);
             pushed = push_current(decl, false);
             break;
         }

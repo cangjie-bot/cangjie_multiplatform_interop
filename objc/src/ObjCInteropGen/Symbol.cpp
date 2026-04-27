@@ -202,7 +202,7 @@ NamedTypeSymbol* NamedTypeSymbol::construct(const std::vector<TypeLikeSymbol*>& 
     return this;
 }
 
-NamedTypeSymbol& EnumDeclarationSymbol::underlying_type() const noexcept
+TypeLikeSymbol& EnumDeclarationSymbol::underlying_type() const noexcept
 {
     assert(underlying_type_);
     return *underlying_type_;
