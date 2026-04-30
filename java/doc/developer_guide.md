@@ -96,6 +96,9 @@ Cangjie-Java 互操作 SDK 构建依赖以下工具：
     output/
     ├── lib
     │   └── library-loader.jar
+    │   └── linux_x86_64_cjnative
+    │       ├── libinteroplib.interop.a
+    │       └── libjava.lang.a
     ├── modules
     │   └── linux_x86_64_cjnative
     │       ├── interoplib.interop.cjo
@@ -103,7 +106,6 @@ Cangjie-Java 互操作 SDK 构建依赖以下工具：
     ├── runtime
     │   └── lib
     │       └── linux_x86_64_cjnative
-    │           ├── libcinteroplib.so
     │           ├── libinteroplib.interop.so
     │           └── libjava.lang.so
     └── tools
