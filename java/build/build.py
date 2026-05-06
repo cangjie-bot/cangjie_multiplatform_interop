@@ -331,11 +331,6 @@ def fetch_jdk(target_dir):
     else:
         LOG.info('jdk directory already exists, skipping fetch\n')
 
-def is_android_64bit(target):
-    if "android" in target:
-        return ("aarch64" in target) or ("x86_64" in target)
-    return False
-
 def build(args):
     """Java binding generator or interoplib build"""
     """ target-lib is a marker that interoplib should be built """
@@ -347,14 +342,17 @@ def build(args):
         if not os.path.exists(DIST_DIR):
             os.makedirs(DIST_DIR)
 
+        clang = check_in_toolchain(args, "clang")
+        ld = check_in_toolchain(args, "ld")
+        ar = check_in_toolchain(args, "llvm-ar") if args.target and ("android" in args.target) else "ar"
+        ranlib = check_in_toolchain(args, "llvm-ranlib") if args.target and ("android" in args.target) else "ranlib"
+
         #clang c_core.c
-        clang_args = [check_in_toolchain(args, "clang")]
+        clang_args = [clang]
         if IS_DARWIN:
             clang_args += ["-D_XOPEN_SOURCE=600"]
         if args.target:
             clang_args += ["--target=" + args.target]
-            if is_android_64bit(args.target):
-                clang_args += ["-Wl,-z,max-page-size=16384"]
         if args.target_sysroot:
             clang_args += ["-isysroot", args.target_sysroot]
 
@@ -378,11 +376,10 @@ def build(args):
 
         command(*(cjc_A.copy() + ["jni.cj", "registry.cj"]), cwd=INTEROPLIB_DIR)
         command(
-            "ar", "-x", "libinteroplib.interop.a",
+            ar, "-x", "libinteroplib.interop.a",
             cwd=DIST_DIR,
         )
         os.rename(os.path.join(DIST_DIR, "interoplib.interop.o"), os.path.join(DIST_DIR, "orig.interoplib.interop.o"))
-        ld = check_in_toolchain(args, "ld")
         command(
             ld, "-r", "-o", "interoplib.interop.o", "orig.interoplib.interop.o", "cinteroplib.o",
             cwd=DIST_DIR,
@@ -390,11 +387,11 @@ def build(args):
         os.remove(os.path.join(DIST_DIR, "orig.interoplib.interop.o"))
         os.remove(os.path.join(DIST_DIR, "libinteroplib.interop.a"))
         command(
-            "ar", "-cr", "libinteroplib.interop.a", "interoplib.interop.o",
+            ar, "-cr", "libinteroplib.interop.a", "interoplib.interop.o",
             cwd=DIST_DIR,
         )
         command(
-            "ranlib", "-D", "libinteroplib.interop.a",
+            ranlib, "-D", "libinteroplib.interop.a",
             cwd=DIST_DIR,
         )
 
