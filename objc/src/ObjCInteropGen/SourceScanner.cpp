@@ -1399,14 +1399,14 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
             assert(current_top_is_type());
             assert(is_canonical(cursor));
             assert(is_defining(cursor));
-            auto& field = current_type_declaration()->add_field(name, type_like_symbol(type), is_nullable(type));
-            if (clang_Cursor_isBitField(cursor)) {
-                auto width = clang_getFieldDeclBitWidth(cursor);
-                assert(width >= 0);
-                assert(width < 0xFF);
-                field.set_bit_field_size(static_cast<uint8_t>(width));
+            uint16_t modifiers = 0;
+            if (is_nullable(type)) {
+                modifiers |= ModifierNullable;
             }
-            pushed = push_current(field);
+            if (clang_Cursor_isBitField(cursor)) {
+                modifiers |= ModifierBitField;
+            }
+            pushed = push_current(current_type_declaration()->add_field(name, type_like_symbol(type), modifiers));
             break;
         }
         case CXCursor_EnumConstantDecl: {
