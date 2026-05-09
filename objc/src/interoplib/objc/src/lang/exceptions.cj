@@ -6,7 +6,7 @@
 
 package objc.lang
 
-import objc.internal.*
-
-@ObjCMirror
-public class ObjCClass {}
+/**
+ * An exception that has to be used when runtime calls for method unimplemented in Mirror from protocol.
+ */
+public class ObjCOptionalMethodUnimplementedException <: Exception {}
