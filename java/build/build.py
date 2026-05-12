@@ -56,7 +56,7 @@ INTEROPLIB_DIR = os.path.join(HOME_DIR, 'src', 'interoplib')
 LIBRARY_LOADER_JAR = "library-loader.jar"
 JAVA_INTEROP_THIRD_PARTY = os.path.join(MIRROR_GEN_DIR, 'third_party')
 
-OUT_INTEROPLIB_CJO = os.path.join(DIST_DIR, "java.internal.cjo")
+OUT_JAVA_INTERNAL_CJO = os.path.join(DIST_DIR, "java.internal.cjo")
 OUT_JAVA_LANG_CJO = os.path.join(DIST_DIR, "java.lang.cjo")
 
 LOG_DIR = os.path.join(BUILD_DIR, 'logs')
@@ -480,27 +480,27 @@ def install(args):
         runtime = runtime_name(args.target)
 
         DYLIB_EXT = dylib_ext(args.target)
-        OUT_INTEROPLIB_A = os.path.join(DIST_DIR, "libjava.internal.a")
-        OUT_INTEROPLIB_SO = os.path.join(DIST_DIR, f"libjava.internal.{DYLIB_EXT}")
+        OUT_JAVA_INTERNAL_A = os.path.join(DIST_DIR, "libjava.internal.a")
+        OUT_JAVA_INTERNAL_SO = os.path.join(DIST_DIR, f"libjava.internal.{DYLIB_EXT}")
         OUT_JAVA_LANG_A = os.path.join(DIST_DIR, "libjava.lang.a")
         OUT_JAVA_LANG_SO = os.path.join(DIST_DIR, f"libjava.lang.{DYLIB_EXT}")
 
         DEST_LIB = prepare_dir(install_path, "lib", runtime)
         install_files(
             DEST_LIB,
-            OUT_INTEROPLIB_A,
+            OUT_JAVA_INTERNAL_A,
             OUT_JAVA_LANG_A
         )
 
         DEST_DYLIB = prepare_dir(install_path, "runtime", "lib", runtime)
         install_files(
             DEST_DYLIB,
-            OUT_INTEROPLIB_SO,
+            OUT_JAVA_INTERNAL_SO,
             OUT_JAVA_LANG_SO
         )
 
         DEST_CJO = prepare_dir(install_path, "modules", runtime)
-        install_files(DEST_CJO, OUT_INTEROPLIB_CJO, OUT_JAVA_LANG_CJO)
+        install_files(DEST_CJO, OUT_JAVA_INTERNAL_CJO, OUT_JAVA_LANG_CJO)
 
         lib_loader_dst = prepare_dir(install_path, 'lib')
         lib_loader_jar = os.path.join(DIST_DIR, LIBRARY_LOADER_JAR)
