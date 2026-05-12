@@ -4,9 +4,9 @@
 //
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
-package interoplib.interop.tests
+package java.internal.tests
 
-import interoplib.interop.*
+import java.internal.*
 
 @C
 protected func Java_A_initCJObject(env: JNIEnv_ptr, obj: jobject): jlong {

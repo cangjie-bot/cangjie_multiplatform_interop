@@ -11,7 +11,7 @@ import static cangjie.lang.LibraryLoader.loadLibrary;
 
 public class A extends M {
     static {
-        loadLibrary("interoplib.interop.tests");
+        loadLibrary("java.internal.tests");
     }
 
     long self;
