@@ -64,7 +64,7 @@ protected type NativeObjCSuperPtr = CPointer<NativeObjCSuper>
 protected type RegistryId = Int64
 
 /**
- * An exception that has to be used to mark an unreachable code (e.g. instantiation @ObjCImpl objects from Cangjie side).
+ * An exception that is used to mark an unreachable code.
  */
 protected class ObjCUnreachableCodeException <: Exception {}
 
