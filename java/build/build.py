@@ -56,7 +56,7 @@ INTEROPLIB_DIR = os.path.join(HOME_DIR, 'src', 'interoplib')
 LIBRARY_LOADER_JAR = "library-loader.jar"
 JAVA_INTEROP_THIRD_PARTY = os.path.join(MIRROR_GEN_DIR, 'third_party')
 
-OUT_INTEROPLIB_CJO = os.path.join(DIST_DIR, "interoplib.interop.cjo")
+OUT_JAVA_INTERNAL_CJO = os.path.join(DIST_DIR, "java.internal.cjo")
 OUT_JAVA_LANG_CJO = os.path.join(DIST_DIR, "java.lang.cjo")
 
 LOG_DIR = os.path.join(BUILD_DIR, 'logs')
@@ -376,22 +376,22 @@ def build(args):
 
         command(*(cjc_A.copy() + ["jni.cj", "registry.cj"]), cwd=INTEROPLIB_DIR)
         command(
-            ar, "-x", "libinteroplib.interop.a",
+            ar, "-x", "libjava.internal.a",
             cwd=DIST_DIR,
         )
-        os.rename(os.path.join(DIST_DIR, "interoplib.interop.o"), os.path.join(DIST_DIR, "orig.interoplib.interop.o"))
+        os.rename(os.path.join(DIST_DIR, "java.internal.o"), os.path.join(DIST_DIR, "orig.java.internal.o"))
         command(
-            ld, "-r", "-o", "interoplib.interop.o", "orig.interoplib.interop.o", "cinteroplib.o",
+            ld, "-r", "-o", "java.internal.o", "orig.java.internal.o", "cinteroplib.o",
             cwd=DIST_DIR,
         )
-        os.remove(os.path.join(DIST_DIR, "orig.interoplib.interop.o"))
-        os.remove(os.path.join(DIST_DIR, "libinteroplib.interop.a"))
+        os.remove(os.path.join(DIST_DIR, "orig.java.internal.o"))
+        os.remove(os.path.join(DIST_DIR, "libjava.internal.a"))
         command(
-            ar, "-cr", "libinteroplib.interop.a", "interoplib.interop.o",
+            ar, "-cr", "libjava.internal.a", "java.internal.o",
             cwd=DIST_DIR,
         )
         command(
-            ranlib, "-D", "libinteroplib.interop.a",
+            ranlib, "-D", "libjava.internal.a",
             cwd=DIST_DIR,
         )
 
@@ -399,7 +399,7 @@ def build(args):
 
         javalib_args = [f"--import-path={DIST_DIR}"] + list(glob.glob(os.path.join(INTEROPLIB_DIR, "javalib") + "/*.cj", recursive=False))
         command(*(cjc_A.copy() + javalib_args.copy()), cwd=INTEROPLIB_DIR)
-        command(*(cjc_SO.copy() + javalib_args.copy() + ["-L" + DIST_DIR, "-linteroplib.interop"]), cwd=INTEROPLIB_DIR)
+        command(*(cjc_SO.copy() + javalib_args.copy() + ["-L" + DIST_DIR, "-ljava.internal"]), cwd=INTEROPLIB_DIR)
 
         command(
             "javac", "-d", DIST_DIR, "-source", "8", "-target", "8", "LibraryLoader.java", "$$NativeConstructorMarker.java", "ClassAnalyser.java", "MethodDef.java",
@@ -480,27 +480,27 @@ def install(args):
         runtime = runtime_name(args.target)
 
         DYLIB_EXT = dylib_ext(args.target)
-        OUT_INTEROPLIB_A = os.path.join(DIST_DIR, "libinteroplib.interop.a")
-        OUT_INTEROPLIB_SO = os.path.join(DIST_DIR, f"libinteroplib.interop.{DYLIB_EXT}")
+        OUT_JAVA_INTERNAL_A = os.path.join(DIST_DIR, "libjava.internal.a")
+        OUT_JAVA_INTERNAL_SO = os.path.join(DIST_DIR, f"libjava.internal.{DYLIB_EXT}")
         OUT_JAVA_LANG_A = os.path.join(DIST_DIR, "libjava.lang.a")
         OUT_JAVA_LANG_SO = os.path.join(DIST_DIR, f"libjava.lang.{DYLIB_EXT}")
 
         DEST_LIB = prepare_dir(install_path, "lib", runtime)
         install_files(
             DEST_LIB,
-            OUT_INTEROPLIB_A,
+            OUT_JAVA_INTERNAL_A,
             OUT_JAVA_LANG_A
         )
 
         DEST_DYLIB = prepare_dir(install_path, "runtime", "lib", runtime)
         install_files(
             DEST_DYLIB,
-            OUT_INTEROPLIB_SO,
+            OUT_JAVA_INTERNAL_SO,
             OUT_JAVA_LANG_SO
         )
 
         DEST_CJO = prepare_dir(install_path, "modules", runtime)
-        install_files(DEST_CJO, OUT_INTEROPLIB_CJO, OUT_JAVA_LANG_CJO)
+        install_files(DEST_CJO, OUT_JAVA_INTERNAL_CJO, OUT_JAVA_LANG_CJO)
 
         lib_loader_dst = prepare_dir(install_path, 'lib')
         lib_loader_jar = os.path.join(DIST_DIR, LIBRARY_LOADER_JAR)

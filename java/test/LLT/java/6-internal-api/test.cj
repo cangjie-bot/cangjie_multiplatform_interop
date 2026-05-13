@@ -4,9 +4,9 @@
 //
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
-package interoplib.interop.tests
+package java.internal.tests
 
-import interoplib.interop.*
+import java.internal.*
 
 import java.lang.*
 import std.console.Console

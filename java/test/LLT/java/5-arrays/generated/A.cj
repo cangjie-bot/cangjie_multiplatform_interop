@@ -4,9 +4,9 @@
 //
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
-package interoplib.interop.tests
+package java.internal.tests
 
-import interoplib.interop.*
+import java.internal.*
 
 private func Java_CFFI_callNonVirtualMethod_raw(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, className: String, methodName: String, methodSignature: String, args: Array<Java_CFFI_JavaEntity>): Java_CFFI_JavaEntity {
     let clazz = Java_CFFI_Class(env, className)
