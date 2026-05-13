@@ -4,7 +4,7 @@
 //
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
-package interoplib.objc
+package objc.internal
 
 import std.sync.*
 
@@ -18,7 +18,7 @@ foreign func _NSConcreteStackBlock(): Unit
 * block descriptor, use all defaults for 'our' blocks
 */
 @C
-public struct NativeBlockDescriptorABI {
+protected struct NativeBlockDescriptorABI {
     NativeBlockDescriptorABI(
         let reserved!: UInt64 = 0, // should be zero
         let size!: UInt64, // equals to the size of block (= sizeOf<NativeBlockABI> or = sizeOf<CangjieBlockABI>),
@@ -32,7 +32,7 @@ public struct NativeBlockDescriptorABI {
 * default values are defaults that we provide when constructing block from Cangjie
 */
 @C
-public struct NativeBlockABI {
+protected struct NativeBlockABI {
     public NativeBlockABI(
         public let isa!: CPointer<Unit>,
         public let flags!: Int32, // see ABI description
@@ -46,7 +46,7 @@ public struct NativeBlockABI {
 * for blocks created from Cangjie, we additionally store the registry id in the structure
 */
 @C
-public struct CangjieBlockABI {
+protected struct CangjieBlockABI {
     public CangjieBlockABI(
         let base!: NativeBlockABI,
         let registryId!: RegistryId
@@ -56,7 +56,7 @@ public struct CangjieBlockABI {
 /*
 * reference counter box for lambda objects, used internally by generated code
 */
-public class ObjCLambdaWrapper {
+protected class ObjCLambdaWrapper {
     ObjCLambdaWrapper(
         let lambda: Any,
         let counter!: AtomicInt64 = AtomicInt64(1)
@@ -67,7 +67,7 @@ public class ObjCLambdaWrapper {
 * default copy callback, read lambda wrapper from registry and increment ref counter
 */
 @C
-public func cangjieBlockCopy(src: CPointer<NativeBlockABI>, _: CPointer<NativeBlockABI>): Unit {
+protected func cangjieBlockCopy(src: CPointer<NativeBlockABI>, _: CPointer<NativeBlockABI>): Unit {
     unsafe {
         let regid = CPointer<CangjieBlockABI>(src).read().registryId
         getFromRegistryById<ObjCLambdaWrapper>(regid).counter.fetchAdd(1)
@@ -78,7 +78,7 @@ public func cangjieBlockCopy(src: CPointer<NativeBlockABI>, _: CPointer<NativeBl
 * default disposed callback, decrement the counter and if it reaches 0, remove and free the object
 */
 @C
-public func cangjieBlockDispose(src: CPointer<NativeBlockABI>): Unit {
+protected func cangjieBlockDispose(src: CPointer<NativeBlockABI>): Unit {
     unsafe {
         let regid = CPointer<CangjieBlockABI>(src).read().registryId
         if (getFromRegistryById<ObjCLambdaWrapper>(regid).counter.fetchSub(1) <= 2) {
@@ -123,7 +123,7 @@ private func pCangjieBlockDescriptor(ptr: CPointer<NativeBlockDescriptorABI>): C
 * })
 * The result of this function is malloc'ed and needs to be freed using LibC.free
 */
-public func registerCangjieLambdaAsBlock(ref: Any, body: CPointer<CFunc<(CPointer<NativeBlockABI>) -> Unit>>): CPointer<CangjieBlockABI> {
+protected func registerCangjieLambdaAsBlock(ref: Any, body: CPointer<CFunc<(CPointer<NativeBlockABI>) -> Unit>>): CPointer<CangjieBlockABI> {
     unsafe {
         let regid = putToRegistry(ObjCLambdaWrapper(ref))
         let resultStack = CangjieBlockABI(
@@ -145,7 +145,7 @@ public func registerCangjieLambdaAsBlock(ref: Any, body: CPointer<CFunc<(CPointe
 // read lambda object from block ABI pointer
 // assumes that this block is created by Cangjie
 @Frozen
-public func getCangjieLambdaFromBlock<F>(block: CPointer<NativeBlockABI>): F {
+protected func getCangjieLambdaFromBlock<F>(block: CPointer<NativeBlockABI>): F {
     unsafe {
         // here we could additionally access the descriptor and check that size >= sizeof<CangjieBlockABI>()
         // but this can only happen if the user uses this function explicitly

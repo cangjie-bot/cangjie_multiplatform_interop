@@ -649,9 +649,9 @@ public:
         return constants_.empty();
     }
 
-    NamedTypeSymbol& underlying_type() const noexcept;
+    TypeLikeSymbol& underlying_type() const noexcept;
 
-    void set_underlying_type(NamedTypeSymbol& underlying_type) noexcept
+    void set_underlying_type(TypeLikeSymbol& underlying_type) noexcept
     {
         underlying_type_ = &underlying_type;
     }
@@ -678,7 +678,7 @@ public:
     }
 
 private:
-    NamedTypeSymbol* underlying_type_;
+    TypeLikeSymbol* underlying_type_;
     std::deque<EnumConstantSymbol> constants_;
 
     [[nodiscard]] bool is_file_level() const noexcept override

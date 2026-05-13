@@ -4,14 +4,14 @@
 //
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
-package interoplib.common
+package objc.internal
 
 import std.sync.Mutex
 
-public let REGISTRY: Registry = Registry()
+protected let REGISTRY: Registry = Registry()
 
 // TODO: make lock-free concurrent if it will improve performance
-public class Registry {
+protected class Registry {
     private var mockRegistry = Array<Any>(10000) {_ => unsafe { zeroValue<Any>() }}
     private var objId: Int64
     private var freeList: Array<Int64>

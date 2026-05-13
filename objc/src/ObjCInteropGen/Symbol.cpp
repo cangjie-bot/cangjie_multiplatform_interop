@@ -202,7 +202,7 @@ NamedTypeSymbol* NamedTypeSymbol::construct(const std::vector<TypeLikeSymbol*>& 
     return this;
 }
 
-NamedTypeSymbol& EnumDeclarationSymbol::underlying_type() const noexcept
+TypeLikeSymbol& EnumDeclarationSymbol::underlying_type() const noexcept
 {
     assert(underlying_type_);
     return *underlying_type_;
@@ -728,7 +728,9 @@ void BlockTypeSymbol::print_default_value(std::ostream& stream, [[maybe_unused]]
     SymbolPrintFormat format, [[maybe_unused]] TypeLikeSymbol& type_alias)
 {
     print(stream, format);
-    stream << "(CPointer<NativeBlockABI>())";
+    stream << "(unsafe { ";
+    do_print(stream, "zeroValue", format);
+    stream << "() })";
 }
 
 void FuncLikeTypeSymbol::visit_impl(SymbolVisitor& visitor)
