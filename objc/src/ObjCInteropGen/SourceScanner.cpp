@@ -201,7 +201,7 @@ private:
 
     [[nodiscard]] static CXChildVisitResult visit(CXCursor cursor, CXCursor parent, void* data)
     {
-        return reinterpret_cast<SourceScanner*>(data)->visit_impl(cursor, parent);
+        return static_cast<SourceScanner*>(data)->visit_impl(cursor, parent);
     }
 
     CXChildVisitResult visit_impl(const CXCursor& cursor, const CXCursor& parent);
