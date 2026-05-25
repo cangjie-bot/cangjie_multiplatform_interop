@@ -27,5 +27,3 @@ replay_pid*
 /build/
 /env.xml
 /javac.args
-/tests/generated/
-/third_party/jdk/

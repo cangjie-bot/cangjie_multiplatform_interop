@@ -14,4 +14,4 @@ cd cj_mirror_gen_$1
 cjc --output-type=dylib ../../../../interoplib/javalib/Object.cj ../../../../interoplib/javalib/Array.cj ../../../../interoplib/javalib/String.cj
 cjc -O2 --output-type=dylib ../../../../interoplib/jni.cj ../../../../interoplib/registry.cj
 
-cjc ../../generated/cj_mirror_gen_$1/UNNAMED/src/*.cj -L./ --import-path=./ -ljava.lang -linteroplib.interop --output-type=dylib
+cjc ../../generated/cj_mirror_gen_$1/UNNAMED/src/*.cj -L./ --import-path=./ -ljava.lang -ljava.internal --output-type=dylib

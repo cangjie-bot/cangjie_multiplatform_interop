@@ -39,8 +39,8 @@ Universe::Universe()
       float16_{"Float16", PrimitiveTypeCategory::FloatingPoint, PrimitiveSize::Two},
       float32_{"Float32", PrimitiveTypeCategory::FloatingPoint, PrimitiveSize::Four},
       float64_{"Float64", PrimitiveTypeCategory::FloatingPoint, PrimitiveSize::Eight},
-      int128_{NamedTypeSymbol::Kind::Struct, "ObjCInt128"},
-      uint128_{NamedTypeSymbol::Kind::Struct, "ObjCUInt128"},
+      int128_{int64_, 2},
+      uint128_{uint64_, 2},
       class_{NamedTypeSymbol::Kind::Interface, "ObjCClass"},
       id_{NamedTypeSymbol::Kind::Protocol, "ObjCId"},
       sel_{NamedTypeSymbol::Kind::Interface, "SEL"} // "ObjCSelector"
@@ -62,8 +62,6 @@ Universe::Universe()
     register_type(&float16_);
     register_type(&float32_);
     register_type(&float64_);
-    register_type(&int128_);
-    register_type(&uint128_);
     register_type(&class_);
     register_type(&id_);
     register_type(&sel_);
@@ -104,54 +102,54 @@ void Universe::register_type(NamedTypeSymbol* symbol)
     type_order_.emplace_back(type_namespace, name);
 }
 
-NamedTypeSymbol* Universe::primitive_type(PrimitiveTypeCategory category, PrimitiveSize size) noexcept
+TypeLikeSymbol* Universe::primitive_type(PrimitiveTypeCategory category, size_t size) noexcept
 {
     switch (category) {
         case PrimitiveTypeCategory::Boolean:
-            return size == PrimitiveSize::One ? &boolean() : nullptr;
+            return size == 1 ? &boolean() : nullptr;
         case PrimitiveTypeCategory::SignedInteger:
             switch (size) {
-                case PrimitiveSize::One:
+                case 1:
                     return &int8();
-                case PrimitiveSize::Two:
+                case 2:
                     return &int16();
-                case PrimitiveSize::Four:
+                case 4:
                     return &int32();
-                case PrimitiveSize::Eight:
+                case 8:
                     return &int64();
-                case PrimitiveSize::Sixteen:
+                case 16:
                     return &int128();
                 default:
                     return nullptr;
             }
         case PrimitiveTypeCategory::UnsignedInteger:
             switch (size) {
-                case PrimitiveSize::One:
+                case 1:
                     return &uint8();
-                case PrimitiveSize::Two:
+                case 2:
                     return &uint16();
-                case PrimitiveSize::Four:
+                case 4:
                     return &uint32();
-                case PrimitiveSize::Eight:
+                case 8:
                     return &uint64();
-                case PrimitiveSize::Sixteen:
+                case 16:
                     return &uint128();
                 default:
                     return nullptr;
             }
         case PrimitiveTypeCategory::FloatingPoint:
             switch (size) {
-                case PrimitiveSize::Two:
+                case 2:
                     return &float16();
-                case PrimitiveSize::Four:
+                case 4:
                     return &float32();
-                case PrimitiveSize::Eight:
+                case 8:
                     return &float64();
                 default:
                     return nullptr;
             }
         default:
-            return category == PrimitiveTypeCategory::Unit && size == PrimitiveSize::Zero ? &unit() : nullptr;
+            return category == PrimitiveTypeCategory::Unit && size == 0 ? &unit() : nullptr;
     }
 }
 

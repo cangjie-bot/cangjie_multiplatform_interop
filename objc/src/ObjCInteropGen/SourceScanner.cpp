@@ -612,8 +612,7 @@ static UndecorateResult undecorate_parameter_type_name(const std::string& decora
     if (size <= 0) {
         return universe.unit();
     }
-    auto* type_symbol = universe.primitive_type(
-        get_primitive_category(type), static_cast<PrimitiveSize>(size));
+    auto* type_symbol = universe.primitive_type(get_primitive_category(type), static_cast<size_t>(size));
     if (type_symbol) {
         return *type_symbol;
     }
@@ -1293,10 +1292,10 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
             auto* decl = named_type_symbol(type);
             auto underlying_type = clang_getEnumDeclIntegerType(cursor);
             assert(is_valid(underlying_type));
-            auto* named_underlying_type = named_type_symbol(underlying_type);
-            assert(named_underlying_type);
+            auto* underlying_type_symbol = type_like_symbol(underlying_type);
+            assert(underlying_type_symbol);
             assert(dynamic_cast<const EnumDeclarationSymbol*>(decl));
-            static_cast<EnumDeclarationSymbol&>(*decl).set_underlying_type(*named_underlying_type);
+            static_cast<EnumDeclarationSymbol&>(*decl).set_underlying_type(*underlying_type_symbol);
             pushed = push_current(decl, false);
             break;
         }
@@ -1400,14 +1399,14 @@ CXChildVisitResult SourceScanner::visit_impl(CXCursor cursor, CXCursor parent)
             assert(current_top_is_type());
             assert(is_canonical(cursor));
             assert(is_defining(cursor));
-            auto& field = current_type_declaration()->add_field(name, type_like_symbol(type), is_nullable(type));
-            if (clang_Cursor_isBitField(cursor)) {
-                auto width = clang_getFieldDeclBitWidth(cursor);
-                assert(width >= 0);
-                assert(width < 0xFF);
-                field.set_bit_field_size(static_cast<uint8_t>(width));
+            uint16_t modifiers = 0;
+            if (is_nullable(type)) {
+                modifiers |= ModifierNullable;
             }
-            pushed = push_current(field);
+            if (clang_Cursor_isBitField(cursor)) {
+                modifiers |= ModifierBitField;
+            }
+            pushed = push_current(current_type_declaration()->add_field(name, type_like_symbol(type), modifiers));
             break;
         }
         case CXCursor_EnumConstantDecl: {
