@@ -56,13 +56,13 @@ INTEROPLIB_DIR = os.path.join(HOME_DIR, 'src', 'interoplib')
 LIBRARY_LOADER_JAR = "library-loader.jar"
 JAVA_INTEROP_THIRD_PARTY = os.path.join(MIRROR_GEN_DIR, 'third_party')
 
-OUT_INTEROPLIB_CJO = os.path.join(DIST_DIR, "interoplib.interop.cjo")
+OUT_JAVA_INTERNAL_CJO = os.path.join(DIST_DIR, "java.internal.cjo")
 OUT_JAVA_LANG_CJO = os.path.join(DIST_DIR, "java.lang.cjo")
 
 LOG_DIR = os.path.join(BUILD_DIR, 'logs')
 LOG_FILE = os.path.join(LOG_DIR, 'JavaInterop.log')
 
-CJC_BASE_ARGS = ["-Woff", "unused", "-Woff", "parser", "--strip-all", "-O2", "--output-type=dylib", "--output-dir=" + DIST_DIR, "--int-overflow=wrapping", "--disable-reflection"]
+CJC_BASE_ARGS = ["-Woff", "unused", "-Woff", "parser", "--strip-all", "-O2", "--output-dir=" + DIST_DIR, "--int-overflow=wrapping", "--disable-reflection"]
 if not IS_DARWIN:
     CJC_BASE_ARGS += ["--link-options", "-z relro", "--link-options", "-z now"]
 
@@ -116,24 +116,24 @@ def fixedEnv(env=None):
     env["ZERO_AR_DATE"] = "1"
     return env
 
-def check_clang(args):
-    # If user didn't specify --target-toolchain, we search for an available compiler in $PATH.
+def check_in_toolchain(args, tool):
+    # If user didn't specify --target-toolchain, we search for an available tool in $PATH.
     # If user did specify --target-toolchain, we search in user given path ONLY. By doing so
-    # user could see a proper 'compiler not found' error if the given path is incorrect.
+    # user could see a proper '... not found' error if the given path is incorrect.
     toolchain_path = args.target_toolchain if args.target_toolchain else None
     if toolchain_path and (not os.path.exists(toolchain_path)):
         LOG.error(f"The given toolchain path does not exist: {toolchain_path}")
 
-    c_compiler = shutil.which("clang", path=toolchain_path)
+    c_tool = shutil.which(tool, path=toolchain_path)
 
-    if c_compiler is None:
+    if c_tool is None:
         if toolchain_path:
-            LOG.error(f"Cannot find clang in the given toolchain path: {toolchain_path}")
+            LOG.error(f"Cannot find {tool} in the given toolchain path: {toolchain_path}")
         else:
-            LOG.error("Cannot find clang in $PATH")
-        fatal("clang is required to build interop libraries")
+            LOG.error(f"Cannot find {tool} in $PATH")
+        fatal(f"{tool} is required to build interop libraries")
 
-    return c_compiler
+    return c_tool
 
 def command(*args, cwd=None, env=None):
     """Execute a child program via 'subprocess.Popen' and log the output"""
@@ -141,12 +141,6 @@ def command(*args, cwd=None, env=None):
     log_output(output)
     if output.returncode:
         fatal('"' + ' '.join(args) + '" returned ' + output.returncode)
-
-def dylib_pref(target):
-    if "windows" in target:
-        return ""
-    else:
-        return "lib"
 
 def dylib_ext(target):
     if "darwin" in target or "ios" in target:
@@ -337,49 +331,39 @@ def fetch_jdk(target_dir):
     else:
         LOG.info('jdk directory already exists, skipping fetch\n')
 
-def is_android_64bit(target):
-    if "android" in target:
-        return ("aarch64" in target) or ("x86_64" in target)
-    return False
-
 def build(args):
     """Java binding generator or interoplib build"""
     """ target-lib is a marker that interoplib should be built """
     if args.target_lib:
         LOG.info('begin build interoplib for ' + args.target_lib + '\n')
 
-        DYLIB_PREF = dylib_pref(args.target_lib)
-        DYLIB_EXT = dylib_ext(args.target_lib)
-        OUT_CINTEROPLIB_SO = os.path.join(DIST_DIR, f"{DYLIB_PREF}cinteroplib.{DYLIB_EXT}")
+        OUT_CINTEROPLIB_O = os.path.join(DIST_DIR, "cinteroplib.o")
 
         if not os.path.exists(DIST_DIR):
             os.makedirs(DIST_DIR)
 
+        clang = check_in_toolchain(args, "clang")
+        ld = check_in_toolchain(args, "ld")
+        ar = check_in_toolchain(args, "llvm-ar") if args.target and ("android" in args.target) else "ar"
+        ranlib = check_in_toolchain(args, "llvm-ranlib") if args.target and ("android" in args.target) else "ranlib"
+
         #clang c_core.c
-        clang_args = [check_clang(args)]
+        clang_args = [clang]
         if IS_DARWIN:
             clang_args += ["-D_XOPEN_SOURCE=600"]
         if args.target:
             clang_args += ["--target=" + args.target]
-            if is_android_64bit(args.target):
-                clang_args += ["-Wl,-z,max-page-size=16384"]
         if args.target_sysroot:
             clang_args += ["-isysroot", args.target_sysroot]
 
-        clang_args += ["-fstack-protector-strong", "-s", "-Wl,-z,relro,-z,now", "-fPIC", "-shared"]
-        clang_args += ["-o", OUT_CINTEROPLIB_SO]
-        clang_args += ["-lcangjie-runtime"]
-        clang_args += ["-I" + JAVA_INCLUDE, "-I" + JAVA_INCLUDE_ARCH]
-        clang_args += ["-L" + os.path.join(CJ_RUNTIME_LIB, args.target_lib)]
-        clang_args += ["c_core.c"]
-
-        command(*clang_args, cwd=INTEROPLIB_DIR)
+        clang_O = clang_args.copy() + ["-c", "-fstack-protector-strong", "-fPIC"]
+        clang_O += ["-o", OUT_CINTEROPLIB_O]
+        clang_O += ["-I" + JAVA_INCLUDE, "-I" + JAVA_INCLUDE_ARCH]
+        clang_O += ["c_core.c"]
+        command(*clang_O, cwd=INTEROPLIB_DIR)
 
         #cjc jni.cj registry.cj
         cjc_args = ["cjc"] + list(CJC_BASE_ARGS)
-        cjc_args += ["jni.cj", "registry.cj"]
-        cjc_args += ["-L" + DIST_DIR, "-lcinteroplib"]
-
         if args.target:
             cjc_args += ["--target=" + args.target]
         if args.target_sysroot:
@@ -387,21 +371,35 @@ def build(args):
         if args.target_toolchain:
             cjc_args += ["-B", args.target_toolchain]
 
-        command(*cjc_args, cwd=INTEROPLIB_DIR)
+        cjc_A = cjc_args.copy() + ["--output-type=staticlib"]
+        cjc_SO = cjc_args.copy() + ["--output-type=dylib"]
 
-        #cjc javalib/*.cj
-        cjc_args = ["cjc"] + list(CJC_BASE_ARGS)
-        cjc_args += ["--import-path=" + DIST_DIR]
-        cjc_args += list(glob.glob(os.path.join(INTEROPLIB_DIR, "javalib") + "/*.cj", recursive=False))
+        command(*(cjc_A.copy() + ["jni.cj", "registry.cj"]), cwd=INTEROPLIB_DIR)
+        command(
+            ar, "-x", "libjava.internal.a",
+            cwd=DIST_DIR,
+        )
+        os.rename(os.path.join(DIST_DIR, "java.internal.o"), os.path.join(DIST_DIR, "orig.java.internal.o"))
+        command(
+            ld, "-r", "-o", "java.internal.o", "orig.java.internal.o", "cinteroplib.o",
+            cwd=DIST_DIR,
+        )
+        os.remove(os.path.join(DIST_DIR, "orig.java.internal.o"))
+        os.remove(os.path.join(DIST_DIR, "libjava.internal.a"))
+        command(
+            ar, "-cr", "libjava.internal.a", "java.internal.o",
+            cwd=DIST_DIR,
+        )
+        command(
+            ranlib, "-D", "libjava.internal.a",
+            cwd=DIST_DIR,
+        )
 
-        if args.target:
-            cjc_args += ["--target=" + args.target]
-        if args.target_sysroot:
-            cjc_args += ["--sysroot", args.target_sysroot]
-        if args.target_toolchain:
-            cjc_args += ["-B", args.target_toolchain]
+        command(*(cjc_SO.copy() + ["jni.cj", "registry.cj", OUT_CINTEROPLIB_O]), cwd=INTEROPLIB_DIR)
 
-        command(*cjc_args, cwd=INTEROPLIB_DIR)
+        javalib_args = [f"--import-path={DIST_DIR}"] + list(glob.glob(os.path.join(INTEROPLIB_DIR, "javalib") + "/*.cj", recursive=False))
+        command(*(cjc_A.copy() + javalib_args.copy()), cwd=INTEROPLIB_DIR)
+        command(*(cjc_SO.copy() + javalib_args.copy() + ["-L" + DIST_DIR, "-ljava.internal"]), cwd=INTEROPLIB_DIR)
 
         command(
             "javac", "-d", DIST_DIR, "-source", "8", "-target", "8", "LibraryLoader.java", "$$NativeConstructorMarker.java", "ClassAnalyser.java", "MethodDef.java",
@@ -481,22 +479,28 @@ def install(args):
         LOG.info("begin install interoplib for " + args.target + "\n")
         runtime = runtime_name(args.target)
 
-        DYLIB_PREF = dylib_pref(args.target)
         DYLIB_EXT = dylib_ext(args.target)
-        OUT_CINTEROPLIB_SO = os.path.join(DIST_DIR, f"{DYLIB_PREF}cinteroplib.{DYLIB_EXT}")
-        OUT_INTEROPLIB_SO = os.path.join(DIST_DIR, f"{DYLIB_PREF}interoplib.interop.{DYLIB_EXT}")
-        OUT_JAVA_LANG_SO = os.path.join(DIST_DIR, f"{DYLIB_PREF}java.lang.{DYLIB_EXT}")
+        OUT_JAVA_INTERNAL_A = os.path.join(DIST_DIR, "libjava.internal.a")
+        OUT_JAVA_INTERNAL_SO = os.path.join(DIST_DIR, f"libjava.internal.{DYLIB_EXT}")
+        OUT_JAVA_LANG_A = os.path.join(DIST_DIR, "libjava.lang.a")
+        OUT_JAVA_LANG_SO = os.path.join(DIST_DIR, f"libjava.lang.{DYLIB_EXT}")
+
+        DEST_LIB = prepare_dir(install_path, "lib", runtime)
+        install_files(
+            DEST_LIB,
+            OUT_JAVA_INTERNAL_A,
+            OUT_JAVA_LANG_A
+        )
 
         DEST_DYLIB = prepare_dir(install_path, "runtime", "lib", runtime)
         install_files(
             DEST_DYLIB,
-            OUT_CINTEROPLIB_SO,
-            OUT_INTEROPLIB_SO,
+            OUT_JAVA_INTERNAL_SO,
             OUT_JAVA_LANG_SO
         )
 
         DEST_CJO = prepare_dir(install_path, "modules", runtime)
-        install_files(DEST_CJO, OUT_INTEROPLIB_CJO, OUT_JAVA_LANG_CJO)
+        install_files(DEST_CJO, OUT_JAVA_INTERNAL_CJO, OUT_JAVA_LANG_CJO)
 
         lib_loader_dst = prepare_dir(install_path, 'lib')
         lib_loader_jar = os.path.join(DIST_DIR, LIBRARY_LOADER_JAR)

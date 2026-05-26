@@ -4,6 +4,7 @@
 //
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
+#include <stddef.h>
 #include <jni.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -212,7 +213,7 @@ static enum RTLogLevel InitLogLevel()
 
 extern int InitCJRuntime(const struct RuntimeParam* param);
 extern int LoadCJLibraryWithInit(const char* libName);
-extern void setJavaVM(JavaVM *vm);
+extern void setJavaVmAndInitClassLoading(JavaVM *vm, JNIEnv *env, jobject classLoader, jmethodID methodID, jclass javaLangClass);
 
 struct SignalAction {
     union {
@@ -244,7 +245,9 @@ static void setEmptyDefaultSIGSEGVHandler() {
     AddHandlerToSignalStack(SIGSEGV, &sa);
 }
 
-JNIEXPORT void JNICALL Java_cangjie_lang_LibraryLoader_nativeLoadCJLibrary(JNIEnv *env, jobject obj, jstring libName) {
+static jclass javaLangClass = NULL;
+
+JNIEXPORT void JNICALL Java_cangjie_lang_LibraryLoader_nativeLoadCJLibrary(JNIEnv *env, jclass unused, jstring libName, jobject classLoader) {
     JavaVM *vm = NULL;
     jboolean isCopy = false;
     const char *cjLibraryName = (*env)->GetStringUTFChars(env, libName, &isCopy);
@@ -255,7 +258,17 @@ JNIEXPORT void JNICALL Java_cangjie_lang_LibraryLoader_nativeLoadCJLibrary(JNIEn
     (*env)->ReleaseStringUTFChars(env, libName, cjLibraryName);
 
     (*env)->GetJavaVM(env, &vm);
-    setJavaVM(vm);
+
+    if (javaLangClass == NULL) {
+        jclass localRef = (*env)->FindClass(env, "java/lang/Class");
+        // Since interop operations can happen even during process shutdown,
+        // there is no appropriate moment in time to delete this JNI GlobalRef.
+        javaLangClass = (jclass)(*env)->NewGlobalRef(env, localRef);
+    }
+    jmethodID methodID = (*env)->GetStaticMethodID(
+        env, javaLangClass, "forName",
+        "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;");
+    setJavaVmAndInitClassLoading(vm, env, classLoader, methodID, javaLangClass);
 }
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {

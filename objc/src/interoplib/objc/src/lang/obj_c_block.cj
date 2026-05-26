@@ -6,6 +6,8 @@
 
 package objc.lang
 
+import objc.internal.*
+
 public class ObjCBlock<F> {
     // is this malloc'ed from Cangjie?
     let cangjieOwnedPtr: Bool
@@ -13,17 +15,17 @@ public class ObjCBlock<F> {
     let ptr: CPointer<NativeBlockABI>
     
     // this constructor is used to construct block object from Objective-C native block pointer
-    public init(ptr: CPointer<NativeBlockABI>) {
+    protected init(ptr: CPointer<NativeBlockABI>) {
         this.ptr = ptr
         this.cangjieOwnedPtr = false
     }
-    
+
     // this constructor is used to construct block object from Cangjie
-    public init(ptr: CPointer<CangjieBlockABI>) {
+    protected init(ptr: CPointer<CangjieBlockABI>) {
         this.ptr = CPointer<NativeBlockABI>(ptr)
         this.cangjieOwnedPtr = true
     }
-    
+
     public init(f: F) {
         throw Exception("Function constructor is implemented by the compiler")
     }
@@ -31,10 +33,10 @@ public class ObjCBlock<F> {
         get() { throw Exception("ObjCBlock.call is implemented by compiler") }
     }
     public unsafe func unsafeGetNativeABIPointer(): CPointer<Unit> {
-        return CPointer<Unit>(ptr);
+        return CPointer<Unit>(ptr)
     }
     public unsafe func unsafeGetFunctionPointer(): CPointer<CFunc<(CPointer<Unit>) -> Unit>> {
-        return CPointer<CFunc<(CPointer<Unit>) -> Unit>>(ptr.read().invoke);
+        return CPointer<CFunc<(CPointer<Unit>) -> Unit>>(ptr.read().invoke)
     }
     ~init() {
         unsafe {
