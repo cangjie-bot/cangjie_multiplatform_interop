@@ -289,18 +289,25 @@ static void remove_duplicates(TypeDeclarationSymbol& type)
     auto num_members = type.member_count();
     for (size_t i = 0; i < num_members; ++i) {
         const auto& member_i = type.member(i);
-        if (member_i.kind() == NonTypeSymbol::Kind::MemberMethod) {
-            for (size_t j = i + 1; j < num_members;) {
-                const auto& member_j = type.member(j);
-                if (member_j.kind() == NonTypeSymbol::Kind::MemberMethod &&
-                    member_j.is_static() == member_i.is_static() && member_j.name() == member_i.name()) {
-                    assert(member_j.parameters().size() == member_i.parameters().size());
-                    type.member_remove(j);
-                    --num_members;
-                } else {
-                    ++j;
+        auto kind_i = member_i.kind();
+        auto is_static_i = member_i.is_static();
+        const auto& name_i = member_i.name();
+        switch (kind_i) {
+            case NonTypeSymbol::Kind::MemberMethod:
+            case NonTypeSymbol::Kind::Property:
+                for (size_t j = i + 1; j < num_members;) {
+                    const auto& member_j = type.member(j);
+                    if (member_j.kind() == kind_i && member_j.is_static() == is_static_i && member_j.name() == name_i) {
+                        assert(member_j.parameters().size() == member_i.parameters().size());
+                        type.member_remove(j);
+                        --num_members;
+                    } else {
+                        ++j;
+                    }
                 }
-            }
+                break;
+            default:
+                break;
         }
     }
 }
