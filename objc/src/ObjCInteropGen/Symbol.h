@@ -900,8 +900,10 @@ public:
         Property,
         InstanceVariable,
         GlobalFunction, // NOTE: must have stable address and live forever
-        MemberMethod,
-        Constructor
+        ProtocolMethod,
+        InterfaceMethod,
+        ProtocolConstructor,
+        InterfaceConstructor,
     };
 
     [[nodiscard]] NonTypeSymbol(std::string name, Kind kind, Type return_type, std::vector<ParameterSymbol> parameters,
@@ -915,6 +917,8 @@ public:
 
     [[nodiscard]] bool is_ctype() const noexcept override;
 
+    [[nodiscard]] bool is_objc_compatible_signature() const noexcept;
+
     [[nodiscard]] Kind kind() const noexcept
     {
         return kind_;
@@ -927,14 +931,34 @@ public:
         return selector_attribute_;
     }
 
+    [[nodiscard]] bool is_protocol_method() const noexcept
+    {
+        return kind_ == Kind::ProtocolMethod;
+    }
+
+    [[nodiscard]] bool is_interface_method() const noexcept
+    {
+        return kind_ == Kind::InterfaceMethod;
+    }
+
     [[nodiscard]] bool is_member_method() const noexcept
     {
-        return kind_ == Kind::MemberMethod;
+        return is_protocol_method() || is_interface_method();
+    }
+
+    [[nodiscard]] bool is_protocol_constructor() const noexcept
+    {
+        return kind_ == Kind::ProtocolConstructor;
+    }
+
+    [[nodiscard]] bool is_interface_constructor() const noexcept
+    {
+        return kind_ == Kind::InterfaceConstructor;
     }
 
     [[nodiscard]] bool is_constructor() const noexcept
     {
-        return kind_ == Kind::Constructor;
+        return is_protocol_constructor() || is_interface_constructor();
     }
 
     [[nodiscard]] bool is_global_function() const noexcept
