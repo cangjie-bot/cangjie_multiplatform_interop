@@ -4,13 +4,16 @@
 //
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
+#include <stddef.h>
 #include <jni.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#if !defined(__ANDROID__) && !defined(_WIN64)
 #include <signal.h>
 #include <ucontext.h>
+#endif
 #include <stdbool.h>
 #include <ctype.h>
 
@@ -212,8 +215,9 @@ static enum RTLogLevel InitLogLevel()
 
 extern int InitCJRuntime(const struct RuntimeParam* param);
 extern int LoadCJLibraryWithInit(const char* libName);
-extern void setJavaVM(JavaVM *vm);
+extern void setJavaVmAndInitClassLoading(JavaVM *vm, JNIEnv *env, jobject classLoader, jmethodID methodID, jclass javaLangClass);
 
+#if !defined(__ANDROID__) && !defined(_WIN64)
 struct SignalAction {
     union {
         void (*saHandler)(int);
@@ -243,8 +247,12 @@ static void setEmptyDefaultSIGSEGVHandler() {
     sa.scFlags = 0;
     AddHandlerToSignalStack(SIGSEGV, &sa);
 }
+#endif
 
-JNIEXPORT void JNICALL Java_cangjie_lang_LibraryLoader_nativeLoadCJLibrary(JNIEnv *env, jobject obj, jstring libName) {
+static jclass javaLangClass = NULL;
+static jmethodID forNameMethodID = NULL;
+
+JNIEXPORT void JNICALL Java_cangjie_lang_LibraryLoader_nativeLoadCJLibrary(JNIEnv *env, jclass unused, jstring libName, jobject classLoader) {
     JavaVM *vm = NULL;
     jboolean isCopy = false;
     const char *cjLibraryName = (*env)->GetStringUTFChars(env, libName, &isCopy);
@@ -255,14 +263,31 @@ JNIEXPORT void JNICALL Java_cangjie_lang_LibraryLoader_nativeLoadCJLibrary(JNIEn
     (*env)->ReleaseStringUTFChars(env, libName, cjLibraryName);
 
     (*env)->GetJavaVM(env, &vm);
-    setJavaVM(vm);
+
+    setJavaVmAndInitClassLoading(vm, env, classLoader, forNameMethodID, javaLangClass);
 }
 
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved) {
     struct RuntimeParam param = {0};
     param.logParam.logLevel = InitLogLevel();
     InitCJRuntime(&param);
+#if !defined(__ANDROID__) && !defined(_WIN64)
     setEmptyDefaultSIGSEGVHandler();
+#endif
+
+    JNIEnv* env = NULL;
+    if ((*vm)->GetEnv(vm, (void**)&env, JNI_VERSION_1_6) != JNI_OK) {
+        return JNI_ERR;
+    }
+
+    jclass localRef = (*env)->FindClass(env, "java/lang/Class");
+    // Since interop operations can happen even during process shutdown,
+    // there is no appropriate moment in time to delete this JNI GlobalRef.
+    javaLangClass = (jclass)(*env)->NewGlobalRef(env, localRef);
+
+    forNameMethodID = (*env)->GetStaticMethodID(
+        env, javaLangClass, "forName",
+        "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;");
 
     return JNI_VERSION_1_6;
 }
