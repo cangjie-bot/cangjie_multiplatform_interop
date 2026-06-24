@@ -2315,8 +2315,12 @@ private func to_jstring(env: JNIEnv_ptr, str: String): jstring {
 protected func Java_CFFI_get_env(): JNIEnv_ptr {
     var envPtr = JNIEnv_ptr()
 
+    let javaVM = jvm
+    if (javaVM.isNull()) {
+        throw InteropLibException("JVM instance is not yet set")
+    }
+
     unsafe {
-        let javaVM: JNIInvokeInterface_ = jvm.read().read()
         /*
             Thread should be attached as daemon to prevent waiting for Cangjie threads.
             Because Cangjie runtime threads are registered (for example, during objects finalization),
@@ -2324,7 +2328,7 @@ protected func Java_CFFI_get_env(): JNIEnv_ptr {
 
             A better solution is to detach Cangjie thread from JVM.
         */
-        javaVM.AttachCurrentThreadAsDaemon(jvm, inout envPtr, CPointer<Unit>())
+        javaVM.read().read().AttachCurrentThreadAsDaemon(jvm, inout envPtr, CPointer<Unit>())
     }
 
     envPtr
