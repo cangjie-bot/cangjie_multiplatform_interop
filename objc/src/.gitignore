@@ -1,2 +1,5 @@
 ## Xcode user settings
 xcuserdata/
+
+/ObjCInteropGen/build/build/
+/ObjCInteropGen/cmake-*/

@@ -64,6 +64,18 @@ LOG_FILE = os.path.join(LOG_DIR, 'JavaInterop.log')
 
 CJC_BASE_ARGS = ["-Woff", "unused", "-Woff", "parser", "--strip-all", "-O2", "--output-dir=" + DIST_DIR, "--int-overflow=wrapping", "--disable-reflection"]
 
+CLANG_BASE_ARGS = [
+    "-c", "-O2", "-pipe", "-fstack-protector-strong", "-fno-omit-frame-pointer", "-fPIC", "-std=gnu99", "-fno-common",
+    "-Wall", "-Wextra", "-Werror", "-Wfloat-equal", "-Wformat=2", "-Wdate-time", "-Wswitch-default", "-Wshadow",
+    "-Wconversion", "-Wcast-qual", "-Wcast-align", "-Wvla", "-Wundef",
+    # These are not very relevant for C code, but keep them
+    "-Wnon-virtual-dtor", "-Wdelete-non-virtual-dtor", "-Woverloaded-virtual",
+    # Unused parameters are expected in JNI code
+    "-Wno-unused-parameter",
+    # The original Cangjie.h header has non-compliant function "CJ_MRT_ForceFullGC"
+    "-Wno-strict-prototypes",
+]
+
 def log_output(output):
     """log command output"""
     while True:
@@ -359,9 +371,10 @@ def build(args):
         if args.target_sysroot:
             clang_args += ["-isysroot", args.target_sysroot]
 
-        clang_O = clang_args.copy() + ["-c", "-fstack-protector-strong", "-fPIC"]
+        clang_O = clang_args.copy() + CLANG_BASE_ARGS
         clang_O += ["-o", OUT_CINTEROPLIB_O]
-        clang_O += ["-I" + JAVA_INCLUDE, "-I" + JAVA_INCLUDE_ARCH]
+        if not args.target_sysroot:
+            clang_O += ["-I" + JAVA_INCLUDE, "-I" + JAVA_INCLUDE_ARCH]
         clang_O += ["c_core.c"]
         command(*clang_O, cwd=INTEROPLIB_DIR)
 
@@ -405,7 +418,7 @@ def build(args):
         command(*(cjc_SO.copy() + javalib_args.copy() + ["-L" + DIST_DIR, "-ljava.internal"]), cwd=INTEROPLIB_DIR)
 
         command(
-            "javac", "-d", DIST_DIR, "-source", "8", "-target", "8", "LibraryLoader.java", "$$NativeConstructorMarker.java", "ClassAnalyser.java", "MethodDef.java",
+            "javac", "-d", DIST_DIR, "-source", "8", "-target", "8", "-Xlint:all", "LibraryLoader.java", "$$NativeConstructorMarker.java", "ClassAnalyser.java", "MethodDef.java",
             cwd=INTEROPLIB_DIR,
         )
 
