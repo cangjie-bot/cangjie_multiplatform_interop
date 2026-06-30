@@ -64,6 +64,8 @@ import vendor.com.sun.tools.javac.code.Symtab;
 import vendor.com.sun.tools.javac.code.TargetType;
 import vendor.com.sun.tools.javac.code.Type;
 import vendor.com.sun.tools.javac.code.Types;
+import vendor.com.sun.tools.javac.code.ModuleFinder;
+import vendor.com.sun.tools.javac.comp.Modules;
 import vendor.com.sun.tools.javac.util.Context;
 import vendor.com.sun.tools.javac.util.Name;
 import vendor.com.sun.tools.javac.util.Names;
@@ -101,6 +103,8 @@ public final class EmitMirrorVisitor {
     private final JavaFileManager fileManager;
     private final Types types;
     private final Symtab symtab;
+    private final Modules modules;
+    private final ModuleFinder moduleFinder;
     private final MapScope scope;
     private final OverrideChains overrideChains;
     private final MemberHiding memberHiding;
@@ -119,7 +123,6 @@ public final class EmitMirrorVisitor {
     private final boolean interfaceObjectMethodsWorkaround =
             System.getProperty("no.interface.jobject.workaround") == null;
     private final Map<String, List<String>> writtenPaths = new HashMap<>();
-    private final Map<String, List<Symbol.ClassSymbol>> clashingClasses = new HashMap<>();
     private final Set<String> clashingFiles = new HashSet<>();
     private final Map<String, String> importsMap = new HashMap<>();
     private final String defaultImportsConfig = "imports_config.txt";
@@ -136,6 +139,8 @@ public final class EmitMirrorVisitor {
         visited = new LinkedHashSet<>();
         types = Types.instance(context);
         symtab = Symtab.instance(context);
+        modules = Modules.instance(context);
+        moduleFinder = ModuleFinder.instance(context);
         newName = new HashMap<>();
         scope = MapScope.instance(context);
         overrideChains = OverrideChains.instance(context);
@@ -190,6 +195,16 @@ public final class EmitMirrorVisitor {
     public static EmitMirrorVisitor instance(Context context) {
         final var instance = context.get(EmitMirrorVisitor.class);
         return instance == null ? new EmitMirrorVisitor(context) : instance;
+    }
+
+    private void initialize(Collection<Symbol.ClassSymbol> classSymbols) {
+        if (!limitedDepth) {
+            return;
+        }
+
+        for (final var classSymbol : classSymbols) {
+            traversalPathMap.put(classSymbol, 0);
+        }
     }
 
     private static cangjie.interop.cangjie.sema.TypeKind kind(Symbol.ClassSymbol sym) {
@@ -454,8 +469,14 @@ public final class EmitMirrorVisitor {
                 return;
             }
             queue.add(paramSymbol);
-            if (limitedDepth && !traversalPathMap.containsKey(paramSymbol)) {
-                traversalPathMap.put(paramSymbol, pathLevel);
+            if (limitedDepth) {
+                final var depth = traversalPathMap.get(paramSymbol);
+                if (depth == null) {
+                    traversalPathMap.put(paramSymbol, pathLevel);
+                } else if (depth > pathLevel) {
+                    traversalPathMap.put(paramSymbol, pathLevel);
+                    visited.remove(paramSymbol);
+                }
             }
         }
     }
@@ -851,10 +872,6 @@ public final class EmitMirrorVisitor {
             return;
         }
 
-        clashingClasses
-                .computeIfAbsent(getFlatNameWithoutPackage(classSymbol).toString(), k -> new ArrayList<>())
-                .add(classSymbol);
-
         if (classSymbol.members() != null) {
             renameCangjieClashes(classSymbol.members());
         }
@@ -897,6 +914,13 @@ public final class EmitMirrorVisitor {
     public void computeSymbolsToMangle() {
         if (!onePackageMode) {
             return;
+        }
+
+        final Map<String, List<Symbol.ClassSymbol>> clashingClasses = new HashMap<>();
+        for (final var classSymbol : visited) {
+            clashingClasses
+                    .computeIfAbsent(getFlatNameWithoutPackage(classSymbol).toString(), k -> new ArrayList<>())
+                    .add(classSymbol);
         }
         for (final var entry : clashingClasses.entrySet()) {
             final var value = entry.getValue();
@@ -993,5 +1017,38 @@ public final class EmitMirrorVisitor {
             }
             newName.clear();
         }
+    }
+
+    public void traverseAndGenerate(Collection<String> classNames) {
+        Collection<Symbol.ClassSymbol> classSymbols = composeClassSymbolsList(classNames);
+        initialize(classSymbols);
+        for (final var classSymbol : classSymbols) {
+            traverseDependenciesClosure(classSymbol);
+        }
+        computeSymbolsToMangle();
+        generateMirrorsWithDependencies();
+        warnAboutOverwrite();
+    }
+
+    private Symbol.ClassSymbol loadClassSymbol(String className) {
+        try {
+            Symbol.ModuleSymbol msym = modules.getDefaultModule();
+            msym.complete();
+            return moduleFinder.classFinder.loadClass(msym, names.fromString(className));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
+
+    private Collection<Symbol.ClassSymbol> composeClassSymbolsList(Collection<String> classNames) {
+        Collection<Symbol.ClassSymbol> classSymbols = new ArrayList<>();
+        for (final var name : classNames) {
+            final var classSymbol = loadClassSymbol(name);
+            if (classSymbol != null && !classSymbol.isAnonymous()) {
+                classSymbols.add(classSymbol);
+            }
+        }
+        return classSymbols;
     }
 }
