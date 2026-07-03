@@ -611,7 +611,6 @@ constexpr Modifiers ModifierOverride = 1 << 5;
 constexpr Modifiers ModifierOptional = 1 << 6;
 constexpr Modifiers ModifierInternalLinkage = 1 << 7; // used for Kind::GlobalFunction
 constexpr Modifiers ModifierBitField = 1 << 8;
-constexpr Modifiers ModifierInit = 1 << 9; // member of 'init' method family
 
 /**
  * A type parameter, when using inside a generic body, can be constrainted by
@@ -872,7 +871,8 @@ public:
         Property,
         InstanceVariable,
         GlobalFunction, // NOTE: must have stable address and live forever
-        MemberMethod
+        MemberMethod,
+        Constructor
     };
 
     [[nodiscard]] NonTypeSymbol(std::string name, Kind kind, Type return_type, Modifiers modifiers = 0) noexcept
@@ -907,39 +907,37 @@ public:
 
     [[nodiscard]] bool is_member_method() const noexcept
     {
-        return kind_ == Kind::MemberMethod && !(modifiers_ & ModifierInit);
+        return kind() == Kind::MemberMethod;
     }
 
     [[nodiscard]] bool is_constructor() const noexcept
     {
-        bool yes = modifiers_ & ModifierInit;
-        assert(!yes || kind_ == Kind::MemberMethod);
-        return yes;
+        return kind() == Kind::Constructor;
     }
 
     [[nodiscard]] bool is_global_function() const noexcept
     {
-        return kind_ == Kind::GlobalFunction;
+        return kind() == Kind::GlobalFunction;
     }
 
     [[nodiscard]] bool is_method() const noexcept
     {
-        return kind_ == Kind::MemberMethod || kind_ == Kind::GlobalFunction;
+        return is_member_method() || is_constructor() || is_global_function();
     }
 
     [[nodiscard]] bool is_field() const noexcept
     {
-        return kind_ == Kind::Field;
+        return kind() == Kind::Field;
     }
 
     [[nodiscard]] bool is_instance_variable() const noexcept
     {
-        return kind_ == Kind::InstanceVariable;
+        return kind() == Kind::InstanceVariable;
     }
 
     [[nodiscard]] bool is_property() const noexcept
     {
-        return kind_ == Kind::Property;
+        return kind() == Kind::Property;
     }
 
     [[nodiscard]] const std::string& selector() const noexcept

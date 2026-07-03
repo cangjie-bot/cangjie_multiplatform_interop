@@ -422,7 +422,7 @@ constexpr std::string_view foreign_name_attribute = "@ForeignName";
 
 static void write_foreign_name(std::ostream& output, const NonTypeSymbol& method)
 {
-    assert(method.kind() == NonTypeSymbol::Kind::MemberMethod);
+    assert(method.is_member_method() || method.is_constructor());
 
     // @ForeignName could not appear on overridden declaration
     if (method.is_override()) {
@@ -1018,27 +1018,23 @@ void TypeDeclarationWriter::write()
     output_ << " {\n";
     output_.indent();
     for (auto&& member : decl_.members()) {
-        switch (member.kind()) {
-            case NonTypeSymbol::Kind::Property:
-                write_property(member);
-                break;
-            case NonTypeSymbol::Kind::MemberMethod:
-                if (member.is_constructor()) {
-                    write_constructor(member);
-                } else if (!get_property(decl_, member) &&
-                    !get_overridden_property(decl_, member.selector(), member.is_static())) {
-                    auto func_kind =
-                        decl_kind_ == DeclKind::Interface ? FuncKind::InterfaceMethod : FuncKind::ClassMethod;
-                    write_function(output_, func_kind, member, format_);
-                }
-                break;
-            case NonTypeSymbol::Kind::InstanceVariable:
-                write_instance_variable(member);
-                break;
-            default:
-                assert(member.kind() == NonTypeSymbol::Kind::Field);
-                write_field(member);
-                break;
+        if (member.is_property()) {
+            write_property(member);
+        } else if (member.is_constructor()) {
+            write_constructor(member);
+        } else if (member.is_member_method()) {
+            if (!get_property(decl_, member) &&
+                !get_overridden_property(decl_, member.selector(), member.is_static())) {
+                write_function(output_,
+                    decl_kind_ == DeclKind::Interface ? FuncKind::InterfaceMethod : FuncKind::ClassMethod, member,
+                    format_);
+            }
+        } else if (member.is_instance_variable()) {
+            write_instance_variable(member);
+        } else if (member.is_field()) {
+            write_field(member);
+        } else {
+            assert(false);
         }
     }
 
