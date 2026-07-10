@@ -44,42 +44,53 @@ static void fix_override_return_types(TypeDeclarationSymbol& subclass, TypeDecla
     // This loop resolves clashes between `subclass` and `superclass`, where the
     // latter is asserted to be one of the ancestors of the former.
     for (auto& submember : subclass.members()) {
-        if (submember.kind() == NonTypeSymbol::Kind::MemberMethod) {
-            for (auto& supermember : superclass.members()) {
-                if (supermember.kind() == NonTypeSymbol::Kind::MemberMethod &&
-                    supermember.is_static() == submember.is_static() &&
-                    supermember.selector() == submember.selector()) {
-                    submember.set_override();
-                    const auto& supermember_type = supermember.return_type();
-                    auto& submember_type = submember.return_type();
-                    if (supermember_type.nullability() != Nullability::Nonnull) {
-                        if (submember_type.nullability() == Nullability::Nonnull) {
-                            submember_type.set_nullability(Nullability::Nullable);
-                        }
+        switch (submember.kind()) {
+            case NonTypeSymbol::Kind::MemberMethod:
+                for (auto& supermember : superclass.members()) {
+                    if (supermember.kind() == NonTypeSymbol::Kind::MemberMethod &&
+                        supermember.is_static() == submember.is_static() &&
+                        supermember.selector() == submember.selector()) {
+                        submember.set_override();
+                        const auto& supermember_type = supermember.return_type();
+                        auto& submember_type = submember.return_type();
+                        if (supermember_type.nullability() != Nullability::Nonnull) {
+                            if (submember_type.nullability() == Nullability::Nonnull) {
+                                submember_type.set_nullability(Nullability::Nullable);
+                            }
 
-                        // Both are Option.  Must be the same type.
-                        submember.set_return_type(supermember_type);
-                    } else {
-                        if (submember_type.nullability() != Nullability::Nonnull) {
-                            submember_type.set_nullability(Nullability::Nonnull);
-                        }
+                            // Both are Option.  Must be the same type.
+                            submember.set_return_type(supermember_type);
+                        } else {
+                            if (submember_type.nullability() != Nullability::Nonnull) {
+                                submember_type.set_nullability(Nullability::Nonnull);
+                            }
 
-                        // Both are non-Option.  Either they must be the same or the overridden must be
-                        // the base of the overrider.
-                        const auto* submember_type_decl =
-                            dynamic_cast<const TypeDeclarationSymbol*>(&submember_type.symbol());
-                        if (submember_type_decl) {
-                            const auto* supermember_type_decl =
-                                dynamic_cast<const TypeDeclarationSymbol*>(&supermember_type.symbol());
-                            if (supermember_type_decl) {
-                                if (!is_base_of(*supermember_type_decl, *submember_type_decl)) {
-                                    submember.set_return_type(supermember_type);
+                            // Both are non-Option.  Either they must be the same or the overridden must be
+                            // the base of the overrider.
+                            const auto* submember_type_decl =
+                                dynamic_cast<const TypeDeclarationSymbol*>(&submember_type.symbol());
+                            if (submember_type_decl) {
+                                const auto* supermember_type_decl =
+                                    dynamic_cast<const TypeDeclarationSymbol*>(&supermember_type.symbol());
+                                if (supermember_type_decl) {
+                                    if (!is_base_of(*supermember_type_decl, *submember_type_decl)) {
+                                        submember.set_return_type(supermember_type);
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
+                break;
+            case NonTypeSymbol::Kind::Constructor:
+                for (auto& supermember : superclass.members()) {
+                    if (supermember.is_constructor() && supermember.selector() == submember.selector()) {
+                        submember.set_override();
+                    }
+                }
+                break;
+            default:
+                break;
         }
     }
 }
@@ -293,8 +304,9 @@ static void remove_duplicates(TypeDeclarationSymbol& type)
         auto is_static_i = member_i.is_static();
         const auto& name_i = member_i.name();
         switch (kind_i) {
-            case NonTypeSymbol::Kind::MemberMethod:
             case NonTypeSymbol::Kind::Property:
+            case NonTypeSymbol::Kind::MemberMethod:
+            case NonTypeSymbol::Kind::Constructor:
                 for (size_t j = i + 1; j < num_members;) {
                     const auto& member_j = type.member(j);
                     if (member_j.kind() == kind_i && member_j.is_static() == is_static_i && member_j.name() == name_i) {
@@ -389,6 +401,48 @@ static void do_rename()
     }
 }
 
+static void replace_return_instancetype(TypeDeclarationSymbol& decl, NonTypeSymbol& method, Nullability nullability)
+{
+    std::vector<Type> args;
+    args.reserve(decl.parameter_count());
+    for (auto& parameter : decl.parameters()) {
+        args.emplace_back(parameter, nullability);
+    }
+    method.set_return_type(Type(decl, std::move(args), nullability));
+}
+
+static void replace_instancetype()
+{
+    for (auto& decl : Universe::get().type_definitions()) {
+        switch (decl.kind()) {
+            case NamedTypeSymbol::Kind::Interface:
+            case NamedTypeSymbol::Kind::Protocol:
+                for (auto& member : decl.members()) {
+                    switch (member.kind()) {
+                        case NonTypeSymbol::Kind::Constructor:
+                            // For 'init' methods, the cjc frontend requires the return type to be strictly
+                            // the declaring class, and the nullability must be nonnull.
+                            replace_return_instancetype(decl, member, Nullability::Nonnull);
+                            break;
+                        case NonTypeSymbol::Kind::MemberMethod: {
+                            // For non-@ObjCInit methods, `instancetype` is mapped to the declaring class,
+                            // keeping the original nullability.
+                            const auto& original_return_type = member.return_type();
+                            if (original_return_type.symbol().name() == "instancetype") {
+                                replace_return_instancetype(decl, member, original_return_type.nullability());
+                            }
+                        }
+                        default:
+                            break;
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+    }
+}
+
 static void set_type_mappings() noexcept
 {
     for (auto&& type : Universe::get().all_declarations()) {
@@ -432,8 +486,13 @@ static void do_map()
 
 void apply_transforms()
 {
+    // 1) Replace `instancetype` by the declaring class type.
+    // 2) Replace the constructor return type by the strictly nonnull declaring
+    //    class type (that is a cjc frontend requirement).
+    replace_instancetype();
+
     // 1) Resolve contravariance and nullability clashes in return types of override
-    // methods.
+    //    methods.
     // 2) Set ModifierOverride where needed.
     fix_override_return_types();
 

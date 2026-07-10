@@ -22,27 +22,74 @@ std::ostream& operator<<(std::ostream& stream, const KeywordEscaper& op)
 {
     // Do not include keywords common for Cangjie and C/Objective-C
     static constexpr const char* cangjieKeywords[] = {
-        "as", "Bool",
+        "as",
+        "Bool",
         //"break",
         //"case",
-        "catch", "class",
+        "catch",
+        "class",
         //"const",
         //"continue",
         //"do",
         //"else",
         //"enum",
-        "extend", "false", "finally", "Float16", "Float32", "Float64",
+        "extend",
+        "false",
+        "finally",
+        "Float16",
+        "Float32",
+        "Float64",
         //"for",
-        "foreign", "from", "func", "handle",
+        "foreign",
+        "from",
+        "func",
+        "handle",
         //"if",
-        "import", "in", "init", "inout", "Int16", "Int32", "Int64", "Int8", "interface", "IntNative", "is", "let",
-        "macro", "main", "match", "mut", "Nothing", "operator", "package", "perform", "prop", "quote", "resume",
+        "import",
+        "in",
+        "init",
+        "inout",
+        "Int16",
+        "Int32",
+        "Int64",
+        "Int8",
+        "interface",
+        "IntNative",
+        "is",
+        "let",
+        "macro",
+        "main",
+        "match",
+        "mut",
+        "Nothing",
+        "operator",
+        "package",
+        "perform",
+        "prop",
+        "quote",
+        "resume",
         //"return",
-        "Rune", "spawn",
+        "Rune",
+        "spawn",
         //"static",
         //"struct",
-        "super", "synchronized", "This", "this", "throw", "true", "try", "type", "UInt16", "UInt32", "UInt64", "UInt8",
-        "UIntNative", "Unit", "unsafe", "var", "where",
+        "super",
+        "synchronized",
+        "This",
+        "this",
+        "throw",
+        "true",
+        "try",
+        "type",
+        "UInt16",
+        "UInt32",
+        "UInt64",
+        "UInt8",
+        "UIntNative",
+        "Unit",
+        "unsafe",
+        "var",
+        "where",
         //"while",
     };
     auto e = std::cend(cangjieKeywords);
@@ -610,12 +657,7 @@ void NamedTypeSymbol::rename(const std::string_view new_name)
 
 void NamedTypeSymbol::print(std::ostream& stream, PrintFormat) const
 {
-    const auto& name = this->name();
-    if (kind_ == Kind::Primitive) {
-        stream << name;
-    } else {
-        stream << escape_keyword(name);
-    }
+    stream << escape_keyword(name());
 }
 
 void NamedTypeSymbol::set_mapping(const TypeMapping& mapping) noexcept
@@ -878,11 +920,40 @@ void TypeAliasSymbol::print(std::ostream& stream, PrintFormat format) const
     if (mode != Mode::EXPERIMENTAL && format == PrintFormat::EmitCangjieStrict) {
         auto canonical_type = this->canonical_type();
         if (canonical_type.is_ctype() && canonical_type.contains_pointer_or_func()) {
-            stream << emit_cangjie_strict(canonical_type) << " /*" << emit_cangjie(*this) << "*/";
+            // Printing in the context where only ObjC-compatible types are allowed.  That
+            // is, CPointer and CFunc must be replaced by ObjCPointer and ObjCFunc in the
+            // whole typedef sequence.  For example, having the following declarations:
+            //
+            //     typedef int* P1;
+            //     typedef P1 P2;
+            //     @interface M {
+            //         P2 x;
+            //     }
+            //     @end
+            //
+            // we cannot convert the field 'x' to
+            //
+            //      var x: P2;
+            //
+            // as using CPointer in the pure ObjC context is forbidden.  We have to expand
+            // the 'P2' macro and replace CPointer by ObjCPointer:
+            //
+            //      var x: ObjCPointer<Int32> /*P2*/
+            stream << emit_cangjie_strict(target) << " /*";
+            NamedTypeSymbol::print(stream, format);
+            stream << "*/";
             return;
         }
     }
-    NamedTypeSymbol::print(stream, format);
+    if (defining_file()) {
+        NamedTypeSymbol::print(stream, format);
+    } else {
+        // This must be a built-in typedef without any declaration in a file.
+        target.print(stream, format);
+        stream << " /*";
+        NamedTypeSymbol::print(stream, format);
+        stream << "*/";
+    }
 }
 
 void TypeAliasSymbol::visit_impl(SymbolVisitor& visitor) const

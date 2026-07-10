@@ -44,8 +44,8 @@ enum class PrintFormat {
     EmitCangjie,
 
     // Same as EmitCangjie plus the following additional formatting is applied:
-    //     - CPointer is printed as ObjCPointer
-    //     - CFunc is printed as ObjCFunc
+    //     - ObjCPointer is printed instead of CPointer
+    //     - ObjCFunc is printed instead of CFunc
     EmitCangjieStrict,
 };
 
@@ -526,12 +526,17 @@ public:
     }
 
 private:
+    void print(std::ostream& stream, PrintFormat) const override
+    {
+        stream << name();
+    }
+
     [[nodiscard]] bool is_file_level() const noexcept override
     {
         return false;
     }
 
-    [[nodiscard]] virtual bool is_ctype() const noexcept override
+    [[nodiscard]] bool is_ctype() const noexcept override
     {
         return true;
     }
@@ -550,9 +555,11 @@ private:
 };
 
 /**
- * Either a type that libclang does not provide enough info about
- * (CXType_Unexposed), or an Objective-C type not supported in Cangjie (for
- * example, __int128).
+ * Type that has a name in Objective-C but is not declared at all at the Cangjie
+ * side.  This is a type that has no declaration in a source Objective-C file --
+ * either a built-in Objective-C type not supported in Cangjie (like __int128)
+ * or a type that libclang does not provide enough info about
+ * (CXType_Unexposed).
  *
  * For fields and variables, this type is mapped to a primitive or to VArray of
  * the corresponding size.
