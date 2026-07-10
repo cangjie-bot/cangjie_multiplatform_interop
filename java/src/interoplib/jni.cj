@@ -83,12 +83,14 @@ class ClassLoading {
         unsafe {
             try (searchName = LibC.mallocCString(name.replace("/", ".")).asResource()) {
                 let envCJ = env.read().read()
+                let searchNameArg = envCJ.NewStringUTF(env, searchName.value)
                 var args: VArray<jvalue, $3> = [
-                    UInt64(envCJ.NewStringUTF(env, searchName.value).toUIntNative()),
+                    UInt64(searchNameArg.toUIntNative()),
                     0,
                     UInt64(classLoader.toUIntNative())
                 ]
                 result = envCJ.CallStaticObjectMethodA(env, javaLangClass, forNameID, inout args)
+                envCJ.DeleteLocalRef(env, searchNameArg)
             }
         }
         handlePendingException(env)
