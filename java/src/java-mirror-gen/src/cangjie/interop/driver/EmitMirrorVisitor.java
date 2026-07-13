@@ -216,7 +216,7 @@ public final class EmitMirrorVisitor {
         };
     }
 
-    public void warnAboutOverwrite() {
+    private void warnAboutOverwrite() {
         for (final var entry : writtenPaths.entrySet()) {
             final var value = entry.getValue();
             if (value.size() <= 1) {
@@ -230,7 +230,7 @@ public final class EmitMirrorVisitor {
         }
     }
 
-    public CJTree.Declaration translate(Symbol.MethodSymbol symbol) {
+    private CJTree.Declaration translate(Symbol.MethodSymbol symbol) {
         if (symbol.owner.hasOuterInstance()) {
             // to generate arg in constructor for enclosing class
             symbol.flags_field = symbol.flags_field | Flags.SYNTHETIC;
@@ -343,8 +343,6 @@ public final class EmitMirrorVisitor {
     }
 
     private boolean methodStillNotImplemented(Symbol.MethodSymbol superMethod) {
-        assert superMethod.getModifiers().contains(Modifier.ABSTRACT) : superMethod;
-
         var implMethod = superMethod.implementation(currentClass, types, true);
         if (implMethod == null || implMethod == superMethod) {
             // Search for default implementations.
@@ -358,9 +356,7 @@ public final class EmitMirrorVisitor {
         return implMethod == null || implMethod == superMethod;
     }
 
-    public CJTree translate(Symbol.ClassSymbol classSymbol) {
-        assert shouldBeGenerated(classSymbol) : classSymbol;
-
+    private CJTree translate(Symbol.ClassSymbol classSymbol) {
         final var name = getSymbolsToMangle().contains(classSymbol)
                 ? mangleClassName(classSymbol)
                 : addBackticksIfNeeded(getFlatNameWithoutPackage(classSymbol));
@@ -420,7 +416,7 @@ public final class EmitMirrorVisitor {
         return classDecl;
     }
 
-    public CJTree.Declaration translate(Symbol.VarSymbol varSymbol) {
+    private CJTree.Declaration translate(Symbol.VarSymbol varSymbol) {
         final var mangledName = addBackticksIfNeeded(varSymbol.name);
         boolean genProperty = currentClass.isInterface();
         final var decl = new CJTree.Declaration.VariableDeclaration.Variable(mangledName, genProperty);
@@ -693,16 +689,7 @@ public final class EmitMirrorVisitor {
         return (Symbol.PackageSymbol) ownerSymbol;
     }
 
-    public void generateMirror(Symbol.ClassSymbol classSymbol) {
-        if (classSymbol.classfile == null) {
-            return;
-        }
-        if (classSymbol.hasOuterInstance() && classSymbol.isPrivate()) {
-            return;
-        }
-        if (importsMap.containsKey(classSymbol.flatname.toString())) {
-            return;
-        }
+    private void generateMirror(Symbol.ClassSymbol classSymbol) {
         final var ownerSymbol = findPackageSymbol(classSymbol);
         final var moduleName = userPackageName != null ? userPackageName : "UNNAMED";
         final var unitPkgName = !onePackageMode ? ownerSymbol.getQualifiedName().toString() : moduleName;
@@ -727,11 +714,10 @@ public final class EmitMirrorVisitor {
         unit.imports.retainAll(filteredImports);
 
         final var path = new StringBuilder();
-        assert moduleName != null;
         path.append(moduleName).append('/').append("src/");
 
         if (!onePackageMode) {
-            path.append(unitPkgName.toString().replace('.', File.separatorChar)).append(File.separator);
+            path.append(unitPkgName.replace('.', File.separatorChar)).append(File.separator);
         }
 
         final var filePath = new StringBuilder();
@@ -869,7 +855,7 @@ public final class EmitMirrorVisitor {
         return result;
     }
 
-    public void traverseClassSymbol(Symbol.ClassSymbol classSymbol) {
+    private void traverseClassSymbol(Symbol.ClassSymbol classSymbol) {
         if (!shouldBeGenerated(classSymbol)) {
             return;
         }
@@ -913,7 +899,7 @@ public final class EmitMirrorVisitor {
         }
     }
 
-    public void computeSymbolsToMangle() {
+    private void computeSymbolsToMangle() {
         if (!onePackageMode) {
             return;
         }
@@ -955,7 +941,7 @@ public final class EmitMirrorVisitor {
         System.err.println("");
     }
 
-    public void traverseDependenciesClosure(Symbol.ClassSymbol classSymbol) {
+    private void traverseDependenciesClosure(Symbol.ClassSymbol classSymbol) {
         if (classSymbol != null) {
             if (!shouldBeGenerated(classSymbol)) {
                 String message = "Class " + classSymbol.flatname
@@ -976,7 +962,7 @@ public final class EmitMirrorVisitor {
         }
     }
 
-    public void generateMirrorsWithDependencies() {
+    private void generateMirrors() {
         FileWriter outputStream = null;
         try {
             if (importsConfig != null) {
@@ -984,28 +970,7 @@ public final class EmitMirrorVisitor {
             }
 
             for (Symbol.ClassSymbol curSymbol : visited) {
-                if (curSymbol == symtab.objectType.tsym || curSymbol == symtab.stringType.tsym) {
-                    continue;
-                }
-
-                currentClass = curSymbol;
-                try {
-                    generateMirror(curSymbol);
-                } finally {
-                    assert currentClass == curSymbol;
-                    currentClass = null;
-                }
-
-                if (importsConfig != null) {
-                    if (importsMap.containsKey(curSymbol.flatname.toString())) {
-                        continue;
-                    }
-                    String identifier = getSymbolsToMangle().contains(curSymbol)
-                            ? mangleClassName(curSymbol)
-                            : addUnderscoresIfNeeded(getFlatNameWithoutPackage(curSymbol));
-                    String qualifiedName = QualifiedName.get(userPackageName, identifier).toString();
-                    outputStream.write(curSymbol.flatname.toString() + " " + qualifiedName + "\n");
-                }
+                generateMirrorsImpl(curSymbol, outputStream);
             }
         } catch (IOException e) {
             System.out.print(e.getMessage());
@@ -1021,6 +986,40 @@ public final class EmitMirrorVisitor {
         }
     }
 
+    private void generateMirrorsImpl(Symbol.ClassSymbol curSymbol, FileWriter outputStream) throws IOException {
+        if (curSymbol == symtab.objectType.tsym || curSymbol == symtab.stringType.tsym) {
+            return;
+        }
+        if (curSymbol.classfile == null) {
+            return;
+        }
+        if (curSymbol.hasOuterInstance() && curSymbol.isPrivate()) {
+            return;
+        }
+        if (importsMap.containsKey(curSymbol.flatname.toString())) {
+            return;
+        }
+
+        currentClass = curSymbol;
+        try {
+            generateMirror(curSymbol);
+        } finally {
+            currentClass = null;
+        }
+
+        if (importsConfig == null) {
+            return;
+        }
+        if (importsMap.containsKey(curSymbol.flatname.toString())) {
+            return;
+        }
+        String identifier = getSymbolsToMangle().contains(curSymbol)
+                ? mangleClassName(curSymbol)
+                : addUnderscoresIfNeeded(getFlatNameWithoutPackage(curSymbol));
+        String qualifiedName = QualifiedName.get(userPackageName, identifier).toString();
+        outputStream.write(curSymbol.flatname.toString() + " " + qualifiedName + "\n");
+    }
+
     /**
      * Traverse all specified classes and generate mirrors for their transitive closure.
      *
@@ -1033,7 +1032,7 @@ public final class EmitMirrorVisitor {
             traverseDependenciesClosure(classSymbol);
         }
         computeSymbolsToMangle();
-        generateMirrorsWithDependencies();
+        generateMirrors();
         warnAboutOverwrite();
     }
 
