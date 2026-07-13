@@ -253,10 +253,6 @@ final class VisitorUtils {
         return types.erasure(result).tsym;
     }
 
-    static CJTree.Expression createJavaMirrorAnnotation() {
-        return new CJTree.Expression.Name.SimpleName.IdentifierName("JavaMirror");
-    }
-
     static String mangleClassName(Symbol.ClassSymbol typeSymbol) {
         return addUnderscoresIfNeeded(typeSymbol.flatName()).replace('.', '_');
     }
