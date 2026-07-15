@@ -61,7 +61,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public final class VisitorUtils {
+final class VisitorUtils {
     private static Symtab symtab;
     private static Names names;
     private static final Set<Symbol.ClassSymbol> symbolsToMangle = new HashSet<>();
@@ -70,23 +70,23 @@ public final class VisitorUtils {
     private VisitorUtils() {
     }
 
-    public static Set<Symbol.ClassSymbol> getSymbolsToMangle() {
+    static Set<Symbol.ClassSymbol> getSymbolsToMangle() {
         return symbolsToMangle;
     }
 
-    public static void addSymbolsToMangle(Symbol.ClassSymbol sym) {
+    static void addSymbolsToMangle(Symbol.ClassSymbol sym) {
         symbolsToMangle.add(sym);
     }
 
-    public static void setSymtab(Symtab symtab) {
+    static void setSymtab(Symtab symtab) {
         VisitorUtils.symtab = symtab;
     }
 
-    public static void setNames(Names names) {
+    static void setNames(Names names) {
         VisitorUtils.names = names;
     }
 
-    public static void setImportsMap(Map<String, String> importsMap) {
+    static void setImportsMap(Map<String, String> importsMap) {
         VisitorUtils.importsMap = importsMap;
     }
 
@@ -96,13 +96,12 @@ public final class VisitorUtils {
 
     static boolean isVarFinal(Symbol symbol) {
         if (symbol instanceof Symbol.VarSymbol var) {
-            // TODO: option to disable treating effectively final variables as final?
             return (var.flags() & (FINAL | EFFECTIVELY_FINAL)) != 0;
         }
         return false;
     }
 
-    public static CJTree.Expression defaultValueForType(Type type) {
+    static CJTree.Expression defaultValueForType(Type type) {
         return switch (type.getKind()) {
             case BOOLEAN -> CJTree.Expression.Literal.bool(false);
             case BYTE, SHORT, INT, LONG, CHAR -> new CJTree.Expression.Literal.Numeric(0, "0");
@@ -111,99 +110,110 @@ public final class VisitorUtils {
         };
     }
 
-    public static CJTree.Expression.Name.SimpleName.IdentifierName defaultValueForType() {
+    static CJTree.Expression.Name.SimpleName.IdentifierName defaultValueForType() {
         return new CJTree.Expression.Name.SimpleName.IdentifierName("None");
     }
 
-    public static CJTree.Expression.Name.SimpleName.IdentifierName defaultValueForToString() {
+    static CJTree.Expression.Name.SimpleName.IdentifierName defaultValueForToString() {
         return new CJTree.Expression.Name.SimpleName.IdentifierName("JString()");
     }
 
-    public static CJTree.Expression.Name name(Type type) {
+    static CJTree.Expression.Name name(Type type) {
         return name(type, false);
     }
 
-    public static CJTree.Expression.Name name(Type type, boolean isNotNull) {
-        CJTree.Expression.Name result;
+    static CJTree.Expression.Name name(Type type, boolean isNonNull) {
         if (type.isPrimitiveOrVoid()) {
-            final var ident =
-                    switch (type.getKind()) {
-                        case BOOLEAN -> "Bool";
-                        case BYTE -> "Int8";
-                        case SHORT -> "Int16";
-                        case INT -> "Int32";
-                        case LONG -> "Int64";
-                        case CHAR -> "UInt16";
-                        case FLOAT -> "Float32";
-                        case DOUBLE -> "Float64";
-                        case VOID -> "Unit";
-                        default -> null;
-                    };
-            if (ident == null) {
-                throw new RuntimeException("Unsupported type");
-            }
-            return new CJTree.Expression.Name.SimpleName.IdentifierName(ident);
+            return namePrimitive(type);
         }
 
         if (type instanceof Type.ArrayType arrayType) {
-            var elemType = arrayType.getComponentType();
-            final var translatedElemType = name(elemType);
-            final var ident = new CJTree.Expression.Name.SimpleName.GenericName("JArray");
-            ident.arguments.add(translatedElemType);
-            result = isNotNull
-                    ? ident
-                    : new CJTree.Expression.Name.SimpleName.OptionName(ident);
-
-            if (translatedElemType.importNames() instanceof QualifiedName qualifiedName) {
-                result.addImport(qualifiedName);
-            }
-            final Optional<QualifiedName> clazz = QualifiedName.parse("java.lang.JArray");
-            clazz.ifPresent(result::addImport);
-            return result;
+            return nameArray(arrayType, isNonNull);
         }
 
         if (type.tsym instanceof Symbol.ClassSymbol typeSymbol) {
-            String identifier;
-            String qualifiedName;
-            if (type.tsym == symtab.objectType.tsym) {
-                identifier = "JObject";
-                qualifiedName = "java.lang." + identifier;
-            } else if (type.tsym == symtab.stringType.tsym) {
-                identifier = "JString";
-                qualifiedName = "java.lang." + identifier;
-            } else {
-                identifier = symbolsToMangle.contains(typeSymbol)
-                        ? mangleClassName(typeSymbol)
-                        : addBackticksIfNeeded(getFlatNameWithoutPackage(typeSymbol));
-                qualifiedName = addBackticksIfNeeded(typeSymbol.flatName());
-
-                final var nameFromMap = importsMap.get(typeSymbol.flatName().toString());
-                if (nameFromMap != null) {
-                    identifier = addUnderscoresIfNeeded(Convert.shortName(names.fromString(nameFromMap)));
-                    qualifiedName = nameFromMap;
-                }
-            }
-
-            CJTree.Expression.Name.SimpleName ident;
-
-            ident = new CJTree.Expression.Name.SimpleName.IdentifierName(identifier);
-            final Optional<QualifiedName> optClazz = QualifiedName.parse(qualifiedName);
-            if (optClazz.isPresent()) {
-                final QualifiedName clazz = optClazz.get();
-                if (clazz.fullPackageName() != null) {
-                    ident.addImport(clazz);
-                }
-            }
-
-            return isNotNull
-                    ? ident
-                    : new CJTree.Expression.Name.SimpleName.OptionName(ident);
+            return nameClass(typeSymbol, isNonNull);
         }
 
-        return null;
+        throw new UnsupportedOperationException("Unsupported type");
     }
 
-    public static void collectImports(CJTree.CompilationUnit unit, QualifiedName packageName) {
+    private static CJTree.Expression.Name namePrimitive(Type type) {
+        final var ident =
+                switch (type.getKind()) {
+                    case BOOLEAN -> "Bool";
+                    case BYTE -> "Int8";
+                    case SHORT -> "Int16";
+                    case INT -> "Int32";
+                    case LONG -> "Int64";
+                    case CHAR -> "UInt16";
+                    case FLOAT -> "Float32";
+                    case DOUBLE -> "Float64";
+                    case VOID -> "Unit";
+                    default -> null;
+                };
+        if (ident == null) {
+            throw new UnsupportedOperationException("Unsupported type");
+        }
+        return new CJTree.Expression.Name.SimpleName.IdentifierName(ident);
+    }
+
+    private static CJTree.Expression.Name nameArray(Type.ArrayType arrayType, boolean isNonNull) {
+        var elemType = arrayType.getComponentType();
+        final var translatedElemType = name(elemType);
+        final var ident = new CJTree.Expression.Name.SimpleName.GenericName("JArray");
+        ident.arguments.add(translatedElemType);
+        CJTree.Expression.Name result = isNonNull
+                ? ident
+                : new CJTree.Expression.Name.SimpleName.OptionName(ident);
+
+        if (translatedElemType.importNames() instanceof QualifiedName qualifiedName) {
+            result.addImport(qualifiedName);
+        }
+        final Optional<QualifiedName> clazz = QualifiedName.parse("java.lang.JArray");
+        clazz.ifPresent(result::addImport);
+        return result;
+    }
+
+    private static CJTree.Expression.Name nameClass(Symbol.ClassSymbol typeSymbol, boolean isNonNull) {
+        String identifier;
+        String qualifiedName;
+        if (typeSymbol == symtab.objectType.tsym) {
+            identifier = "JObject";
+            qualifiedName = "java.lang." + identifier;
+        } else if (typeSymbol == symtab.stringType.tsym) {
+            identifier = "JString";
+            qualifiedName = "java.lang." + identifier;
+        } else {
+            identifier = symbolsToMangle.contains(typeSymbol)
+                    ? mangleClassName(typeSymbol)
+                    : addBackticksIfNeeded(getFlatNameWithoutPackage(typeSymbol));
+            qualifiedName = addBackticksIfNeeded(typeSymbol.flatName());
+
+            final var nameFromMap = importsMap.get(typeSymbol.flatName().toString());
+            if (nameFromMap != null) {
+                identifier = addUnderscoresIfNeeded(Convert.shortName(names.fromString(nameFromMap)));
+                qualifiedName = nameFromMap;
+            }
+        }
+
+        CJTree.Expression.Name.SimpleName ident;
+
+        ident = new CJTree.Expression.Name.SimpleName.IdentifierName(identifier);
+        final Optional<QualifiedName> optClazz = QualifiedName.parse(qualifiedName);
+        if (optClazz.isPresent()) {
+            final QualifiedName clazz = optClazz.get();
+            if (clazz.fullPackageName() != null) {
+                ident.addImport(clazz);
+            }
+        }
+
+        return isNonNull
+                ? ident
+                : new CJTree.Expression.Name.SimpleName.OptionName(ident);
+    }
+
+    static void collectImports(CJTree.CompilationUnit unit, QualifiedName packageName) {
         final var currentImportedNames = new LinkedHashSet<QualifiedName>();
 
         new Scanner() {
@@ -211,11 +221,7 @@ public final class VisitorUtils {
             protected void scan(CJTree tree) {
                 if (tree instanceof CJTree.Expression expression) {
                     final var importName = expression.importNames();
-                    if (importName instanceof Collection<?> collection) {
-                        for (final var o : collection) {
-                            registerImport(o);
-                        }
-                    } else if (importName != null) {
+                    if (importName != null) {
                         registerImport(importName);
                     }
                 }
@@ -223,6 +229,12 @@ public final class VisitorUtils {
             }
 
             private void registerImport(Object importName) {
+                if (importName instanceof Collection<?> collection) {
+                    for (final var o : collection) {
+                        registerImport(o);
+                    }
+                    return;
+                }
                 if (importName instanceof QualifiedName name) {
                     registerImport(name);
                 }
@@ -244,7 +256,7 @@ public final class VisitorUtils {
         unit.imports.addAll(filtered);
     }
 
-    public static Symbol.TypeSymbol erasureType(Type type, Types types) {
+    static Symbol.TypeSymbol erasureType(Type type, Types types) {
         var result = type;
         while (result instanceof Type.ArrayType arrayType) {
             result = arrayType.elemtype;
@@ -252,15 +264,11 @@ public final class VisitorUtils {
         return types.erasure(result).tsym;
     }
 
-    public static CJTree.Expression createJavaMirrorAnnotation() {
-        return new CJTree.Expression.Name.SimpleName.IdentifierName("JavaMirror");
-    }
-
-    public static String mangleClassName(Symbol.ClassSymbol typeSymbol) {
+    static String mangleClassName(Symbol.ClassSymbol typeSymbol) {
         return addUnderscoresIfNeeded(typeSymbol.flatName()).replace('.', '_');
     }
 
-    public static CJTree.Declaration.Annotation foreignNameAnnotationGen(Name originalName) {
+    static CJTree.Declaration.Annotation foreignNameAnnotationGen(Name originalName) {
         final var foreignNameAnnotation =
                 new CJTree.Expression.Name.SimpleName.IdentifierName("ForeignName");
         final var annotation = new CJTree.Declaration.Annotation(foreignNameAnnotation);
@@ -269,12 +277,12 @@ public final class VisitorUtils {
         return annotation;
     }
 
-    public static CJTree.Declaration.Annotation defaultMethodAnnotationGen() {
+    static CJTree.Declaration.Annotation defaultMethodAnnotationGen() {
         final var defaultMethodAnnotation = new CJTree.Expression.Name.SimpleName.IdentifierName("JavaHasDefault");
         return new CJTree.Declaration.Annotation(defaultMethodAnnotation);
     }
 
-    public static Name formTypeName(Symbol.TypeSymbol type) {
+    static Name formTypeName(Symbol.TypeSymbol type) {
         Symbol symbol = type;
         Name result = null;
         char sep = 0;
@@ -325,7 +333,7 @@ public final class VisitorUtils {
         return modifiers.contains(PUBLIC) || modifiers.contains(PROTECTED);
     }
 
-    public static boolean isPackagePrivate(Symbol symbol) {
+    static boolean isPackagePrivate(Symbol symbol) {
         if (symbol == null) {
             return false;
         }
@@ -351,7 +359,7 @@ public final class VisitorUtils {
         return firstAppropriateSuperClass(superClassSymbol);
     }
 
-    public static boolean isAppropriateType(Symbol.TypeSymbol typeSymbol) {
+    static boolean isAppropriateType(Symbol.TypeSymbol typeSymbol) {
         if (typeSymbol == symtab.objectType.tsym) {
             return true;
         }
@@ -395,7 +403,7 @@ public final class VisitorUtils {
         return true;
     }
 
-    public static List<Type> collectSuperTypes(Symbol.ClassSymbol classSymbol, Types types) {
+    static List<Type> collectSuperTypes(Symbol.ClassSymbol classSymbol, Types types) {
         List<Type> result = new ArrayList<>();
         final var appropriateSuperClass = firstAppropriateSuperClass(classSymbol);
         if (appropriateSuperClass != null) {
@@ -405,7 +413,7 @@ public final class VisitorUtils {
         return result;
     }
 
-    public static Collection<Type> collectSuperInterfaces(Symbol.ClassSymbol classSymbol, Types types) {
+    static Collection<Type> collectSuperInterfaces(Symbol.ClassSymbol classSymbol, Types types) {
         LinkedHashSet<Type> result = new LinkedHashSet<>();
         final var superInterfaces = classSymbol.getInterfaces();
         for (Type superInterface : superInterfaces) {
@@ -431,20 +439,20 @@ public final class VisitorUtils {
                 && NOT_NULL_ANNOTATIONS.contains(classSymbol.flatname.toString());
     }
 
-    public static boolean hasNotNullAnnotation(Symbol symbol) {
+    static boolean hasNotNullAnnotation(Symbol symbol) {
         return symbol.getDeclarationAttributes().stream().anyMatch(a -> isAnnotatedSymbol(a));
     }
 
-    public static boolean hasNotNullSigParamAnnotation(Symbol symbol, TargetType targetType, int index) {
+    static boolean hasNotNullSigParamAnnotation(Symbol symbol, TargetType targetType, int index) {
         return symbol.getRawTypeAttributes().stream().anyMatch(a ->
-                isAnnotatedSymbol(a) &&
-                        a.position.type == targetType &&
-                        (targetType == TargetType.METHOD_FORMAL_PARAMETER && a.position.parameter_index == index));
+                isAnnotatedSymbol(a)
+                        && a.position.type == targetType
+                        && (targetType == TargetType.METHOD_FORMAL_PARAMETER && a.position.parameter_index == index));
     }
 
-    public static boolean hasNotNullTypeAnnotation(Symbol symbol, TargetType targetType) {
+    static boolean hasNotNullTypeAnnotation(Symbol symbol, TargetType targetType) {
         return symbol.getRawTypeAttributes().stream().anyMatch(a ->
-                isAnnotatedSymbol(a) &&
-                        a.position.type == targetType);
+                isAnnotatedSymbol(a)
+                        && a.position.type == targetType);
     }
 }

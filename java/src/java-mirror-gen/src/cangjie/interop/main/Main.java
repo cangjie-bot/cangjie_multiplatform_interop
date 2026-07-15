@@ -29,9 +29,7 @@ import java.io.IOException;
 
 public final class Main {
     public static void main(String[] args) {
-        vendor.com.sun.tools.javac.main.Main compiler = new vendor.com.sun.tools.javac.main.Main("J2CJ");
-
-        System.out.println("Running Java Mirrors generator ");
+        final var compiler = new vendor.com.sun.tools.javac.main.Main("java-mirror-gen");
 
         Context context = new Context();
         JavacFileManager.preRegister(context); // can't create it until Log has been set up

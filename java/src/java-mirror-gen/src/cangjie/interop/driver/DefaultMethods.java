@@ -22,6 +22,9 @@
 
 package cangjie.interop.driver;
 
+import static cangjie.interop.driver.VisitorUtils.collectSuperInterfaces;
+import static cangjie.interop.driver.VisitorUtils.shouldBeGenerated;
+
 import vendor.com.sun.tools.javac.code.Flags;
 import vendor.com.sun.tools.javac.code.Symbol;
 import vendor.com.sun.tools.javac.code.Types;
@@ -33,10 +36,7 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-import static cangjie.interop.driver.VisitorUtils.collectSuperInterfaces;
-import static cangjie.interop.driver.VisitorUtils.shouldBeGenerated;
-
-public final class DefaultMethods {
+final class DefaultMethods {
     private final Types types;
     private final OverrideChains overrideChains;
 

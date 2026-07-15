@@ -22,6 +22,10 @@
 
 package cangjie.interop.driver;
 
+import static cangjie.interop.driver.VisitorUtils.hasOnlyAppropriateDeps;
+import static cangjie.interop.driver.VisitorUtils.isPackagePrivate;
+import static cangjie.interop.driver.VisitorUtils.shouldBeGenerated;
+
 import vendor.com.sun.tools.javac.code.Flags;
 import vendor.com.sun.tools.javac.code.Kinds;
 import vendor.com.sun.tools.javac.code.Scope;
@@ -37,11 +41,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 
-import static cangjie.interop.driver.VisitorUtils.shouldBeGenerated;
-import static cangjie.interop.driver.VisitorUtils.hasOnlyAppropriateDeps;
-import static cangjie.interop.driver.VisitorUtils.isPackagePrivate;
-
-public final class OverrideChains {
+final class OverrideChains {
     private final Types types;
     private final Symtab symtab;
 
@@ -92,10 +92,7 @@ public final class OverrideChains {
     }
 
     public boolean overridesNonAbstractMethod(Symbol.MethodSymbol symbolImpl) {
-        assert symbolImpl.getModifiers().contains(Modifier.ABSTRACT) : symbolImpl;
-
         final var chains = buildMethodOverrideChains(symbolImpl, (Symbol.TypeSymbol) symbolImpl.owner);
-        assert !chains.isEmpty() : symbolImpl;
 
         for (final var chain : chains) {
             for (final var symbols : chain) {
@@ -157,7 +154,6 @@ public final class OverrideChains {
         final var currentOrChildMethod = currentMethods != null && currentMethods.size() == 1
                 ? currentMethods.get(0)
                 : childMethod;
-        assert currentOrChildMethod != null;
 
         List<Deque<List<Symbol.MethodSymbol>>> result = null;
         final var superTypes = types.directSupertypes(currentClass.type);
@@ -215,7 +211,6 @@ public final class OverrideChains {
     public Symbol.MethodSymbol findRootMethod(Symbol.MethodSymbol method, Symbol.ClassSymbol classSymbol,
                                               boolean considerModifiers) {
         final var chains = buildMethodOverrideChains(method, classSymbol);
-        assert !chains.isEmpty() : method + " | " + classSymbol;
         // Get any root method
         if (!considerModifiers) {
             return chains.get(0).getLast().get(0);
@@ -292,7 +287,6 @@ public final class OverrideChains {
         final var inInterface = classSymbol.isInterface();
 
         final var chains = buildMethodOverrideChains(methodSymbol, classSymbol);
-        assert !chains.isEmpty() : methodSymbol;
 
         for (final var chain : chains) {
             if (isRenamedInChain(methodSymbol, chain, inInterface)) {

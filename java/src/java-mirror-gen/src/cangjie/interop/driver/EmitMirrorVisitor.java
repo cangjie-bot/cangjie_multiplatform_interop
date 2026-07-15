@@ -28,7 +28,6 @@ import static cangjie.interop.Utils.getFlatNameWithoutPackage;
 import static cangjie.interop.driver.VisitorUtils.addSymbolsToMangle;
 import static cangjie.interop.driver.VisitorUtils.collectImports;
 import static cangjie.interop.driver.VisitorUtils.collectSuperTypes;
-import static cangjie.interop.driver.VisitorUtils.createJavaMirrorAnnotation;
 import static cangjie.interop.driver.VisitorUtils.defaultMethodAnnotationGen;
 import static cangjie.interop.driver.VisitorUtils.defaultValueForToString;
 import static cangjie.interop.driver.VisitorUtils.defaultValueForType;
@@ -67,6 +66,7 @@ import vendor.com.sun.tools.javac.code.Types;
 import vendor.com.sun.tools.javac.code.ModuleFinder;
 import vendor.com.sun.tools.javac.comp.Modules;
 import vendor.com.sun.tools.javac.util.Context;
+import vendor.com.sun.tools.javac.util.Log;
 import vendor.com.sun.tools.javac.util.Name;
 import vendor.com.sun.tools.javac.util.Names;
 import vendor.javax.lang.model.element.Modifier;
@@ -96,6 +96,11 @@ import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 
+/**
+ * The actual implementation of Cangjie mirror generation.
+ *
+ * @since 2025-01-01
+ */
 public final class EmitMirrorVisitor {
     private final Queue<Symbol.ClassSymbol> queue;
     private final Set<Symbol.ClassSymbol> visited;
@@ -105,6 +110,7 @@ public final class EmitMirrorVisitor {
     private final Symtab symtab;
     private final Modules modules;
     private final ModuleFinder moduleFinder;
+    private final Log log;
     private final MapScope scope;
     private final OverrideChains overrideChains;
     private final MemberHiding memberHiding;
@@ -141,6 +147,7 @@ public final class EmitMirrorVisitor {
         symtab = Symtab.instance(context);
         modules = Modules.instance(context);
         moduleFinder = ModuleFinder.instance(context);
+        log = Log.instance(context);
         newName = new HashMap<>();
         scope = MapScope.instance(context);
         overrideChains = OverrideChains.instance(context);
@@ -162,7 +169,7 @@ public final class EmitMirrorVisitor {
             try {
                 maxPathLength = Integer.parseInt(System.getProperty("gen.closure.depth"));
             } catch (Exception e) {
-                System.out.print(e.getMessage());
+                log.printRawLines(e.getMessage());
                 limitedDepth = false;
                 maxPathLength = Integer.MAX_VALUE;
             }
@@ -175,16 +182,9 @@ public final class EmitMirrorVisitor {
             var importsConfigFile = new File(importsConfig);
             if (importsConfigFile.exists()) {
                 try (BufferedReader br = new BufferedReader(new FileReader(importsConfig))) {
-                    String str;
-                    while ((str = br.readLine()) != null) {
-                        String[] parts = str.split(" ");
-                        if (parts.length != 2) {
-                            continue;
-                        }
-                        importsMap.put(parts[0], parts[1]);
-                    }
+                    readImportsMapFile(br);
                 } catch (IOException e) {
-                    System.out.println("Error while reading a file.");
+                    log.printRawLines("Error while reading a file.");
                 }
 
                 setImportsMap(importsMap);
@@ -192,6 +192,23 @@ public final class EmitMirrorVisitor {
         }
     }
 
+    private void readImportsMapFile(BufferedReader br) throws IOException {
+        String str;
+        while ((str = br.readLine()) != null) {
+            String[] parts = str.split(" ");
+            if (parts.length != 2) {
+                continue;
+            }
+            importsMap.put(parts[0], parts[1]);
+        }
+    }
+
+    /**
+     * Get or create the singleton instance, bound to the given context.
+     *
+     * @param context compilation session context
+     * @return the singleton instance
+     */
     public static EmitMirrorVisitor instance(Context context) {
         final var instance = context.get(EmitMirrorVisitor.class);
         return instance == null ? new EmitMirrorVisitor(context) : instance;
@@ -216,21 +233,21 @@ public final class EmitMirrorVisitor {
         };
     }
 
-    public void warnAboutOverwrite() {
+    private void warnAboutOverwrite() {
         for (final var entry : writtenPaths.entrySet()) {
             final var value = entry.getValue();
             if (value.size() <= 1) {
                 continue;
             }
 
-            System.err.println("Multiple classes write to the same file `" + entry.getKey() + "`:");
+            log.printRawLines("Multiple classes write to the same file `" + entry.getKey() + "`:");
             for (final var name : value) {
-                System.err.println("* " + name);
+                log.printRawLines("* " + name);
             }
         }
     }
 
-    public CJTree.Declaration translate(Symbol.MethodSymbol symbol) {
+    private CJTree.Declaration translate(Symbol.MethodSymbol symbol) {
         if (symbol.owner.hasOuterInstance()) {
             // to generate arg in constructor for enclosing class
             symbol.flags_field = symbol.flags_field | Flags.SYNTHETIC;
@@ -240,74 +257,103 @@ public final class EmitMirrorVisitor {
             symbolImpl = symbol;
         }
 
-        // Let synthetic methods be those that don't exist in the .class file.
-        // They will not belong to the current class - they come from its super types.
-        final var isSynthetic = symbol.owner != currentClass;
+        return new MethodTranslation(symbol, symbolImpl).translate();
+    }
 
-        final var newMethodName = newName.get(symbol);
-        final var methodName = newMethodName != null ? newMethodName.toString() : scope.generateMethodName(symbol);
-        final var methodDecl = new CJTree.Declaration.FunctionDeclaration(methodName, symbol.isConstructor());
+    private final class MethodTranslation {
+        private final Symbol.MethodSymbol symbol;
+        private final Symbol.MethodSymbol symbolImpl;
+        private final CJTree.Declaration.FunctionDeclaration methodDecl;
+        private final boolean isSynthetic;
+        private final boolean isRedundantModifier;
+        private final Set<Modifier> javaModifiers;
+        private final ModifierList cjModifiers;
 
-        final var infoList = ParameterInfo.makeParameters(scope.getParameters(symbol));
+        MethodTranslation(Symbol.MethodSymbol symbol, Symbol.MethodSymbol symbolImpl) {
+            this.symbol = symbol;
+            this.symbolImpl = symbolImpl;
 
-        int i = 0;
-        for (var param : infoList) {
-            final var decl = new CJTree.Declaration.VariableDeclaration.Parameter(param.name());
+            final var newMethodName = newName.get(symbol);
+            final var methodName = newMethodName != null ? newMethodName.toString() : scope.generateMethodName(symbol);
+            methodDecl = new CJTree.Declaration.FunctionDeclaration(methodName, symbol.isConstructor());
 
-            if (i == 0 && param.isNameSynthetic() && symbol.isConstructor()) {
-                final var classSymbol = symbol.owner;
+            isSynthetic = symbol.owner != currentClass;
+            isRedundantModifier = currentClass.isInterface();
+            javaModifiers = symbolImpl.getModifiers();
+            cjModifiers = new ModifierList();
+        }
 
-                if (classSymbol.hasOuterInstance()) {
-                    final var outerThisType = types.erasure(classSymbol.type.getEnclosingType());
-                    decl.setType(name(outerThisType, true));
-                }
-            } else {
-                Symbol.VarSymbol jParamSymbol = symbol.params().get(i);
-                var erasureType = types.erasure(jParamSymbol.type);
-                final var hasNotNullAttribute = considerNotNullAnnotations
-                        && (hasNotNullAnnotation(jParamSymbol)
+        CJTree.Declaration.FunctionDeclaration translate() {
+            translateMethodParameters();
+            computeMethodModifiers();
+            if (!symbol.isConstructor()) {
+                adjustNonConstructor();
+            }
+            methodDecl.modifiers.addAll(cjModifiers);
+            return methodDecl;
+        }
+
+        private void translateMethodParameters() {
+            final var infoList = ParameterInfo.makeParameters(scope.getParameters(symbol));
+
+            int i = 0;
+            for (var param : infoList) {
+                final var decl = new CJTree.Declaration.VariableDeclaration.Parameter(param.name());
+
+                if (i == 0 && param.isNameSynthetic() && symbol.isConstructor()) {
+                    final var classSymbol = symbol.owner;
+
+                    if (classSymbol.hasOuterInstance()) {
+                        final var outerThisType = types.erasure(classSymbol.type.getEnclosingType());
+                        decl.setType(name(outerThisType, true));
+                    }
+                } else {
+                    Symbol.VarSymbol jParamSymbol = symbol.params().get(i);
+                    var erasureType = types.erasure(jParamSymbol.type);
+                    final var hasNotNullAttribute = considerNotNullAnnotations
+                            && (hasNotNullAnnotation(jParamSymbol)
                             || hasNotNullSigParamAnnotation(symbol, TargetType.METHOD_FORMAL_PARAMETER, i));
-                decl.setType(name(erasureType, hasNotNullAttribute));
-                i++;
+                    decl.setType(name(erasureType, hasNotNullAttribute));
+                    i++;
+                }
+                methodDecl.valueParameters.add(decl);
             }
-            methodDecl.valueParameters.add(decl);
         }
 
-        final var isRedundantModifier = currentClass.isInterface();
-        final var javaModifiers = symbolImpl.getModifiers();
-        final var cjModifiers = new ModifierList();
-        if (javaModifiers.contains(Modifier.PUBLIC) && !isRedundantModifier) {
-            cjModifiers.add(Modifiers.PUBLIC.toCJTree());
-        }
-        if (javaModifiers.contains(Modifier.PROTECTED)) {
-            cjModifiers.add(Modifiers.PROTECTED.toCJTree());
-        }
+        private void computeMethodModifiers() {
+            // Let synthetic methods be those that don't exist in the .class file.
+            // They will not belong to the current class - they come from its super types.
+            if (javaModifiers.contains(Modifier.PUBLIC) && !isRedundantModifier) {
+                cjModifiers.add(Modifiers.PUBLIC.toCJTree());
+            }
+            if (javaModifiers.contains(Modifier.PROTECTED)) {
+                cjModifiers.add(Modifiers.PROTECTED.toCJTree());
+            }
 
-        var isAbstract = false;
-        if (javaModifiers.contains(Modifier.ABSTRACT)) {
-            // For synthetic methods both `symbol` and `symbolImpl` are arbitrary.
-            // Do not trust the `abstract` modifier, do the full check in the current class.
-            if (!isSynthetic || methodStillNotImplemented(symbolImpl)) {
-                // Cangjie forbids overriding non-abstract method with an abstract one.
-                // The best we can do is to ignore the `abstract` modifier.
-                // This might lead to javac errors with incomplete @JavaImpl classes.
-                if (!overrideChains.overridesNonAbstractMethod(symbolImpl)) {
-                    isAbstract = true;
+            var isAbstract = false;
+            if (javaModifiers.contains(Modifier.ABSTRACT)) {
+                // For synthetic methods both `symbol` and `symbolImpl` are arbitrary.
+                // Do not trust the `abstract` modifier, do the full check in the current class.
+                if (!isSynthetic || methodStillNotImplemented(symbolImpl)) {
+                    // Cangjie forbids overriding non-abstract method with an abstract one.
+                    // The best we can do is to ignore the `abstract` modifier.
+                    // This might lead to javac errors with incomplete @JavaImpl classes.
+                    if (!overrideChains.overridesNonAbstractMethod(symbolImpl)) {
+                        isAbstract = true;
+                    }
                 }
             }
+
+            if (!generateDefinition && isAbstract && !isRedundantModifier) {
+                cjModifiers.add(Modifiers.ABSTRACT.toCJTree());
+            }
+
+            if (generateDefinition && !isAbstract) {
+                methodDecl.setBody(new CJTree.Expression.Block(true));
+            }
         }
 
-        if (!generateDefinition && isAbstract && !isRedundantModifier) {
-            cjModifiers.add(Modifiers.ABSTRACT.toCJTree());
-        }
-
-        if (generateDefinition && !isAbstract) {
-            methodDecl.setBody(new CJTree.Expression.Block(true));
-        }
-
-        if (!symbol.isConstructor()) {
-            final var isToString = Utils.isToString(symbol);
-
+        private void adjustNonConstructor() {
             if (javaModifiers.contains(Modifier.STATIC)) {
                 cjModifiers.add(Modifiers.STATIC.toCJTree());
             } else {
@@ -316,14 +362,17 @@ public final class EmitMirrorVisitor {
                     cjModifiers.add(Modifiers.OPEN.toCJTree());
                 }
             }
+
             var erasureType = types.erasure(symbol.getReturnType());
             final var hasNotNullAttribute = considerNotNullAnnotations
                     && (hasNotNullAnnotation(symbol)
-                        || hasNotNullTypeAnnotation(symbol, TargetType.METHOD_RETURN));
+                    || hasNotNullTypeAnnotation(symbol, TargetType.METHOD_RETURN));
             methodDecl.setReturnType(name(erasureType, hasNotNullAttribute));
-            if (isToString &&
-                    methodDecl.getReturnType() instanceof
-                            CJTree.Expression.Name.SimpleName.OptionName methodReturnType) {
+
+            final var isToString = Utils.isToString(symbol);
+            if (isToString
+                    && methodDecl.getReturnType() instanceof
+                    CJTree.Expression.Name.SimpleName.OptionName methodReturnType) {
                 methodDecl.setReturnType(methodReturnType.getName());
             }
 
@@ -336,15 +385,9 @@ public final class EmitMirrorVisitor {
                 }
             }
         }
-
-        methodDecl.modifiers.addAll(cjModifiers);
-
-        return methodDecl;
     }
 
     private boolean methodStillNotImplemented(Symbol.MethodSymbol superMethod) {
-        assert superMethod.getModifiers().contains(Modifier.ABSTRACT) : superMethod;
-
         var implMethod = superMethod.implementation(currentClass, types, true);
         if (implMethod == null || implMethod == superMethod) {
             // Search for default implementations.
@@ -358,69 +401,7 @@ public final class EmitMirrorVisitor {
         return implMethod == null || implMethod == superMethod;
     }
 
-    public CJTree translate(Symbol.ClassSymbol classSymbol) {
-        assert shouldBeGenerated(classSymbol) : classSymbol;
-
-        final var name = getSymbolsToMangle().contains(classSymbol)
-                ? mangleClassName(classSymbol)
-                : addBackticksIfNeeded(getFlatNameWithoutPackage(classSymbol));
-
-        final var classDecl = new CJTree.Declaration.TypeDeclaration(kind(classSymbol));
-        classDecl.setType(new CJTree.Expression.Name.SimpleName.IdentifierName(name));
-
-        final var depth = traversalPathMap.get(classSymbol);
-
-        final var superTypes = collectSuperTypes(classSymbol, types);
-        for (Type superType : superTypes) {
-            if (superType.tsym == symtab.objectType.tsym && (!generateDefinition || classSymbol.isInterface())) {
-                // Interop toolchain provides implicit JObject super type, skip it.
-                // Note: need to preserve JObject for non-interop toolchain.
-                continue;
-            }
-
-            if (depth != null && depth == maxPathLength
-                    && superType.tsym != symtab.objectType.tsym
-                    && !traversalPathMap.containsKey(superType.tsym)) {
-                continue;
-            }
-
-            final var superName = name(superType);
-
-            if (superName instanceof CJTree.Expression.Name.SimpleName.OptionName optionName) {
-                classDecl.supers.add(optionName.getName());
-            }
-        }
-
-        if (generateAnnotationMode) {
-            final var javaMirrorAnnotation = createJavaMirrorAnnotation();
-            final var annotation = new CJTree.Declaration.Annotation(javaMirrorAnnotation);
-            final var argument = new CJTree.Expression.Literal.String(formTypeName(classSymbol).toString());
-            annotation.argumentList.add(argument);
-            classDecl.annotations.add(annotation);
-        }
-
-        final var cjModifiers = new ModifierList();
-        if (!classSymbol.getModifiers().contains(Modifier.FINAL) && !classSymbol.isInterface()
-                && !classSymbol.isAbstract()) {
-            cjModifiers.add(Modifiers.OPEN.toCJTree());
-        }
-        if (classSymbol.getModifiers().contains(Modifier.PUBLIC)) {
-            cjModifiers.add(Modifiers.PUBLIC.toCJTree());
-        }
-        if (classSymbol.getModifiers().contains(Modifier.PROTECTED)) {
-            cjModifiers.add(Modifiers.PROTECTED.toCJTree());
-        }
-        if (classSymbol.isAbstract() && !classSymbol.isInterface()) {
-            cjModifiers.add(Modifiers.ABSTRACT.toCJTree());
-        }
-        classDecl.modifiers.addAll(cjModifiers);
-
-        classDecl.declarations.addAll(visitBody(classSymbol));
-
-        return classDecl;
-    }
-
-    public CJTree.Declaration translate(Symbol.VarSymbol varSymbol) {
+    private CJTree.Declaration translate(Symbol.VarSymbol varSymbol) {
         final var mangledName = addBackticksIfNeeded(varSymbol.name);
         boolean genProperty = currentClass.isInterface();
         final var decl = new CJTree.Declaration.VariableDeclaration.Variable(mangledName, genProperty);
@@ -491,174 +472,307 @@ public final class EmitMirrorVisitor {
     }
 
     private boolean hasExceededMaxDepthPath(Symbol symbol, Integer depth) {
-        if (!limitedDepth) {
+        if (!limitedDepth || depth == null) {
             return false;
         }
 
-        if (depth != null && symbol instanceof Symbol.MethodSymbol methodSymbol) {
+        if (symbol instanceof Symbol.MethodSymbol methodSymbol) {
             if (methodSymbol.owner.isInterface() && !methodSymbol.isDefault() && !methodSymbol.isStatic()) {
-                for (Symbol.ClassSymbol classSymbol : traversalPathMap.keySet()) {
-                    if (!classSymbol.isAbstract() && !classSymbol.isInterface()) {
-                        final var closure = types.closure(classSymbol.type);
-                        for (Type type : closure) {
-                            if (type.tsym.equals(methodSymbol.owner)
-                                    && !overrideChains.isMethodOverriddenInClass(classSymbol, methodSymbol)) {
-                                return true;
-                            }
-                        }
-                    }
+                if (anyImplementorWithoutImplementation(methodSymbol)) {
+                    return true;
                 }
             }
         }
 
-        if (depth != null && depth == maxPathLength) {
+        if (depth == maxPathLength) {
             if (symbol instanceof Symbol.MethodSymbol methodSymbol) {
-                for (var param : methodSymbol.params()) {
-                    final var paramTypeSymbol = erasureType(param.type, types);
-                    if (exceedMaxDepth(paramTypeSymbol)) {
-                        return true;
-                    }
-                }
-                final var returnTypeSymbol = erasureType(methodSymbol.getReturnType(), types);
-                return exceedMaxDepth(returnTypeSymbol);
+                return methodSignatureExceedsMaxDepth(methodSymbol);
             }
             if (symbol instanceof Symbol.VarSymbol varSymbol) {
                 return exceedMaxDepth(erasureType(varSymbol.type, types));
             }
         }
+
         return false;
     }
 
-    private ArrayList<Symbol> getMembers(Symbol.ClassSymbol classSymbol) {
-        final var tmpScope = classSymbol.members();
-        final var members = new ArrayList<Symbol>();
-        final var depth = traversalPathMap.get(classSymbol);
-        if (tmpScope == null) {
+    private boolean methodSignatureExceedsMaxDepth(Symbol.MethodSymbol methodSymbol) {
+        for (var param : methodSymbol.params()) {
+            final var paramTypeSymbol = erasureType(param.type, types);
+            if (exceedMaxDepth(paramTypeSymbol)) {
+                return true;
+            }
+        }
+        final var returnTypeSymbol = erasureType(methodSymbol.getReturnType(), types);
+        return exceedMaxDepth(returnTypeSymbol);
+    }
+
+    private boolean anyImplementorWithoutImplementation(Symbol.MethodSymbol methodSymbol) {
+        for (Symbol.ClassSymbol classSymbol : traversalPathMap.keySet()) {
+            if (classSymbol.isAbstract() || classSymbol.isInterface()) {
+                continue;
+            }
+
+            final var closure = types.closure(classSymbol.type);
+            for (Type type : closure) {
+                if (!type.tsym.equals(methodSymbol.owner)) {
+                    continue;
+                }
+                if (overrideChains.isMethodOverriddenInClass(classSymbol, methodSymbol)) {
+                    continue;
+                }
+
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private final class MembersCollection {
+        private final Symbol.ClassSymbol classSymbol;
+        private final Integer depth;
+        private final Scope.WriteableScope tmpScope;
+        private final List<Symbol> members = new ArrayList<>();
+        private final LinkedHashSet<Symbol.MethodSymbol> visitedMethods = new LinkedHashSet<>();
+
+        MembersCollection(Symbol.ClassSymbol classSymbol) {
+            this.classSymbol = classSymbol;
+            this.depth = traversalPathMap.get(classSymbol);
+            this.tmpScope = classSymbol.members();
+        }
+
+        List<Symbol> collect() {
+            if (tmpScope == null) {
+                return members;
+            }
+
+            for (Symbol element : tmpScope.getSymbols()) {
+                if (!shouldBeGenerated(element)) {
+                    continue;
+                }
+                if (element instanceof Symbol.MethodSymbol symbol) {
+                    collectMethod(symbol);
+                    continue;
+                }
+                if (element instanceof Symbol.VarSymbol varSymbol) {
+                    collectVariable(varSymbol);
+                }
+            }
+
+            Collections.reverse(members);
             return members;
         }
 
-        final var visitedMethods = new LinkedHashSet<Symbol.MethodSymbol>();
-        for (Symbol element : tmpScope.getSymbols()) {
-            if (!shouldBeGenerated(element)) {
-                continue;
+        private void collectMethod(Symbol.MethodSymbol symbol) {
+            // JObject methods cause problems in interfaces. Skip them.
+            if (interfaceObjectMethodsWorkaround && classSymbol.isInterface()
+                    && types.overridesObjectMethod(symbol.enclClass(), symbol)) {
+                return;
             }
-            if (element instanceof Symbol.MethodSymbol symbol) {
-                // JObject methods cause problems in interfaces. Skip them.
-                if (interfaceObjectMethodsWorkaround && classSymbol.isInterface()
-                        && types.overridesObjectMethod(symbol.enclClass(), symbol)) {
+
+            if (!hasOnlyAppropriateDeps(symbol, types)) {
+                return;
+            }
+
+            final var methodImpl = overrideChains.findRootMethod(symbol, classSymbol);
+
+            final var methodSymbol = symbol.isStatic()
+                    ? methodImpl
+                    : overrideChains.getImplementationOfSuper(symbol, tmpScope);
+
+            if ((symbol.flags() & Flags.BRIDGE) != 0
+                    && methodSymbol == symbol
+                    && overrideChains.isPackagePrivateOverridden(methodSymbol, classSymbol)) {
+                visitedMethods.add(methodSymbol);
+                return;
+            }
+
+            if (hasExceededMaxDepthPath(methodSymbol, depth)) {
+                return;
+            }
+            if (!hasOnlyAppropriateDeps(methodSymbol, types)) {
+                return;
+            }
+
+            if (visitedMethods.add(methodSymbol)) {
+                members.add(methodSymbol);
+            }
+        }
+
+        private void collectVariable(Symbol.VarSymbol symbol) {
+            if (symbol.owner.type.isInterface() && symbol.getModifiers().contains(Modifier.FINAL)) {
+                return;
+            }
+
+            if (hasExceededMaxDepthPath(symbol, depth)) {
+                return;
+            }
+            if (!hasOnlyAppropriateDeps(symbol, types)) {
+                return;
+            }
+            members.add(symbol);
+        }
+    }
+
+    private List<Symbol> getMembers(Symbol.ClassSymbol classSymbol) {
+        return new MembersCollection(classSymbol).collect();
+    }
+
+    private final class ClassTranslation {
+        private final Symbol.ClassSymbol classSymbol;
+        private final CJTree.Declaration.TypeDeclaration classDecl;
+        private final List<CJTree.Declaration> block = new ArrayList<>();
+        private boolean hasInitWithoutParams = false;
+
+        ClassTranslation(Symbol.ClassSymbol classSymbol) {
+            this.classSymbol = classSymbol;
+            this.classDecl = new CJTree.Declaration.TypeDeclaration(kind(classSymbol));
+        }
+
+        CJTree.Declaration.TypeDeclaration translateClass() {
+            setType();
+            addSuperTypes();
+            if (generateAnnotationMode) {
+                addJavaMirrorAnnotation();
+            }
+            computeModifiers();
+            visitBody();
+            addSyntheticInit();
+            classDecl.declarations.addAll(block);
+            return classDecl;
+        }
+
+        private void setType() {
+            final var name = getSymbolsToMangle().contains(classSymbol)
+                    ? mangleClassName(classSymbol)
+                    : addBackticksIfNeeded(getFlatNameWithoutPackage(classSymbol));
+
+            classDecl.setType(new CJTree.Expression.Name.SimpleName.IdentifierName(name));
+        }
+
+        private void addSuperTypes() {
+            final var depth = traversalPathMap.get(classSymbol);
+
+            final var superTypes = collectSuperTypes(classSymbol, types);
+            for (Type superType : superTypes) {
+                if (superType.tsym == symtab.objectType.tsym && (!generateDefinition || classSymbol.isInterface())) {
+                    // Interop toolchain provides implicit JObject super type, skip it.
+                    // Note: need to preserve JObject for non-interop toolchain.
                     continue;
                 }
 
-                if (!hasOnlyAppropriateDeps(symbol, types)) {
+                if (depth != null && depth == maxPathLength
+                        && superType.tsym != symtab.objectType.tsym
+                        && !traversalPathMap.containsKey(superType.tsym)) {
                     continue;
                 }
 
-                final var methodImpl = overrideChains.findRootMethod(symbol, classSymbol);
+                final var superName = name(superType);
 
-                final var methodSymbol = symbol.isStatic()
-                        ? methodImpl
-                        : overrideChains.getImplementationOfSuper(symbol, tmpScope);
-
-                assert methodSymbol == symbol || !symbol.isStatic()
-                        : classSymbol + " : " + symbol + " | " + methodSymbol;
-
-                if ((symbol.flags() & Flags.BRIDGE) != 0
-                        && methodSymbol == symbol
-                        && overrideChains.isPackagePrivateOverridden(methodSymbol, classSymbol)) {
-                    visitedMethods.add(methodSymbol);
-                    continue;
+                if (superName instanceof CJTree.Expression.Name.SimpleName.OptionName optionName) {
+                    classDecl.supers.add(optionName.getName());
                 }
+            }
+        }
 
+        private void addJavaMirrorAnnotation() {
+            final var javaMirrorAnnotation = new CJTree.Expression.Name.SimpleName.IdentifierName("JavaMirror");
+            final var annotation = new CJTree.Declaration.Annotation(javaMirrorAnnotation);
+            final var argument = new CJTree.Expression.Literal.String(formTypeName(classSymbol).toString());
+            annotation.argumentList.add(argument);
+            classDecl.annotations.add(annotation);
+        }
+
+        private void computeModifiers() {
+            final var cjModifiers = new ModifierList();
+            if (!classSymbol.getModifiers().contains(Modifier.FINAL) && !classSymbol.isInterface()
+                    && !classSymbol.isAbstract()) {
+                cjModifiers.add(Modifiers.OPEN.toCJTree());
+            }
+            if (classSymbol.getModifiers().contains(Modifier.PUBLIC)) {
+                cjModifiers.add(Modifiers.PUBLIC.toCJTree());
+            }
+            if (classSymbol.getModifiers().contains(Modifier.PROTECTED)) {
+                cjModifiers.add(Modifiers.PROTECTED.toCJTree());
+            }
+            if (classSymbol.isAbstract() && !classSymbol.isInterface()) {
+                cjModifiers.add(Modifiers.ABSTRACT.toCJTree());
+            }
+            classDecl.modifiers.addAll(cjModifiers);
+        }
+
+        private void visitBody() {
+            final List<Symbol> members = getMembers(classSymbol);
+            final var depth = traversalPathMap.get(classSymbol);
+
+            final var mergeDefaultMethods = defaultMethods.mergeMultipleInterfaceDefaultMethods(classSymbol);
+            mergeDefaultMethods.removeIf(members::contains);
+
+            for (Symbol.MethodSymbol methodSymbol : mergeDefaultMethods) {
                 if (hasExceededMaxDepthPath(methodSymbol, depth)) {
                     continue;
                 }
-                if (!hasOnlyAppropriateDeps(methodSymbol, types)) {
+                members.add(methodSymbol);
+            }
+            for (Symbol element : members) {
+                final var originalName = element.name;
+                final var renamed = newName.get(element) != null;
+                if (element instanceof Symbol.MethodSymbol methodSymbol) {
+                    translateMemberMethod(methodSymbol, renamed, originalName);
                     continue;
                 }
-
-                if (visitedMethods.add(methodSymbol)) {
-                    members.add(methodSymbol);
+                if (element instanceof Symbol.VarSymbol varSymbol) {
+                    translateMemberVariable(varSymbol, renamed, originalName);
                 }
-            } else if (element instanceof Symbol.VarSymbol varSymbol) {
-                if (varSymbol.owner.type.isInterface() && varSymbol.getModifiers().contains(Modifier.FINAL)) {
-                    continue;
-                }
-
-                if (hasExceededMaxDepthPath(varSymbol, depth)) {
-                    continue;
-                }
-                if (!hasOnlyAppropriateDeps(varSymbol, types)) {
-                    continue;
-                }
-                members.add(varSymbol);
             }
         }
 
-        Collections.reverse(members);
-        return members;
-    }
-
-    private List<CJTree.Declaration> visitBody(Symbol.ClassSymbol classSymbol) {
-        final var block = new ArrayList<CJTree.Declaration>();
-
-        boolean hasInitWithoutParams = false;
-        boolean hasInit = false;
-
-        final List<Symbol> members = getMembers(classSymbol);
-        final var depth = traversalPathMap.get(classSymbol);
-
-        final var mergeDefaultMethods = defaultMethods.mergeMultipleInterfaceDefaultMethods(classSymbol);
-        mergeDefaultMethods.removeIf(members::contains);
-
-        for (Symbol.MethodSymbol methodSymbol : mergeDefaultMethods) {
-            if (hasExceededMaxDepthPath(methodSymbol, depth)) {
-                continue;
-            }
-            members.add(methodSymbol);
-        }
-        for (Symbol element : members) {
-            final var originalName = element.name;
-            final var renamed = newName.get(element) != null;
-            if (element instanceof Symbol.MethodSymbol methodSymbol) {
-                if (!hasInitWithoutParams && methodSymbol.isConstructor()) {
-                    if (methodSymbol.params().isEmpty()) {
-                        hasInitWithoutParams = true;
-                    }
-                    hasInit = true;
-                }
-
-                final var tree = translate(methodSymbol);
-                block.add(tree);
-
-                if (generateAnnotationMode
-                        && renamed
-                        && overrideChains.isRenamedInThisClass(classSymbol, methodSymbol)) {
-                    tree.annotations.add(foreignNameAnnotationGen(originalName));
-                }
-
-                if (generateAnnotationMode
-                        && currentClass.isInterface()
-                        && (methodSymbol.isDefault() && !methodSymbol.isStatic()
-                            || methodSymbol.isAbstract() && overrideChains.overridesNonAbstractMethod(methodSymbol))) {
-                    tree.annotations.add(defaultMethodAnnotationGen());
-                }
-            } else if (element instanceof Symbol.VarSymbol varSymbol) {
-                final var tree = translate(varSymbol);
-                block.add(tree);
-
-                if (generateAnnotationMode && renamed) {
-                    tree.annotations.add(foreignNameAnnotationGen(originalName));
+        private void translateMemberMethod(Symbol.MethodSymbol methodSymbol, boolean isRenamed, Name originalName) {
+            if (!hasInitWithoutParams && methodSymbol.isConstructor()) {
+                if (methodSymbol.params().isEmpty()) {
+                    hasInitWithoutParams = true;
                 }
             }
+
+            final var tree = translate(methodSymbol);
+            block.add(tree);
+
+            if (generateAnnotationMode
+                    && isRenamed
+                    && overrideChains.isRenamedInThisClass(classSymbol, methodSymbol)) {
+                tree.annotations.add(foreignNameAnnotationGen(originalName));
+            }
+
+            if (generateAnnotationMode
+                    && currentClass.isInterface()
+                    && (methodSymbol.isDefault() && !methodSymbol.isStatic()
+                    || methodSymbol.isAbstract() && overrideChains.overridesNonAbstractMethod(methodSymbol))) {
+                tree.annotations.add(defaultMethodAnnotationGen());
+            }
         }
-        if (!classSymbol.isInterface()
-                && generateDefinition && (!hasInitWithoutParams || classSymbol.hasOuterInstance())) {
+
+        private void translateMemberVariable(Symbol.VarSymbol varSymbol, boolean isRenamed, Name originalName) {
+            final var tree = translate(varSymbol);
+            block.add(tree);
+
+            if (generateAnnotationMode && isRenamed) {
+                tree.annotations.add(foreignNameAnnotationGen(originalName));
+            }
+        }
+
+        private void addSyntheticInit() {
+            if (classSymbol.isInterface() || !generateDefinition) {
+                return;
+            }
+            if (hasInitWithoutParams && !classSymbol.hasOuterInstance()) {
+                return;
+            }
+
             final var initMethodTree = new CJTree.Declaration.FunctionDeclaration("init", true);
             initMethodTree.modifiers.add(Modifiers.PUBLIC.toCJTree());
             initMethodTree.setBody(new CJTree.Expression.Block(true));
             block.add(initMethodTree);
         }
-        return block;
     }
 
     private Collection<QualifiedName> filterImports(Set<QualifiedName> imports) {
@@ -693,22 +807,13 @@ public final class EmitMirrorVisitor {
         return (Symbol.PackageSymbol) ownerSymbol;
     }
 
-    public void generateMirror(Symbol.ClassSymbol classSymbol) {
-        if (classSymbol.classfile == null) {
-            return;
-        }
-        if (classSymbol.hasOuterInstance() && classSymbol.isPrivate()) {
-            return;
-        }
-        if (importsMap.containsKey(classSymbol.flatname.toString())) {
-            return;
-        }
+    private void generateMirror(Symbol.ClassSymbol classSymbol) {
         final var ownerSymbol = findPackageSymbol(classSymbol);
         final var moduleName = userPackageName != null ? userPackageName : "UNNAMED";
         final var unitPkgName = !onePackageMode ? ownerSymbol.getQualifiedName().toString() : moduleName;
 
         final var unit = new CJTree.CompilationUnit();
-        final var tree = this.translate(classSymbol);
+        final var tree = new ClassTranslation(classSymbol).translateClass();
 
         unit.wildcardImports.add(QualifiedName.get("java", "lang"));
         for (final var wildcardImport : getWildcardImports()) {
@@ -727,11 +832,10 @@ public final class EmitMirrorVisitor {
         unit.imports.retainAll(filteredImports);
 
         final var path = new StringBuilder();
-        assert moduleName != null;
         path.append(moduleName).append('/').append("src/");
 
         if (!onePackageMode) {
-            path.append(unitPkgName.toString().replace('.', File.separatorChar)).append(File.separator);
+            path.append(unitPkgName.replace('.', File.separatorChar)).append(File.separator);
         }
 
         final var filePath = new StringBuilder();
@@ -776,73 +880,91 @@ public final class EmitMirrorVisitor {
         }
 
         for (var symbols : map.values()) {
-            final var fields = symbols.stream().filter(f -> f.kind == VAR).toList();
-            if (fields.size() > 1) {
-                for (var field : fields) {
-                    final var mangledFieldName = Utils.addUnderscoresIfNeeded(field.name);
-                    final var mangledFieldOwnerName = Utils.addUnderscoresIfNeeded(field.owner.name);
+            renameCangjieFieldClashes(symbols);
+            renameCangjieMethodClashes(symbols);
+        }
+    }
 
-                    final var sb = new StringBuilder(mangledFieldName);
-                    sb.append("_");
-                    sb.append(mangledFieldOwnerName);
+    private void renameCangjieFieldClashes(List<Symbol> symbols) {
+        final var fields = symbols.stream().filter(f -> f.kind == VAR).toList();
+        if (fields.size() <= 1) {
+            return;
+        }
 
-                    final var newFieldName = names.fromString(sb.toString());
-                    newName.put(field, newFieldName);
-                }
-            }
+        for (var field : fields) {
+            final var mangledFieldName = Utils.addUnderscoresIfNeeded(field.name);
+            final var mangledFieldOwnerName = Utils.addUnderscoresIfNeeded(field.owner.name);
 
-            final var methods = symbols.stream().filter(m -> m.kind == MTH).toList();
+            final var sb = new StringBuilder(mangledFieldName);
+            sb.append("_");
+            sb.append(mangledFieldOwnerName);
 
-            for (final var method : methods) {
-                final var methodSymbol = (Symbol.MethodSymbol) method;
-                if (Utils.isHashCode(methodSymbol)) {
+            final var newFieldName = names.fromString(sb.toString());
+            newName.put(field, newFieldName);
+        }
+    }
+
+    private void renameCangjieMethodClashes(List<Symbol> symbols) {
+        final var methods = new ArrayList<Symbol.MethodSymbol>();
+
+        for (final var symbol : symbols) {
+            if (symbol instanceof Symbol.MethodSymbol method) {
+                methods.add(method);
+                if (Utils.isHashCode(method)) {
                     newName.put(method, hashCode32);
-                } else if (Utils.isToString(methodSymbol)) {
+                    continue;
+                }
+                if (Utils.isToString(method)) {
                     newName.put(method, toJString);
                 }
             }
+        }
 
-            if (methods.size() > 1) {
-                final boolean allMethodsAreInstance = methods.stream().noneMatch(m -> m.isStatic());
-                final boolean allMethodsAreStatic = methods.stream().allMatch(m -> m.isStatic());
+        if (methods.size() <= 1) {
+            return;
+        }
 
-                if (allMethodsAreInstance) {
+        renameCangjieMethodClashesImpl(methods);
+    }
+
+    private void renameCangjieMethodClashesImpl(List<Symbol.MethodSymbol> methods) {
+        final var allInstance = methods.stream().noneMatch(m -> m.isStatic());
+        final var allStatic = methods.stream().allMatch(m -> m.isStatic());
+
+        if (allInstance) {
+            return;
+        }
+        for (var method : methods) {
+            if (method.isStatic()) {
+                final var newNameMethod = newName.get(method);
+                boolean shouldBeMangledStatic = !allStatic
+                        || newNameMethod != null
+                        && newNameMethod.startsWith(method.name.append(staticSuffix));
+                if (shouldBeMangledStatic) {
+                    newName.put(method, method.name.append(staticSuffix));
+                }
+                // Cangjie prohibits redefinition of a static method with a different return type.
+                // Rename the descendant method.
+                final var hiddenSymbols = memberHiding.collectHiddenSymbols(method);
+
+                if (hiddenSymbols.isEmpty()) {
                     continue;
                 }
-                for (var method : methods) {
-                    if (method.isStatic()) {
-                        final var newNameMethod = newName.get(method);
-                        boolean shouldBeMangledStatic = !allMethodsAreStatic
-                                || newNameMethod != null
-                                && newNameMethod.startsWith(method.name.append(staticSuffix));
-                        if (shouldBeMangledStatic) {
-                            newName.put(method, method.name.append(staticSuffix));
-                        }
-                        // Cangjie prohibits redefinition of a static method with a different return type.
-                        // Rename the descendant method.
-                        final var methodSymbol = (Symbol.MethodSymbol) method;
-                        final var hiddenSymbols = memberHiding.collectHiddenSymbols(method);
 
-                        if (hiddenSymbols.isEmpty()) {
-                            continue;
-                        }
-
-                        if (!hiddenSymbols.stream().anyMatch(s -> (s instanceof Symbol.MethodSymbol symbol)
-                                && (!symbol.getReturnType().equals(methodSymbol.getReturnType())))) {
-                            continue;
-                        }
-
-                        if (!(methodSymbol.getReturnType().tsym instanceof Symbol.ClassSymbol returnTypeSymbol)) {
-                            continue;
-                        }
-
-                        final var returnTypeSuffix = mangleClassName(returnTypeSymbol);
-                        final var nameSuffix = names.fromString(returnTypeSuffix);
-                        newName.put(method, shouldBeMangledStatic
-                                ? method.name.append(staticSuffix).append('_', nameSuffix)
-                                : method.name.append('_', nameSuffix));
-                    }
+                if (hiddenSymbols.stream().noneMatch(s -> (s instanceof Symbol.MethodSymbol symbol)
+                        && (!symbol.getReturnType().equals(method.getReturnType())))) {
+                    continue;
                 }
+
+                if (!(method.getReturnType().tsym instanceof Symbol.ClassSymbol returnTypeSymbol)) {
+                    continue;
+                }
+
+                final var returnTypeSuffix = mangleClassName(returnTypeSymbol);
+                final var nameSuffix = names.fromString(returnTypeSuffix);
+                newName.put(method, shouldBeMangledStatic
+                        ? method.name.append(staticSuffix).append('_', nameSuffix)
+                        : method.name.append('_', nameSuffix));
             }
         }
     }
@@ -869,7 +991,7 @@ public final class EmitMirrorVisitor {
         return result;
     }
 
-    public void traverseClassSymbol(Symbol.ClassSymbol classSymbol) {
+    private void traverseClassSymbol(Symbol.ClassSymbol classSymbol) {
         if (!shouldBeGenerated(classSymbol)) {
             return;
         }
@@ -903,7 +1025,9 @@ public final class EmitMirrorVisitor {
                 if (!symbol.isConstructor()) {
                     putToQueue(erasureType(symbol.getReturnType(), types), depthNext);
                 }
-            } else if (element instanceof Symbol.VarSymbol symbol) {
+                continue;
+            }
+            if (element instanceof Symbol.VarSymbol symbol) {
                 putToQueue(erasureType(symbol.type, types), depthNext);
             }
         }
@@ -913,7 +1037,7 @@ public final class EmitMirrorVisitor {
         }
     }
 
-    public void computeSymbolsToMangle() {
+    private void computeSymbolsToMangle() {
         if (!onePackageMode) {
             return;
         }
@@ -925,42 +1049,45 @@ public final class EmitMirrorVisitor {
                     .add(classSymbol);
         }
         for (final var entry : clashingClasses.entrySet()) {
+            final var key = entry.getKey();
             final var value = entry.getValue();
 
-            // Clashes with std.core entities should be mangled as well
-            final var shortClassName = getFlatNameWithoutPackage(value.get(0)).toString();
-            boolean shouldBeMangled = (value.size() == 1)
-                    && importsConfig != null
-                    && STD_CORE_NAMES.contains(shortClassName);
-
-            if (value.size() <= 1 && !shouldBeMangled) {
-                if (value.size() == 1) {
-                    boolean canCaseClash = clashingClasses
-                            .keySet()
-                            .stream()
-                            .filter(c -> c.equalsIgnoreCase(entry.getKey()))
-                            .count() > 1;
-                    if (canCaseClash) {
-                        clashingFiles.add(entry.getKey());
-                    }
-                }
-                continue;
-            }
-
-            System.err.println("Clashing class name is `" + entry.getKey() + "`");
-            for (final var name : value) {
-                addSymbolsToMangle(name);
-            }
+            writeClashingClass(key, value, clashingClasses.keySet());
         }
-        System.err.println("");
     }
 
-    public void traverseDependenciesClosure(Symbol.ClassSymbol classSymbol) {
+    private void writeClashingClass(String key, List<Symbol.ClassSymbol> value, Set<String> clashingClassNames) {
+        // Clashes with std.core entities should be mangled as well
+        final var shortClassName = getFlatNameWithoutPackage(value.get(0)).toString();
+        boolean shouldBeMangled = (value.size() == 1)
+                && importsConfig != null
+                && STD_CORE_NAMES.contains(shortClassName);
+
+        if (value.size() <= 1 && !shouldBeMangled) {
+            if (value.size() == 1) {
+                boolean canCaseClash = clashingClassNames
+                        .stream()
+                        .filter(c -> c.equalsIgnoreCase(key))
+                        .count() > 1;
+                if (canCaseClash) {
+                    clashingFiles.add(key);
+                }
+            }
+            return;
+        }
+
+        log.printRawLines("Clashing class name is `" + key + "`");
+        for (final var name : value) {
+            addSymbolsToMangle(name);
+        }
+    }
+
+    private void traverseDependenciesClosure(Symbol.ClassSymbol classSymbol) {
         if (classSymbol != null) {
             if (!shouldBeGenerated(classSymbol)) {
                 String message = "Class " + classSymbol.flatname
                         + "has inappropriate access modifier so it is skipped for mirrors generation.";
-                System.out.println(message);
+                log.printRawLines(message);
                 return;
             }
             if (limitedDepth && traversalPathMap.get(classSymbol) == null) {
@@ -976,7 +1103,7 @@ public final class EmitMirrorVisitor {
         }
     }
 
-    public void generateMirrorsWithDependencies() {
+    private void generateMirrors() {
         FileWriter outputStream = null;
         try {
             if (importsConfig != null) {
@@ -984,41 +1111,54 @@ public final class EmitMirrorVisitor {
             }
 
             for (Symbol.ClassSymbol curSymbol : visited) {
-                if (curSymbol == symtab.objectType.tsym || curSymbol == symtab.stringType.tsym) {
-                    continue;
-                }
-
-                currentClass = curSymbol;
-                try {
-                    generateMirror(curSymbol);
-                } finally {
-                    assert currentClass == curSymbol;
-                    currentClass = null;
-                }
-
-                if (importsConfig != null) {
-                    if (importsMap.containsKey(curSymbol.flatname.toString())) {
-                        continue;
-                    }
-                    String identifier = getSymbolsToMangle().contains(curSymbol)
-                            ? mangleClassName(curSymbol)
-                            : addUnderscoresIfNeeded(getFlatNameWithoutPackage(curSymbol));
-                    String qualifiedName = QualifiedName.get(userPackageName, identifier).toString();
-                    outputStream.write(curSymbol.flatname.toString() + " " + qualifiedName + "\n");
-                }
+                generateMirrorsImpl(curSymbol, outputStream);
             }
         } catch (IOException e) {
-            System.out.print(e.getMessage());
+            log.printRawLines(e.getMessage());
         } finally {
             if (outputStream != null) {
                 try {
                     outputStream.close();
                 } catch (IOException e) {
-                    System.out.print(e.getMessage());
+                    log.printRawLines(e.getMessage());
                 }
             }
             newName.clear();
         }
+    }
+
+    private void generateMirrorsImpl(Symbol.ClassSymbol curSymbol, FileWriter outputStream) throws IOException {
+        if (curSymbol == symtab.objectType.tsym || curSymbol == symtab.stringType.tsym) {
+            return;
+        }
+        if (curSymbol.classfile == null) {
+            return;
+        }
+        if (curSymbol.hasOuterInstance() && curSymbol.isPrivate()) {
+            return;
+        }
+        if (importsMap.containsKey(curSymbol.flatname.toString())) {
+            return;
+        }
+
+        currentClass = curSymbol;
+        try {
+            generateMirror(curSymbol);
+        } finally {
+            currentClass = null;
+        }
+
+        if (importsConfig == null) {
+            return;
+        }
+        if (importsMap.containsKey(curSymbol.flatname.toString())) {
+            return;
+        }
+        String identifier = getSymbolsToMangle().contains(curSymbol)
+                ? mangleClassName(curSymbol)
+                : addUnderscoresIfNeeded(getFlatNameWithoutPackage(curSymbol));
+        String qualifiedName = QualifiedName.get(userPackageName, identifier).toString();
+        outputStream.write(curSymbol.flatname.toString() + " " + qualifiedName + "\n");
     }
 
     /**
@@ -1033,7 +1173,7 @@ public final class EmitMirrorVisitor {
             traverseDependenciesClosure(classSymbol);
         }
         computeSymbolsToMangle();
-        generateMirrorsWithDependencies();
+        generateMirrors();
         warnAboutOverwrite();
     }
 
