@@ -66,6 +66,7 @@ import vendor.com.sun.tools.javac.code.Types;
 import vendor.com.sun.tools.javac.code.ModuleFinder;
 import vendor.com.sun.tools.javac.comp.Modules;
 import vendor.com.sun.tools.javac.util.Context;
+import vendor.com.sun.tools.javac.util.Log;
 import vendor.com.sun.tools.javac.util.Name;
 import vendor.com.sun.tools.javac.util.Names;
 import vendor.javax.lang.model.element.Modifier;
@@ -109,6 +110,7 @@ public final class EmitMirrorVisitor {
     private final Symtab symtab;
     private final Modules modules;
     private final ModuleFinder moduleFinder;
+    private final Log log;
     private final MapScope scope;
     private final OverrideChains overrideChains;
     private final MemberHiding memberHiding;
@@ -145,6 +147,7 @@ public final class EmitMirrorVisitor {
         symtab = Symtab.instance(context);
         modules = Modules.instance(context);
         moduleFinder = ModuleFinder.instance(context);
+        log = Log.instance(context);
         newName = new HashMap<>();
         scope = MapScope.instance(context);
         overrideChains = OverrideChains.instance(context);
@@ -166,7 +169,7 @@ public final class EmitMirrorVisitor {
             try {
                 maxPathLength = Integer.parseInt(System.getProperty("gen.closure.depth"));
             } catch (Exception e) {
-                System.out.print(e.getMessage());
+                log.printRawLines(e.getMessage());
                 limitedDepth = false;
                 maxPathLength = Integer.MAX_VALUE;
             }
@@ -181,7 +184,7 @@ public final class EmitMirrorVisitor {
                 try (BufferedReader br = new BufferedReader(new FileReader(importsConfig))) {
                     readImportsMapFile(br);
                 } catch (IOException e) {
-                    System.out.println("Error while reading a file.");
+                    log.printRawLines("Error while reading a file.");
                 }
 
                 setImportsMap(importsMap);
@@ -237,9 +240,9 @@ public final class EmitMirrorVisitor {
                 continue;
             }
 
-            System.err.println("Multiple classes write to the same file `" + entry.getKey() + "`:");
+            log.printRawLines("Multiple classes write to the same file `" + entry.getKey() + "`:");
             for (final var name : value) {
-                System.err.println("* " + name);
+                log.printRawLines("* " + name);
             }
         }
     }
@@ -351,8 +354,6 @@ public final class EmitMirrorVisitor {
         }
 
         private void adjustNonConstructor() {
-            final var isToString = Utils.isToString(symbol);
-
             if (javaModifiers.contains(Modifier.STATIC)) {
                 cjModifiers.add(Modifiers.STATIC.toCJTree());
             } else {
@@ -361,11 +362,14 @@ public final class EmitMirrorVisitor {
                     cjModifiers.add(Modifiers.OPEN.toCJTree());
                 }
             }
+
             var erasureType = types.erasure(symbol.getReturnType());
             final var hasNotNullAttribute = considerNotNullAnnotations
                     && (hasNotNullAnnotation(symbol)
                     || hasNotNullTypeAnnotation(symbol, TargetType.METHOD_RETURN));
             methodDecl.setReturnType(name(erasureType, hasNotNullAttribute));
+
+            final var isToString = Utils.isToString(symbol);
             if (isToString
                     && methodDecl.getReturnType() instanceof
                     CJTree.Expression.Name.SimpleName.OptionName methodReturnType) {
@@ -723,7 +727,7 @@ public final class EmitMirrorVisitor {
             }
         }
 
-        private void translateMemberMethod(Symbol.MethodSymbol methodSymbol, boolean renamed, Name originalName) {
+        private void translateMemberMethod(Symbol.MethodSymbol methodSymbol, boolean isRenamed, Name originalName) {
             if (!hasInitWithoutParams && methodSymbol.isConstructor()) {
                 if (methodSymbol.params().isEmpty()) {
                     hasInitWithoutParams = true;
@@ -734,7 +738,7 @@ public final class EmitMirrorVisitor {
             block.add(tree);
 
             if (generateAnnotationMode
-                    && renamed
+                    && isRenamed
                     && overrideChains.isRenamedInThisClass(classSymbol, methodSymbol)) {
                 tree.annotations.add(foreignNameAnnotationGen(originalName));
             }
@@ -747,11 +751,11 @@ public final class EmitMirrorVisitor {
             }
         }
 
-        private void translateMemberVariable(Symbol.VarSymbol varSymbol, boolean renamed, Name originalName) {
+        private void translateMemberVariable(Symbol.VarSymbol varSymbol, boolean isRenamed, Name originalName) {
             final var tree = translate(varSymbol);
             block.add(tree);
 
-            if (generateAnnotationMode && renamed) {
+            if (generateAnnotationMode && isRenamed) {
                 tree.annotations.add(foreignNameAnnotationGen(originalName));
             }
         }
@@ -809,7 +813,7 @@ public final class EmitMirrorVisitor {
         final var unitPkgName = !onePackageMode ? ownerSymbol.getQualifiedName().toString() : moduleName;
 
         final var unit = new CJTree.CompilationUnit();
-        final var tree = (CJTree) new ClassTranslation(classSymbol).translateClass();
+        final var tree = new ClassTranslation(classSymbol).translateClass();
 
         unit.wildcardImports.add(QualifiedName.get("java", "lang"));
         for (final var wildcardImport : getWildcardImports()) {
@@ -901,16 +905,18 @@ public final class EmitMirrorVisitor {
     }
 
     private void renameCangjieMethodClashes(List<Symbol> symbols) {
-        final var methods = symbols.stream().filter(m -> m.kind == MTH).toList();
+        final var methods = new ArrayList<Symbol.MethodSymbol>();
 
-        for (final var method : methods) {
-            final var methodSymbol = (Symbol.MethodSymbol) method;
-            if (Utils.isHashCode(methodSymbol)) {
-                newName.put(method, hashCode32);
-                continue;
-            }
-            if (Utils.isToString(methodSymbol)) {
-                newName.put(method, toJString);
+        for (final var symbol : symbols) {
+            if (symbol instanceof Symbol.MethodSymbol method) {
+                methods.add(method);
+                if (Utils.isHashCode(method)) {
+                    newName.put(method, hashCode32);
+                    continue;
+                }
+                if (Utils.isToString(method)) {
+                    newName.put(method, toJString);
+                }
             }
         }
 
@@ -921,17 +927,17 @@ public final class EmitMirrorVisitor {
         renameCangjieMethodClashesImpl(methods);
     }
 
-    private void renameCangjieMethodClashesImpl(List<Symbol> methods) {
-        final boolean allMethodsAreInstance = methods.stream().noneMatch(m -> m.isStatic());
-        final boolean allMethodsAreStatic = methods.stream().allMatch(m -> m.isStatic());
+    private void renameCangjieMethodClashesImpl(List<Symbol.MethodSymbol> methods) {
+        final var allInstance = methods.stream().noneMatch(m -> m.isStatic());
+        final var allStatic = methods.stream().allMatch(m -> m.isStatic());
 
-        if (allMethodsAreInstance) {
+        if (allInstance) {
             return;
         }
         for (var method : methods) {
             if (method.isStatic()) {
                 final var newNameMethod = newName.get(method);
-                boolean shouldBeMangledStatic = !allMethodsAreStatic
+                boolean shouldBeMangledStatic = !allStatic
                         || newNameMethod != null
                         && newNameMethod.startsWith(method.name.append(staticSuffix));
                 if (shouldBeMangledStatic) {
@@ -939,19 +945,18 @@ public final class EmitMirrorVisitor {
                 }
                 // Cangjie prohibits redefinition of a static method with a different return type.
                 // Rename the descendant method.
-                final var methodSymbol = (Symbol.MethodSymbol) method;
                 final var hiddenSymbols = memberHiding.collectHiddenSymbols(method);
 
                 if (hiddenSymbols.isEmpty()) {
                     continue;
                 }
 
-                if (!hiddenSymbols.stream().anyMatch(s -> (s instanceof Symbol.MethodSymbol symbol)
-                        && (!symbol.getReturnType().equals(methodSymbol.getReturnType())))) {
+                if (hiddenSymbols.stream().noneMatch(s -> (s instanceof Symbol.MethodSymbol symbol)
+                        && (!symbol.getReturnType().equals(method.getReturnType())))) {
                     continue;
                 }
 
-                if (!(methodSymbol.getReturnType().tsym instanceof Symbol.ClassSymbol returnTypeSymbol)) {
+                if (!(method.getReturnType().tsym instanceof Symbol.ClassSymbol returnTypeSymbol)) {
                     continue;
                 }
 
@@ -1071,7 +1076,7 @@ public final class EmitMirrorVisitor {
             return;
         }
 
-        System.err.println("Clashing class name is `" + key + "`");
+        log.printRawLines("Clashing class name is `" + key + "`");
         for (final var name : value) {
             addSymbolsToMangle(name);
         }
@@ -1082,7 +1087,7 @@ public final class EmitMirrorVisitor {
             if (!shouldBeGenerated(classSymbol)) {
                 String message = "Class " + classSymbol.flatname
                         + "has inappropriate access modifier so it is skipped for mirrors generation.";
-                System.out.println(message);
+                log.printRawLines(message);
                 return;
             }
             if (limitedDepth && traversalPathMap.get(classSymbol) == null) {
@@ -1109,13 +1114,13 @@ public final class EmitMirrorVisitor {
                 generateMirrorsImpl(curSymbol, outputStream);
             }
         } catch (IOException e) {
-            System.out.print(e.getMessage());
+            log.printRawLines(e.getMessage());
         } finally {
             if (outputStream != null) {
                 try {
                     outputStream.close();
                 } catch (IOException e) {
-                    System.out.print(e.getMessage());
+                    log.printRawLines(e.getMessage());
                 }
             }
             newName.clear();

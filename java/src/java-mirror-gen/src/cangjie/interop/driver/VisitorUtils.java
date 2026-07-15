@@ -122,84 +122,95 @@ final class VisitorUtils {
         return name(type, false);
     }
 
-    static CJTree.Expression.Name name(Type type, boolean isNotNull) {
-        CJTree.Expression.Name result;
+    static CJTree.Expression.Name name(Type type, boolean isNonNull) {
         if (type.isPrimitiveOrVoid()) {
-            final var ident =
-                    switch (type.getKind()) {
-                        case BOOLEAN -> "Bool";
-                        case BYTE -> "Int8";
-                        case SHORT -> "Int16";
-                        case INT -> "Int32";
-                        case LONG -> "Int64";
-                        case CHAR -> "UInt16";
-                        case FLOAT -> "Float32";
-                        case DOUBLE -> "Float64";
-                        case VOID -> "Unit";
-                        default -> null;
-                    };
-            if (ident == null) {
-                throw new UnsupportedOperationException("Unsupported type");
-            }
-            return new CJTree.Expression.Name.SimpleName.IdentifierName(ident);
+            return namePrimitive(type);
         }
 
         if (type instanceof Type.ArrayType arrayType) {
-            var elemType = arrayType.getComponentType();
-            final var translatedElemType = name(elemType);
-            final var ident = new CJTree.Expression.Name.SimpleName.GenericName("JArray");
-            ident.arguments.add(translatedElemType);
-            result = isNotNull
-                    ? ident
-                    : new CJTree.Expression.Name.SimpleName.OptionName(ident);
-
-            if (translatedElemType.importNames() instanceof QualifiedName qualifiedName) {
-                result.addImport(qualifiedName);
-            }
-            final Optional<QualifiedName> clazz = QualifiedName.parse("java.lang.JArray");
-            clazz.ifPresent(result::addImport);
-            return result;
+            return nameArray(arrayType, isNonNull);
         }
 
         if (type.tsym instanceof Symbol.ClassSymbol typeSymbol) {
-            String identifier;
-            String qualifiedName;
-            if (type.tsym == symtab.objectType.tsym) {
-                identifier = "JObject";
-                qualifiedName = "java.lang." + identifier;
-            } else if (type.tsym == symtab.stringType.tsym) {
-                identifier = "JString";
-                qualifiedName = "java.lang." + identifier;
-            } else {
-                identifier = symbolsToMangle.contains(typeSymbol)
-                        ? mangleClassName(typeSymbol)
-                        : addBackticksIfNeeded(getFlatNameWithoutPackage(typeSymbol));
-                qualifiedName = addBackticksIfNeeded(typeSymbol.flatName());
-
-                final var nameFromMap = importsMap.get(typeSymbol.flatName().toString());
-                if (nameFromMap != null) {
-                    identifier = addUnderscoresIfNeeded(Convert.shortName(names.fromString(nameFromMap)));
-                    qualifiedName = nameFromMap;
-                }
-            }
-
-            CJTree.Expression.Name.SimpleName ident;
-
-            ident = new CJTree.Expression.Name.SimpleName.IdentifierName(identifier);
-            final Optional<QualifiedName> optClazz = QualifiedName.parse(qualifiedName);
-            if (optClazz.isPresent()) {
-                final QualifiedName clazz = optClazz.get();
-                if (clazz.fullPackageName() != null) {
-                    ident.addImport(clazz);
-                }
-            }
-
-            return isNotNull
-                    ? ident
-                    : new CJTree.Expression.Name.SimpleName.OptionName(ident);
+            return nameClass(typeSymbol, isNonNull);
         }
 
         throw new UnsupportedOperationException("Unsupported type");
+    }
+
+    private static CJTree.Expression.Name namePrimitive(Type type) {
+        final var ident =
+                switch (type.getKind()) {
+                    case BOOLEAN -> "Bool";
+                    case BYTE -> "Int8";
+                    case SHORT -> "Int16";
+                    case INT -> "Int32";
+                    case LONG -> "Int64";
+                    case CHAR -> "UInt16";
+                    case FLOAT -> "Float32";
+                    case DOUBLE -> "Float64";
+                    case VOID -> "Unit";
+                    default -> null;
+                };
+        if (ident == null) {
+            throw new UnsupportedOperationException("Unsupported type");
+        }
+        return new CJTree.Expression.Name.SimpleName.IdentifierName(ident);
+    }
+
+    private static CJTree.Expression.Name nameArray(Type.ArrayType arrayType, boolean isNonNull) {
+        var elemType = arrayType.getComponentType();
+        final var translatedElemType = name(elemType);
+        final var ident = new CJTree.Expression.Name.SimpleName.GenericName("JArray");
+        ident.arguments.add(translatedElemType);
+        CJTree.Expression.Name result = isNonNull
+                ? ident
+                : new CJTree.Expression.Name.SimpleName.OptionName(ident);
+
+        if (translatedElemType.importNames() instanceof QualifiedName qualifiedName) {
+            result.addImport(qualifiedName);
+        }
+        final Optional<QualifiedName> clazz = QualifiedName.parse("java.lang.JArray");
+        clazz.ifPresent(result::addImport);
+        return result;
+    }
+
+    private static CJTree.Expression.Name nameClass(Symbol.ClassSymbol typeSymbol, boolean isNonNull) {
+        String identifier;
+        String qualifiedName;
+        if (typeSymbol == symtab.objectType.tsym) {
+            identifier = "JObject";
+            qualifiedName = "java.lang." + identifier;
+        } else if (typeSymbol == symtab.stringType.tsym) {
+            identifier = "JString";
+            qualifiedName = "java.lang." + identifier;
+        } else {
+            identifier = symbolsToMangle.contains(typeSymbol)
+                    ? mangleClassName(typeSymbol)
+                    : addBackticksIfNeeded(getFlatNameWithoutPackage(typeSymbol));
+            qualifiedName = addBackticksIfNeeded(typeSymbol.flatName());
+
+            final var nameFromMap = importsMap.get(typeSymbol.flatName().toString());
+            if (nameFromMap != null) {
+                identifier = addUnderscoresIfNeeded(Convert.shortName(names.fromString(nameFromMap)));
+                qualifiedName = nameFromMap;
+            }
+        }
+
+        CJTree.Expression.Name.SimpleName ident;
+
+        ident = new CJTree.Expression.Name.SimpleName.IdentifierName(identifier);
+        final Optional<QualifiedName> optClazz = QualifiedName.parse(qualifiedName);
+        if (optClazz.isPresent()) {
+            final QualifiedName clazz = optClazz.get();
+            if (clazz.fullPackageName() != null) {
+                ident.addImport(clazz);
+            }
+        }
+
+        return isNonNull
+                ? ident
+                : new CJTree.Expression.Name.SimpleName.OptionName(ident);
     }
 
     static void collectImports(CJTree.CompilationUnit unit, QualifiedName packageName) {
@@ -211,19 +222,19 @@ final class VisitorUtils {
                 if (tree instanceof CJTree.Expression expression) {
                     final var importName = expression.importNames();
                     if (importName != null) {
-                        if (importName instanceof Collection<?> collection) {
-                            for (final var o : collection) {
-                                registerImport(o);
-                            }
-                        } else {
-                            registerImport(importName);
-                        }
+                        registerImport(importName);
                     }
                 }
                 super.scan(tree);
             }
 
             private void registerImport(Object importName) {
+                if (importName instanceof Collection<?> collection) {
+                    for (final var o : collection) {
+                        registerImport(o);
+                    }
+                    return;
+                }
                 if (importName instanceof QualifiedName name) {
                     registerImport(name);
                 }
