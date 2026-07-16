@@ -47,7 +47,6 @@ import static cangjie.interop.driver.VisitorUtils.setNames;
 import static cangjie.interop.driver.VisitorUtils.setSymtab;
 import static cangjie.interop.driver.VisitorUtils.shouldBeGenerated;
 import static cangjie.interop.util.StdCoreNames.STD_CORE_NAMES;
-import static vendor.com.sun.tools.javac.code.Kinds.Kind.MTH;
 import static vendor.com.sun.tools.javac.code.Kinds.Kind.VAR;
 import static vendor.javax.tools.StandardLocation.CJ_OUTPUT;
 
@@ -1127,7 +1126,7 @@ public final class EmitMirrorVisitor {
         }
     }
 
-    private void generateMirrorsImpl(Symbol.ClassSymbol curSymbol, FileWriter outputStream) throws IOException {
+    private void generateMirrorsImpl(Symbol.ClassSymbol curSymbol, FileWriter importsOutputStream) throws IOException {
         if (curSymbol == symtab.objectType.tsym || curSymbol == symtab.stringType.tsym) {
             return;
         }
@@ -1148,7 +1147,7 @@ public final class EmitMirrorVisitor {
             currentClass = null;
         }
 
-        if (importsConfig == null) {
+        if (importsOutputStream == null) {
             return;
         }
         if (importsMap.containsKey(curSymbol.flatname.toString())) {
@@ -1158,7 +1157,7 @@ public final class EmitMirrorVisitor {
                 ? mangleClassName(curSymbol)
                 : addUnderscoresIfNeeded(getFlatNameWithoutPackage(curSymbol));
         String qualifiedName = QualifiedName.get(userPackageName, identifier).toString();
-        outputStream.write(curSymbol.flatname.toString() + " " + qualifiedName + "\n");
+        importsOutputStream.write(curSymbol.flatname.toString() + " " + qualifiedName + "\n");
     }
 
     /**
