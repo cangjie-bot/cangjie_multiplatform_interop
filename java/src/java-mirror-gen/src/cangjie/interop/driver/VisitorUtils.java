@@ -131,8 +131,20 @@ final class VisitorUtils {
             return nameArray(arrayType, isNonNull);
         }
 
+        if (type instanceof Type.CapturedType) {
+            return name(symtab.objectType);
+        }
+
+        if (type instanceof Type.WildcardType wildcardType) {
+            return nameWildcard(wildcardType);
+        }
+
+        if (type.tsym instanceof Symbol.TypeVariableSymbol typeVariableSymbol) {
+            return nameTypeVar(typeVariableSymbol);
+        }
+
         if (type.tsym instanceof Symbol.ClassSymbol typeSymbol) {
-            return nameClass(typeSymbol, isNonNull);
+            return nameClass(type, typeSymbol, isNonNull);
         }
 
         throw new UnsupportedOperationException("Unsupported type");
@@ -160,7 +172,16 @@ final class VisitorUtils {
 
     private static CJTree.Expression.Name nameArray(Type.ArrayType arrayType, boolean isNonNull) {
         var elemType = arrayType.getComponentType();
-        final var translatedElemType = name(elemType);
+        CJTree.Expression.Name translatedElemType;
+        if (elemType instanceof Type.TypeVar typeVar
+                && elemType.tsym instanceof Symbol.TypeVariableSymbol typeVariableSymbol) {
+            final var erased = typeVar.getUpperBound();
+            final var erasedName = name(erased == null ? symtab.objectType : erased);
+            translatedElemType = new CJTree.Expression.Name.SimpleName.ErasedTypeVariableName(
+                    nameTypeVar(typeVariableSymbol), erasedName);
+        } else {
+            translatedElemType = name(elemType);
+        }
         final var ident = new CJTree.Expression.Name.SimpleName.GenericName("JArray");
         ident.arguments.add(translatedElemType);
         CJTree.Expression.Name result = isNonNull
@@ -175,7 +196,23 @@ final class VisitorUtils {
         return result;
     }
 
-    private static CJTree.Expression.Name nameClass(Symbol.ClassSymbol typeSymbol, boolean isNonNull) {
+    private static CJTree.Expression.Name nameWildcard(Type.WildcardType wildcardType) {
+        final var typeName = name(wildcardType.type);
+        if (wildcardType.isUnbound()) {
+            return typeName;
+        }
+        final var variance = wildcardType.isSuperBound()
+                ? CJTree.Expression.Name.VariancedTypeName.Variance.IN
+                : CJTree.Expression.Name.VariancedTypeName.Variance.OUT;
+        return new CJTree.Expression.Name.VariancedTypeName(typeName, variance);
+    }
+
+    static CJTree.Expression.Name.SimpleName.IdentifierName nameTypeVar(Symbol.TypeVariableSymbol typeVariableSymbol) {
+        final var identifier = addBackticksIfNeeded(typeVariableSymbol.getSimpleName());
+        return CJTree.Expression.Name.id(identifier);
+    }
+
+    private static CJTree.Expression.Name nameClass(Type type, Symbol.ClassSymbol typeSymbol, boolean isNonNull) {
         String identifier;
         String qualifiedName;
         if (typeSymbol == symtab.objectType.tsym) {
@@ -198,8 +235,15 @@ final class VisitorUtils {
         }
 
         CJTree.Expression.Name.SimpleName ident;
+        final var typeArguments = type.getTypeArguments();
+        if (typeArguments.nonEmpty()) {
+            final var genericName = new CJTree.Expression.Name.SimpleName.GenericName(identifier);
+            genericName.arguments.addAll(typeArguments.map(VisitorUtils::name));
+            ident = genericName;
+        } else {
+            ident = new CJTree.Expression.Name.SimpleName.IdentifierName(identifier);
+        }
 
-        ident = new CJTree.Expression.Name.SimpleName.IdentifierName(identifier);
         final Optional<QualifiedName> optClazz = QualifiedName.parse(qualifiedName);
         if (optClazz.isPresent()) {
             final QualifiedName clazz = optClazz.get();
@@ -341,7 +385,7 @@ final class VisitorUtils {
         return !modifiers.contains(PUBLIC) && !modifiers.contains(PROTECTED) && !modifiers.contains(PRIVATE);
     }
 
-    public static Symbol.ClassSymbol firstAppropriateSuperClass(Symbol.TypeSymbol symbol) {
+    public static Type firstAppropriateSuperType(Symbol.TypeSymbol symbol) {
         if (!(symbol instanceof Symbol.ClassSymbol classSymbol)) {
             return null;
         }
@@ -354,9 +398,9 @@ final class VisitorUtils {
             return null;
         }
         if (shouldBeGenerated(superClassSymbol)) {
-            return superClassSymbol;
+            return superClass;
         }
-        return firstAppropriateSuperClass(superClassSymbol);
+        return firstAppropriateSuperType(superClassSymbol);
     }
 
     static boolean isAppropriateType(Symbol.TypeSymbol typeSymbol) {
@@ -405,9 +449,9 @@ final class VisitorUtils {
 
     static List<Type> collectSuperTypes(Symbol.ClassSymbol classSymbol, Types types) {
         List<Type> result = new ArrayList<>();
-        final var appropriateSuperClass = firstAppropriateSuperClass(classSymbol);
-        if (appropriateSuperClass != null) {
-            result.add(appropriateSuperClass.type);
+        final var appropriateSuperType = firstAppropriateSuperType(classSymbol);
+        if (appropriateSuperType != null) {
+            result.add(appropriateSuperType);
         }
         result.addAll(collectSuperInterfaces(classSymbol, types));
         return result;
