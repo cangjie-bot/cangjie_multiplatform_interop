@@ -54,7 +54,7 @@ public abstract sealed class CJTree {
 
         @Override
         public void visit(Expression.Name.SimpleName.GenericName tree) {
-            if (tree.identifier.equals("JArray")) {
+            if (Objects.equals(tree.identifier, "JArray")) {
                 scan(tree.arguments.arguments);
             } else {
                 super.visit(tree);
@@ -557,6 +557,7 @@ public abstract sealed class CJTree {
             public static final class VariancedTypeName extends Name {
                 public enum Variance {
                     IN("in "),
+
                     OUT("out ");
 
                     public final String qualifier;
@@ -565,6 +566,7 @@ public abstract sealed class CJTree {
                         this.qualifier = qualifier;
                     }
                 }
+
                 public final Name typeName;
                 public final Variance variance;
 

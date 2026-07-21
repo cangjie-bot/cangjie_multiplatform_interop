@@ -263,7 +263,7 @@ public final class EmitMirrorVisitor {
     private void translateTypeParameters(
             List<Symbol.TypeVariableSymbol> jTypeParameters,
             CJTree.Declaration.TypeParameterOwnerDeclaration owner) {
-        for (final var jTypeParameter: jTypeParameters) {
+        for (final var jTypeParameter : jTypeParameters) {
             final var name = nameTypeVar(jTypeParameter);
             owner.addTypeParameter(name);
             final var boundsAsNames = jTypeParameter.getBounds().stream()
