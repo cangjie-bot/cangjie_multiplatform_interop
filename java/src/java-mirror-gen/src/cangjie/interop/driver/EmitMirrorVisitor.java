@@ -465,7 +465,6 @@ public final class EmitMirrorVisitor {
         } else {
             decl.setType(name(type, hasNotNullAttribute));
         }
-        decl.setType(name(type, hasNotNullAttribute));
         if (generateDefinition) {
             decl.setInitializer(defaultValueForType(type));
         }
