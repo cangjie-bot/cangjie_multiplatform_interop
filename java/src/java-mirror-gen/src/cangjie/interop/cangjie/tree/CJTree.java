@@ -50,6 +50,7 @@ public abstract sealed class CJTree {
         @Override
         public void visit(Expression.Name.SimpleName.ErasedTypeVariableName tree) {
             tree.commentOut();
+            scan(tree.erasedTypeName);
         }
 
         @Override

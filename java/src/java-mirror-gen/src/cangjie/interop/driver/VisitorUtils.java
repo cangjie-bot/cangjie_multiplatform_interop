@@ -175,7 +175,10 @@ final class VisitorUtils {
         CJTree.Expression.Name translatedElemType;
         if (elemType instanceof Type.TypeVar typeVar
                 && elemType.tsym instanceof Symbol.TypeVariableSymbol typeVariableSymbol) {
-            final var erased = typeVar.getUpperBound();
+            Type erased = typeVar.getUpperBound();
+            while (erased instanceof Type.TypeVar upperBound) {
+                erased = upperBound.getUpperBound();
+            }
             final var erasedName = name(erased == null ? symtab.objectType : erased);
             translatedElemType = new CJTree.Expression.Name.SimpleName.ErasedTypeVariableName(
                     nameTypeVar(typeVariableSymbol), erasedName);

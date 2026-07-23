@@ -8,13 +8,14 @@
 import java.util.List;
 import java.util.Map;
 
-public class Box<T> {
+public class Box<T, K extends Number> {
     public T element;
     public T[] array;
     public T[][] arrayOfArray;
     public List<T> listT;
     public List<T>[] arrayOfLists;
     public List<T[]> listOfArrays;
+    public List<? extends K[]> listOfSomethingExtendsKArray;
     public List<T[]>[] arrayOfListsOfArrays;
     public List<? extends T> covList;
     public List<? super T> contravList;
@@ -36,4 +37,7 @@ public class Box<T> {
     public <U extends Number, V extends Comparable<V>> void m(List<U> list, U[] array, List<List<U>> listOfLists, V element) {}
     public <U extends Number, V extends Comparable<V>> Map<U, V> m(List<U> list, List<List<V>> listOfLists) { return null; }
     public <U extends Number> List<? super U> m(List<? extends U> list) { return null; }
+
+    public static <T extends Comparable<? super T>> void parallelSort(T[] a, int fromIndex, int toIndex) {}
+    public static <U, T extends U> void parallelSort2(T[] a, int fromIndex, int toIndex) {}
 }

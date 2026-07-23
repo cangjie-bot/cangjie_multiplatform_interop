@@ -6,7 +6,7 @@
 
 
 public class Main {
-    public Box<Integer> box1;
+    public Box<Integer, Integer> box1;
     public BoxOfNumbers<Integer> box2;
     public BoxOfNumbersWithSupers<Integer> box3;
     public BoxOfNumbersWithGenericSupers<Integer> box4;
