@@ -217,8 +217,8 @@ public final class CangjieEmitVisitor extends Translator<IndentedString> {
             return span();
         }
         final var template = " where $0:, $";
-        final var commentOut = tree.typeParameters() != null && tree.typeParameters().shouldBeCommented();
-        return template(commentOut ? "/*" + template + "*/" : template, tree.constraints());
+        final var shouldBeCommented = tree.typeParameters() != null && tree.typeParameters().shouldBeCommented();
+        return template(shouldBeCommented ? "/*" + template + "*/" : template, tree.constraints());
     }
 
     @Override
