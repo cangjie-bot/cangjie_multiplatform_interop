@@ -8,6 +8,8 @@
 #ifndef MODE_H
 #define MODE_H
 
+#include <limits>
+
 namespace objcgen {
 
 extern enum class Mode {
@@ -21,7 +23,7 @@ extern enum class Mode {
     EXPERIMENTAL,
 
     // For internal testing only.  May be removed in the future.  The same as
-    // `EXPERIMENTAL`, but additinally the generator tries its best to create
+    // `EXPERIMENTAL`, but additionally the generator tries its best to create
     // mirrors that can be compiled by cjc, though they will not enable actual
     // interop.  This is achieved by removing the `@ObjcCMirror` attribute and
     // creating fake bodies for methods of `@ObjCMirror` classes/interfaces.
