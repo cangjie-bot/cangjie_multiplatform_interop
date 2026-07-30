@@ -759,7 +759,7 @@ TypeDeclarationSymbol::TypeDeclarationSymbol(const Kind kind, std::string name) 
     : NamedTypeSymbol(kind, std::move(name)),
       is_ctype_(is_ctype_by_default(kind, this->name())),
       contains_pointer_or_func_(false),
-      static_instance_clashes_resolved_(false),
+      member_name_clashes_resolved_(false),
       override_returns_resolved_(false)
 {
 }
@@ -875,10 +875,10 @@ void TypeDeclarationSymbol::mark_override_return_clashes_resolved() noexcept
     override_returns_resolved_ = true;
 }
 
-void TypeDeclarationSymbol::mark_static_instance_clashes_resolved() noexcept
+void TypeDeclarationSymbol::mark_member_name_clashes_resolved() noexcept
 {
-    assert(!static_instance_clashes_resolved_);
-    static_instance_clashes_resolved_ = true;
+    assert(!member_name_clashes_resolved_);
+    member_name_clashes_resolved_ = true;
 }
 
 void TypeDeclarationSymbol::visit_impl(SymbolVisitor& visitor) const
