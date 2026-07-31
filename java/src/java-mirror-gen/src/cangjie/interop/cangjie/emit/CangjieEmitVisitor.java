@@ -432,7 +432,7 @@ public final class CangjieEmitVisitor extends Translator<IndentedString> {
 
     @Override
     public IndentedString translate(CJTree.Expression.Name.VariancedTypeName tree) {
-        return template("$0$$1$", tree.variance.qualifier, tree.typeName);
+        return template("$0$ $1$", tree.variance.qualifier, tree.typeName);
     }
 
     @Override
