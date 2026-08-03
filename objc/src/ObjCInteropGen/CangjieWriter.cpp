@@ -882,6 +882,10 @@ void TypeDeclarationWriter::write_instance_variable(const NonTypeSymbol& ivar)
     if (!supported) {
         output_.set_comment();
     }
+    const auto& selector_attribute = ivar.selector_attribute();
+    if (!selector_attribute.empty()) {
+        write_foreign_name(output_, foreign_name_attribute, selector_attribute, generate_definitions_mode());
+    }
     output_ << (ivar.is_public() ? "public" : "protected") << " var " << escape_keyword(name);
     write_type(output_, return_type, format_);
     if (generate_definitions_mode()) {
