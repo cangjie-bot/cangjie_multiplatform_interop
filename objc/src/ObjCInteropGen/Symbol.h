@@ -342,6 +342,8 @@ private:
 };
 
 class NamedTypeSymbol : public TypeLikeSymbol {
+    friend class Universe;
+
 public:
     enum class Kind : std::uint8_t {
         Unexposed,
@@ -358,8 +360,6 @@ public:
     };
 
     void print(std::ostream& stream, PrintFormat) const override;
-
-    void rename(std::string new_name) noexcept;
 
     [[nodiscard]] Kind kind() const noexcept
     {
@@ -392,6 +392,8 @@ protected:
 
 private:
     [[nodiscard]] TypeLikeSymbol& map() override;
+
+    void rename(std::string new_name) noexcept;
 
     [[nodiscard]] bool is_optionable_reference() const noexcept override;
 
