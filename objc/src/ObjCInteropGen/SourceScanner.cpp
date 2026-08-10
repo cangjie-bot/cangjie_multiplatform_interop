@@ -895,13 +895,8 @@ std::vector<ParameterSymbol> SourceScanner::get_function_parameters(const CXCurs
     parameters.reserve(n);
     for (unsigned i = 0; i < n; ++i) {
         auto param_cursor = clang_Cursor_getArgument(function_cursor, i);
-        auto name = as_string(clang_getCursorSpelling(param_cursor));
-        if (name.empty()) {
-            // Objective-C function parameters can be nameless.  Synthesize a name (needed
-            // in Cangjie).
-            name = n == 1 ? "x" : 'x' + std::to_string(i + 1);
-        }
-        parameters.emplace_back(std::move(name), type_like_symbol(clang_getCursorType(param_cursor)));
+        parameters.emplace_back(
+            as_string(clang_getCursorSpelling(param_cursor)), type_like_symbol(clang_getCursorType(param_cursor)));
     }
     return parameters;
 }
