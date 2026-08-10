@@ -15,7 +15,7 @@ namespace objcgen {
 
 void check_marked_symbols()
 {
-    for (auto&& type : Universe::get().all_declarations()) {
+    for (auto&& type : Universe::get().types()) {
         if (type.package_file()) {
             if (type.is(NamedTypeSymbol::Kind::Union)) {
                 const auto* input_file = type.defining_file();

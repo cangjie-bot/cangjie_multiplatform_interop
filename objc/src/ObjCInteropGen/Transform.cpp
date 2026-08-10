@@ -143,9 +143,63 @@ void StaticInstancePair::add(NonTypeSymbol& member) noexcept
     }
 }
 
-[[nodiscard]] bool clashes_by_name(const FileLevelSymbol& symbol1, const FileLevelSymbol* symbol2)
+[[nodiscard]] static bool clashes_by_name(const FileLevelSymbol& symbol1, const FileLevelSymbol* symbol2)
 {
     return symbol2 && symbol2->package() == symbol1.package();
+}
+
+/*
+ * If the type is tagged, and if it clashes by name with a non-tagged global
+ * symbol, rename the type by adding as many "Struct"/"Union"/"Enum" suffixes as
+ * needed for its uniqueness among all global symbols.  Note that the results
+ * may depend on the order of declarations and on the current closure specified
+ * in the configuration.
+ */
+static void resolve_tagged_clashes(NamedTypeSymbol& decl)
+{
+    auto& universe = Universe::get();
+    std::string_view name = decl.name();
+    if (!clashes_by_name(decl, universe.type(TypeNamespace::Primary, name)) &&
+        !clashes_by_name(decl, universe.type(TypeNamespace::Protocols, name)) &&
+        !clashes_by_name(decl, universe.global_non_type_symbol(name))) {
+        return;
+    }
+    auto type_kind = decl.kind();
+    auto new_name = std::string(name);
+    const char* suffix;
+    switch (type_kind) {
+        case NamedTypeSymbol::Kind::Enum:
+            suffix = "Enum";
+            break;
+        case NamedTypeSymbol::Kind::Union:
+            suffix = "Union";
+            break;
+        default:
+            assert(type_kind == NamedTypeSymbol::Kind::Struct);
+            suffix = "Struct";
+            break;
+    };
+    do {
+        new_name += suffix;
+    } while (universe.type(TypeNamespace::Primary, new_name) || universe.type(TypeNamespace::Protocols, new_name) ||
+        universe.type(TypeNamespace::Tagged, new_name));
+    if (verbosity >= LogLevel::INFO) {
+        const char* tag;
+        switch (type_kind) {
+            case NamedTypeSymbol::Kind::Enum:
+                tag = "enum";
+                break;
+            case NamedTypeSymbol::Kind::Union:
+                tag = "union";
+                break;
+            default:
+                assert(type_kind == NamedTypeSymbol::Kind::Struct);
+                tag = "struct";
+                break;
+        };
+        std::cerr << "Renaming clashing `" << tag << ' ' << name << "` to `" << new_name << '`' << std::endl;
+    }
+    universe.rename_type(decl, std::move(new_name));
 }
 
 static void transform_type(TypeDeclarationSymbol& decl)
@@ -184,56 +238,8 @@ static void transform_type(TypeDeclarationSymbol& decl)
             break;
         case NamedTypeSymbol::Kind::Struct:
         case NamedTypeSymbol::Kind::Union:
-        case NamedTypeSymbol::Kind::Enum: {
-            // If the tagged type clashes by name with a non-tagged global symbol, rename
-            // the type by adding as many "Struct"/"Union"/"Enum" suffixes as needed for
-            // its uniqueness among all global symbols.  Note that the results may depend on
-            // the order of declarations and on the current closure specified in the
-            // configuration.
-            auto& universe = Universe::get();
-            std::string_view name = decl.name();
-            if (!clashes_by_name(decl, universe.type(TypeNamespace::Primary, name)) &&
-                !clashes_by_name(decl, universe.type(TypeNamespace::Protocols, name)) &&
-                !clashes_by_name(decl, universe.global_non_type_symbol(name))) {
-                break;
-            }
-            auto new_name = std::string(name);
-            const char* suffix;
-            switch (type_kind) {
-                case NamedTypeSymbol::Kind::Enum:
-                    suffix = "Enum";
-                    break;
-                case NamedTypeSymbol::Kind::Union:
-                    suffix = "Union";
-                    break;
-                default:
-                    assert(type_kind == NamedTypeSymbol::Kind::Struct);
-                    suffix = "Struct";
-                    break;
-            };
-            do {
-                new_name += suffix;
-            } while (universe.type(TypeNamespace::Primary, new_name) ||
-                universe.type(TypeNamespace::Protocols, new_name) || universe.type(TypeNamespace::Tagged, new_name));
-            if (verbosity >= LogLevel::INFO) {
-                const char* tag;
-                switch (type_kind) {
-                    case NamedTypeSymbol::Kind::Enum:
-                        tag = "enum";
-                        break;
-                    case NamedTypeSymbol::Kind::Union:
-                        tag = "union";
-                        break;
-                    default:
-                        assert(type_kind == NamedTypeSymbol::Kind::Struct);
-                        tag = "struct";
-                        break;
-                };
-                std::cerr << "Renaming clashing `" << tag << ' ' << name << "` to `" << new_name << '`' << std::endl;
-            }
-            universe.rename_type(decl, std::move(new_name));
+            resolve_tagged_clashes(decl);
             break;
-        }
         default:
             break;
     }
@@ -506,14 +512,23 @@ static void transform_visit(TypeDeclarationSymbol& decl)
  */
 static void transform_visit()
 {
-    for (auto& type : Universe::get().type_definitions()) {
-        transform_visit(type);
+    for (auto& type : Universe::get().types()) {
+        if (type.is(NamedTypeSymbol::Kind::Enum)) {
+            // Enumerations are not a part of the class/protocol/struct hierarchy, but they
+            // may need resolving clashes with non-tagged top-level symbols.
+            resolve_tagged_clashes(type);
+        } else {
+            auto* decl = dynamic_cast<TypeDeclarationSymbol*>(&type);
+            if (decl) {
+                transform_visit(*decl);
+            }
+        }
     }
 }
 
 static void set_type_mappings() noexcept
 {
-    for (auto&& type : Universe::get().all_declarations()) {
+    for (auto&& type : Universe::get().types()) {
         for (const auto& mapping : mappings) {
             if (mapping.can_map(type)) {
                 type.set_mapping(mapping);
@@ -536,7 +551,7 @@ static void do_map()
     for (auto& top_level : universe.top_level()) {
         do_map(top_level);
     }
-    for (auto&& decl : universe.all_declarations()) {
+    for (auto&& decl : universe.types()) {
         if (auto* type = dynamic_cast<TypeDeclarationSymbol*>(&decl)) {
             for (auto&& member : type->members()) {
                 if (!member.is_property()) {

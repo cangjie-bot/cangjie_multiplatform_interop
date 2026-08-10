@@ -76,40 +76,6 @@ private:
     Iterator it_;
 };
 
-template <bool constant> class UniverseTypeDeclarationIterator final {
-    using Iterator = std::conditional_t<constant, type_order_t::const_iterator, type_order_t::iterator>;
-
-public:
-    explicit UniverseTypeDeclarationIterator(Iterator it) : it_(it)
-    {
-        get();
-    }
-
-    [[nodiscard]] auto& operator*() const noexcept
-    {
-        return *symbol_;
-    }
-
-    auto& operator++()
-    {
-        ++it_;
-        get();
-        return *this;
-    }
-
-    [[nodiscard]] friend bool operator!=(
-        const UniverseTypeDeclarationIterator& it1, const UniverseTypeDeclarationIterator& it2) noexcept
-    {
-        return it1.it_ != it2.it_;
-    }
-
-private:
-    Iterator it_;
-    std::conditional_t<constant, const TypeDeclarationSymbol, TypeDeclarationSymbol>* symbol_;
-
-    void get();
-};
-
 class TopLevel final {
 public:
     [[nodiscard]] auto members() const noexcept
@@ -133,7 +99,6 @@ class Universe final : NonCopyable {
     using type_map_t = std::unordered_map<std::string_view, NamedTypeSymbol*>;
 
     template <bool constant> friend class UniverseNamedTypeIterator;
-    template <bool constant> friend class UniverseTypeDeclarationIterator;
 
     static constexpr int PREALLOCATED_TYPE_COUNT = 8192;
 
@@ -311,29 +276,16 @@ public:
     // has been registered.
     [[nodiscard]] const NonTypeSymbol* global_non_type_symbol(std::string_view name) const;
 
-    [[nodiscard]] auto all_declarations() const noexcept
+    [[nodiscard]] auto types() const noexcept
     {
         using TypeOrder = decltype(type_order_);
         return ConstCollection<const TypeOrder, UniverseNamedTypeIterator<true>>(type_order_);
     }
 
-    [[nodiscard]] auto all_declarations() noexcept
+    [[nodiscard]] auto types() noexcept
     {
         using TypeOrder = decltype(type_order_);
         return Collection<TypeOrder, UniverseNamedTypeIterator<true>, UniverseNamedTypeIterator<false>>(type_order_);
-    }
-
-    [[nodiscard]] auto type_definitions() const noexcept
-    {
-        using TypeOrder = decltype(type_order_);
-        return ConstCollection<const TypeOrder, UniverseTypeDeclarationIterator<true>>(type_order_);
-    }
-
-    [[nodiscard]] auto type_definitions() noexcept
-    {
-        using TypeOrder = decltype(type_order_);
-        return Collection<TypeOrder, UniverseTypeDeclarationIterator<true>, UniverseTypeDeclarationIterator<false>>(
-            type_order_);
     }
 };
 
@@ -345,24 +297,6 @@ typename UniverseNamedTypeIterator<constant>::Value& UniverseNamedTypeIterator<c
     auto* symbol = Universe::get().type(el.ns, el.name);
     assert(symbol);
     return *symbol;
-}
-
-template <bool constant> void UniverseTypeDeclarationIterator<constant>::get()
-{
-    const auto& universe = Universe::get();
-    for (auto e = universe.type_order_.end();; ++it_) {
-        if (it_ == e) {
-            symbol_ = nullptr;
-            break;
-        }
-        auto& el = *it_;
-        auto* s = universe.type(el.ns, el.name);
-        assert(s);
-        symbol_ = dynamic_cast<TypeDeclarationSymbol*>(s);
-        if (symbol_) {
-            break;
-        }
-    }
 }
 
 } // namespace objcgen
