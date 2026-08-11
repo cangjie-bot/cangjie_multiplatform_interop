@@ -10,3 +10,12 @@ package objc.lang
  * An exception that has to be used when runtime calls for method unimplemented in Mirror from protocol.
  */
 public class ObjCOptionalMethodUnimplementedException <: Exception {}
+
+/**
+ * An exception that has to be used when Objective-C init returns nil.
+ */
+public class ObjCInitException <: Exception {
+    public init(reason: String) {
+        super(reason)
+    }
+}
