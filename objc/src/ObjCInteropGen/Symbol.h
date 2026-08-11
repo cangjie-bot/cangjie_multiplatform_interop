@@ -66,14 +66,14 @@ public:
         return name_;
     }
 
-    virtual void rename(std::string_view new_name);
-
     virtual void print(std::ostream& stream, PrintFormat format) const;
 
 protected:
     [[nodiscard]] explicit Symbol(std::string name) noexcept;
 
     virtual ~Symbol() = default;
+
+    [[nodiscard]] std::string rename(std::string new_name) noexcept;
 
 private:
     std::string name_;
@@ -342,6 +342,8 @@ private:
 };
 
 class NamedTypeSymbol : public TypeLikeSymbol {
+    friend class Universe;
+
 public:
     enum class Kind : std::uint8_t {
         Unexposed,
@@ -357,8 +359,6 @@ public:
         TopLevel,
     };
 
-    void rename(std::string_view new_name) override;
-
     void print(std::ostream& stream, PrintFormat) const override;
 
     [[nodiscard]] Kind kind() const noexcept
@@ -373,6 +373,18 @@ public:
 
     void set_mapping(const TypeMapping& mapping) noexcept;
 
+    // String value for the @ObjCMirror attribute.  If empty, no value is specified
+    // for @ObjCMirror.
+    const std::string& objc_name_attribute() const noexcept
+    {
+        return objc_name_;
+    }
+
+    const std::string& objc_name() const noexcept
+    {
+        return objc_name_.empty() ? name() : objc_name_;
+    }
+
 protected:
     explicit NamedTypeSymbol(const Kind kind, std::string name) noexcept : TypeLikeSymbol(std::move(name)), kind_(kind)
     {
@@ -380,6 +392,8 @@ protected:
 
 private:
     [[nodiscard]] TypeLikeSymbol& map() override;
+
+    void rename(std::string new_name) noexcept;
 
     [[nodiscard]] bool is_optionable_reference() const noexcept override;
 
@@ -389,7 +403,10 @@ private:
     }
 
     const TypeMapping* mapping_ = nullptr;
+
     const Kind kind_;
+
+    std::string objc_name_;
 };
 
 /**
@@ -459,7 +476,7 @@ public:
 
     [[nodiscard]] NamedTypeSymbol& underlying_type() const noexcept;
 
-    [[nodiscard]] EnumConstantSymbol& add_constant(std::string name, const std::array<uint64_t, 2>& value);
+    void add_constant(std::string name, const std::array<uint64_t, 2>& value);
 
     template <class Proc>
     void for_each_constant(Proc proc) const noexcept(noexcept(proc(std::declval<EnumConstantSymbol>())))
@@ -593,6 +610,10 @@ constexpr Modifiers ModifierOptional = 1 << 6;
 constexpr Modifiers ModifierInternalLinkage = 1 << 7; // used for Kind::GlobalFunction
 constexpr Modifiers ModifierBitField = 1 << 8;
 
+// Not printed at all to output Cangjie files, ignored by CangjieWriter.  For
+// example, getter method sharing the same name with its property.
+constexpr Modifiers ModifierHidden = 1 << 9;
+
 /**
  * A type parameter, when using inside a generic body, can be constrainted by
  * specific protocols.  Like here in the parameter `x`:
@@ -621,6 +642,36 @@ private:
     {
         return true;
     }
+};
+
+class ParameterSymbol final : public Symbol {
+public:
+    ParameterSymbol(std::string name, Type type) noexcept : Symbol(std::move(name)), type_(std::move(type))
+    {
+    }
+
+    [[nodiscard]] const std::string& name() const noexcept
+    {
+        return Symbol::name();
+    }
+
+    [[nodiscard]] const Type& type() const noexcept
+    {
+        return type_;
+    }
+
+    [[nodiscard]] Type& type() noexcept
+    {
+        return type_;
+    }
+
+    void set_type(Type type) noexcept
+    {
+        type_ = std::move(type);
+    }
+
+private:
+    Type type_;
 };
 
 class TypeDeclarationSymbol : public NamedTypeSymbol {
@@ -692,30 +743,27 @@ public:
 
     void member_remove(size_t index);
 
-    [[nodiscard]] NonTypeSymbol& add_member_method(std::string name, Type return_type, Modifiers modifiers);
+    void add_member_method(
+        std::string name, Type return_type, std::vector<ParameterSymbol> parameters, Modifiers modifiers);
 
-    [[nodiscard]] NonTypeSymbol& add_constructor(std::string name, Type return_type);
+    void add_constructor(std::string name, Type return_type, std::vector<ParameterSymbol> parameters);
 
-    [[nodiscard]] NonTypeSymbol& add_field(std::string name, Type type, Modifiers modifiers);
+    void add_field(std::string name, Type type, Modifiers modifiers);
 
-    [[nodiscard]] NonTypeSymbol& add_instance_variable(std::string name, Type type, Modifiers modifiers = 0);
+    void add_instance_variable(std::string name, Type type, Modifiers modifiers = 0);
 
-    [[nodiscard]] NonTypeSymbol& add_property(
-        std::string name, std::string getter, std::string setter, Modifiers modifiers);
+    void add_property(std::string name, std::string getter, std::string setter, Modifiers modifiers);
 
-    [[nodiscard]] bool are_override_return_clashes_resolved() const noexcept
+    NonTypeSymbol& get_getter(const NonTypeSymbol& property);
+
+    NonTypeSymbol& get_setter(const NonTypeSymbol& property);
+
+    [[nodiscard]] bool transformed() const noexcept
     {
-        return override_returns_resolved_;
+        return transformed_;
     }
 
-    void mark_override_return_clashes_resolved() noexcept;
-
-    [[nodiscard]] bool are_member_name_clashes_resolved() const noexcept
-    {
-        return member_name_clashes_resolved_;
-    }
-
-    void mark_member_name_clashes_resolved() noexcept;
+    void mark_transformed() noexcept;
 
 private:
     void visit_impl(SymbolVisitor& visitor) const override;
@@ -738,13 +786,12 @@ private:
     std::vector<TypeDeclarationSymbol*> bases_;
     bool is_ctype_ : 1;
     bool contains_pointer_or_func_ : 1;
-    bool member_name_clashes_resolved_ : 1;
-    bool override_returns_resolved_ : 1;
+    bool transformed_ : 1;
 };
 
 class TypeAliasSymbol final : public NamedTypeSymbol {
 public:
-    explicit TypeAliasSymbol(std::string name) noexcept;
+    TypeAliasSymbol(std::string name, Type target) noexcept;
 
     void print(std::ostream& stream, PrintFormat format) const override;
 
@@ -766,12 +813,6 @@ public:
     [[nodiscard]] Type& target() noexcept
     {
         return target_;
-    }
-
-    void set_target(Type target) noexcept
-    {
-        // It could makes sense to check the underlying type is identical
-        target_ = std::move(target);
     }
 
     /**
@@ -809,31 +850,6 @@ private:
     Type target_;
 };
 
-class ParameterSymbol final : public Symbol {
-public:
-    ParameterSymbol(std::string name, Type type) noexcept : Symbol(std::move(name)), type_(std::move(type))
-    {
-    }
-
-    [[nodiscard]] const Type& type() const noexcept
-    {
-        return type_;
-    }
-
-    [[nodiscard]] Type& type() noexcept
-    {
-        return type_;
-    }
-
-    void set_type(Type type) noexcept
-    {
-        type_ = std::move(type);
-    }
-
-private:
-    Type type_;
-};
-
 class NonTypeSymbol final : public FileLevelSymbol {
 public:
     enum class Kind : std::uint8_t {
@@ -845,21 +861,14 @@ public:
         Constructor
     };
 
-    [[nodiscard]] NonTypeSymbol(std::string name, Kind kind, Type return_type, Modifiers modifiers = 0) noexcept
-        : FileLevelSymbol(std::move(name)), kind_(kind), modifiers_(modifiers), return_type_(std::move(return_type))
-    {
-    }
+    [[nodiscard]] NonTypeSymbol(std::string name, Kind kind, Type return_type, std::vector<ParameterSymbol> parameters,
+        Modifiers modifiers = 0) noexcept;
 
-    [[nodiscard]] NonTypeSymbol(std::string name, std::string getter, std::string setter, Modifiers modifiers) noexcept
-        : FileLevelSymbol(std::move(name)),
-          kind_(Kind::Property),
-          modifiers_(modifiers),
-          getter_(std::move(getter)),
-          setter_(std::move(setter))
-    {
-    }
+    [[nodiscard]] NonTypeSymbol(std::string name, Kind kind, Type return_type, Modifiers modifiers = 0) noexcept;
 
-    void rename(std::string_view new_name) override;
+    [[nodiscard]] NonTypeSymbol(std::string name, std::string getter, std::string setter, Modifiers modifiers) noexcept;
+
+    void rename(std::string new_name) noexcept;
 
     [[nodiscard]] bool is_ctype() const noexcept override;
 
@@ -870,6 +879,8 @@ public:
         return kind_;
     }
 
+    // String value for the @ForeignName attribute.  If empty, no value is specified
+    // for @ForeignName.
     [[nodiscard]] const std::string& selector_attribute() const noexcept
     {
         return selector_attribute_;
@@ -993,11 +1004,15 @@ public:
         return modifiers_ & ModifierInternalLinkage;
     }
 
+    // Used for Kind::Property.  Returns a reference to the Objective-C selector of
+    // the property getter.
     [[nodiscard]] const std::string& getter() const noexcept
     {
-        return getter_;
+        return getter_.empty() ? selector() : getter_;
     }
 
+    // Used for Kind::Property.  Returns a reference to the Objective-C selector of
+    // the property setter.
     [[nodiscard]] const std::string& setter() const noexcept
     {
         return setter_;
@@ -1010,14 +1025,29 @@ public:
         return modifiers_ & ModifierBitField;
     }
 
+    [[nodiscard]] bool is_hidden() const noexcept
+    {
+        return modifiers_ & ModifierHidden;
+    }
+
+    void set_hidden() noexcept
+    {
+        modifiers_ |= ModifierHidden;
+    }
+
     [[nodiscard]] ClosureDepthType calculate_reference_level(const TypeDeclarationSymbol& decl) const noexcept;
 
 private:
     Kind kind_;
     Modifiers modifiers_;
 
-    // used for Kind::Property
+    // Used for Kind::Property.  This is the Objective-C selector of the property
+    // getter if it differs from the selector of the property itself.  Empty string
+    // if the selectors are the same.
     std::string getter_;
+
+    // Used for Kind::Property.  This is the Objective-C selector of the property
+    // setter.  Empty string if the property is readonly.
     std::string setter_;
 
     Type return_type_;
