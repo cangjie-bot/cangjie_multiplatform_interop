@@ -13,7 +13,6 @@
 #include "Mode.h"
 #include "Package.h"
 #include "PrintUtils.h"
-#include "SymbolVisitor.h"
 #include "Universe.h"
 
 namespace objcgen {
@@ -118,6 +117,19 @@ std::string Symbol::rename(std::string new_name) noexcept
     return old_name;
 }
 
+bool FileLevelSymbolVisitor::operator()(Type& type) const
+{
+    if ((*this)(type.symbol())) {
+        return true;
+    }
+    for (auto& param : type.parameters()) {
+        if ((*this)(param)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool FileLevelSymbol::set_reference_level(unsigned new_reference_level) noexcept
 {
     if (!defining_file() || new_reference_level >= reference_level_) {
@@ -140,10 +152,13 @@ void FileLevelSymbol::set_definition_location(const Location& location)
     input_file_->add_symbol(*this);
 }
 
-bool FileLevelSymbol::add_reference(FileLevelSymbol& symbol)
+void FileLevelSymbol::collect_referenced_symbols()
 {
-    assert(&symbol != this);
-    return references_symbols_.insert(&symbol).second;
+    for_each_referenced_type([this](FileLevelSymbol& symbol) {
+        if (symbol.input_file_ && references_symbols_.insert(&symbol).second && verbosity >= LogLevel::TRACE) {
+            std::cerr << "Entity `" << name() << "` references `" << symbol.name() << "`\n";
+        }
+    });
 }
 
 void FileLevelSymbol::register_for_package(Package& package)
@@ -276,30 +291,6 @@ const Type& Type::varray_element_type() const noexcept
     assert(kind_ == Kind::VArray);
     assert(parameters_.size() == 1);
     return parameters_.front();
-}
-
-void Type::visit_impl(SymbolVisitor& visitor) const
-{
-    switch (kind_) {
-        case Kind::Unit:
-            break;
-        case Kind::Named:
-        case Kind::Function:
-        case Kind::Block:
-            assert(symbol_);
-            for (const auto& param : parameters_) {
-                visitor.visit_type_argument(*symbol_, param);
-            }
-            break;
-        case Kind::Pointer:
-        case Kind::VArray:
-            assert(symbol_);
-            assert(parameters_.size() == 1);
-            visitor.visit_type_argument(*symbol_, parameters_.front());
-            break;
-        default:
-            break;
-    }
 }
 
 bool Type::is_ctype() const noexcept
@@ -740,11 +731,9 @@ bool EnumDeclarationSymbol::set_reference_level(unsigned new_reference_level) no
     return set;
 }
 
-void EnumDeclarationSymbol::visit_impl(SymbolVisitor& visitor) const
+bool EnumDeclarationSymbol::visit_referenced_types(const FileLevelSymbolVisitor& visitor)
 {
-    if (underlying_type_) {
-        visitor.visit_type(*underlying_type_);
-    }
+    return underlying_type_ && visitor(*underlying_type_);
 }
 
 [[nodiscard]] static Type underlying_unexposed_type(size_t size)
@@ -938,16 +927,21 @@ void TypeDeclarationSymbol::mark_transformed() noexcept
     transformed_ = true;
 }
 
-void TypeDeclarationSymbol::visit_impl(SymbolVisitor& visitor) const
+bool TypeDeclarationSymbol::visit_referenced_types(const FileLevelSymbolVisitor& visitor)
 {
-    // It could make sense to analyze if infinite recursion is possible her.  With
+    // It could make sense to analyze if infinite recursion is possible here.  With
     // CRTP for example.
     for (auto& base : this->bases()) {
-        visitor.visit_type(base);
+        if (visitor(base)) {
+            return true;
+        }
     }
-    for (auto& member : this->members()) {
-        visitor.visit_member(member);
+    for (FileLevelSymbol& member : this->members()) {
+        if (member.any_of_referenced_types(visitor)) {
+            return true;
+        }
     }
+    return false;
 }
 
 bool TypeDeclarationSymbol::set_reference_level(unsigned new_reference_level) noexcept
@@ -1045,12 +1039,10 @@ bool TypeAliasSymbol::set_reference_level(unsigned new_reference_level) noexcept
     return set;
 }
 
-void TypeAliasSymbol::visit_impl(SymbolVisitor& visitor) const
+bool TypeAliasSymbol::visit_referenced_types(const FileLevelSymbolVisitor& visitor)
 {
-    const auto& target = this->target();
-    if (target.has_symbol_assigned()) {
-        visitor.visit_type(target);
-    }
+    auto& target = this->target();
+    return target.has_symbol_assigned() && visitor(target);
 }
 
 static void selector_to_cj_name(NonTypeSymbol& member)
@@ -1119,15 +1111,15 @@ bool NonTypeSymbol::is_ctype() const noexcept
         return_type_.is_ctype();
 }
 
-void NonTypeSymbol::visit_impl(SymbolVisitor& visitor) const
+bool NonTypeSymbol::visit_referenced_types(const FileLevelSymbolVisitor& visitor)
 {
     for (auto& parameter : this->parameters()) {
-        visitor.visit_type(parameter.type());
+        if (visitor(parameter.type())) {
+            return true;
+        }
     }
 
-    if (kind_ != Kind::Property) {
-        visitor.visit_type(return_type());
-    }
+    return kind_ != Kind::Property && visitor(return_type());
 }
 
 const Type& NonTypeSymbol::return_type() const noexcept
