@@ -202,16 +202,32 @@ static void resolve_tagged_clashes(NamedTypeSymbol& decl)
     universe.rename_type(decl, std::move(new_name));
 }
 
-template <class Params> static unsigned rename_param(Params params, ParameterSymbol& param, unsigned i)
+template <class Params> [[nodiscard]] static bool contains_name(Params params, std::string_view name) noexcept
 {
-    auto new_name = param.name() + std::to_string(i);
-    for (const auto& p : params) {
-        if (p.name() == new_name) {
-            return rename_param(params, param, i + 1);
+    for (const auto& param : params) {
+        if (param.name() == name) {
+            return true;
         }
+    }
+    return false;
+}
+
+template <class Params>
+static unsigned rename_param(Params params, ParameterSymbol& param, const std::string& base_name, unsigned i)
+{
+    assert(i);
+    auto new_name = base_name + std::to_string(i);
+    while (contains_name(params, new_name)) {
+        new_name = base_name + std::to_string(++i);
     }
     param.rename(std::move(new_name));
     return i;
+}
+
+template <class Params> static unsigned rename_param(Params params, ParameterSymbol& param, unsigned i)
+{
+    assert(i);
+    return rename_param(params, param, param.name(), i);
 }
 
 /*
@@ -233,21 +249,47 @@ template <class Params> static void resolve_parameter_name_clashes(Params params
     }
 }
 
+template <class Params> static unsigned rename_unnamed_param(Params params, ParameterSymbol& param, unsigned i)
+{
+    return rename_param(params, param, "_", i);
+}
+
+template <class Params> static void rename_unnamed_param(Params params, ParameterSymbol& param)
+{
+    auto new_name = "_";
+    if (contains_name(params, new_name)) {
+        rename_unnamed_param(params, param, 1);
+    } else {
+        param.rename(new_name);
+    }
+}
+
 /*
  * If some of the parameters have no names, name them "_", possibly with number
  * suffixes if that is needed for uniqueness.
  */
 template <class Params> static void resolve_unnamed_parameters(Params params)
 {
-    auto unnamed = false;
-    for (auto& param : params) {
-        if (param.name().empty()) {
-            param.rename("_");
-            unnamed = true;
+    auto e = params.end();
+    for (auto it1 = params.begin(); it1 != e; ++it1) {
+        auto& param1 = *it1;
+        if (param1.name().empty()) {
+            for (auto it2 = std::next(it1); it2 != e; ++it2) {
+                auto& param2 = *it2;
+                if (param2.name().empty()) {
+                    auto i = rename_unnamed_param(params, param2, rename_unnamed_param(params, param1, 1) + 1) + 1;
+                    for (auto it3 = std::next(it2); it3 != e; ++it3) {
+                        auto& param3 = *it3;
+                        if (param3.name().empty()) {
+                            i = rename_unnamed_param(params, param3, i);
+                        }
+                    }
+                    return;
+                }
+            }
+            rename_unnamed_param(params, param1);
+            break;
         }
-    }
-    if (unnamed) {
-        resolve_parameter_name_clashes(params);
     }
 }
 
