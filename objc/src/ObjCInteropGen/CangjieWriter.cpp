@@ -518,9 +518,42 @@ static void print_getter_setter_names(std::ostream& output, const NonTypeSymbol&
 // fields in @ObjCMirror classes, if their definitions reference a type which
 // name coincides with the name of the function/property/field itself.  As a
 // workaround, comment out such objects.
-[[nodiscard]] static bool has_name_clash_with_referenced_types(NonTypeSymbol& symbol, const std::string& name)
+[[nodiscard]] static bool has_name_clash_with_referenced_types(
+    NonTypeSymbol& symbol, const std::string& name, PrintFormat format)
 {
-    return symbol.any_of_referenced_types([&name](const auto& s) { return name == s.name(); });
+    class Visitor : public FileLevelSymbolVisitor {
+    public:
+        Visitor(const std::string& name, PrintFormat format) noexcept : name_(name), format_(format)
+        {
+        }
+
+        [[nodiscard]] bool operator()(FileLevelSymbol& symbol) const override
+        {
+            // See the comment in 'TypeAliasSymbol::print'
+            if (mode != Mode::EXPERIMENTAL && format_ == PrintFormat::EmitCangjieStrict) {
+                auto* type_alias = dynamic_cast<TypeAliasSymbol*>(&symbol);
+                if (type_alias) {
+                    auto& target = type_alias->target();
+                    if (target.has_symbol_assigned()) {
+                        auto canonical_type = type_alias->canonical_type();
+                        if (canonical_type.is_ctype() && canonical_type.contains_pointer_or_func()) {
+                            return (*this)(target);
+                        }
+                    }
+                }
+            }
+
+            return name_ == symbol.name();
+        }
+
+        using FileLevelSymbolVisitor::operator();
+
+    private:
+        const std::string& name_;
+
+        const PrintFormat format_;
+    };
+    return symbol.any_of_referenced_types(Visitor(name, format));
 }
 
 enum class FuncKind { TopLevelFunc, InterfaceMethod, ClassMethod };
@@ -533,7 +566,7 @@ static void write_function(IndentingStringStream& output, FuncKind kind, NonType
     const auto& return_type = function.return_type();
     const auto& name = function.name();
     auto supported = (!normal_mode() || (is_objc_compatible(return_type) && is_objc_compatible_parameters(function))) &&
-        !has_name_clash_with_referenced_types(function, name);
+        !has_name_clash_with_referenced_types(function, name, format);
     if (!supported) {
         output.set_comment();
     }
@@ -610,16 +643,6 @@ static void write_function(IndentingStringStream& output, FuncKind kind, NonType
     output << '\n';
 }
 
-// Whether a property or ivar with the specified type and name is currently
-// supported by FE.  If not, then in the NORMAL mode it will be commented out.
-// In the EXPERIMENTAL and GENERATE_DEFINITIONS modes, any property/ivar is
-// supported.
-[[nodiscard]] static bool is_property_or_ivar_type_supported(
-    NonTypeSymbol& member, const Type& type, const std::string& name)
-{
-    return !normal_mode() || (is_objc_compatible(type) && !has_name_clash_with_referenced_types(member, name));
-}
-
 static void print_objcmirror_attribute(std::ostream& output, const NamedTypeSymbol& decl, bool supported)
 {
     auto hide_objcmirror_attribute = !supported;
@@ -644,6 +667,13 @@ public:
     void write();
 
 private:
+    // Whether a property or ivar with the specified type and name is currently
+    // supported by FE.  If not, then in the NORMAL mode it will be commented out.
+    // In the EXPERIMENTAL and GENERATE_DEFINITIONS modes, any property/ivar is
+    // supported.
+    [[nodiscard]] bool is_property_or_ivar_type_supported(
+        NonTypeSymbol& member, const Type& type, const std::string& name) const;
+
     void write_property(const NonTypeSymbol& prop);
     void write_constructor(NonTypeSymbol& constructor);
     void write_instance_variable(NonTypeSymbol& ivar);
@@ -659,6 +689,12 @@ private:
 TypeDeclarationWriter::TypeDeclarationWriter(IndentingStringStream& output, TypeDeclarationSymbol& decl) noexcept
     : output_(output), decl_(decl)
 {
+}
+
+bool TypeDeclarationWriter::is_property_or_ivar_type_supported(
+    NonTypeSymbol& member, const Type& type, const std::string& name) const
+{
+    return !normal_mode() || (is_objc_compatible(type) && !has_name_clash_with_referenced_types(member, name, format_));
 }
 
 void TypeDeclarationWriter::write_property(const NonTypeSymbol& prop)
