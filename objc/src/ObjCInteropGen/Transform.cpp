@@ -127,9 +127,16 @@ static void fix_override_return_types()
     }
 }
 
-static void resolve_static_instance_clash(Symbol& symbol, bool is_static)
+static void resolve_static_instance_clash(NonTypeSymbol& member, bool is_static)
 {
-    symbol.rename(std::string(symbol.name()).append(is_static ? "Static" : "Instance"));
+    member.rename(std::string(member.name()).append(is_static ? "Static" : "Instance"));
+}
+
+static void resolve_prop_ivar_clash(NonTypeSymbol& member)
+{
+    assert(member.kind() == NonTypeSymbol::Kind::Property || member.kind() == NonTypeSymbol::Kind::InstanceVariable);
+    member.rename(
+        std::string(member.name()).append(member.kind() == NonTypeSymbol::Kind::InstanceVariable ? "Var" : "Prop"));
 }
 
 static void resolve_static_instance_clash(TypeDeclarationSymbol& decl, NonTypeSymbol& method, bool is_static)
@@ -147,21 +154,21 @@ static void resolve_static_instance_clash(TypeDeclarationSymbol& decl, NonTypeSy
     }
 }
 
-static void resolve_static_instance_clashes(TypeDeclarationSymbol& type);
+static void resolve_member_name_clashes(TypeDeclarationSymbol& type);
 
-static void resolve_static_instance_clashes(TypeDeclarationSymbol& subclass, TypeDeclarationSymbol& superclass)
+static void resolve_member_name_clashes(TypeDeclarationSymbol& subclass, TypeDeclarationSymbol& superclass)
 {
     // Recursively process `superclass` and its ancestor hierarchy.
-    resolve_static_instance_clashes(superclass);
+    resolve_member_name_clashes(superclass);
 
     // Asserting that `superclass` is an ancestor of `subclass`, this loop
     // recursively resolves clashes between `subclass` and each of the ancestors of
     // `superclass`, starting from the root(s), sequentially.
     for (auto& super_superclass : superclass.bases()) {
-        resolve_static_instance_clashes(subclass, super_superclass);
+        resolve_member_name_clashes(subclass, super_superclass);
     }
 
-    // This loop resolves clashes between members of `subclass` and `superclass`,
+    // These loops resolve clashes between members of `subclass` and `superclass`,
     // where the latter is asserted to be one of the ancestors of the former.
     for (auto& submember : subclass.members()) {
         if (submember.kind() == NonTypeSymbol::Kind::MemberMethod) {
@@ -185,6 +192,29 @@ static void resolve_static_instance_clashes(TypeDeclarationSymbol& subclass, Typ
                     }
                 }
             }
+        }
+    }
+    for (auto& submember : subclass.members()) {
+        auto subkind = submember.kind();
+        switch (subkind) {
+            case NonTypeSymbol::Kind::Property:
+            case NonTypeSymbol::Kind::InstanceVariable:
+                for (const auto& supermember : superclass.members()) {
+                    auto superkind = supermember.kind();
+                    switch (superkind) {
+                        case NonTypeSymbol::Kind::Property:
+                        case NonTypeSymbol::Kind::InstanceVariable:
+                            if (superkind != subkind && supermember.name() == submember.name()) {
+                                resolve_prop_ivar_clash(submember);
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                break;
+            default:
+                break;
         }
     }
 }
@@ -224,20 +254,64 @@ void StaticInstancePair::add(NonTypeSymbol& type) noexcept
     }
 }
 
+struct PropIVarPair {
+public:
+    void add_prop(NonTypeSymbol& prop) noexcept;
+    void add_ivar(NonTypeSymbol& ivar) noexcept;
+
+    [[nodiscard]] bool both() const noexcept
+    {
+        return prop_ && ivar_;
+    }
+
+    [[nodiscard]] NonTypeSymbol* get_prop() const noexcept
+    {
+        return prop_;
+    }
+
+    [[nodiscard]] NonTypeSymbol* get_ivar() const noexcept
+    {
+        return ivar_;
+    }
+
+private:
+    NonTypeSymbol* prop_;
+    NonTypeSymbol* ivar_;
+};
+
+void PropIVarPair::add_prop(NonTypeSymbol& prop) noexcept
+{
+    assert(prop.is_property());
+    assert(!prop_ && "Cannot be multiple properties with the same name");
+    prop_ = &prop;
+}
+
+void PropIVarPair::add_ivar(NonTypeSymbol& ivar) noexcept
+{
+    assert(!ivar_ && "Cannot be multiple instance variables with the same name");
+    ivar_ = &ivar;
+}
+
 /**
- * Resolve static/instance clashes in the `type` class hierarchy.
+ * Resolve member name clashes in the `type` class hierarchy.
  *
- * That is, if any class in the `type` hierarchy contains static or instance
- * methods conflicting by name with, correspondingly, instance or static methods
- * of this very class or one of its bases (direct or indirect), the conflicts
- * are resolved by appending the "Static" or "Instance" suffix to the method
+ * That is, if any class in the `type` hierarchy contains members conflicting by
+ * name with members of this very class or one of its bases (direct or
+ * indirect), the conflicts are resolved by appending suffixes to the member
  * names.
  *
  * Each class/protocol is checked for clashes with each of its ancestors, from
- * top to bottom sequentially.  If a clash is found, the "Static" or "Instance"
- * suffix is appended to the descendant's conflicting method name.  Then clashes
- * are resolved inside the class/protocol itself.  The static method is renamed
- * in this case.
+ * top to bottom sequentially.  If a clash is found, an appropriate suffix is
+ * appended to the descendant's conflicting member name.  Then clashes are
+ * resolved inside the class/protocol itself.
+ *
+ * The following kinds of conflict are resolved in the following order:
+ *
+ * - Static/instance. The suffixes are "Static" and "Instance". If the conflict
+ *   is inside one class/protocol, the static member is renamed.
+ *
+ * - Property/ivar. The suffixes are "Prop" and "Var". If the conflict is inside
+ *   one class/protocol, the ivar is renamed.
  *
  * Such a procedure is performed for each vertex of the directed acyclic graph
  * of `type` and all its ancestors (classes and protocols).  The graph is
@@ -245,26 +319,26 @@ void StaticInstancePair::add(NonTypeSymbol& type) noexcept
  * marked as resolved. It is not re-processed again in this and subsequent calls
  * of the function.
  */
-static void resolve_static_instance_clashes(TypeDeclarationSymbol& type)
+static void resolve_member_name_clashes(TypeDeclarationSymbol& type)
 {
-    if (type.are_static_instance_clashes_resolved()) {
+    if (type.are_member_name_clashes_resolved()) {
         return;
     }
 
     // Recursively call this function for all ancestors, then resolve conflicts
     // between this class and each of the ancestors.
     for (auto& supertype : type.bases()) {
-        resolve_static_instance_clashes(type, supertype);
+        resolve_member_name_clashes(type, supertype);
     }
 
     // Resolve conflicts inside the class.
-    std::unordered_map<std::string_view, StaticInstancePair> map;
+    std::unordered_map<std::string_view, StaticInstancePair> static_instance_map;
     for (auto& member : type.members()) {
         if (member.kind() == NonTypeSymbol::Kind::MemberMethod) {
-            map[member.selector()].add(member);
+            static_instance_map[member.selector()].add(member);
         }
     }
-    for (const auto& [name, methods] : map) {
+    for (const auto& [name, methods] : static_instance_map) {
         if (methods.both()) {
             auto& static_method = *methods.get_static();
             if (static_method.name() == methods.get_instance()->name()) {
@@ -273,13 +347,13 @@ static void resolve_static_instance_clashes(TypeDeclarationSymbol& type)
         }
     }
 
-    map.clear();
+    static_instance_map.clear();
     for (auto& member : type.members()) {
         if (member.kind() == NonTypeSymbol::Kind::Property) {
-            map[member.selector()].add(member);
+            static_instance_map[member.selector()].add(member);
         }
     }
-    for (const auto& [name, props] : map) {
+    for (const auto& [name, props] : static_instance_map) {
         if (props.both()) {
             auto& static_prop = *props.get_static();
             if (static_prop.name() == props.get_instance()->name()) {
@@ -288,7 +362,26 @@ static void resolve_static_instance_clashes(TypeDeclarationSymbol& type)
         }
     }
 
-    type.mark_static_instance_clashes_resolved();
+    std::unordered_map<std::string_view, PropIVarPair> prop_ivar_map;
+    for (auto& member : type.members()) {
+        switch (member.kind()) {
+            case NonTypeSymbol::Kind::Property:
+                prop_ivar_map[member.name()].add_prop(member);
+                break;
+            case NonTypeSymbol::Kind::InstanceVariable:
+                prop_ivar_map[member.name()].add_ivar(member);
+                break;
+            default:
+                break;
+        }
+    }
+    for (const auto& [name, members] : prop_ivar_map) {
+        if (members.both()) {
+            resolve_prop_ivar_clash(*members.get_ivar());
+        }
+    }
+
+    type.mark_member_name_clashes_resolved();
 }
 
 /**
@@ -384,7 +477,7 @@ static void do_rename()
     }
 
     for (auto& type : type_definitions) {
-        resolve_static_instance_clashes(type);
+        resolve_member_name_clashes(type);
     }
 
     // In Objective-C, a global function can share the same name with a

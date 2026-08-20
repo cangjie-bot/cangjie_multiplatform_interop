@@ -710,12 +710,12 @@ public:
 
     void mark_override_return_clashes_resolved() noexcept;
 
-    [[nodiscard]] bool are_static_instance_clashes_resolved() const noexcept
+    [[nodiscard]] bool are_member_name_clashes_resolved() const noexcept
     {
-        return static_instance_clashes_resolved_;
+        return member_name_clashes_resolved_;
     }
 
-    void mark_static_instance_clashes_resolved() noexcept;
+    void mark_member_name_clashes_resolved() noexcept;
 
 private:
     void visit_impl(SymbolVisitor& visitor) const override;
@@ -738,7 +738,7 @@ private:
     std::vector<TypeDeclarationSymbol*> bases_;
     bool is_ctype_ : 1;
     bool contains_pointer_or_func_ : 1;
-    bool static_instance_clashes_resolved_ : 1;
+    bool member_name_clashes_resolved_ : 1;
     bool override_returns_resolved_ : 1;
 };
 
