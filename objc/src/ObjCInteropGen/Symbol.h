@@ -75,7 +75,7 @@ protected:
 
     virtual ~Symbol() = default;
 
-    [[nodiscard]] std::string rename(std::string new_name) noexcept;
+    std::string rename(std::string new_name) noexcept;
 
 private:
     std::string name_;
@@ -689,6 +689,8 @@ public:
     {
         return Symbol::name();
     }
+
+    using Symbol::rename;
 
     [[nodiscard]] const Type& type() const noexcept
     {

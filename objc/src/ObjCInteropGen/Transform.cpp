@@ -202,6 +202,97 @@ static void resolve_tagged_clashes(NamedTypeSymbol& decl)
     universe.rename_type(decl, std::move(new_name));
 }
 
+template <class Params> [[nodiscard]] static bool contains_name(Params params, std::string_view name) noexcept
+{
+    for (const auto& param : params) {
+        if (param.name() == name) {
+            return true;
+        }
+    }
+    return false;
+}
+
+template <class Params>
+static unsigned rename_param(Params params, ParameterSymbol& param, const std::string& base_name, unsigned i)
+{
+    assert(i);
+    auto new_name = base_name + std::to_string(i);
+    while (contains_name(params, new_name)) {
+        new_name = base_name + std::to_string(++i);
+    }
+    param.rename(std::move(new_name));
+    return i;
+}
+
+template <class Params> static unsigned rename_param(Params params, ParameterSymbol& param, unsigned i)
+{
+    assert(i);
+    return rename_param(params, param, param.name(), i);
+}
+
+/*
+ * If some of the parameters have same names, make the names unique by adding
+ * number suffixes.
+ */
+template <class Params> static void resolve_parameter_name_clashes(Params params)
+{
+    auto e = params.end();
+    for (auto it1 = params.begin(); it1 != e; ++it1) {
+        auto& param1 = *it1;
+        const auto& name = param1.name();
+        for (auto it2 = std::next(it1); it2 != e; ++it2) {
+            auto& param2 = *it2;
+            if (name == param2.name()) {
+                rename_param(params, param2, rename_param(params, param1, 1) + 1);
+            }
+        }
+    }
+}
+
+template <class Params> static unsigned rename_unnamed_param(Params params, ParameterSymbol& param, unsigned i)
+{
+    return rename_param(params, param, "_", i);
+}
+
+template <class Params> static void rename_unnamed_param(Params params, ParameterSymbol& param)
+{
+    auto new_name = "_";
+    if (contains_name(params, new_name)) {
+        rename_unnamed_param(params, param, 1);
+    } else {
+        param.rename(new_name);
+    }
+}
+
+/*
+ * If some of the parameters have no names, name them "_", possibly with number
+ * suffixes if that is needed for uniqueness.
+ */
+template <class Params> static void resolve_unnamed_parameters(Params params)
+{
+    auto e = params.end();
+    for (auto it1 = params.begin(); it1 != e; ++it1) {
+        auto& param1 = *it1;
+        if (param1.name().empty()) {
+            for (auto it2 = std::next(it1); it2 != e; ++it2) {
+                auto& param2 = *it2;
+                if (param2.name().empty()) {
+                    auto i = rename_unnamed_param(params, param2, rename_unnamed_param(params, param1, 1) + 1) + 1;
+                    for (auto it3 = std::next(it2); it3 != e; ++it3) {
+                        auto& param3 = *it3;
+                        if (param3.name().empty()) {
+                            i = rename_unnamed_param(params, param3, i);
+                        }
+                    }
+                    return;
+                }
+            }
+            rename_unnamed_param(params, param1);
+            break;
+        }
+    }
+}
+
 static void transform_type(TypeDeclarationSymbol& decl)
 {
     auto type_kind = decl.kind();
@@ -246,13 +337,23 @@ static void transform_type(TypeDeclarationSymbol& decl)
 
     auto members = decl.members();
 
-    // Hide getters/setters
-    for (const auto& member : members) {
-        if (member.is_property()) {
-            decl.get_getter(member).set_hidden();
-            if (!member.is_readonly()) {
-                decl.get_setter(member).set_hidden();
-            }
+    for (auto& member : members) {
+        switch (member.kind()) {
+            case NonTypeSymbol::Kind::Property:
+                // Hide getters/setters
+                decl.get_getter(member).set_hidden();
+                if (!member.is_readonly()) {
+                    decl.get_setter(member).set_hidden();
+                }
+                break;
+            case NonTypeSymbol::Kind::MemberMethod:
+            case NonTypeSymbol::Kind::Constructor:
+                // In Objective-C methods, all parameters have names, but the names can be
+                // non-unique.
+                resolve_parameter_name_clashes(member.parameters());
+                break;
+            default:
+                break;
         }
     }
 
@@ -512,7 +613,16 @@ static void transform_visit(TypeDeclarationSymbol& decl)
  */
 static void transform_visit()
 {
-    for (auto& type : Universe::get().types()) {
+    auto& universe = Universe::get();
+
+    // In standalone functions, all parameter names are unique, but some of the
+    // parameters can be unnamed.
+    for (auto& func : universe.top_level()) {
+        assert(func.is_global_function());
+        resolve_unnamed_parameters(func.parameters());
+    }
+
+    for (auto& type : universe.types()) {
         if (type.is(NamedTypeSymbol::Kind::Enum)) {
             // Enumerations are not a part of the class/protocol/struct hierarchy, but they
             // may need resolving clashes with non-tagged top-level symbols.
