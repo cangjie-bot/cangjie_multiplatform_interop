@@ -9,6 +9,7 @@
 #define SYMBOL_H
 
 #include <array>
+#include <functional>
 
 #include "Config.h"
 #include "InputFile.h"
@@ -18,8 +19,9 @@ namespace objcgen {
 class NonTypeSymbol;
 class Package;
 class PackageFile;
-class SymbolVisitor;
+class Type;
 class TypeDeclarationSymbol;
+class TypeLikeSymbol;
 class TypeMapping;
 
 enum class PrintFormat {
@@ -81,6 +83,35 @@ private:
 
 enum class OutputStatus { Undefined, Root, Referenced, ReferencedMarked, MultiReferenced };
 
+class FileLevelSymbolVisitor {
+public:
+    template <class Pred> [[nodiscard]] static auto from(const Pred& pred)
+    {
+        class FileLevelSymbolVisitorImpl : public FileLevelSymbolVisitor {
+        public:
+            explicit FileLevelSymbolVisitorImpl(const Pred& pred) noexcept : pred(pred)
+            {
+            }
+
+        private:
+            bool operator()(FileLevelSymbol& symbol) const override
+            {
+                return pred(symbol);
+            }
+
+            const Pred& pred;
+        };
+
+        return FileLevelSymbolVisitorImpl(pred);
+    }
+
+    virtual ~FileLevelSymbolVisitor() = default;
+
+    [[nodiscard]] virtual bool operator()(FileLevelSymbol& symbol) const = 0;
+
+    [[nodiscard]] bool operator()(Type& type) const;
+};
+
 class FileLevelSymbol : public Symbol {
 public:
     [[nodiscard]] virtual bool is_ctype() const noexcept
@@ -90,6 +121,26 @@ public:
 
     virtual bool set_reference_level(unsigned new_reference_level) noexcept;
 
+    /**
+     * Searches for a named type explicitly referenced by this symbol for which the
+     * 'pred' call returns true.  Returns true if such a symbol is found.  'pred'
+     * is a callable that accepts one argument (a reference to FileLevelSymbol) and
+     * returns a value implicitly convertible to boolean.
+     */
+    template <class Pred> [[nodiscard]] bool any_of_referenced_types(const Pred& pred)
+    {
+        return visit_referenced_types(FileLevelSymbolVisitor::from(pred));
+    }
+
+    /** Calls 'func' for each named type explicitly referenced by this symbol. */
+    template <class Func> void for_each_referenced_type(const Func& func)
+    {
+        visit_referenced_types(FileLevelSymbolVisitor::from([&func](FileLevelSymbol& symbol) {
+            func(symbol);
+            return false;
+        }));
+    }
+
     void set_definition_location(const Location& location);
 
     [[nodiscard]] const std::unordered_set<FileLevelSymbol*>& references_symbols() const noexcept
@@ -97,7 +148,7 @@ public:
         return references_symbols_;
     }
 
-    [[nodiscard]] bool add_reference(FileLevelSymbol& symbol);
+    void collect_referenced_symbols();
 
     [[nodiscard]] InputFile* defining_file() const noexcept
     {
@@ -159,9 +210,10 @@ protected:
     ClosureDepthType reference_level_ = UNLIMITED_CLOSURE_DEPTH;
 
 private:
-    friend class SymbolVisitor;
-
-    virtual void visit_impl(SymbolVisitor& visitor) const = 0;
+    virtual bool visit_referenced_types([[maybe_unused]] const FileLevelSymbolVisitor& visitor)
+    {
+        return false;
+    }
 
     // Applicable only for symbols with the same defining file
     friend bool operator<(const FileLevelSymbol& symbol1, const FileLevelSymbol& symbol2) noexcept;
@@ -256,6 +308,11 @@ public:
         return parameters_;
     }
 
+    [[nodiscard]] auto parameters() noexcept
+    {
+        return Collection(parameters_);
+    }
+
     void set_parameters(std::vector<Type>&& parameters) noexcept
     {
         parameters_ = std::move(parameters);
@@ -276,8 +333,6 @@ public:
     {
         return varray_size_;
     }
-
-    void visit_impl(SymbolVisitor& visitor) const;
 
     [[nodiscard]] bool is_ctype() const noexcept;
 
@@ -421,10 +476,6 @@ public:
     }
 
 private:
-    void visit_impl(SymbolVisitor&) const override
-    {
-    }
-
     [[nodiscard]] TypeLikeSymbol& map() override
     {
         return *this;
@@ -459,10 +510,6 @@ private:
         return true;
     }
 
-    void visit_impl(SymbolVisitor&) const override
-    {
-    }
-
     // In clang, the enum underlying type can also be a 128bit integral
     uint64_t value_[2];
 };
@@ -494,7 +541,7 @@ private:
 
     bool set_reference_level(unsigned new_reference_level) noexcept override;
 
-    void visit_impl(SymbolVisitor& visitor) const override;
+    bool visit_referenced_types(const FileLevelSymbolVisitor& visitor) override;
 
     [[nodiscard]] bool empty() const noexcept
     {
@@ -544,10 +591,6 @@ private:
         return true;
     }
 
-    void visit_impl(SymbolVisitor&) const override
-    {
-    }
-
     [[nodiscard]] bool is_unit() const noexcept override
     {
         return category_ == PrimitiveTypeCategory::Unit;
@@ -582,10 +625,6 @@ public:
 
 private:
     void print(std::ostream& stream, PrintFormat format) const override;
-
-    void visit_impl(SymbolVisitor&) const override
-    {
-    }
 
     [[nodiscard]] bool is_ctype() const noexcept override
     {
@@ -629,10 +668,6 @@ public:
     }
 
 private:
-    void visit_impl(SymbolVisitor&) const override
-    {
-    }
-
     [[nodiscard]] TypeParameterSymbol& map() override
     {
         return *this;
@@ -766,7 +801,7 @@ public:
     void mark_transformed() noexcept;
 
 private:
-    void visit_impl(SymbolVisitor& visitor) const override;
+    bool visit_referenced_types(const FileLevelSymbolVisitor& visitor) override;
 
     [[nodiscard]] bool contains_pointer_or_func() const noexcept override
     {
@@ -840,7 +875,7 @@ private:
 
     bool set_reference_level(unsigned new_reference_level) noexcept override;
 
-    void visit_impl(SymbolVisitor& visitor) const override;
+    bool visit_referenced_types(const FileLevelSymbolVisitor& visitor) override;
 
     [[nodiscard]] bool contains_pointer_or_func() const noexcept override
     {
@@ -871,8 +906,6 @@ public:
     void rename(std::string new_name) noexcept;
 
     [[nodiscard]] bool is_ctype() const noexcept override;
-
-    void visit_impl(SymbolVisitor& visitor) const override;
 
     [[nodiscard]] Kind kind() const noexcept
     {
@@ -1038,6 +1071,8 @@ public:
     [[nodiscard]] ClosureDepthType calculate_reference_level(const TypeDeclarationSymbol& decl) const noexcept;
 
 private:
+    bool visit_referenced_types(const FileLevelSymbolVisitor& visitor) override;
+
     Kind kind_;
     Modifiers modifiers_;
 
