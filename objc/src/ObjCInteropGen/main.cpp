@@ -4,12 +4,9 @@
 //
 // See https://cangjie-lang.cn/pages/LICENSE for license information.
 
-#include <iostream>
 #include <optional>
-#include <string_view>
 
 #include "CangjieWriter.h"
-#include "Config.h"
 #include "Diagnostics.h"
 #include "FatalException.h"
 #include "Logging.h"
@@ -21,7 +18,6 @@
 #include "Strings.h"
 #include "TomlParseError.h"
 #include "Transform.h"
-#include "Universe.h"
 
 // clang -fobjc-runtime=gnustep `gnustep-config --objc-flags` -Xclang -ast-dump -c M.m -o M.o -v > ast.txt
 
@@ -107,7 +103,7 @@ int main(int argc, char* argv[])
                     return 1;
                 }
                 config_specified = true;
-                parse_toml_config_file(std::string(arg));
+                Config::parse_from_toml_file(std::string(arg));
                 continue;
             }
 
