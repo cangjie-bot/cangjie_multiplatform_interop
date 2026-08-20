@@ -59,7 +59,7 @@ namespace objcgen {
         }
     }
 
-    for (auto&& type : universe.all_declarations()) {
+    for (auto&& type : universe.types()) {
         // Omit types having no definition in source files (those are built-ins like
         // `id`).
         if (!type.defining_file()) {
@@ -335,9 +335,12 @@ static void decay_parameter_types()
     for (auto& top_level : universe.top_level()) {
         decay_parameter_types(top_level);
     }
-    for (auto& type : universe.type_definitions()) {
-        for (auto& member : type.members()) {
-            decay_parameter_types(member);
+    for (auto& type : universe.types()) {
+        auto* decl = dynamic_cast<TypeDeclarationSymbol*>(&type);
+        if (decl) {
+            for (auto& member : decl->members()) {
+                decay_parameter_types(member);
+            }
         }
     }
 }

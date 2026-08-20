@@ -37,7 +37,17 @@ enum class TypeNamespace : std::uint8_t {
 
 constexpr std::uint8_t TYPE_NAMESPACE_COUNT = static_cast<std::uint8_t>(TypeNamespace::Max) + 1;
 
-using type_order_t = std::vector<std::pair<TypeNamespace, std::string>>;
+struct TypeOrderElement {
+    friend bool operator==(const TypeOrderElement& el1, const TypeOrderElement& el2) noexcept
+    {
+        return el1.name == el2.name && el1.ns == el2.ns;
+    }
+
+    TypeNamespace ns;
+    std::string_view name;
+};
+
+using type_order_t = std::vector<TypeOrderElement>;
 
 template <bool constant> class UniverseNamedTypeIterator final {
     using Iterator = std::conditional_t<constant, type_order_t::const_iterator, type_order_t::iterator>;
@@ -66,40 +76,6 @@ private:
     Iterator it_;
 };
 
-template <bool constant> class UniverseTypeDeclarationIterator final {
-    using Iterator = std::conditional_t<constant, type_order_t::const_iterator, type_order_t::iterator>;
-
-public:
-    explicit UniverseTypeDeclarationIterator(Iterator it) : it_(it)
-    {
-        get();
-    }
-
-    [[nodiscard]] auto& operator*() const noexcept
-    {
-        return *symbol_;
-    }
-
-    auto& operator++()
-    {
-        ++it_;
-        get();
-        return *this;
-    }
-
-    [[nodiscard]] friend bool operator!=(
-        const UniverseTypeDeclarationIterator& it1, const UniverseTypeDeclarationIterator& it2) noexcept
-    {
-        return it1.it_ != it2.it_;
-    }
-
-private:
-    Iterator it_;
-    std::conditional_t<constant, const TypeDeclarationSymbol, TypeDeclarationSymbol>* symbol_;
-
-    void get();
-};
-
 class TopLevel final {
 public:
     [[nodiscard]] auto members() const noexcept
@@ -112,17 +88,17 @@ public:
         return Collection(members_);
     }
 
-    [[nodiscard]] NonTypeSymbol& add_function(std::string name, Type return_type, Modifiers modifiers);
+    [[nodiscard]] NonTypeSymbol& add_function(
+        std::string name, Type return_type, std::vector<ParameterSymbol> parameters, Modifiers modifiers);
 
 private:
     std::deque<NonTypeSymbol> members_;
 };
 
 class Universe final : NonCopyable {
-    using type_map_t = std::unordered_map<std::string, NamedTypeSymbol*>;
+    using type_map_t = std::unordered_map<std::string_view, NamedTypeSymbol*>;
 
     template <bool constant> friend class UniverseNamedTypeIterator;
-    template <bool constant> friend class UniverseTypeDeclarationIterator;
 
     static constexpr int PREALLOCATED_TYPE_COUNT = 8192;
 
@@ -167,7 +143,8 @@ class Universe final : NonCopyable {
 public:
     [[nodiscard]] static Universe& get();
 
-    [[nodiscard]] NonTypeSymbol& register_top_level_function(std::string name, Type return_type, Modifiers modifiers);
+    [[nodiscard]] NonTypeSymbol& register_top_level_function(
+        std::string name, Type return_type, std::vector<ParameterSymbol> parameters, Modifiers modifiers);
 
     void register_type(NamedTypeSymbol& symbol);
 
@@ -273,17 +250,17 @@ public:
 
     // Find the registered type symbol by its name and kind.  Return nullptr if no
     // such type has been registered.
-    [[nodiscard]] NamedTypeSymbol* type(NamedTypeSymbol::Kind where, const std::string& name) const noexcept;
+    [[nodiscard]] NamedTypeSymbol* type(NamedTypeSymbol::Kind where, std::string_view name) const noexcept;
 
     // Find the registered type symbol by its name and namespace.  Return nullptr if
     // no such type has been registered.
-    [[nodiscard]] NamedTypeSymbol* type(TypeNamespace where, const std::string& name) const;
+    [[nodiscard]] NamedTypeSymbol* type(TypeNamespace where, std::string_view name) const;
 
     // Find a registered type symbol by its name.  Return nullptr if no such type
     // has been registered.
-    [[nodiscard]] NamedTypeSymbol* type(const std::string& name) const;
+    [[nodiscard]] NamedTypeSymbol* type(std::string_view name) const;
 
-    void process_rename(NamedTypeSymbol& symbol, const std::string& old_name);
+    void rename_type(NamedTypeSymbol& symbol, std::string new_name);
 
     [[nodiscard]] auto top_level() const noexcept
     {
@@ -295,29 +272,20 @@ public:
         return top_level_.members();
     }
 
-    [[nodiscard]] auto all_declarations() const noexcept
+    // Find a global non-type symbol by its name.  Return nullptr if no such symbol
+    // has been registered.
+    [[nodiscard]] const NonTypeSymbol* global_non_type_symbol(std::string_view name) const;
+
+    [[nodiscard]] auto types() const noexcept
     {
         using TypeOrder = decltype(type_order_);
         return ConstCollection<const TypeOrder, UniverseNamedTypeIterator<true>>(type_order_);
     }
 
-    [[nodiscard]] auto all_declarations() noexcept
+    [[nodiscard]] auto types() noexcept
     {
         using TypeOrder = decltype(type_order_);
         return Collection<TypeOrder, UniverseNamedTypeIterator<true>, UniverseNamedTypeIterator<false>>(type_order_);
-    }
-
-    [[nodiscard]] auto type_definitions() const noexcept
-    {
-        using TypeOrder = decltype(type_order_);
-        return ConstCollection<const TypeOrder, UniverseTypeDeclarationIterator<true>>(type_order_);
-    }
-
-    [[nodiscard]] auto type_definitions() noexcept
-    {
-        using TypeOrder = decltype(type_order_);
-        return Collection<TypeOrder, UniverseTypeDeclarationIterator<true>, UniverseTypeDeclarationIterator<false>>(
-            type_order_);
     }
 };
 
@@ -326,27 +294,9 @@ typename UniverseNamedTypeIterator<constant>::Value& UniverseNamedTypeIterator<c
 {
     assert(it_ != Universe::get().type_order_.end());
     auto& el = *it_;
-    auto* symbol = Universe::get().type(el.first, el.second);
+    auto* symbol = Universe::get().type(el.ns, el.name);
     assert(symbol);
     return *symbol;
-}
-
-template <bool constant> void UniverseTypeDeclarationIterator<constant>::get()
-{
-    const auto& universe = Universe::get();
-    for (auto e = universe.type_order_.end();; ++it_) {
-        if (it_ == e) {
-            symbol_ = nullptr;
-            break;
-        }
-        auto& el = *it_;
-        auto* s = universe.type(el.first, el.second);
-        assert(s);
-        symbol_ = dynamic_cast<TypeDeclarationSymbol*>(s);
-        if (symbol_) {
-            break;
-        }
-    }
 }
 
 } // namespace objcgen

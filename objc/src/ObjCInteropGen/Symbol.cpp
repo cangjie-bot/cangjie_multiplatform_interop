@@ -105,15 +105,17 @@ Symbol::Symbol(std::string name) noexcept : name_(std::move(name))
 {
 }
 
-void Symbol::rename(std::string_view new_name)
-{
-    assert(!new_name.empty());
-    name_ = new_name;
-}
-
 void Symbol::print(std::ostream& stream, [[maybe_unused]] PrintFormat format) const
 {
     stream << escape_keyword(name_);
+}
+
+std::string Symbol::rename(std::string new_name) noexcept
+{
+    assert(!new_name.empty());
+    auto old_name = std::move(name_);
+    name_ = std::move(new_name);
+    return old_name;
 }
 
 bool FileLevelSymbol::set_reference_level(unsigned new_reference_level) noexcept
@@ -673,16 +675,18 @@ void Type::print_func_like(std::ostream& stream, std::string_view name, PrintFor
     }
 }
 
-void NamedTypeSymbol::rename(const std::string_view new_name)
-{
-    auto old_name = name();
-    TypeLikeSymbol::rename(new_name);
-    Universe::get().process_rename(*this, old_name);
-}
-
 void NamedTypeSymbol::print(std::ostream& stream, PrintFormat) const
 {
     stream << escape_keyword(name());
+}
+
+void NamedTypeSymbol::rename(std::string new_name) noexcept
+{
+    assert(!new_name.empty());
+    auto old_name = FileLevelSymbol::rename(std::move(new_name));
+    if (objc_name_.empty()) {
+        objc_name_ = std::move(old_name);
+    }
 }
 
 void NamedTypeSymbol::set_mapping(const TypeMapping& mapping) noexcept
@@ -717,11 +721,11 @@ NamedTypeSymbol& EnumDeclarationSymbol::underlying_type() const noexcept
     return *underlying_type_;
 }
 
-EnumConstantSymbol& EnumDeclarationSymbol::add_constant(std::string name, const std::array<uint64_t, 2>& value)
+void EnumDeclarationSymbol::add_constant(std::string name, const std::array<uint64_t, 2>& value)
 {
     assert(std::all_of(
         constants_.begin(), constants_.end(), [name](const auto& constant) { return constant.name() != name; }));
-    return constants_.emplace_back(std::move(name), value);
+    constants_.emplace_back(std::move(name), value);
 }
 
 bool EnumDeclarationSymbol::set_reference_level(unsigned new_reference_level) noexcept
@@ -796,8 +800,7 @@ TypeDeclarationSymbol::TypeDeclarationSymbol(const Kind kind, std::string name) 
     : NamedTypeSymbol(kind, std::move(name)),
       is_ctype_(is_ctype_by_default(kind, this->name())),
       contains_pointer_or_func_(false),
-      member_name_clashes_resolved_(false),
-      override_returns_resolved_(false)
+      transformed_(false)
 {
 }
 
@@ -847,23 +850,26 @@ void TypeDeclarationSymbol::member_remove(size_t index)
     }
 }
 
-NonTypeSymbol& TypeDeclarationSymbol::add_member_method(std::string name, Type return_type, Modifiers modifiers)
+void TypeDeclarationSymbol::add_member_method(
+    std::string name, Type return_type, std::vector<ParameterSymbol> parameters, Modifiers modifiers)
 {
     // No clash detection, otherwise might assert on method overloads
 
     assert(kind() == Kind::Interface || kind() == Kind::Protocol || kind() == Kind::TopLevel);
-    return members_.emplace_back(std::move(name), NonTypeSymbol::Kind::MemberMethod, std::move(return_type), modifiers);
+    members_.emplace_back(
+        std::move(name), NonTypeSymbol::Kind::MemberMethod, std::move(return_type), std::move(parameters), modifiers);
 }
 
-NonTypeSymbol& TypeDeclarationSymbol::add_constructor(std::string name, Type return_type)
+void TypeDeclarationSymbol::add_constructor(std::string name, Type return_type, std::vector<ParameterSymbol> parameters)
 {
-    assert(kind() == Kind::Interface || kind() == Kind::Protocol);
-    return members_.emplace_back(std::move(name), NonTypeSymbol::Kind::Constructor, std::move(return_type));
+    assert(is(Kind::Interface) || is(Kind::Protocol));
+    members_.emplace_back(
+        std::move(name), NonTypeSymbol::Kind::Constructor, std::move(return_type), std::move(parameters));
 }
 
-NonTypeSymbol& TypeDeclarationSymbol::add_field(std::string name, Type type, Modifiers modifiers)
+void TypeDeclarationSymbol::add_field(std::string name, Type type, Modifiers modifiers)
 {
-    assert(kind() == Kind::Struct || kind() == Kind::Union);
+    assert(is(Kind::Struct) || is(Kind::Union));
 
     // Only bit-fields can be unnamed
     assert(!name.empty() || (modifiers & ModifierBitField));
@@ -879,12 +885,11 @@ NonTypeSymbol& TypeDeclarationSymbol::add_field(std::string name, Type type, Mod
     if (member.return_type().contains_pointer_or_func()) {
         contains_pointer_or_func_ = true;
     }
-    return member;
 }
 
-NonTypeSymbol& TypeDeclarationSymbol::add_instance_variable(std::string name, Type type, Modifiers modifiers)
+void TypeDeclarationSymbol::add_instance_variable(std::string name, Type type, Modifiers modifiers)
 {
-    assert(kind() == Kind::Interface);
+    assert(is(Kind::Interface));
     assert(all_of_members([&name](const auto& member) { return member.name() != name; }));
 
     auto& ivar =
@@ -895,27 +900,42 @@ NonTypeSymbol& TypeDeclarationSymbol::add_instance_variable(std::string name, Ty
     if (ivar.return_type().contains_pointer_or_func()) {
         contains_pointer_or_func_ = true;
     }
-    return ivar;
 }
 
-NonTypeSymbol& TypeDeclarationSymbol::add_property(
-    std::string name, std::string getter, std::string setter, Modifiers modifiers)
+void TypeDeclarationSymbol::add_property(std::string name, std::string getter, std::string setter, Modifiers modifiers)
 {
     assert(kind() == Kind::Interface || kind() == Kind::Protocol);
 
-    return members_.emplace_back(std::move(name), std::move(getter), std::move(setter), modifiers);
+    members_.emplace_back(std::move(name), std::move(getter), std::move(setter), modifiers);
 }
 
-void TypeDeclarationSymbol::mark_override_return_clashes_resolved() noexcept
+[[nodiscard]] static NonTypeSymbol& get_method(
+    std::vector<NonTypeSymbol>& members, const std::string& selector, bool is_static)
 {
-    assert(!override_returns_resolved_);
-    override_returns_resolved_ = true;
+    auto e = members.end();
+    auto it = std::find_if(members.begin(), e, [is_static, &selector](const auto& member) {
+        return member.is_member_method() && member.is_static() == is_static && member.selector() == selector;
+    });
+    assert(it != e);
+    return *it;
 }
 
-void TypeDeclarationSymbol::mark_member_name_clashes_resolved() noexcept
+NonTypeSymbol& TypeDeclarationSymbol::get_getter(const NonTypeSymbol& property)
 {
-    assert(!member_name_clashes_resolved_);
-    member_name_clashes_resolved_ = true;
+    assert(property.is_property());
+    return get_method(members_, property.getter(), property.is_static());
+}
+
+NonTypeSymbol& TypeDeclarationSymbol::get_setter(const NonTypeSymbol& property)
+{
+    assert(property.is_property());
+    return get_method(members_, property.setter(), property.is_static());
+}
+
+void TypeDeclarationSymbol::mark_transformed() noexcept
+{
+    assert(!transformed_);
+    transformed_ = true;
 }
 
 void TypeDeclarationSymbol::visit_impl(SymbolVisitor& visitor) const
@@ -964,18 +984,14 @@ bool TypeDeclarationSymbol::any_of_members(Pred cond) const noexcept(noexcept(co
     return std::any_of(members_.cbegin(), members_.cend(), [cond](const auto& member) { return cond(member); });
 }
 
-TypeAliasSymbol::TypeAliasSymbol(std::string name) noexcept : NamedTypeSymbol(Kind::TypeDef, std::move(name))
+TypeAliasSymbol::TypeAliasSymbol(std::string name, Type target) noexcept
+    : NamedTypeSymbol(Kind::TypeDef, std::move(name)), target_(std::move(target))
 {
 }
 
 void TypeAliasSymbol::print(std::ostream& stream, PrintFormat format) const
 {
     const auto& target = this->target();
-    if (target.has_symbol_assigned() && name() == target.name()) {
-        // typedef struct S S;
-        target.print(stream, format);
-        return;
-    }
     if (mode != Mode::EXPERIMENTAL && format == PrintFormat::EmitCangjieStrict) {
         auto canonical_type = this->canonical_type();
         if (canonical_type.is_ctype() && canonical_type.contains_pointer_or_func()) {
@@ -1037,13 +1053,64 @@ void TypeAliasSymbol::visit_impl(SymbolVisitor& visitor) const
     }
 }
 
-void NonTypeSymbol::rename(std::string_view new_name)
+static void selector_to_cj_name(NonTypeSymbol& member)
+{
+    const auto& name = member.name();
+    if (name.find(':') == std::string::npos) {
+        return;
+    }
+    std::string new_name;
+    auto upcase = false;
+    for (auto c : name) {
+        if (c == ':') {
+            upcase = true;
+            continue;
+        }
+
+        if (upcase) {
+            c = static_cast<char>(std::toupper(c));
+            upcase = false;
+        }
+
+        new_name += c;
+    }
+    member.rename(std::move(new_name));
+}
+
+[[nodiscard]] NonTypeSymbol::NonTypeSymbol(std::string name, Kind kind, Type return_type,
+    std::vector<ParameterSymbol> parameters, Modifiers modifiers) noexcept
+    : FileLevelSymbol(std::move(name)),
+      kind_(kind),
+      modifiers_(modifiers),
+      return_type_(std::move(return_type)),
+      parameters_(std::move(parameters))
+{
+    selector_to_cj_name(*this);
+}
+
+[[nodiscard]] NonTypeSymbol::NonTypeSymbol(std::string name, Kind kind, Type return_type, Modifiers modifiers) noexcept
+    : NonTypeSymbol(std::move(name), kind, std::move(return_type), std::vector<ParameterSymbol>{}, modifiers)
+{
+}
+
+[[nodiscard]] NonTypeSymbol::NonTypeSymbol(
+    std::string name, std::string getter, std::string setter, Modifiers modifiers) noexcept
+    : FileLevelSymbol(std::move(name)),
+      kind_(Kind::Property),
+      modifiers_(modifiers),
+      getter_(getter == this->name() ? std::string() : std::move(getter)),
+      setter_((modifiers_ & ModifierReadonly) ? std::string() : std::move(setter))
+{
+    selector_to_cj_name(*this);
+}
+
+void NonTypeSymbol::rename(std::string new_name) noexcept
 {
     assert(!new_name.empty());
+    auto old_name = FileLevelSymbol::rename(std::move(new_name));
     if (selector_attribute_.empty()) {
-        selector_attribute_ = name();
+        selector_attribute_ = std::move(old_name);
     }
-    FileLevelSymbol::rename(new_name);
 }
 
 bool NonTypeSymbol::is_ctype() const noexcept
