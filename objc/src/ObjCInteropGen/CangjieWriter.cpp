@@ -17,7 +17,6 @@
 #include "PrintUtils.h"
 #include "Strings.h"
 #include "Symbol.h"
-#include "SymbolVisitor.h"
 #include "Universe.h"
 
 namespace objcgen {
@@ -122,96 +121,43 @@ private:
     IndentingStringBuf fos_buf;
 };
 
-static std::string_view current_package_name;
+static const Package* current_package;
 static std::set<std::string> imports;
 
 class PackageFileScope final : NonCopyable {
-    const std::string_view package_name_;
+    const Package* const package_;
 
 public:
-    [[nodiscard]] explicit PackageFileScope(std::string_view package_name) noexcept : package_name_(package_name)
+    [[nodiscard]] explicit PackageFileScope(const Package& package) noexcept : package_(&package)
     {
-        assert(current_package_name.empty());
-        assert(!package_name.empty());
+        assert(!current_package);
         assert(imports.empty());
-        current_package_name = package_name;
+        current_package = &package;
     }
 
     ~PackageFileScope()
     {
-        assert(current_package_name == package_name_);
-        current_package_name = {};
+        assert(current_package == package_);
+        current_package = nullptr;
         imports.clear();
     }
 };
 
-[[nodiscard]] static std::string symbol_to_import_name(const FileLevelSymbol& symbol)
+static void collect_import(const FileLevelSymbol& symbol)
 {
-    assert(!current_package_name.empty());
-    const auto& symbol_package_name = symbol.cangjie_package_name();
-    if (symbol_package_name.empty() || symbol_package_name == current_package_name) {
-        return {};
+    assert(current_package);
+    const auto* symbol_package = symbol.package();
+    if (symbol_package && symbol_package != current_package) {
+        imports.emplace(symbol_package->cangjie_name() + '.' + symbol.name());
     }
-    return symbol_package_name + '.' + symbol.name();
-}
-
-class ImportCollectVisitor final : public SymbolVisitor {
-public:
-    ImportCollectVisitor() noexcept : SymbolVisitor(false)
-    {
-    }
-
-private:
-    void visit_impl(const Type& value)
-    {
-        visit_impl(value.symbol());
-    }
-
-    void visit_type_impl(const Type& value) override
-    {
-        visit_impl(value);
-    }
-
-    void visit_type_impl(const NamedTypeSymbol& value) override
-    {
-        visit_impl(value);
-    }
-
-    void visit_type_argument_impl(const TypeLikeSymbol& owner, const Type& value) override
-    {
-        // If this is a type argument of an Objective-C generic type, ignore it.  Type
-        // arguments are erased and may be printed inside comments only.
-        if (owner.is<TypeDeclarationSymbol>()) {
-            return;
-        }
-
-        visit_impl(value);
-    }
-
-    void visit_member_impl(const NonTypeSymbol& value) override
-    {
-        visit_impl(value);
-    }
-
-    void visit_impl(const FileLevelSymbol& symbol) override;
-};
-
-void ImportCollectVisitor::visit_impl(const FileLevelSymbol& symbol)
-{
-    auto import_name = symbol_to_import_name(symbol);
-    if (!import_name.empty()) {
-        imports.emplace(std::move(import_name));
-    }
-}
-
-static void collect_import(const TypeLikeSymbol& symbol)
-{
-    ImportCollectVisitor().visit(symbol);
 }
 
 static void collect_import(const Type& type)
 {
-    ImportCollectVisitor().visit(type);
+    collect_import(type.symbol());
+    for (const auto& param : type.parameters()) {
+        collect_import(param);
+    }
 }
 
 // Currently in the NORMAL mode, Objective-C compatible types are primitives,
@@ -261,14 +207,9 @@ static bool is_objc_compatible(const Type& type)
     }
 }
 
-[[nodiscard]] static bool write_type_alias(IndentingStringStream& output, const TypeAliasSymbol& alias)
+static void write_type_alias(IndentingStringStream& output, const TypeAliasSymbol& alias)
 {
     const auto& target = alias.target();
-    if (alias.name() == target.name()) {
-        // typedef struct S S;
-        // In the Cangjie output, the target symbol is used directly instead of this typedef, do not print it.
-        return false;
-    }
 
     auto supported = !normal_mode() || target.is_ctype() || is_objc_compatible(target);
     if (supported) {
@@ -280,7 +221,6 @@ static bool is_objc_compatible(const Type& type)
     if (!supported) {
         output.reset_comment();
     }
-    return true;
 }
 
 class DefaultValuePrinter;
@@ -402,12 +342,12 @@ static void write_method_parameters(std::ostream& output, const NonTypeSymbol& m
     output << ')';
 }
 
-static void write_foreign_name(
-    std::ostream& output, std::string_view attribute, std::string_view value, bool hide_foreign_name)
+static void write_foreign_name(std::ostream& output, std::string_view attribute, std::string_view value)
 {
     // FE supports foreign name attributes in @ObjCMirror classes only.  In the
     // GENERATE_DEFINITIONS mode, where @ObjCMirror is not used, the foreign name
     // attributes are commented out.
+    auto hide_foreign_name = generate_definitions_mode();
     if (hide_foreign_name) {
         output << "/* ";
     }
@@ -433,7 +373,7 @@ static void write_foreign_name(std::ostream& output, const NonTypeSymbol& method
     // Cangjie, differs from its selector.
     const auto& selector_attribute = method.selector_attribute();
     if (!selector_attribute.empty()) {
-        write_foreign_name(output, foreign_name_attribute, selector_attribute, generate_definitions_mode());
+        write_foreign_name(output, foreign_name_attribute, selector_attribute);
     }
 }
 
@@ -469,7 +409,7 @@ static void write_foreign_name(std::ostream& output, const NonTypeSymbol& method
             }
             assert(t1.parameters().size() == 1);
             assert(t2.parameters().size() == 1);
-            return same_types(t1.parameters().front(), t2.parameters().front());
+            return same_types(*t1.parameters().begin(), *t2.parameters().begin());
         case Type::Kind::Function: {
             if (t2.kind() != Type::Kind::Function) {
                 return false;
@@ -512,61 +452,12 @@ static void write_foreign_name(std::ostream& output, const NonTypeSymbol& method
     return false;
 }
 
-[[nodiscard]] static NonTypeSymbol* get_overridden_method(const TypeDeclarationSymbol& decl, const NonTypeSymbol& prop)
-{
-    const auto& selector = prop.getter();
-    auto is_static = prop.is_static();
-    for (auto& base_decl : decl.bases()) {
-        for (auto& member : base_decl.members()) {
-            if (member.is_member_method() && member.is_static() == is_static && member.selector() == selector) {
-                return &member;
-            }
-        }
-        auto* overridden_method = get_overridden_method(base_decl, prop);
-        if (overridden_method) {
-            return overridden_method;
-        }
-    }
-    return nullptr;
-}
-
-[[nodiscard]] static const NonTypeSymbol* get_property(
-    const TypeDeclarationSymbol& decl, const NonTypeSymbol& getter_or_setter)
-{
-    const auto& selector = getter_or_setter.selector();
-    auto is_static = getter_or_setter.is_static();
-    for (auto& member : decl.members()) {
-        if (member.is_property() && member.is_static() == is_static &&
-            (member.getter() == selector || member.setter() == selector)) {
-            return &member;
-        }
-    }
-    return nullptr;
-}
-
-[[nodiscard]] static const NonTypeSymbol* get_method_by_selector(
-    const TypeDeclarationSymbol& decl, const std::string& selector, bool is_static)
+[[nodiscard]] static NonTypeSymbol* get_method_by_selector(
+    TypeDeclarationSymbol& decl, const std::string& selector, bool is_static)
 {
     for (auto& member : decl.members()) {
         if (member.is_member_method() && member.is_static() == is_static && member.selector() == selector) {
             return &member;
-        }
-    }
-    return nullptr;
-}
-
-[[nodiscard]] static NonTypeSymbol* get_overridden_property(
-    const TypeDeclarationSymbol& decl, const std::string& getter, bool is_static)
-{
-    for (auto& base_decl : decl.bases()) {
-        for (auto& member : base_decl.members()) {
-            if (member.is_property() && member.is_static() == is_static && member.getter() == getter) {
-                return &member;
-            }
-        }
-        auto* overridden_prop = get_overridden_property(base_decl, getter, is_static);
-        if (overridden_prop) {
-            return overridden_prop;
         }
     }
     return nullptr;
@@ -598,39 +489,84 @@ static void print_objc_optional(std::ostream& output, const NonTypeSymbol& membe
 
 static void print_getter_setter_names(std::ostream& output, const NonTypeSymbol& prop)
 {
-    assert(prop.kind() == NonTypeSymbol::Kind::Property);
+    assert(prop.is_property());
     const auto& name = prop.name();
     const auto& getter_name = prop.getter();
     bool standard_getter = getter_name == name;
-    auto hide_foreign_name = generate_definitions_mode();
     if (prop.is_readonly()) {
         if (!standard_getter) {
-            write_foreign_name(output, "@ForeignGetterName", getter_name, hide_foreign_name);
+            write_foreign_name(output, "@ForeignGetterName", getter_name);
         }
     } else {
         const auto& setter_name = prop.setter();
         if (is_standard_setter_name(name, setter_name)) {
             if (!standard_getter) {
-                write_foreign_name(output, "@ForeignGetterName", getter_name, hide_foreign_name);
+                write_foreign_name(output, "@ForeignGetterName", getter_name);
             }
         } else if (standard_getter) {
-            write_foreign_name(output, "@ForeignSetterName", setter_name, hide_foreign_name);
+            write_foreign_name(output, "@ForeignSetterName", setter_name);
         } else if (is_standard_setter_name(getter_name, setter_name)) {
-            write_foreign_name(output, foreign_name_attribute, getter_name, hide_foreign_name);
+            write_foreign_name(output, foreign_name_attribute, getter_name);
         } else {
-            write_foreign_name(output, "@ForeignGetterName", getter_name, hide_foreign_name);
-            write_foreign_name(output, "@ForeignSetterName", setter_name, hide_foreign_name);
+            write_foreign_name(output, "@ForeignGetterName", getter_name);
+            write_foreign_name(output, "@ForeignSetterName", setter_name);
         }
     }
 }
 
+// The current FE issues a compiler error on functions, properties, as well as
+// fields in @ObjCMirror classes, if their definitions reference a type which
+// name coincides with the name of the function/property/field itself.  As a
+// workaround, comment out such objects.
+[[nodiscard]] static bool has_name_clash_with_referenced_types(
+    NonTypeSymbol& symbol, const std::string& name, PrintFormat format)
+{
+    class Visitor : public FileLevelSymbolVisitor {
+    public:
+        Visitor(const std::string& name, PrintFormat format) noexcept : name_(name), format_(format)
+        {
+        }
+
+        [[nodiscard]] bool operator()(FileLevelSymbol& symbol) const override
+        {
+            // See the comment in 'TypeAliasSymbol::print'
+            if (mode != Mode::EXPERIMENTAL && format_ == PrintFormat::EmitCangjieStrict) {
+                auto* type_alias = dynamic_cast<TypeAliasSymbol*>(&symbol);
+                if (type_alias) {
+                    auto& target = type_alias->target();
+                    if (target.has_symbol_assigned()) {
+                        auto canonical_type = type_alias->canonical_type();
+                        if (canonical_type.is_ctype() && canonical_type.contains_pointer_or_func()) {
+                            return (*this)(target);
+                        }
+                    }
+                }
+            }
+
+            return name_ == symbol.name();
+        }
+
+        using FileLevelSymbolVisitor::operator();
+
+    private:
+        const std::string& name_;
+
+        const PrintFormat format_;
+    };
+    return symbol.any_of_referenced_types(Visitor(name, format));
+}
+
 enum class FuncKind { TopLevelFunc, InterfaceMethod, ClassMethod };
 
-static void write_function(
-    IndentingStringStream& output, FuncKind kind, const NonTypeSymbol& function, PrintFormat format)
+static void write_function(IndentingStringStream& output, FuncKind kind, NonTypeSymbol& function, PrintFormat format)
 {
+    if (function.is_hidden()) {
+        return;
+    }
     const auto& return_type = function.return_type();
-    auto supported = !normal_mode() || (is_objc_compatible(return_type) && is_objc_compatible_parameters(function));
+    const auto& name = function.name();
+    auto supported = (!normal_mode() || (is_objc_compatible(return_type) && is_objc_compatible_parameters(function))) &&
+        !has_name_clash_with_referenced_types(function, name, format);
     if (!supported) {
         output.set_comment();
     }
@@ -639,21 +575,16 @@ static void write_function(
         case FuncKind::TopLevelFunc: {
             is_ctype = function.is_ctype();
 
-            // Foreign @C functions cannot have a foreign name
-            const auto& selector_attribute = function.selector_attribute();
             if (is_ctype) {
                 output << "foreign ";
-                if (!selector_attribute.empty()) {
-                    write_foreign_name(output, foreign_name_attribute, selector_attribute, true);
-                }
             } else {
-                auto generate_definitions = generate_definitions_mode();
-                if (!generate_definitions) {
+                if (!generate_definitions_mode()) {
                     output << "@ObjCMirror\n";
                     format = PrintFormat::EmitCangjieStrict;
                 }
+                const auto& selector_attribute = function.selector_attribute();
                 if (!selector_attribute.empty()) {
-                    write_foreign_name(output, foreign_name_attribute, selector_attribute, generate_definitions);
+                    write_foreign_name(output, foreign_name_attribute, selector_attribute);
                 }
                 output << "public ";
             }
@@ -694,7 +625,7 @@ static void write_function(
             }
         }
     }
-    output << "func " << escape_keyword(function.name());
+    output << "func " << escape_keyword(name);
     write_method_parameters(output, function, format);
     write_type(output, return_type, format);
     if (generate_definitions_mode() && !is_ctype) {
@@ -712,40 +643,17 @@ static void write_function(
     output << '\n';
 }
 
-enum class DeclKind { CStruct, ObjCStruct, Interface, Class };
-
-// Whether a property or field with the specified type and name is currently
-// supported by FE in declarations of the specified kind.  If not, then in the
-// NORMAL mode it will be commented out. In the EXPERIMENTAL and
-// GENERATE_DEFINITIONS modes, any property/field is supported.
-[[nodiscard]] static bool is_field_type_supported(DeclKind decl_kind, const Type& type, const std::string& name)
-{
-    if (!normal_mode()) {
-        return true;
-    }
-    switch (decl_kind) {
-        case DeclKind::CStruct:
-            assert(type.is_ctype());
-            return true;
-        case DeclKind::ObjCStruct:
-            return true;
-        default:
-            assert(decl_kind == DeclKind::Class || decl_kind == DeclKind::Interface);
-
-            // Current FE fails to process a field or property of an @ObjCMirror class if
-            // the field and its type have the same name (no such problem in non-@ObjCMirror
-            // declarations).  As a workaround, comment out such fields.
-            return name != type.name() && is_objc_compatible(type);
-    }
-}
-
-static void print_objcmirror_attribute(std::ostream& output, bool supported)
+static void print_objcmirror_attribute(std::ostream& output, const NamedTypeSymbol& decl, bool supported)
 {
     auto hide_objcmirror_attribute = !supported;
     if (hide_objcmirror_attribute) {
         output << "/* ";
     }
     output << "@ObjCMirror";
+    const auto& objc_name_attribute = decl.objc_name_attribute();
+    if (!objc_name_attribute.empty()) {
+        output << "[\"" << objc_name_attribute << "\"]";
+    }
     if (hide_objcmirror_attribute) {
         output << " */";
     }
@@ -759,14 +667,20 @@ public:
     void write();
 
 private:
+    // Whether a property or ivar with the specified type and name is currently
+    // supported by FE.  If not, then in the NORMAL mode it will be commented out.
+    // In the EXPERIMENTAL and GENERATE_DEFINITIONS modes, any property/ivar is
+    // supported.
+    [[nodiscard]] bool is_property_or_ivar_type_supported(
+        NonTypeSymbol& member, const Type& type, const std::string& name) const;
+
     void write_property(const NonTypeSymbol& prop);
     void write_constructor(NonTypeSymbol& constructor);
-    void write_instance_variable(const NonTypeSymbol& ivar);
+    void write_instance_variable(NonTypeSymbol& ivar);
     void write_field(const NonTypeSymbol& field);
 
     IndentingStringStream& output_;
     TypeDeclarationSymbol& decl_;
-    DeclKind decl_kind_;
     PrintFormat format_;
     bool any_constructor_exists_ = false;
     bool default_constructor_exists_ = false;
@@ -777,40 +691,46 @@ TypeDeclarationWriter::TypeDeclarationWriter(IndentingStringStream& output, Type
 {
 }
 
+bool TypeDeclarationWriter::is_property_or_ivar_type_supported(
+    NonTypeSymbol& member, const Type& type, const std::string& name) const
+{
+    return !normal_mode() || (is_objc_compatible(type) && !has_name_clash_with_referenced_types(member, name, format_));
+}
+
 void TypeDeclarationWriter::write_property(const NonTypeSymbol& prop)
 {
     assert(prop.is_property());
     auto is_static = prop.is_static();
-    if (get_overridden_method(decl_, prop)) {
-        return;
-    }
     const auto& getter_name = prop.getter();
-    if (get_overridden_property(decl_, getter_name, is_static)) {
-        return;
-    }
+
+    // For properties, not the property itself but its getter is passed to
+    // 'is_property_or_ivar_type_supported'.  That is because
+    // NonTypeSymbol::visit_referenced_types still cannot properly visit all types.
+    // Should be fixed later.
     auto* getter = get_method_by_selector(decl_, getter_name, is_static);
     assert(getter);
     const auto& return_type = getter->return_type();
     assert(!return_type.is_unit());
     const auto& name = prop.name();
-    auto supported = is_field_type_supported(decl_kind_, return_type, name);
+    auto supported = is_property_or_ivar_type_supported(*getter, return_type, name);
     if (!supported) {
         output_.set_comment();
     }
 
     // Only interfaces can have @ObjCOptional members, not classes
-    assert(!prop.is_objc_optional() || decl_kind_ == DeclKind::Interface);
-    if (decl_kind_ == DeclKind::Interface) {
+    auto is_protocol = decl_.is(NamedTypeSymbol::Kind::Protocol);
+    assert(!prop.is_objc_optional() || is_protocol);
+    if (is_protocol) {
         print_objc_optional(output_, prop);
     }
 
     print_getter_setter_names(output_, prop);
-    if (decl_kind_ != DeclKind::Interface) {
+    if (!is_protocol) {
         output_ << "public ";
     }
     if (is_static) {
         output_ << "static ";
-    } else if (decl_kind_ != DeclKind::Interface) {
+    } else if (!is_protocol) {
         output_ << "open ";
     }
     if (!prop.is_readonly()) {
@@ -839,8 +759,8 @@ void TypeDeclarationWriter::write_property(const NonTypeSymbol& prop)
 void TypeDeclarationWriter::write_constructor(NonTypeSymbol& constructor)
 {
     assert(constructor.is_constructor());
-    auto supported =
-        decl_kind_ != DeclKind::Interface && (!normal_mode() || is_objc_compatible_parameters(constructor));
+    auto is_protocol = decl_.is(NamedTypeSymbol::Kind::Protocol);
+    auto supported = !is_protocol && (!normal_mode() || is_objc_compatible_parameters(constructor));
     if (supported) {
         any_constructor_exists_ = true;
         if (!default_constructor_exists_) {
@@ -857,7 +777,7 @@ void TypeDeclarationWriter::write_constructor(NonTypeSymbol& constructor)
         // The constructor will be written as a static method with its original name.
         write_foreign_name(output_, constructor);
 
-        if (decl_kind_ != DeclKind::Interface) {
+        if (!is_protocol) {
             output_ << "public ";
         }
         output_ << "static func " << escape_keyword(constructor.name());
@@ -865,7 +785,7 @@ void TypeDeclarationWriter::write_constructor(NonTypeSymbol& constructor)
 
         const auto& return_type = constructor.return_type();
         write_type(output_, return_type, format_);
-        if (generate_definitions_mode() && decl_kind_ != DeclKind::Interface) {
+        if (generate_definitions_mode() && !is_protocol) {
             output_ << " { " << default_value(return_type, format_) << " }";
         }
         if (supported) {
@@ -877,15 +797,15 @@ void TypeDeclarationWriter::write_constructor(NonTypeSymbol& constructor)
         constexpr std::string_view default_constructor_name = "init";
         const auto& selector = constructor.selector();
         if (selector != default_constructor_name) {
-            write_foreign_name(output_, foreign_name_attribute, selector, generate_definitions_mode());
+            write_foreign_name(output_, foreign_name_attribute, selector);
         }
 
-        if (decl_kind_ != DeclKind::Interface) {
+        if (!is_protocol) {
             output_ << "public ";
         }
         output_ << default_constructor_name;
         write_method_parameters(output_, constructor, format_);
-        if (generate_definitions_mode() && decl_kind_ != DeclKind::Interface) {
+        if (generate_definitions_mode() && !is_protocol) {
             output_ << " { }";
         }
     }
@@ -895,7 +815,7 @@ void TypeDeclarationWriter::write_constructor(NonTypeSymbol& constructor)
     output_ << '\n';
 }
 
-void TypeDeclarationWriter::write_instance_variable(const NonTypeSymbol& ivar)
+void TypeDeclarationWriter::write_instance_variable(NonTypeSymbol& ivar)
 {
     assert(ivar.is_instance_variable());
     assert(ivar.is_instance());
@@ -903,9 +823,13 @@ void TypeDeclarationWriter::write_instance_variable(const NonTypeSymbol& ivar)
     assert(!return_type.is_unit());
     assert(ivar.is_public() || ivar.is_protected());
     const auto& name = ivar.name();
-    auto supported = is_field_type_supported(decl_kind_, return_type, name);
+    auto supported = is_property_or_ivar_type_supported(ivar, return_type, name);
     if (!supported) {
         output_.set_comment();
+    }
+    const auto& selector_attribute = ivar.selector_attribute();
+    if (!selector_attribute.empty()) {
+        write_foreign_name(output_, foreign_name_attribute, selector_attribute);
     }
     output_ << (ivar.is_public() ? "public" : "protected") << " var " << escape_keyword(name);
     write_type(output_, return_type, format_);
@@ -929,21 +853,12 @@ void TypeDeclarationWriter::write_field(const NonTypeSymbol& field)
     }
     const auto& return_type = field.return_type();
     assert(!return_type.is_unit());
-    const auto& name = field.name();
-    auto supported = is_field_type_supported(decl_kind_, return_type, name);
-    if (!supported) {
-        output_.set_comment();
-    }
-    output_ << "public var " << escape_keyword(name);
+    output_ << "public var " << escape_keyword(field.name());
     write_type(output_, return_type, format_);
     if (mode != Mode::EXPERIMENTAL) {
         output_ << " = " << default_value(return_type, format_);
     }
-    if (supported) {
-        collect_import(return_type);
-    } else {
-        output_.reset_comment();
-    }
+    collect_import(return_type);
     output_ << '\n';
 }
 
@@ -960,41 +875,25 @@ void TypeDeclarationWriter::write()
     // classes/interfaces and structures.
     switch (decl_.kind()) {
         case NamedTypeSymbol::Kind::Protocol:
-            decl_kind_ = DeclKind::Interface;
             format_ = PrintFormat::EmitCangjieStrict;
-            print_objcmirror_attribute(output_, !generate_definitions_mode());
+            print_objcmirror_attribute(output_, decl_, !generate_definitions_mode());
+            output_ << "public interface";
             break;
         case NamedTypeSymbol::Kind::Struct:
         case NamedTypeSymbol::Kind::Union:
+            format_ = PrintFormat::EmitCangjie;
             if (decl_.is_ctype()) {
-                decl_kind_ = DeclKind::CStruct;
-                format_ = PrintFormat::EmitCangjie;
                 output_ << "@C\n";
             } else {
-                decl_kind_ = DeclKind::ObjCStruct;
-                format_ = PrintFormat::EmitCangjie;
-                print_objcmirror_attribute(output_, mode == Mode::EXPERIMENTAL);
+                print_objcmirror_attribute(output_, decl_, mode == Mode::EXPERIMENTAL);
             }
+            output_ << "public struct";
             break;
         default:
             assert(decl_.kind() == NamedTypeSymbol::Kind::Interface);
-            decl_kind_ = DeclKind::Class;
             format_ = PrintFormat::EmitCangjieStrict;
-            print_objcmirror_attribute(output_, !generate_definitions_mode());
-            break;
-    }
-    output_ << "public ";
-    switch (decl_kind_) {
-        case DeclKind::Interface:
-            output_ << "interface";
-            break;
-        case DeclKind::CStruct:
-        case DeclKind::ObjCStruct:
-            output_ << "struct";
-            break;
-        default:
-            assert(decl_kind_ == DeclKind::Class);
-            output_ << "open class";
+            print_objcmirror_attribute(output_, decl_, !generate_definitions_mode());
+            output_ << "public open class";
             break;
     }
     output_ << ' ' << escape_keyword(decl_.name());
@@ -1018,23 +917,32 @@ void TypeDeclarationWriter::write()
     output_ << " {\n";
     output_.indent();
     for (auto&& member : decl_.members()) {
-        if (member.is_property()) {
-            write_property(member);
-        } else if (member.is_constructor()) {
-            write_constructor(member);
-        } else if (member.is_member_method()) {
-            if (!get_property(decl_, member) &&
-                !get_overridden_property(decl_, member.selector(), member.is_static())) {
+        if (member.is_hidden()) {
+            continue;
+        }
+        auto closure_depth = Config::closure_depth();
+        if (closure_depth < UNLIMITED_CLOSURE_DEPTH && member.calculate_reference_level(decl_) > closure_depth) {
+            continue;
+        }
+        switch (member.kind()) {
+            case NonTypeSymbol::Kind::Property:
+                write_property(member);
+                break;
+            case NonTypeSymbol::Kind::Constructor:
+                write_constructor(member);
+                break;
+            case NonTypeSymbol::Kind::MemberMethod:
                 write_function(output_,
-                    decl_kind_ == DeclKind::Interface ? FuncKind::InterfaceMethod : FuncKind::ClassMethod, member,
-                    format_);
-            }
-        } else if (member.is_instance_variable()) {
-            write_instance_variable(member);
-        } else if (member.is_field()) {
-            write_field(member);
-        } else {
-            assert(false);
+                    decl_.is(NamedTypeSymbol::Kind::Protocol) ? FuncKind::InterfaceMethod : FuncKind::ClassMethod,
+                    member, format_);
+                break;
+            case NonTypeSymbol::Kind::InstanceVariable:
+                write_instance_variable(member);
+                break;
+            default:
+                assert(member.is_field());
+                write_field(member);
+                break;
         }
     }
 
@@ -1072,7 +980,7 @@ void write_cangjie()
         for (auto&& package_file : package) {
             assert(&package_file.package() == &package);
 
-            PackageFileScope scope(package_file.package().cangjie_name());
+            PackageFileScope scope(package);
 
             const auto& file_path = package_file.output_path();
             create_directories(file_path.parent_path());
@@ -1080,9 +988,7 @@ void write_cangjie()
 
             for (auto* symbol : package_file) {
                 if (auto* alias = dynamic_cast<TypeAliasSymbol*>(symbol)) {
-                    if (!write_type_alias(output, *alias)) {
-                        continue;
-                    }
+                    write_type_alias(output, *alias);
                 } else if (auto* type = dynamic_cast<TypeDeclarationSymbol*>(symbol)) {
                     TypeDeclarationWriter(output, *type).write();
                 } else if (const auto* enum_decl = dynamic_cast<const EnumDeclarationSymbol*>(symbol)) {

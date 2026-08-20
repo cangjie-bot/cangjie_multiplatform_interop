@@ -11,31 +11,11 @@
 #include "InputFile.h"
 #include "Logging.h"
 #include "Package.h"
-#include "SymbolVisitor.h"
 #include "Universe.h"
 
 namespace objcgen {
 
-static PackageFile& input_to_output(Package& package, const InputFile& input)
-{
-    const auto file_name = input.path().stem().u8string();
-    auto* file = package[file_name];
-    return *(file ? file : new PackageFile(file_name, package));
-}
-
-static PackageFile& input_to_output(Package& package, const FileLevelSymbol& symbol)
-{
-    auto* input_file = symbol.defining_file();
-    assert(input_file);
-    return input_to_output(package, *input_file);
-}
-
-static bool check_symbol(FileLevelSymbol& symbol) noexcept
-{
-    return !symbol.is<PrimitiveTypeSymbol>() && symbol.is_file_level();
-}
-
-static bool set_package(FileLevelSymbol& symbol)
+[[nodiscard]] static bool set_package(FileLevelSymbol& symbol)
 {
     bool success = true;
 
@@ -55,8 +35,9 @@ static bool set_package(FileLevelSymbol& symbol)
             continue;
         }
 
+        assert(symbol.output_status() == OutputStatus::Undefined);
         symbol.set_output_status(OutputStatus::Root);
-        symbol.set_package_file(input_to_output(package, symbol));
+        symbol.register_for_package(package);
         package_found = true;
     }
 
@@ -66,7 +47,7 @@ static bool set_package(FileLevelSymbol& symbol)
     return success;
 }
 
-static bool mark_roots()
+[[nodiscard]] static bool mark_roots()
 {
     auto success = true;
 
@@ -77,7 +58,7 @@ static bool mark_roots()
         }
     }
 
-    for (auto&& type : universe.all_declarations()) {
+    for (auto&& type : universe.types()) {
         // Omit types having no definition in source files (those are built-ins like
         // `id`).
         if (!type.defining_file()) {
@@ -90,60 +71,6 @@ static bool mark_roots()
     }
 
     return success;
-}
-
-class SymbolReferenceCollector final : public SymbolVisitor {
-
-public:
-    [[nodiscard]] explicit SymbolReferenceCollector(FileLevelSymbol& symbol) noexcept
-        : SymbolVisitor(true), symbol_(symbol)
-    {
-    }
-
-    void visit()
-    {
-        SymbolVisitor::visit(symbol_);
-    }
-
-private:
-    FileLevelSymbol& symbol_;
-
-    void do_visit_impl(const FileLevelSymbol& value);
-
-    void visit_type_impl(const Type& value) override
-    {
-        do_visit_impl(value.symbol());
-    }
-
-    void visit_type_impl(const NamedTypeSymbol& value) override
-    {
-        do_visit_impl(value);
-    }
-
-    void visit_type_argument_impl(const TypeLikeSymbol&, const Type& value) override
-    {
-        do_visit_impl(value.symbol());
-    }
-
-    void visit_member_impl(const NonTypeSymbol& value) override
-    {
-        do_visit_impl(value);
-    }
-
-    void visit_impl(const FileLevelSymbol&) override
-    {
-        // Skip the root type of this visit session to avoid self-referencing of each type.
-    }
-};
-
-void SymbolReferenceCollector::do_visit_impl(const FileLevelSymbol& value)
-{
-    if (&value != &symbol_ // Self-reference
-        && value.is_file_level() && value.defining_file()) {
-        if (symbol_.add_reference(const_cast<FileLevelSymbol&>(value)) && verbosity >= LogLevel::TRACE) {
-            std::cerr << "Entity `" << symbol_.name() << "` references `" << value.name() << "`\n";
-        }
-    }
 }
 
 class ScopeBuilderStatus final {
@@ -181,53 +108,61 @@ static void add_all_symbol_references()
 {
     for (const auto& input_file : inputs) {
         for (auto& symbol : input_file) {
-            assert(check_symbol(symbol));
-            SymbolReferenceCollector(symbol).visit();
+            assert(symbol.defining_file());
+            symbol.collect_referenced_symbols();
+        }
+    }
+}
+
+static void set_root_reference_level() noexcept
+{
+    for (const auto& input_file : inputs) {
+        for (auto& symbol : input_file) {
+            if (symbol.output_status() == OutputStatus::Root) {
+                symbol.set_reference_level(0);
+            }
         }
     }
 }
 
 static void symbol_references_to_packages_pass(ScopeBuilderStatus& status, FileLevelSymbol& symbol, bool roots_only)
 {
-    assert(check_symbol(symbol));
+    assert(symbol.defining_file());
 
     if (symbol.output_status() != (roots_only ? OutputStatus::Root : OutputStatus::Referenced)) {
         return;
     }
 
     auto* package = symbol.package();
-    assert(package);
-
-    for (auto* reference : symbol.references_symbols()) {
-        assert(reference);
-        switch (reference->output_status()) {
-            case OutputStatus::Undefined: {
-                assert(!reference->package());
-                const auto* input_file = reference->defining_file();
-                assert(input_file);
-                auto& package_file = input_to_output(*package, *input_file);
-                reference->set_output_status(OutputStatus::Referenced);
-                reference->add_referencing_package(*package);
-                reference->set_package_file(package_file);
-                status.mark_changed();
-                break;
-            }
-            case OutputStatus::Referenced:
-            case OutputStatus::ReferencedMarked: {
-                const auto* reference_package = reference->package();
-                assert(reference_package);
-                if (reference_package != package) {
-                    // It makes sense to build graph of dependencies between packages and resolve
-                    // the most common cases by selecting the closest common dependency package.
-                    reference->set_output_status(OutputStatus::MultiReferenced);
+    if (package) {
+        for (auto* reference : symbol.references_symbols()) {
+            assert(reference);
+            switch (reference->output_status()) {
+                case OutputStatus::Undefined:
+                    assert(!reference->package());
+                    reference->set_output_status(OutputStatus::Referenced);
                     reference->add_referencing_package(*package);
-                    status.mark_error();
+                    if (reference->reference_level() <= Config::closure_depth()) {
+                        reference->register_for_package(*package);
+                    }
+                    status.mark_changed();
+                    break;
+                case OutputStatus::Referenced:
+                case OutputStatus::ReferencedMarked: {
+                    const auto* reference_package = reference->package();
+                    if (reference_package && reference_package != package) {
+                        // It makes sense to build graph of dependencies between packages and resolve
+                        // the most common cases by selecting the closest common dependency package.
+                        reference->set_output_status(OutputStatus::MultiReferenced);
+                        reference->add_referencing_package(*package);
+                        status.mark_error();
+                    }
+                    break;
                 }
-                break;
+                default:
+                    assert(reference->package());
+                    break;
             }
-            default:
-                assert(reference->package());
-                break;
         }
     }
     if (!roots_only) {
@@ -236,7 +171,7 @@ static void symbol_references_to_packages_pass(ScopeBuilderStatus& status, FileL
     }
 }
 
-static ScopeBuilderStatus symbol_references_to_packages_pass(bool roots_only)
+[[nodiscard]] static ScopeBuilderStatus symbol_references_to_packages_pass(bool roots_only)
 {
     ScopeBuilderStatus status;
 
@@ -249,8 +184,10 @@ static ScopeBuilderStatus symbol_references_to_packages_pass(bool roots_only)
     return status;
 }
 
-static bool symbol_references_to_packages()
+[[nodiscard]] static bool symbol_references_to_packages()
 {
+    set_root_reference_level();
+
     auto status = symbol_references_to_packages_pass(true);
     auto error = status.error();
     while (status.changed()) {
@@ -271,13 +208,17 @@ static bool symbol_references_to_packages()
                     break;
                 case OutputStatus::Referenced:
                 case OutputStatus::ReferencedMarked:
-                    assert(symbol.package());
-                    assert(symbol.package_file());
                     if (verbosity >= LogLevel::TRACE) {
-                        std::cerr << "Entity `" << symbol.name() << "` from `" << input_file.path().u8string()
-                                  << "` is only used from `" << symbol.package()->cangjie_name()
-                                  << "` package, assigning `" << symbol.package_file()->output_path().u8string() << '`'
-                                  << std::endl;
+                        std::cerr << "Entity `" << symbol.name() << "` from `" << input_file.path().u8string();
+                        const auto* package = symbol.package();
+                        if (package) {
+                            assert(symbol.package_file());
+                            std::cerr << "` is only used from `" << package->cangjie_name() << "` package, assigning `"
+                                      << symbol.package_file()->output_path().u8string() << '`';
+                        } else {
+                            std::cerr << "` was filtered out by --closure-depth";
+                        }
+                        std::cerr << std::endl;
                     }
                     break;
                 case OutputStatus::MultiReferenced:
@@ -298,7 +239,7 @@ static void register_symbols_in_declaration_order()
 {
     for (const auto& input_file : inputs) {
         for (auto& symbol : input_file) {
-            assert(check_symbol(symbol));
+            assert(symbol.defining_file());
 
             if (auto* package_file = symbol.package_file()) {
                 package_file->add_symbol(symbol);
@@ -339,9 +280,12 @@ static void decay_parameter_types()
     for (auto& top_level : universe.top_level()) {
         decay_parameter_types(top_level);
     }
-    for (auto& type : universe.type_definitions()) {
-        for (auto& member : type.members()) {
-            decay_parameter_types(member);
+    for (auto& type : universe.types()) {
+        auto* decl = dynamic_cast<TypeDeclarationSymbol*>(&type);
+        if (decl) {
+            for (auto& member : decl->members()) {
+                decay_parameter_types(member);
+            }
         }
     }
 }

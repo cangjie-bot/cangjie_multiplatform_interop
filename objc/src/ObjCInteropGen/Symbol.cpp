@@ -13,7 +13,6 @@
 #include "Mode.h"
 #include "Package.h"
 #include "PrintUtils.h"
-#include "SymbolVisitor.h"
 #include "Universe.h"
 
 namespace objcgen {
@@ -105,15 +104,44 @@ Symbol::Symbol(std::string name) noexcept : name_(std::move(name))
 {
 }
 
-void Symbol::rename(std::string_view new_name)
-{
-    assert(!new_name.empty());
-    name_ = new_name;
-}
-
 void Symbol::print(std::ostream& stream, [[maybe_unused]] PrintFormat format) const
 {
     stream << escape_keyword(name_);
+}
+
+std::string Symbol::rename(std::string new_name) noexcept
+{
+    assert(!new_name.empty());
+    auto old_name = std::move(name_);
+    name_ = std::move(new_name);
+    return old_name;
+}
+
+bool FileLevelSymbolVisitor::operator()(Type& type) const
+{
+    if ((*this)(type.symbol())) {
+        return true;
+    }
+    for (auto& param : type.parameters()) {
+        if ((*this)(param)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool FileLevelSymbol::set_reference_level(unsigned new_reference_level) noexcept
+{
+    if (!defining_file() || new_reference_level >= reference_level_) {
+        return false;
+    }
+    reference_level_ = new_reference_level;
+    ++new_reference_level;
+    for (auto* reference : references_symbols_) {
+        assert(reference);
+        reference->set_reference_level(new_reference_level);
+    }
+    return true;
 }
 
 void FileLevelSymbol::set_definition_location(const Location& location)
@@ -124,20 +152,23 @@ void FileLevelSymbol::set_definition_location(const Location& location)
     input_file_->add_symbol(*this);
 }
 
-bool FileLevelSymbol::add_reference(FileLevelSymbol& symbol)
+void FileLevelSymbol::collect_referenced_symbols()
 {
-    assert(&symbol != this);
-    assert(symbol.is_file_level());
-    assert(is_file_level());
-    return references_symbols_.insert(&symbol).second;
+    for_each_referenced_type([this](FileLevelSymbol& symbol) {
+        if (symbol.input_file_ && references_symbols_.insert(&symbol).second && verbosity >= LogLevel::TRACE) {
+            std::cerr << "Entity `" << name() << "` references `" << symbol.name() << "`\n";
+        }
+    });
 }
 
-void FileLevelSymbol::set_package_file(PackageFile& package_file) noexcept
+void FileLevelSymbol::register_for_package(Package& package)
 {
-    assert(cangjie_package_name_.empty());
     assert(!output_file_);
-    assert(this->is_file_level());
-    output_file_ = &package_file;
+    auto* input_file = defining_file();
+    assert(input_file);
+    const auto file_name = input_file->path().stem().u8string();
+    auto* file = package[file_name];
+    output_file_ = file ? file : &package.add_file(file_name);
 }
 
 [[nodiscard]] static bool referencing_packages_detailed_info() noexcept
@@ -151,15 +182,6 @@ void FileLevelSymbol::add_referencing_package(const Package& package)
     if (referencing_packages_detailed_info()) {
         referencing_packages_.insert(&package);
     }
-}
-
-const std::string& FileLevelSymbol::cangjie_package_name() const noexcept
-{
-    if (!cangjie_package_name_.empty()) {
-        assert(!output_file_);
-        return cangjie_package_name_;
-    }
-    return output_file_ ? output_file_->package().cangjie_name() : cangjie_package_name_;
 }
 
 Package* FileLevelSymbol::package() const noexcept
@@ -191,14 +213,6 @@ void FileLevelSymbol::print_referencing_packages_info() const
     assert(symbol1.input_file_);
     assert(symbol1.input_file_ == symbol2.input_file_);
     return symbol1.location_ < symbol2.location_;
-}
-
-void FileLevelSymbol::set_cangjie_package_name(std::string cangjie_package_name) noexcept
-{
-    assert(cangjie_package_name_.empty());
-    assert(!output_file_);
-    assert(!cangjie_package_name.empty());
-    cangjie_package_name_ = std::move(cangjie_package_name);
 }
 
 [[nodiscard]] static Type::Kind get_kind(const TypeLikeSymbol& type_symbol)
@@ -279,30 +293,6 @@ const Type& Type::varray_element_type() const noexcept
     return parameters_.front();
 }
 
-void Type::visit_impl(SymbolVisitor& visitor) const
-{
-    switch (kind_) {
-        case Kind::Unit:
-            break;
-        case Kind::Named:
-        case Kind::Function:
-        case Kind::Block:
-            assert(symbol_);
-            for (const auto& param : parameters_) {
-                visitor.visit_type_argument(*symbol_, param);
-            }
-            break;
-        case Kind::Pointer:
-        case Kind::VArray:
-            assert(symbol_);
-            assert(parameters_.size() == 1);
-            visitor.visit_type_argument(*symbol_, parameters_.front());
-            break;
-        default:
-            break;
-    }
-}
-
 bool Type::is_ctype() const noexcept
 {
     switch (kind_) {
@@ -321,7 +311,7 @@ bool Type::is_ctype() const noexcept
         case Kind::TypeParam:
             return false;
         default:
-            assert(kind_ == Kind::Unit || kind_ == Kind::Unexposed);
+            assert(kind_ == Kind::Unit);
             return true;
     }
 }
@@ -341,7 +331,7 @@ bool Type::contains_pointer_or_func() const noexcept
             return std::any_of(parameters_.begin(), parameters_.end(),
                 [](const auto& parameter) { return parameter.contains_pointer_or_func(); });
         default:
-            assert(kind_ == Kind::Unit || kind_ == Kind::TypeParam || kind_ == Kind::Unexposed);
+            assert(kind_ == Kind::Unit || kind_ == Kind::TypeParam);
             return false;
     }
 }
@@ -612,6 +602,34 @@ void Type::print_default_value(std::ostream& stream, PrintFormat format) const
     stream << emit_cangjie(*this) << "()";
 }
 
+ClosureDepthType Type::reference_level() const noexcept
+{
+    switch (kind_) {
+        case Kind::Named:
+            assert(symbol_);
+            return symbol_->reference_level();
+        case Kind::Pointer:
+            assert(parameters().size() == 1);
+            return parameters_.front().reference_level();
+        case Kind::Function:
+        case Kind::Block: {
+            ClosureDepthType result = 0;
+            for (const auto& param : parameters_) {
+                auto rl = param.reference_level();
+                if (rl > result) {
+                    result = rl;
+                }
+            }
+            return result;
+        }
+        case Kind::VArray:
+            return varray_element_type().reference_level();
+        default:
+            assert(kind_ == Kind::Unit || kind_ == Kind::TypeParam);
+            return 0;
+    }
+}
+
 Nullability Type::init_nullability(Nullability nullability) noexcept
 {
     switch (kind_) {
@@ -648,16 +666,18 @@ void Type::print_func_like(std::ostream& stream, std::string_view name, PrintFor
     }
 }
 
-void NamedTypeSymbol::rename(const std::string_view new_name)
-{
-    auto old_name = name();
-    TypeLikeSymbol::rename(new_name);
-    Universe::get().process_rename(*this, old_name);
-}
-
 void NamedTypeSymbol::print(std::ostream& stream, PrintFormat) const
 {
     stream << escape_keyword(name());
+}
+
+void NamedTypeSymbol::rename(std::string new_name) noexcept
+{
+    assert(!new_name.empty());
+    auto old_name = FileLevelSymbol::rename(std::move(new_name));
+    if (objc_name_.empty()) {
+        objc_name_ = std::move(old_name);
+    }
 }
 
 void NamedTypeSymbol::set_mapping(const TypeMapping& mapping) noexcept
@@ -692,18 +712,28 @@ NamedTypeSymbol& EnumDeclarationSymbol::underlying_type() const noexcept
     return *underlying_type_;
 }
 
-EnumConstantSymbol& EnumDeclarationSymbol::add_constant(std::string name, const std::array<uint64_t, 2>& value)
+void EnumDeclarationSymbol::add_constant(std::string name, const std::array<uint64_t, 2>& value)
 {
     assert(std::all_of(
         constants_.begin(), constants_.end(), [name](const auto& constant) { return constant.name() != name; }));
-    return constants_.emplace_back(std::move(name), value);
+    constants_.emplace_back(std::move(name), value);
 }
 
-void EnumDeclarationSymbol::visit_impl(SymbolVisitor& visitor) const
+bool EnumDeclarationSymbol::set_reference_level(unsigned new_reference_level) noexcept
 {
-    if (underlying_type_) {
-        visitor.visit_type(*underlying_type_);
+    auto set = FileLevelSymbol::set_reference_level(new_reference_level);
+    if (set) {
+        // Set the same reference level for the underlying type, because it is required
+        // for compilability at the Cangjie side.
+        assert(underlying_type_);
+        underlying_type_->set_reference_level(new_reference_level);
     }
+    return set;
+}
+
+bool EnumDeclarationSymbol::visit_referenced_types(const FileLevelSymbolVisitor& visitor)
+{
+    return underlying_type_ && visitor(*underlying_type_);
 }
 
 [[nodiscard]] static Type underlying_unexposed_type(size_t size)
@@ -759,8 +789,7 @@ TypeDeclarationSymbol::TypeDeclarationSymbol(const Kind kind, std::string name) 
     : NamedTypeSymbol(kind, std::move(name)),
       is_ctype_(is_ctype_by_default(kind, this->name())),
       contains_pointer_or_func_(false),
-      static_instance_clashes_resolved_(false),
-      override_returns_resolved_(false)
+      transformed_(false)
 {
 }
 
@@ -810,23 +839,26 @@ void TypeDeclarationSymbol::member_remove(size_t index)
     }
 }
 
-NonTypeSymbol& TypeDeclarationSymbol::add_member_method(std::string name, Type return_type, Modifiers modifiers)
+void TypeDeclarationSymbol::add_member_method(
+    std::string name, Type return_type, std::vector<ParameterSymbol> parameters, Modifiers modifiers)
 {
     // No clash detection, otherwise might assert on method overloads
 
     assert(kind() == Kind::Interface || kind() == Kind::Protocol || kind() == Kind::TopLevel);
-    return members_.emplace_back(std::move(name), NonTypeSymbol::Kind::MemberMethod, std::move(return_type), modifiers);
+    members_.emplace_back(
+        std::move(name), NonTypeSymbol::Kind::MemberMethod, std::move(return_type), std::move(parameters), modifiers);
 }
 
-NonTypeSymbol& TypeDeclarationSymbol::add_constructor(std::string name, Type return_type)
+void TypeDeclarationSymbol::add_constructor(std::string name, Type return_type, std::vector<ParameterSymbol> parameters)
 {
-    assert(kind() == Kind::Interface || kind() == Kind::Protocol);
-    return members_.emplace_back(std::move(name), NonTypeSymbol::Kind::Constructor, std::move(return_type));
+    assert(is(Kind::Interface) || is(Kind::Protocol));
+    members_.emplace_back(
+        std::move(name), NonTypeSymbol::Kind::Constructor, std::move(return_type), std::move(parameters));
 }
 
-NonTypeSymbol& TypeDeclarationSymbol::add_field(std::string name, Type type, Modifiers modifiers)
+void TypeDeclarationSymbol::add_field(std::string name, Type type, Modifiers modifiers)
 {
-    assert(kind() == Kind::Struct || kind() == Kind::Union);
+    assert(is(Kind::Struct) || is(Kind::Union));
 
     // Only bit-fields can be unnamed
     assert(!name.empty() || (modifiers & ModifierBitField));
@@ -842,12 +874,11 @@ NonTypeSymbol& TypeDeclarationSymbol::add_field(std::string name, Type type, Mod
     if (member.return_type().contains_pointer_or_func()) {
         contains_pointer_or_func_ = true;
     }
-    return member;
 }
 
-NonTypeSymbol& TypeDeclarationSymbol::add_instance_variable(std::string name, Type type, Modifiers modifiers)
+void TypeDeclarationSymbol::add_instance_variable(std::string name, Type type, Modifiers modifiers)
 {
-    assert(kind() == Kind::Interface);
+    assert(is(Kind::Interface));
     assert(all_of_members([&name](const auto& member) { return member.name() != name; }));
 
     auto& ivar =
@@ -858,39 +889,81 @@ NonTypeSymbol& TypeDeclarationSymbol::add_instance_variable(std::string name, Ty
     if (ivar.return_type().contains_pointer_or_func()) {
         contains_pointer_or_func_ = true;
     }
-    return ivar;
 }
 
-NonTypeSymbol& TypeDeclarationSymbol::add_property(
-    std::string name, std::string getter, std::string setter, Modifiers modifiers)
+void TypeDeclarationSymbol::add_property(std::string name, std::string getter, std::string setter, Modifiers modifiers)
 {
     assert(kind() == Kind::Interface || kind() == Kind::Protocol);
 
-    return members_.emplace_back(std::move(name), std::move(getter), std::move(setter), modifiers);
+    members_.emplace_back(std::move(name), std::move(getter), std::move(setter), modifiers);
 }
 
-void TypeDeclarationSymbol::mark_override_return_clashes_resolved() noexcept
+[[nodiscard]] static NonTypeSymbol& get_method(
+    std::vector<NonTypeSymbol>& members, const std::string& selector, bool is_static)
 {
-    assert(!override_returns_resolved_);
-    override_returns_resolved_ = true;
+    auto e = members.end();
+    auto it = std::find_if(members.begin(), e, [is_static, &selector](const auto& member) {
+        return member.is_member_method() && member.is_static() == is_static && member.selector() == selector;
+    });
+    assert(it != e);
+    return *it;
 }
 
-void TypeDeclarationSymbol::mark_static_instance_clashes_resolved() noexcept
+NonTypeSymbol& TypeDeclarationSymbol::get_getter(const NonTypeSymbol& property)
 {
-    assert(!static_instance_clashes_resolved_);
-    static_instance_clashes_resolved_ = true;
+    assert(property.is_property());
+    return get_method(members_, property.getter(), property.is_static());
 }
 
-void TypeDeclarationSymbol::visit_impl(SymbolVisitor& visitor) const
+NonTypeSymbol& TypeDeclarationSymbol::get_setter(const NonTypeSymbol& property)
 {
-    // It could make sense to analyze if infinite recursion is possible her.  With
+    assert(property.is_property());
+    return get_method(members_, property.setter(), property.is_static());
+}
+
+void TypeDeclarationSymbol::mark_transformed() noexcept
+{
+    assert(!transformed_);
+    transformed_ = true;
+}
+
+bool TypeDeclarationSymbol::visit_referenced_types(const FileLevelSymbolVisitor& visitor)
+{
+    // It could make sense to analyze if infinite recursion is possible here.  With
     // CRTP for example.
     for (auto& base : this->bases()) {
-        visitor.visit_type(base);
+        if (visitor(base)) {
+            return true;
+        }
     }
-    for (auto& member : this->members()) {
-        visitor.visit_member(member);
+    for (FileLevelSymbol& member : this->members()) {
+        if (member.any_of_referenced_types(visitor)) {
+            return true;
+        }
     }
+    return false;
+}
+
+bool TypeDeclarationSymbol::set_reference_level(unsigned new_reference_level) noexcept
+{
+    auto set = FileLevelSymbol::set_reference_level(new_reference_level);
+    if (set) {
+        // Set the same reference level for all filelds of the @C structure.  Binary
+        // compatibility will be broken if any @C field is ommitted at the Cangjie side.
+        if (is_ctype_) {
+            for (auto* reference : references_symbols()) {
+                assert(reference);
+                reference->set_reference_level(new_reference_level);
+            }
+        } else {
+            // Set the same reference level for all base classes and protocols, because that
+            // is required for compilability at the Cangjie side.
+            for (auto base : bases_) {
+                base->set_reference_level(new_reference_level);
+            }
+        }
+    }
+    return set;
 }
 
 template <class Pred>
@@ -905,18 +978,14 @@ bool TypeDeclarationSymbol::any_of_members(Pred cond) const noexcept(noexcept(co
     return std::any_of(members_.cbegin(), members_.cend(), [cond](const auto& member) { return cond(member); });
 }
 
-TypeAliasSymbol::TypeAliasSymbol(std::string name) noexcept : NamedTypeSymbol(Kind::TypeDef, std::move(name))
+TypeAliasSymbol::TypeAliasSymbol(std::string name, Type target) noexcept
+    : NamedTypeSymbol(Kind::TypeDef, std::move(name)), target_(std::move(target))
 {
 }
 
 void TypeAliasSymbol::print(std::ostream& stream, PrintFormat format) const
 {
     const auto& target = this->target();
-    if (target.has_symbol_assigned() && name() == target.name()) {
-        // typedef struct S S;
-        target.print(stream, format);
-        return;
-    }
     if (mode != Mode::EXPERIMENTAL && format == PrintFormat::EmitCangjieStrict) {
         auto canonical_type = this->canonical_type();
         if (canonical_type.is_ctype() && canonical_type.contains_pointer_or_func()) {
@@ -956,21 +1025,84 @@ void TypeAliasSymbol::print(std::ostream& stream, PrintFormat format) const
     }
 }
 
-void TypeAliasSymbol::visit_impl(SymbolVisitor& visitor) const
+bool TypeAliasSymbol::set_reference_level(unsigned new_reference_level) noexcept
 {
-    const auto& target = this->target();
-    if (target.has_symbol_assigned()) {
-        visitor.visit_type(target);
+    auto set = FileLevelSymbol::set_reference_level(new_reference_level);
+    if (set) {
+        // Set the same reference level for the target type, because that is required
+        // for compilability at the Cangjie side.
+        for (auto* reference : references_symbols()) {
+            assert(reference);
+            reference->set_reference_level(new_reference_level);
+        }
     }
+    return set;
 }
 
-void NonTypeSymbol::rename(std::string_view new_name)
+bool TypeAliasSymbol::visit_referenced_types(const FileLevelSymbolVisitor& visitor)
+{
+    auto& target = this->target();
+    return target.has_symbol_assigned() && visitor(target);
+}
+
+static void selector_to_cj_name(NonTypeSymbol& member)
+{
+    const auto& name = member.name();
+    if (name.find(':') == std::string::npos) {
+        return;
+    }
+    std::string new_name;
+    auto upcase = false;
+    for (auto c : name) {
+        if (c == ':') {
+            upcase = true;
+            continue;
+        }
+
+        if (upcase) {
+            c = static_cast<char>(std::toupper(c));
+            upcase = false;
+        }
+
+        new_name += c;
+    }
+    member.rename(std::move(new_name));
+}
+
+[[nodiscard]] NonTypeSymbol::NonTypeSymbol(std::string name, Kind kind, Type return_type,
+    std::vector<ParameterSymbol> parameters, Modifiers modifiers) noexcept
+    : FileLevelSymbol(std::move(name)),
+      kind_(kind),
+      modifiers_(modifiers),
+      return_type_(std::move(return_type)),
+      parameters_(std::move(parameters))
+{
+    selector_to_cj_name(*this);
+}
+
+[[nodiscard]] NonTypeSymbol::NonTypeSymbol(std::string name, Kind kind, Type return_type, Modifiers modifiers) noexcept
+    : NonTypeSymbol(std::move(name), kind, std::move(return_type), std::vector<ParameterSymbol>{}, modifiers)
+{
+}
+
+[[nodiscard]] NonTypeSymbol::NonTypeSymbol(
+    std::string name, std::string getter, std::string setter, Modifiers modifiers) noexcept
+    : FileLevelSymbol(std::move(name)),
+      kind_(Kind::Property),
+      modifiers_(modifiers),
+      getter_(getter == this->name() ? std::string() : std::move(getter)),
+      setter_((modifiers_ & ModifierReadonly) ? std::string() : std::move(setter))
+{
+    selector_to_cj_name(*this);
+}
+
+void NonTypeSymbol::rename(std::string new_name) noexcept
 {
     assert(!new_name.empty());
+    auto old_name = FileLevelSymbol::rename(std::move(new_name));
     if (selector_attribute_.empty()) {
-        selector_attribute_ = name();
+        selector_attribute_ = std::move(old_name);
     }
-    FileLevelSymbol::rename(new_name);
 }
 
 bool NonTypeSymbol::is_ctype() const noexcept
@@ -979,15 +1111,15 @@ bool NonTypeSymbol::is_ctype() const noexcept
         return_type_.is_ctype();
 }
 
-void NonTypeSymbol::visit_impl(SymbolVisitor& visitor) const
+bool NonTypeSymbol::visit_referenced_types(const FileLevelSymbolVisitor& visitor)
 {
     for (auto& parameter : this->parameters()) {
-        visitor.visit_type(parameter.type());
+        if (visitor(parameter.type())) {
+            return true;
+        }
     }
 
-    if (kind_ != Kind::Property) {
-        visitor.visit_type(return_type());
-    }
+    return kind_ != Kind::Property && visitor(return_type());
 }
 
 const Type& NonTypeSymbol::return_type() const noexcept
@@ -1018,6 +1150,48 @@ void NonTypeSymbol::add_parameter(std::string name, Type type)
 {
     assert(is_method());
     parameters_.emplace_back(std::move(name), std::move(type));
+}
+
+const NonTypeSymbol* NonTypeSymbol::find_getter(const TypeDeclarationSymbol& decl) const noexcept
+{
+    assert(is_property());
+    bool is_static = this->is_static();
+    const auto& getter_name = getter();
+    for (const auto& member : decl.members()) {
+        if (member.is_member_method() && member.is_static() == is_static && member.selector() == getter_name) {
+            return &member;
+        }
+    }
+    return nullptr;
+}
+
+ClosureDepthType NonTypeSymbol::calculate_reference_level(const TypeDeclarationSymbol& decl) const noexcept
+{
+    switch (kind_) {
+        case Kind::Field:
+        case Kind::InstanceVariable:
+            return return_type_.reference_level();
+        case Kind::Property: {
+            auto* getter = find_getter(decl);
+            assert(getter);
+            return getter->return_type().reference_level();
+        }
+        case Kind::MemberMethod: {
+            auto result = return_type_.reference_level();
+            for (const auto& param : parameters_) {
+                auto rl = param.type().reference_level();
+                if (rl > result) {
+                    result = rl;
+                }
+            }
+            return result;
+        }
+        default:
+            assert(kind_ == Kind::GlobalFunction);
+
+            // Should be calculated already during package marking
+            return reference_level_;
+    }
 }
 
 } // namespace objcgen
