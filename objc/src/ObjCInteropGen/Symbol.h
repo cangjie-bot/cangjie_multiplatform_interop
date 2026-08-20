@@ -132,6 +132,11 @@ public:
         return visit_referenced_types(FileLevelSymbolVisitor::from(pred));
     }
 
+    [[nodiscard]] bool any_of_referenced_types(const FileLevelSymbolVisitor& visitor)
+    {
+        return visit_referenced_types(visitor);
+    }
+
     /** Calls 'func' for each named type explicitly referenced by this symbol. */
     template <class Func> void for_each_referenced_type(const Func& func)
     {
