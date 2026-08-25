@@ -62,7 +62,13 @@ OUT_JAVA_LANG_CJO = os.path.join(DIST_DIR, "java.lang.cjo")
 LOG_DIR = os.path.join(BUILD_DIR, 'logs')
 LOG_FILE = os.path.join(LOG_DIR, 'JavaInterop.log')
 
-CJC_BASE_ARGS = ["-Woff", "unused", "-Woff", "parser", "--output-dir=" + DIST_DIR, "--int-overflow=wrapping", "--disable-reflection"]
+CJC_BASE_ARGS = [
+    "-Woff", "unused",
+    "-Woff", "parser",
+    "-Woff", "deprecated",
+    "--output-dir=" + DIST_DIR,
+    "--int-overflow=wrapping", "--disable-reflection"
+]
 
 CLANG_BASE_ARGS = [
     "-c", "-pipe", "-fstack-protector-strong", "-fno-omit-frame-pointer", "-fPIC", "-std=gnu99", "-fno-common",
