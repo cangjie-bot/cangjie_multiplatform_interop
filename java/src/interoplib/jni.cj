@@ -663,6 +663,7 @@ private func signatureBaseCheck(signature: String) {
     }
 }
 
+@Deprecated["Legacy APIs, which are no longer used by the compiler Interop desugaring"]
 protected func Java_CFFI_parseComponentSignature(signature: String): Java_CFFI_ComponentSignature {
     signatureBaseCheck(signature)
     
@@ -758,6 +759,7 @@ private func restoreComponentSignatureSize(signature: Java_CFFI_ComponentSignatu
     }
 }
 
+@Deprecated["Legacy APIs, which are no longer used by the compiler Interop desugaring"]
 protected func Java_CFFI_parseMethodSignature(signature: String): Java_CFFI_MethodSignature {
     signatureBaseCheck(signature)
     if (signature.size < 3) {
@@ -1413,6 +1415,7 @@ private unsafe func withParamsCallMethod(env: JNIEnv_ptr, obj: Java_CFFI_JavaEnt
     }
 }
 
+@Deprecated["Legacy APIs, which are no longer used by the compiler Interop desugaring"]
 protected func Java_CFFI_callMethod(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, method: Java_CFFI_MethodID, args: Array<Java_CFFI_JavaEntity>, argsCallNest: Java_CFFI_JavaCallNest): Java_CFFI_JavaEntity {
     if (args.size > argsCallNest.array.size) {
         throw InteropLibException("Cannot perform call, too small argsCallNest.array (${argsCallNest.size}, required at least ${args.size})")
@@ -1443,6 +1446,7 @@ protected func Java_CFFI_callMethod(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, 
     res
 }
 
+@Deprecated["Legacy APIs, which are no longer used by the compiler Interop desugaring"]
 protected func Java_CFFI_callVirtualMethod(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, method: Java_CFFI_MethodID, args: Array<Java_CFFI_JavaEntity>, argsCallNest: Java_CFFI_JavaCallNest): Java_CFFI_JavaEntity {
     let res = Java_CFFI_callVirtualMethod_no_exception_handling(env, obj, method, args, argsCallNest)
     handlePendingException(env)
@@ -1631,6 +1635,7 @@ private func Java_CFFI_callStaticMethod(env: JNIEnv_ptr, clazz: Java_CFFI_Class,
     Java_CFFI_callStaticMethod(env, clazz, id, args, callNest)
 }
 
+@Deprecated["Legacy APIs, which are no longer used by the compiler Interop desugaring"]
 protected func Java_CFFI_callStaticMethod(env: JNIEnv_ptr, clazz: Java_CFFI_Class, method: Java_CFFI_MethodID, args: Array<Java_CFFI_JavaEntity>, argsCallNest: Java_CFFI_JavaCallNest): Java_CFFI_JavaEntity {
     if (args.size > argsCallNest.array.size) {
         throw InteropLibException("Cannot perform call, too small argsCallNest.array (${argsCallNest.size}, required at least ${args.size})")
@@ -1835,6 +1840,7 @@ private unsafe func getFieldJavaEntity(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntit
     }
 }
 
+@Deprecated["Legacy APIs, which are no longer used by the compiler Interop desugaring"]
 protected func Java_CFFI_getField(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, field: Java_CFFI_FieldID): Java_CFFI_JavaEntity {
     if (field.`static`) {
         throw InteropLibException("Cannot get static entity from non-static obj")
@@ -1848,6 +1854,7 @@ protected func Java_CFFI_getField(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, fi
     res
 }
 
+@Deprecated["Legacy APIs, which are no longer used by the compiler Interop desugaring"]
 protected func Java_CFFI_getStaticField(env: JNIEnv_ptr, clazz: Java_CFFI_Class, field: Java_CFFI_FieldID): Java_CFFI_JavaEntity {
     if (!field.`static`) {
         throw InteropLibException("Cannot get non-static entity from class")
@@ -1971,6 +1978,7 @@ private unsafe func setFieldJavaEntity(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntit
     }
 }
 
+@Deprecated["Legacy APIs, which are no longer used by the compiler Interop desugaring"]
 protected func Java_CFFI_setField(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, field: Java_CFFI_FieldID, value: Java_CFFI_JavaEntity): Unit {
     if (field.`static`) {
         throw InteropLibException("Cannot set static entity to non-static obj")
@@ -1983,6 +1991,7 @@ protected func Java_CFFI_setField(env: JNIEnv_ptr, obj: Java_CFFI_JavaEntity, fi
     handlePendingException(env)
 }
 
+@Deprecated["Legacy APIs, which are no longer used by the compiler Interop desugaring"]
 protected func Java_CFFI_setStaticField(env: JNIEnv_ptr, clazz: Java_CFFI_Class, field: Java_CFFI_FieldID, value: Java_CFFI_JavaEntity): Unit {
     if (!field.`static`) {
         throw InteropLibException("Cannot set non-static entity to class")
@@ -2392,6 +2401,7 @@ protected func Java_CFFI_removeFromRegistry(regId: jlong): Unit {
     registry.remove(regId)
 }
 
+@Deprecated["Legacy APIs, which are no longer used by the compiler Interop desugaring"]
 protected func Java_CFFI_deleteCJObjectOneWay<T>(env: JNIEnv_ptr, regId: jlong): Unit {
     let v = Java_CFFI_getFromRegistry<T>(env, regId)
     registry.remove(regId)
@@ -2539,22 +2549,27 @@ protected func Java_CFFI_getStaticMethodID(env: JNIEnv_ptr, jclazz: jclass, name
     id
 }
 
+@Deprecated["Legacy APIs, which are no longer used by the compiler Interop desugaring"]
 protected func Java_CFFI_MethodIDConstr(env: JNIEnv_ptr, clazz: Java_CFFI_Class, methodName: String, signature: Java_CFFI_MethodSignature): Java_CFFI_MethodID {
     Java_CFFI_MethodID.constr(env, clazz, methodName, signature)
 }
 
+@Deprecated["Legacy APIs, which are no longer used by the compiler Interop desugaring"]
 protected func Java_CFFI_MethodIDConstrStatic(env: JNIEnv_ptr, clazz: Java_CFFI_Class, methodName: String, signature: Java_CFFI_MethodSignature): Java_CFFI_MethodID {
     Java_CFFI_MethodID.constrStatic(env, clazz, methodName, signature)
 }
 
+@Deprecated["Legacy APIs, which are no longer used by the compiler Interop desugaring"]
 protected func Java_CFFI_FieldIDConstr(env: JNIEnv_ptr, clazz: Java_CFFI_Class, fieldName: String, signature: Java_CFFI_ComponentSignature): Java_CFFI_FieldID {
     Java_CFFI_FieldID.constr(env, clazz, fieldName, signature)
 }
 
+@Deprecated["Legacy APIs, which are no longer used by the compiler Interop desugaring"]
 protected func Java_CFFI_FieldIDConstrStatic(env: JNIEnv_ptr, clazz: Java_CFFI_Class, fieldName: String, signature: Java_CFFI_ComponentSignature): Java_CFFI_FieldID {
     Java_CFFI_FieldID.constrStatic(env, clazz, fieldName, signature)
 }
 
+@Deprecated["Legacy APIs, which are no longer used by the compiler Interop desugaring"]
 protected func Java_CFFI_ClassInit(env: JNIEnv_ptr, name: String) : Java_CFFI_Class {
     Java_CFFI_Class(env, name)
 }
@@ -2568,6 +2583,35 @@ protected func Java_CFFI_getClass(env: JNIEnv_ptr, name: String) : jclass {
     obj
 }
 
+protected func Java_CFFI_getInstanceFieldId(env: JNIEnv_ptr, clazz: jclass, name: String, signature: String) : jfieldID {
+    unsafe {
+        var id = jfieldID()
+        try (
+            cName = LibC.mallocCString(name).asResource(),
+            cSignature = LibC.mallocCString(signature).asResource()
+        ) {
+            let envCJ = env.read().read()
+            id = envCJ.GetFieldID(env, clazz, cName.value, cSignature.value)
+        }
+        return id
+    }
+}
+
+protected func Java_CFFI_getStaticFieldId(env: JNIEnv_ptr, clazz: jclass, name: String, signature: String) : jfieldID {
+    unsafe {
+        var id = jfieldID()
+        try (
+            cName = LibC.mallocCString(name).asResource(),
+            cSignature = LibC.mallocCString(signature).asResource()
+        ) {
+            let envCJ = env.read().read()
+            id = envCJ.GetStaticFieldID(env, clazz, cName.value, cSignature.value)
+        }
+        return id
+    }
+}
+
+@Deprecated["Legacy APIs, which are no longer used by the compiler Interop desugaring"]
 protected func Java_CFFI_JavaCallNestInit(n: Int64) : Java_CFFI_JavaCallNest {
     Java_CFFI_JavaCallNest(n)
 }
