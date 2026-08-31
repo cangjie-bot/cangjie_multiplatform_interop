@@ -30,13 +30,6 @@
 
 namespace objcgen {
 
-struct CXCursorHash {
-    [[nodiscard]] size_t operator()(const CXCursor& x) const noexcept
-    {
-        return clang_hashCursor(x);
-    }
-};
-
 class SourceScanner final : NonCopyable {
 public:
     void visit(const CXCursor& cursor)
@@ -53,7 +46,7 @@ private:
 
     // We have to name the unnamed structs/unions/enums, use declaring file name +
     // incrementing index suffix
-    std::unordered_map<CXCursor, NamedTypeSymbol*, CXCursorHash> unnamed_decls_;
+    std::unordered_map<std::string, NamedTypeSymbol*> unnamed_decls_;
     std::unordered_map<std::string, std::uint64_t> unnamed_decl_counts_;
 
     // Some symbols may be visited multiple times. Examples:
@@ -381,6 +374,7 @@ template <CXTypeKind type_kind> Type SourceScanner::get_named_type(const CXType&
         assert(is_valid(decl));
     }
 
+    std::string decl_usr;
     bool unnamed;
     if constexpr (type_kind == CXType_Record || type_kind == CXType_Enum) {
         if constexpr (type_kind == CXType_Record) {
@@ -402,7 +396,8 @@ template <CXTypeKind type_kind> Type SourceScanner::get_named_type(const CXType&
         unnamed = clang_Cursor_isAnonymous(decl);
         if (unnamed) {
             // This is a struct/union/enum without a tag (but not an anonymous struct/union).
-            auto it = unnamed_decls_.find(decl);
+            decl_usr = as_string(clang_getCursorUSR(decl));
+            auto it = unnamed_decls_.find(decl_usr);
             if (it != unnamed_decls_.end()) {
                 return Type(*it->second, nullability);
             }
@@ -514,8 +509,8 @@ template <CXTypeKind type_kind> Type SourceScanner::get_named_type(const CXType&
                 }
                 if constexpr (type_kind == CXType_Record || type_kind == CXType_Enum) {
                     if (unnamed) {
-                        assert(unnamed_decls_.find(decl) == unnamed_decls_.end());
-                        unnamed_decls_.try_emplace(decl, symbol);
+                        assert(unnamed_decls_.find(decl_usr) == unnamed_decls_.end());
+                        unnamed_decls_.try_emplace(std::move(decl_usr), symbol);
                     }
                 }
                 symbol->set_definition_location(loc);
