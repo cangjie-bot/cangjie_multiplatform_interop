@@ -17,7 +17,9 @@
 
 namespace objcgen {
 
-std::ostream& operator<<(std::ostream& stream, const KeywordEscaper& op)
+namespace {
+
+template <class Stream> void print_escaped_keyword(Stream& stream, std::string_view name)
 {
     // Do not include keywords common for Cangjie and C/Objective-C
     static constexpr const char* cangjieKeywords[] = {
@@ -92,21 +94,23 @@ std::ostream& operator<<(std::ostream& stream, const KeywordEscaper& op)
         //"while",
     };
     auto e = std::cend(cangjieKeywords);
-    if (std::find(std::cbegin(cangjieKeywords), e, op.name) != e) {
-        stream << '`' << op.name << '`';
+    if (std::find(std::cbegin(cangjieKeywords), e, name) != e) {
+        stream << '`' << name << '`';
     } else {
-        stream << op.name;
+        stream << name;
     }
+}
+
+} // namespace
+
+StructuredString& operator<<(StructuredString& stream, const KeywordEscaper& op)
+{
+    print_escaped_keyword(stream, op.name);
     return stream;
 }
 
 Symbol::Symbol(std::string name) noexcept : name_(std::move(name))
 {
-}
-
-void Symbol::print(std::ostream& stream, [[maybe_unused]] PrintFormat format) const
-{
-    stream << escape_keyword(name_);
 }
 
 std::string Symbol::rename(std::string new_name) noexcept
@@ -128,6 +132,24 @@ bool FileLevelSymbolVisitor::operator()(Type& type) const
         }
     }
     return false;
+}
+
+bool FileLevelSymbolScanner::operator()(const Type& type) const
+{
+    if ((*this)(type.symbol())) {
+        return true;
+    }
+    for (const auto& param : type.parameters()) {
+        if ((*this)(param)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void Symbol::print(StructuredString& stream, [[maybe_unused]] PrintFormat format) const
+{
+    stream << escape_keyword(name_);
 }
 
 bool FileLevelSymbol::set_reference_level(unsigned new_reference_level) noexcept
@@ -316,6 +338,34 @@ bool Type::is_ctype() const noexcept
     }
 }
 
+// Currently in the NORMAL mode, Objective-C compatible types are primitives,
+// @C structures, ObjCPointer, ObjCFunc, ObjCBlock, and classes/interfaces.
+// But not CPointer, CFunc, or VArray.
+bool Type::is_objc_compatible() const noexcept
+{
+    assert(normal_mode());
+    switch (kind()) {
+        case Kind::Unit:
+            return true;
+        case Kind::TypeParam:
+            // Type parameters are printed as ObjCId, which is Objective-C compatible
+            return true;
+        case Kind::Pointer:
+            assert(parameters().size() == 1);
+            return parameters().front().is_objc_compatible();
+        case Kind::Function:
+        case Kind::Block: {
+            const auto& parameters = this->parameters();
+            return std::all_of(parameters.begin(), parameters.end(),
+                [](const auto& parameter) { return parameter.is_objc_compatible(); });
+        }
+        case Kind::Named:
+            return symbol().is_objc_compatible();
+        default:
+            return false;
+    }
+}
+
 bool Type::contains_pointer_or_func() const noexcept
 {
     switch (kind_) {
@@ -411,7 +461,7 @@ void Type::map()
     }
 }
 
-static void print_raw_type_parameter(std::ostream& stream, const Type& type_param)
+static void print_raw_type_parameter(StructuredString& stream, const Type& type_param)
 {
     assert(type_param.kind() == Type::Kind::TypeParam);
     stream << type_param.name();
@@ -423,7 +473,7 @@ static void print_raw_type_parameter(std::ostream& stream, const Type& type_para
     }
 }
 
-void Type::print(std::ostream& stream, PrintFormat format) const
+void Type::print(StructuredString& stream, PrintFormat format) const
 {
     if (is_cj_direct_option()) {
         stream << '?';
@@ -437,13 +487,13 @@ void Type::print(std::ostream& stream, PrintFormat format) const
             if (!parameters_.empty()) {
                 auto no_type_arguments = format != PrintFormat::Raw;
                 if (no_type_arguments) {
-                    stream << "/*";
+                    stream << push_block_comment;
                 }
                 stream << '<';
                 print_list(stream, parameters_, [](auto& stream, const auto& parameter) { stream << raw(parameter); });
                 stream << '>';
                 if (no_type_arguments) {
-                    stream << "*/";
+                    stream << pop_block_comment;
                 }
             }
             break;
@@ -481,9 +531,9 @@ void Type::print(std::ostream& stream, PrintFormat format) const
                 print_raw_type_parameter(stream, *this);
             } else {
                 actual_protocol().print(stream, format);
-                stream << " /*";
+                stream << ' ' << push_block_comment;
                 print_raw_type_parameter(stream, *this);
-                stream << "*/";
+                stream << pop_block_comment;
             }
             break;
         default:
@@ -493,7 +543,7 @@ void Type::print(std::ostream& stream, PrintFormat format) const
     }
 }
 
-static void print_tricky_default_value(std::ostream& stream, std::string_view type_name)
+static void print_tricky_default_value(StructuredString& stream, std::string_view type_name)
 {
     // The dirty trick is applied for printing default values of:
     // - Interface types -- instances of the interface type cannot be created.
@@ -501,7 +551,7 @@ static void print_tricky_default_value(std::ostream& stream, std::string_view ty
     stream << "Option<" << type_name << ">.None.getOrThrow()";
 }
 
-void Type::print_default_value(std::ostream& stream, PrintFormat format) const
+void Type::print_default_value(StructuredString& stream, PrintFormat format) const
 {
     if (is_cj_option()) {
         stream << "None";
@@ -570,20 +620,9 @@ void Type::print_default_value(std::ostream& stream, PrintFormat format) const
                 }
                 break;
             case NamedTypeSymbol::Kind::TypeDef: {
-                assert(dynamic_cast<const TypeAliasSymbol*>(named_type));
-                auto canonical_type = this->canonical_type();
-                const auto* named_target = dynamic_cast<const NamedTypeSymbol*>(&canonical_type.symbol());
-                if (named_target) {
-                    switch (named_target->kind()) {
-                        case NamedTypeSymbol::Kind::Interface:
-                        case NamedTypeSymbol::Kind::Protocol:
-                            break;
-                        default:
-                            canonical_type.print_default_value(stream, format);
-                            return;
-                    }
-                }
-                break;
+                assert(type_symbol.is<TypeAliasSymbol>());
+                this->canonical_type().print_default_value(stream, format);
+                return;
             }
             case NamedTypeSymbol::Kind::Unexposed:
                 named_type->as<UnexposedTypeSymbol>().underlying_type().print_default_value(stream, format);
@@ -651,7 +690,7 @@ Nullability Type::init_nullability(Nullability nullability) noexcept
     return Nullability::Nonnull;
 }
 
-void Type::print_func_like(std::ostream& stream, std::string_view name, PrintFormat format) const
+void Type::print_func_like(StructuredString& stream, std::string_view name, PrintFormat format) const
 {
     if (parameters_.empty()) {
         stream << name << "<() -> Unit>";
@@ -666,11 +705,6 @@ void Type::print_func_like(std::ostream& stream, std::string_view name, PrintFor
     }
 }
 
-void NamedTypeSymbol::print(std::ostream& stream, PrintFormat) const
-{
-    stream << escape_keyword(name());
-}
-
 void NamedTypeSymbol::rename(std::string new_name) noexcept
 {
     assert(!new_name.empty());
@@ -680,17 +714,46 @@ void NamedTypeSymbol::rename(std::string new_name) noexcept
     }
 }
 
-void NamedTypeSymbol::set_mapping(const TypeMapping& mapping) noexcept
+void NamedTypeSymbol::print(StructuredString& stream, PrintFormat) const
+{
+    stream << escape_keyword(name());
+    // Record a symbol reference for import collection during rendering.
+    stream << *this;
+}
+
+void NamedTypeSymbol::set_mapping(const TypeMapping* mapping) noexcept
 {
     assert(mapping_ == nullptr);
-    mapping_ = &mapping;
+    mapping_ = mapping;
+}
+
+bool NamedTypeSymbol::is_objc_compatible() const noexcept
+{
+    if (this == &Universe::get().sel()) {
+        return false;
+    }
+    switch (kind()) {
+        case Kind::TypeDef:
+            return as<TypeAliasSymbol>().canonical_type().is_objc_compatible();
+        case Kind::Struct:
+        case Kind::Union:
+            return is_ctype();
+        case Kind::Interface:
+            return name() != "Protocol";
+        case Kind::Primitive:
+        case Kind::Protocol:
+        case Kind::Enum:
+            return true;
+        default:
+            return false;
+    }
 }
 
 TypeLikeSymbol& NamedTypeSymbol::map()
 {
     if (auto* mapping = this->mapping()) {
         assert(mapping->can_map(*this));
-        return mapping->map();
+        return mapping->map(*this);
     }
     return *this;
 }
@@ -736,6 +799,11 @@ bool EnumDeclarationSymbol::visit_referenced_types(const FileLevelSymbolVisitor&
     return underlying_type_ && visitor(*underlying_type_);
 }
 
+bool EnumDeclarationSymbol::visit_referenced_types(const FileLevelSymbolScanner& visitor) const
+{
+    return underlying_type_ && visitor(*underlying_type_);
+}
+
 [[nodiscard]] static Type underlying_unexposed_type(size_t size)
 {
     auto& universe = Universe::get();
@@ -763,10 +831,10 @@ UnexposedTypeSymbol::UnexposedTypeSymbol(std::string name, size_t size)
 {
 }
 
-void UnexposedTypeSymbol::print(std::ostream& stream, PrintFormat format) const
+void UnexposedTypeSymbol::print(StructuredString& stream, PrintFormat format) const
 {
     underlying_type().print(stream, format);
-    stream << " /*" << name() << "*/";
+    stream << ' ' << push_block_comment << name() << pop_block_comment;
 }
 
 [[nodiscard]] static bool is_ctype_by_default(NamedTypeSymbol::Kind kind, std::string_view name) noexcept
@@ -823,7 +891,7 @@ void TypeDeclarationSymbol::member_remove(size_t index)
     switch (kind()) {
         case Kind::Struct:
         case Kind::Union: {
-            assert(it->kind() == NonTypeSymbol::Kind::Field);
+            assert(it->is_field());
             auto removing_ctype = it->return_type().is_ctype();
             members_.erase(it);
             if (!removing_ctype) {
@@ -842,18 +910,37 @@ void TypeDeclarationSymbol::member_remove(size_t index)
 void TypeDeclarationSymbol::add_member_method(
     std::string name, Type return_type, std::vector<ParameterSymbol> parameters, Modifiers modifiers)
 {
-    // No clash detection, otherwise might assert on method overloads
-
-    assert(kind() == Kind::Interface || kind() == Kind::Protocol || kind() == Kind::TopLevel);
-    members_.emplace_back(
-        std::move(name), NonTypeSymbol::Kind::MemberMethod, std::move(return_type), std::move(parameters), modifiers);
+    NonTypeSymbol::Kind kind;
+    switch (this->kind()) {
+        case Kind::Protocol:
+            kind = NonTypeSymbol::Kind::ProtocolMethod;
+            break;
+        case Kind::Interface:
+            kind = NonTypeSymbol::Kind::InterfaceMethod;
+            break;
+        default:
+            assert(false);
+            return;
+    }
+    members_.emplace_back(std::move(name), kind, std::move(return_type), std::move(parameters), modifiers);
 }
 
 void TypeDeclarationSymbol::add_constructor(std::string name, Type return_type, std::vector<ParameterSymbol> parameters)
 {
+    NonTypeSymbol::Kind kind;
+    switch (this->kind()) {
+        case Kind::Protocol:
+            kind = NonTypeSymbol::Kind::ProtocolConstructor;
+            break;
+        case Kind::Interface:
+            kind = NonTypeSymbol::Kind::InterfaceConstructor;
+            break;
+        default:
+            assert(false);
+            return;
+    }
     assert(is(Kind::Interface) || is(Kind::Protocol));
-    members_.emplace_back(
-        std::move(name), NonTypeSymbol::Kind::Constructor, std::move(return_type), std::move(parameters));
+    members_.emplace_back(std::move(name), kind, std::move(return_type), std::move(parameters));
 }
 
 void TypeDeclarationSymbol::add_field(std::string name, Type type, Modifiers modifiers)
@@ -944,6 +1031,21 @@ bool TypeDeclarationSymbol::visit_referenced_types(const FileLevelSymbolVisitor&
     return false;
 }
 
+bool TypeDeclarationSymbol::visit_referenced_types(const FileLevelSymbolScanner& visitor) const
+{
+    for (const auto& base : this->bases()) {
+        if (visitor(base)) {
+            return true;
+        }
+    }
+    for (const FileLevelSymbol& member : this->members()) {
+        if (member.any_of_referenced_types(visitor)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool TypeDeclarationSymbol::set_reference_level(unsigned new_reference_level) noexcept
 {
     auto set = FileLevelSymbol::set_reference_level(new_reference_level);
@@ -983,7 +1085,7 @@ TypeAliasSymbol::TypeAliasSymbol(std::string name, Type target) noexcept
 {
 }
 
-void TypeAliasSymbol::print(std::ostream& stream, PrintFormat format) const
+void TypeAliasSymbol::print(StructuredString& stream, PrintFormat format) const
 {
     const auto& target = this->target();
     if (mode != Mode::EXPERIMENTAL && format == PrintFormat::EmitCangjieStrict) {
@@ -1008,9 +1110,9 @@ void TypeAliasSymbol::print(std::ostream& stream, PrintFormat format) const
             // the 'P2' macro and replace CPointer by ObjCPointer:
             //
             //      var x: ObjCPointer<Int32> /*P2*/
-            stream << emit_cangjie_strict(target) << " /*";
+            stream << emit_cangjie_strict(target) << ' ' << push_block_comment;
             NamedTypeSymbol::print(stream, format);
-            stream << "*/";
+            stream << pop_block_comment;
             return;
         }
     }
@@ -1019,10 +1121,16 @@ void TypeAliasSymbol::print(std::ostream& stream, PrintFormat format) const
     } else {
         // This must be a built-in typedef without any declaration in a file.
         target.print(stream, format);
-        stream << " /*";
+        stream << ' ' << push_block_comment;
         NamedTypeSymbol::print(stream, format);
-        stream << "*/";
+        stream << pop_block_comment;
     }
+}
+
+bool TypeAliasSymbol::is_supported() const noexcept
+{
+    const auto& target = this->target();
+    return !normal_mode() || target.is_ctype() || target.is_objc_compatible();
 }
 
 bool TypeAliasSymbol::set_reference_level(unsigned new_reference_level) noexcept
@@ -1042,6 +1150,12 @@ bool TypeAliasSymbol::set_reference_level(unsigned new_reference_level) noexcept
 bool TypeAliasSymbol::visit_referenced_types(const FileLevelSymbolVisitor& visitor)
 {
     auto& target = this->target();
+    return target.has_symbol_assigned() && visitor(target);
+}
+
+bool TypeAliasSymbol::visit_referenced_types(const FileLevelSymbolScanner& visitor) const
+{
+    const auto& target = this->target();
     return target.has_symbol_assigned() && visitor(target);
 }
 
@@ -1111,9 +1225,98 @@ bool NonTypeSymbol::is_ctype() const noexcept
         return_type_.is_ctype();
 }
 
+bool NonTypeSymbol::is_objc_compatible_signature() const noexcept
+{
+    assert(is_method());
+
+    for (const auto& parameter : parameters()) {
+        if (!parameter.type().is_objc_compatible()) {
+            return false;
+        }
+    }
+
+    return is_constructor() || return_type().is_objc_compatible();
+}
+
+// The current FE issues a compiler error on functions, properties, as well as
+// fields in @ObjCMirror classes, if their definitions reference a type which
+// name coincides with the name of the function/property/field itself.  As a
+// workaround, comment out such objects.
+[[nodiscard]] static bool has_name_clash_with_referenced_types(const NonTypeSymbol& symbol, const std::string& name)
+{
+    return symbol.any_of_referenced_types([&name](const auto& s) { return name == s.name(); });
+}
+
+bool NonTypeSymbol::is_supported(const TypeDeclarationSymbol* owner) const noexcept
+{
+    assert(owner || is_global_function());
+
+    if (is_constructor() && owner->kind() == NamedTypeSymbol::Kind::Protocol) {
+        return false;
+    }
+
+    if (!normal_mode()) {
+        // In the EXPERIMENTAL and GENERATE_DEFINITIONS modes, everything is supported.
+        return true;
+    }
+
+    if (is_method()) {
+        return is_objc_compatible_signature() && !has_name_clash_with_referenced_types(*this, name());
+    }
+
+    if (is_field() || is_property() || is_instance_variable()) {
+        const Type& type = is_property() ? property_type(*owner) : return_type();
+        assert(!type.is_unit());
+
+        if (type.kind() == Type::Kind::Named) {
+            if (type.has_symbol_assigned() && &type.symbol() == &Universe::get().sel()) {
+                return false;
+            }
+        }
+        if (type.kind() == Type::Kind::VArray && !type.is_ctype()) {
+            return false;
+        }
+
+        switch (owner->kind()) {
+            case NamedTypeSymbol::Kind::Struct:
+            case NamedTypeSymbol::Kind::Union:
+                return true;
+            case NamedTypeSymbol::Kind::Protocol:
+            case NamedTypeSymbol::Kind::Interface:
+                // Current FE fails to process a field or property of an @ObjCMirror class if
+                // the field and its type have the same name (no such problem in non-@ObjCMirror
+                // declarations).  As a workaround, comment out such fields.
+                return name() != type.name() &&
+                    type.is_objc_compatible()
+                    // For properties, not the property itself but its getter is passed to
+                    // 'has_name_clash_with_referenced_types'.  That is because
+                    // NonTypeSymbol::visit_referenced_types still cannot properly visit all types.
+                    // Should be fixed later.
+                    && !has_name_clash_with_referenced_types(is_property() ? *find_getter(*owner) : *this, name());
+            default:
+                assert(false);
+                return false;
+        }
+    }
+
+    assert(false);
+    return false;
+}
+
 bool NonTypeSymbol::visit_referenced_types(const FileLevelSymbolVisitor& visitor)
 {
     for (auto& parameter : this->parameters()) {
+        if (visitor(parameter.type())) {
+            return true;
+        }
+    }
+
+    return kind_ != Kind::Property && visitor(return_type());
+}
+
+bool NonTypeSymbol::visit_referenced_types(const FileLevelSymbolScanner& visitor) const
+{
+    for (const auto& parameter : this->parameters()) {
         if (visitor(parameter.type())) {
             return true;
         }
@@ -1129,6 +1332,15 @@ const Type& NonTypeSymbol::return_type() const noexcept
     assert(kind_ != Kind::Property);
 
     return return_type_;
+}
+
+const Type& NonTypeSymbol::property_type(const TypeDeclarationSymbol& decl) const noexcept
+{
+    assert(kind_ == Kind::Property);
+
+    const auto* getter = find_getter(decl);
+    assert(getter);
+    return getter->return_type();
 }
 
 Type& NonTypeSymbol::return_type() noexcept
@@ -1171,12 +1383,10 @@ ClosureDepthType NonTypeSymbol::calculate_reference_level(const TypeDeclarationS
         case Kind::Field:
         case Kind::InstanceVariable:
             return return_type_.reference_level();
-        case Kind::Property: {
-            auto* getter = find_getter(decl);
-            assert(getter);
-            return getter->return_type().reference_level();
-        }
-        case Kind::MemberMethod: {
+        case Kind::Property:
+            return property_type(decl).reference_level();
+        case Kind::ProtocolMethod:
+        case Kind::InterfaceMethod: {
             auto result = return_type_.reference_level();
             for (const auto& param : parameters_) {
                 auto rl = param.type().reference_level();

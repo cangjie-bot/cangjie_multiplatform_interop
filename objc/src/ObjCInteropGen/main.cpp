@@ -8,6 +8,7 @@
 
 #include "CangjieWriter.h"
 #include "Diagnostics.h"
+#include "ExpandString.h"
 #include "FatalException.h"
 #include "Logging.h"
 #include "Mappings.h"
@@ -67,6 +68,9 @@ int main(int argc, char* argv[])
                 return 0;
             }
         }
+
+        add_constant("PWD", std::filesystem::current_path().u8string());
+
         std::size_t verbosityVal = 0;
         bool config_specified = false;
         for (int i = 1; i < argc; i++) {
@@ -74,6 +78,33 @@ int main(int argc, char* argv[])
             if (starts_with(arg, "-v")) {
                 verbosityVal += arg.length() - 1;
                 verbosity = static_cast<LogLevel>(verbosityVal);
+                continue;
+            }
+
+            if (starts_with(arg, "-D")) {
+                std::string_view definition;
+                if (arg.length() == 2) {
+                    if (++i < argc) {
+                        definition = argv[i];
+                    } else {
+                        std::cerr << "Macro definition of the <macro>=<value> form is expected" << std::endl;
+                        show_help(argv[0]);
+                        return 1;
+                    }
+                } else {
+                    definition = arg.substr(2);
+                }
+
+                const auto equals = definition.find('=');
+                if (equals == std::string_view::npos) {
+                    std::cerr << "Macro definition of the <macro>=<value> form is expected" << std::endl;
+                    show_help(argv[0]);
+                    return 1;
+                }
+
+                const std::string_view macro = definition.substr(0, equals);
+                const std::string_view value = definition.substr(equals + 1);
+                add_constant(macro, value);
                 continue;
             }
 
@@ -99,11 +130,17 @@ int main(int argc, char* argv[])
 
             if (ends_with(arg, ".toml")) {
                 if (config_specified) {
-                    std::cerr << "Multiple .toml files specified\n";
+                    std::cerr << "Multiple .toml files specified" << std::endl;
+                    show_help(argv[0]);
                     return 1;
                 }
-                config_specified = true;
                 Config::parse_from_toml_file(std::string(arg));
+                config_specified = true;
+
+                // All paths should now be relative to the config file
+                std::filesystem::path arg_fs = std::filesystem::absolute(arg);
+                assert(arg_fs.has_parent_path());
+                std::filesystem::current_path(arg_fs.parent_path());
                 continue;
             }
 
@@ -112,6 +149,7 @@ int main(int argc, char* argv[])
         }
 
         if (!config_specified) {
+            std::cerr << "TOML configuration file not specified" << std::endl;
             show_help(argv[0]);
             return 1;
         }

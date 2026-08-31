@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include "Config.h"
+#include "ExpandString.h"
 #include "FatalException.h"
 
 namespace objcgen {
@@ -21,7 +22,7 @@ const std::string& PackageFilter::package_name() const noexcept
 }
 
 PackageFile::PackageFile(std::string file_name, Package& package)
-    : output_path_(package.output_path() + '/' + file_name + ".cj"), package_(&package)
+    : output_path_(std::filesystem::u8path(package.output_path() + '/' + file_name + ".cj")), package_(&package)
 {
     assert(!file_name.empty());
 }
@@ -42,15 +43,13 @@ static void create_package(std::size_t package_index, const toml::Table& config)
     if (filters_it == config.end()) {
         fatal("`packages` entry ", name_desc, " should define `filters` property");
     }
-    if (!filters_it->second.is<toml::Table>()) {
-        fatal("`packages` entry ", name_desc, " property `filters` should be a TOML table");
-    }
     if (packages.by_cangjie_name(package_cangjie_name)) {
         fatal("There are multiple `packages` entries with the same `package-name` value `", package_cangjie_name, '`');
     }
 
-    auto& package = *new Package(package_cangjie_name, compute_output_path(name_desc, config, package_cangjie_name));
-    package.set_filters(create_filter(package, filters_it->second.as<toml::Table>()));
+    auto output_path = compute_output_path(name_desc, config, package_cangjie_name);
+    auto& package = *new Package(package_cangjie_name, expand_string(output_path));
+    package.set_filters(create_filter(package, filters_it->second));
 
     packages.insert(package);
 }

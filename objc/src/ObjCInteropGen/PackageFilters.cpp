@@ -180,14 +180,8 @@ template <class SetOperationFilter>
 
     auto& result = *new SetOperationFilter(package);
 
-    std::size_t i = 0;
     for (auto&& item_any : node.as<toml::Array>()) {
-        if (!item_any.is<toml::Table>()) {
-            fatal("`packages` entry `", package.cangjie_name(), "` ", SetOperationFilter::mode_name, " filter #", i,
-                " must be a TOML table");
-        }
-        result.add_argument(create_filter(package, item_any.as<toml::Table>()));
-        i++;
+        result.add_argument(create_filter(package, item_any));
     }
 
     if (result.empty()) {
@@ -239,11 +233,7 @@ PackageFilter& create_filter(const Package& package, const toml::Table& table)
                 result = &create_set_filter<IntersectionFilter>(package, set_intersect_it->second);
             } else {
                 assert(set_not_it != e);
-                const auto& set_not = set_not_it->second;
-                if (!set_not.is<toml::Table>()) {
-                    fatal("`packages` entry `", package.cangjie_name(), "` not filter must be a TOML table");
-                }
-                result = new NotFilter(package, create_filter(package, set_not.as<toml::Table>()));
+                result = new NotFilter(package, create_filter(package, set_not_it->second));
             }
 
             if (filter_it == e && filter_not_it == e) {
@@ -268,6 +258,22 @@ PackageFilter& create_filter(const Package& package, const toml::Table& table)
             fatal("`packages` entry `", package.cangjie_name(), "` filter has ", non_null,
                 " operations, but only 1 is allowed simultaneously");
     }
+}
+
+PackageFilter& create_filter(const Package& package, const toml::Value& node)
+{
+    if (node.is<toml::Table>()) {
+        return create_filter(package, node.as<toml::Table>());
+    }
+
+    if (node.is<std::string>() || node.is<toml::Array>()) {
+        toml::Table table;
+        table.emplace("include", node);
+        return create_filter(package, table);
+    }
+
+    fatal("`packages` entry `", package.cangjie_name(),
+        "` filter is expected to be a TOML table, a regex string or an array");
 }
 
 } // namespace objcgen

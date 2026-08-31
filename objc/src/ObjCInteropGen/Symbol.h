@@ -13,6 +13,7 @@
 
 #include "Config.h"
 #include "InputFile.h"
+#include "StructuredString.h"
 
 namespace objcgen {
 
@@ -22,7 +23,7 @@ class PackageFile;
 class Type;
 class TypeDeclarationSymbol;
 class TypeLikeSymbol;
-class TypeMapping;
+struct TypeMapping;
 
 enum class PrintFormat {
     // The object is printed "as is".  This is good for readability (for example, in
@@ -68,7 +69,7 @@ public:
         return name_;
     }
 
-    virtual void print(std::ostream& stream, PrintFormat format) const;
+    virtual void print(StructuredString& stream, PrintFormat format) const;
 
 protected:
     [[nodiscard]] explicit Symbol(std::string name) noexcept;
@@ -112,6 +113,34 @@ public:
     [[nodiscard]] bool operator()(Type& type) const;
 };
 
+class FileLevelSymbolScanner {
+public:
+    template <class Pred> [[nodiscard]] static auto from(const Pred& pred)
+    {
+        class VisitorImpl : public FileLevelSymbolScanner {
+        public:
+            explicit VisitorImpl(const Pred& pred) noexcept : pred(pred)
+            {
+            }
+
+        private:
+            bool operator()(const FileLevelSymbol& symbol) const override
+            {
+                return pred(symbol);
+            }
+
+            const Pred& pred;
+        };
+
+        return VisitorImpl(pred);
+    }
+
+    virtual ~FileLevelSymbolScanner() = default;
+
+    [[nodiscard]] virtual bool operator()(const FileLevelSymbol& symbol) const = 0;
+    [[nodiscard]] bool operator()(const Type& type) const;
+};
+
 class FileLevelSymbol : public Symbol {
 public:
     [[nodiscard]] virtual bool is_ctype() const noexcept
@@ -132,9 +161,9 @@ public:
         return visit_referenced_types(FileLevelSymbolVisitor::from(pred));
     }
 
-    [[nodiscard]] bool any_of_referenced_types(const FileLevelSymbolVisitor& visitor)
+    template <class Pred> [[nodiscard]] bool any_of_referenced_types(const Pred& pred) const
     {
-        return visit_referenced_types(visitor);
+        return visit_referenced_types(FileLevelSymbolScanner::from(pred));
     }
 
     /** Calls 'func' for each named type explicitly referenced by this symbol. */
@@ -220,6 +249,11 @@ private:
         return false;
     }
 
+    virtual bool visit_referenced_types([[maybe_unused]] const FileLevelSymbolScanner& visitor) const
+    {
+        return false;
+    }
+
     // Applicable only for symbols with the same defining file
     friend bool operator<(const FileLevelSymbol& symbol1, const FileLevelSymbol& symbol2) noexcept;
 
@@ -257,6 +291,8 @@ public:
     }
 
     [[nodiscard]] virtual TypeLikeSymbol& map() = 0;
+
+    [[nodiscard]] virtual bool is_objc_compatible() const noexcept = 0;
 
 protected:
     explicit TypeLikeSymbol(std::string name) noexcept : FileLevelSymbol(std::move(name))
@@ -341,6 +377,8 @@ public:
 
     [[nodiscard]] bool is_ctype() const noexcept;
 
+    [[nodiscard]] bool is_objc_compatible() const noexcept;
+
     [[nodiscard]] bool contains_pointer_or_func() const noexcept;
 
     /**
@@ -381,16 +419,16 @@ public:
 
     void map();
 
-    void print(std::ostream& stream, PrintFormat format) const;
+    void print(StructuredString& stream, PrintFormat format) const;
 
-    void print_default_value(std::ostream& stream, PrintFormat format) const;
+    void print_default_value(StructuredString& stream, PrintFormat format) const;
 
     [[nodiscard]] ClosureDepthType reference_level() const noexcept;
 
 private:
     [[nodiscard]] Nullability init_nullability(Nullability nullability) noexcept;
 
-    void print_func_like(std::ostream& stream, std::string_view name, PrintFormat format) const;
+    void print_func_like(StructuredString& stream, std::string_view name, PrintFormat format) const;
 
     Kind kind_ = Kind::Unit;
     TypeLikeSymbol* symbol_ = nullptr;
@@ -416,10 +454,9 @@ public:
         Union,
         Enum,
         Category,
-        TopLevel,
     };
 
-    void print(std::ostream& stream, PrintFormat) const override;
+    void print(StructuredString& stream, PrintFormat) const override;
 
     [[nodiscard]] Kind kind() const noexcept
     {
@@ -431,7 +468,12 @@ public:
         return kind_ == kind;
     }
 
-    void set_mapping(const TypeMapping& mapping) noexcept;
+    [[nodiscard]] const TypeMapping* mapping() const noexcept
+    {
+        return mapping_;
+    }
+
+    void set_mapping(const TypeMapping* mapping) noexcept;
 
     // String value for the @ObjCMirror attribute.  If empty, no value is specified
     // for @ObjCMirror.
@@ -445,6 +487,8 @@ public:
         return objc_name_.empty() ? name() : objc_name_;
     }
 
+    [[nodiscard]] bool is_objc_compatible() const noexcept override;
+
 protected:
     explicit NamedTypeSymbol(const Kind kind, std::string name) noexcept : TypeLikeSymbol(std::move(name)), kind_(kind)
     {
@@ -456,11 +500,6 @@ private:
     void rename(std::string new_name) noexcept;
 
     [[nodiscard]] bool is_optionable_reference() const noexcept override;
-
-    [[nodiscard]] const TypeMapping* mapping() const noexcept
-    {
-        return mapping_;
-    }
 
     const TypeMapping* mapping_ = nullptr;
 
@@ -547,6 +586,7 @@ private:
     bool set_reference_level(unsigned new_reference_level) noexcept override;
 
     bool visit_referenced_types(const FileLevelSymbolVisitor& visitor) override;
+    bool visit_referenced_types(const FileLevelSymbolScanner& visitor) const override;
 
     [[nodiscard]] bool empty() const noexcept
     {
@@ -586,7 +626,7 @@ public:
     }
 
 private:
-    void print(std::ostream& stream, PrintFormat) const override
+    void print(StructuredString& stream, PrintFormat) const override
     {
         stream << name();
     }
@@ -629,7 +669,7 @@ public:
     }
 
 private:
-    void print(std::ostream& stream, PrintFormat format) const override;
+    void print(StructuredString& stream, PrintFormat format) const override;
 
     [[nodiscard]] bool is_ctype() const noexcept override
     {
@@ -651,12 +691,11 @@ constexpr Modifiers ModifierStatic = 1 << 3;
 constexpr Modifiers ModifierReadonly = 1 << 4;
 constexpr Modifiers ModifierOverride = 1 << 5;
 constexpr Modifiers ModifierOptional = 1 << 6;
-constexpr Modifiers ModifierInternalLinkage = 1 << 7; // used for Kind::GlobalFunction
-constexpr Modifiers ModifierBitField = 1 << 8;
+constexpr Modifiers ModifierBitField = 1 << 7;
 
 // Not printed at all to output Cangjie files, ignored by CangjieWriter.  For
 // example, getter method sharing the same name with its property.
-constexpr Modifiers ModifierHidden = 1 << 9;
+constexpr Modifiers ModifierHidden = 1 << 8;
 
 /**
  * A type parameter, when using inside a generic body, can be constrainted by
@@ -670,6 +709,12 @@ class TypeParameterSymbol final : public TypeLikeSymbol {
 public:
     explicit TypeParameterSymbol(std::string type_parameter) noexcept : TypeLikeSymbol(std::move(type_parameter))
     {
+    }
+
+    [[nodiscard]] bool is_objc_compatible() const noexcept override
+    {
+        // Type parameters are printed as ObjCId, which is Objective-C compatible
+        return true;
     }
 
 private:
@@ -809,6 +854,7 @@ public:
 
 private:
     bool visit_referenced_types(const FileLevelSymbolVisitor& visitor) override;
+    bool visit_referenced_types(const FileLevelSymbolScanner& visitor) const override;
 
     [[nodiscard]] bool contains_pointer_or_func() const noexcept override
     {
@@ -835,7 +881,7 @@ class TypeAliasSymbol final : public NamedTypeSymbol {
 public:
     TypeAliasSymbol(std::string name, Type target) noexcept;
 
-    void print(std::ostream& stream, PrintFormat format) const override;
+    void print(StructuredString& stream, PrintFormat format) const override;
 
     /**
      * Return the canonical type for `this`, in the sense of the
@@ -874,6 +920,12 @@ public:
         return target_.canonical_type();
     }
 
+    /**
+     * Whether this declaration is currently supported by the FE.
+     * If not, then it will be commented out.
+     */
+    [[nodiscard]] bool is_supported() const noexcept;
+
 private:
     [[nodiscard]] bool is_ctype() const noexcept override
     {
@@ -883,6 +935,7 @@ private:
     bool set_reference_level(unsigned new_reference_level) noexcept override;
 
     bool visit_referenced_types(const FileLevelSymbolVisitor& visitor) override;
+    bool visit_referenced_types(const FileLevelSymbolScanner& visitor) const override;
 
     [[nodiscard]] bool contains_pointer_or_func() const noexcept override
     {
@@ -899,8 +952,10 @@ public:
         Property,
         InstanceVariable,
         GlobalFunction, // NOTE: must have stable address and live forever
-        MemberMethod,
-        Constructor
+        ProtocolMethod,
+        InterfaceMethod,
+        ProtocolConstructor,
+        InterfaceConstructor,
     };
 
     [[nodiscard]] NonTypeSymbol(std::string name, Kind kind, Type return_type, std::vector<ParameterSymbol> parameters,
@@ -914,6 +969,15 @@ public:
 
     [[nodiscard]] bool is_ctype() const noexcept override;
 
+    [[nodiscard]] bool is_objc_compatible_signature() const noexcept;
+
+    /**
+     * Whether this declaration is currently supported by the FE.
+     * If not, then it will be commented out.
+     * @param owner owner type symbol, if any
+     */
+    [[nodiscard]] bool is_supported(const TypeDeclarationSymbol* owner) const noexcept;
+
     [[nodiscard]] Kind kind() const noexcept
     {
         return kind_;
@@ -926,19 +990,39 @@ public:
         return selector_attribute_;
     }
 
+    [[nodiscard]] bool is_protocol_method() const noexcept
+    {
+        return kind_ == Kind::ProtocolMethod;
+    }
+
+    [[nodiscard]] bool is_interface_method() const noexcept
+    {
+        return kind_ == Kind::InterfaceMethod;
+    }
+
     [[nodiscard]] bool is_member_method() const noexcept
     {
-        return kind() == Kind::MemberMethod;
+        return is_protocol_method() || is_interface_method();
+    }
+
+    [[nodiscard]] bool is_protocol_constructor() const noexcept
+    {
+        return kind_ == Kind::ProtocolConstructor;
+    }
+
+    [[nodiscard]] bool is_interface_constructor() const noexcept
+    {
+        return kind_ == Kind::InterfaceConstructor;
     }
 
     [[nodiscard]] bool is_constructor() const noexcept
     {
-        return kind() == Kind::Constructor;
+        return is_protocol_constructor() || is_interface_constructor();
     }
 
     [[nodiscard]] bool is_global_function() const noexcept
     {
-        return kind() == Kind::GlobalFunction;
+        return kind_ == Kind::GlobalFunction;
     }
 
     [[nodiscard]] bool is_method() const noexcept
@@ -948,17 +1032,17 @@ public:
 
     [[nodiscard]] bool is_field() const noexcept
     {
-        return kind() == Kind::Field;
+        return kind_ == Kind::Field;
     }
 
     [[nodiscard]] bool is_instance_variable() const noexcept
     {
-        return kind() == Kind::InstanceVariable;
+        return kind_ == Kind::InstanceVariable;
     }
 
     [[nodiscard]] bool is_property() const noexcept
     {
-        return kind() == Kind::Property;
+        return kind_ == Kind::Property;
     }
 
     [[nodiscard]] const std::string& selector() const noexcept
@@ -967,6 +1051,8 @@ public:
     }
 
     [[nodiscard]] const Type& return_type() const noexcept;
+
+    [[nodiscard]] const Type& property_type(const TypeDeclarationSymbol& decl) const noexcept;
 
     [[nodiscard]] Type& return_type() noexcept;
 
@@ -1039,11 +1125,6 @@ public:
         return modifiers_ & ModifierOptional;
     }
 
-    [[nodiscard]] bool has_internal_linkage() const noexcept
-    {
-        return modifiers_ & ModifierInternalLinkage;
-    }
-
     // Used for Kind::Property.  Returns a reference to the Objective-C selector of
     // the property getter.
     [[nodiscard]] const std::string& getter() const noexcept
@@ -1079,6 +1160,7 @@ public:
 
 private:
     bool visit_referenced_types(const FileLevelSymbolVisitor& visitor) override;
+    bool visit_referenced_types(const FileLevelSymbolScanner& visitor) const override;
 
     Kind kind_;
     Modifiers modifiers_;
@@ -1114,12 +1196,6 @@ public:
     }
 
 private:
-    friend std::ostream& operator<<(std::ostream& stream, const Printer& printer)
-    {
-        printer.obj_.print(stream, printer.format_);
-        return stream;
-    }
-
     const T& obj_;
     const PrintFormat format_;
 };
@@ -1139,6 +1215,12 @@ template <class T> [[nodiscard]] Printer<T> emit_cangjie_strict(const T& obj) no
     return {obj, PrintFormat::EmitCangjieStrict};
 }
 
+template <class T> StructuredString& operator<<(StructuredString& stream, const Printer<T>& printer)
+{
+    printer.obj().print(stream, printer.format());
+    return stream;
+}
+
 class KeywordEscaper {
 public:
     explicit KeywordEscaper(std::string_view name) noexcept : name(name)
@@ -1146,7 +1228,7 @@ public:
     }
 
 private:
-    friend std::ostream& operator<<(std::ostream& stream, const KeywordEscaper& op);
+    friend StructuredString& operator<<(StructuredString& stream, const KeywordEscaper& op);
 
     const std::string_view name;
 };

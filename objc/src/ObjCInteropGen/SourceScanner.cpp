@@ -30,13 +30,6 @@
 
 namespace objcgen {
 
-struct CXCursorHash {
-    [[nodiscard]] size_t operator()(const CXCursor& x) const noexcept
-    {
-        return clang_hashCursor(x);
-    }
-};
-
 class SourceScanner final : NonCopyable {
 public:
     void visit(const CXCursor& cursor)
@@ -53,7 +46,7 @@ private:
 
     // We have to name the unnamed structs/unions/enums, use declaring file name +
     // incrementing index suffix
-    std::unordered_map<CXCursor, NamedTypeSymbol*, CXCursorHash> unnamed_decls_;
+    std::unordered_map<std::string, NamedTypeSymbol*> unnamed_decls_;
     std::unordered_map<std::string, std::uint64_t> unnamed_decl_counts_;
 
     // Some symbols may be visited multiple times. Examples:
@@ -278,7 +271,7 @@ static std::ostream& operator<<(std::ostream& stream, const String& string)
     if (!file) {
         return {};
     }
-    location.file_ = as_string(clang_getFileName(file));
+    location.file_ = std::filesystem::u8path(String(clang_getFileName(file)).c_str());
     if (!location.file_.is_absolute()) {
         location.file_ = std::filesystem::absolute(location.file_);
     }
@@ -332,7 +325,17 @@ Type SourceScanner::create_func_like_type(BuiltInTypeSymbol& func_like_symbol, c
 std::string SourceScanner::new_anonymous_name(const CXCursor& decl)
 {
     assert(clang_Cursor_isAnonymous(decl));
-    auto file_name = declaring_file_name(decl);
+    auto file_name_original = declaring_file_name(decl);
+    std::string file_name;
+    file_name.reserve(file_name_original.size());
+    for (unsigned char c : file_name_original) {
+        if (isalnum(c) || c == '_') {
+            file_name += c;
+        } else {
+            file_name += '_';
+        }
+    }
+
     std::uint64_t index = 1;
     if (auto&& [item, inserted] = unnamed_decl_counts_.try_emplace(file_name, index); !inserted) {
         index = ++item->second;
@@ -371,6 +374,7 @@ template <CXTypeKind type_kind> Type SourceScanner::get_named_type(const CXType&
         assert(is_valid(decl));
     }
 
+    std::string decl_usr;
     bool unnamed;
     if constexpr (type_kind == CXType_Record || type_kind == CXType_Enum) {
         if constexpr (type_kind == CXType_Record) {
@@ -392,7 +396,8 @@ template <CXTypeKind type_kind> Type SourceScanner::get_named_type(const CXType&
         unnamed = clang_Cursor_isAnonymous(decl);
         if (unnamed) {
             // This is a struct/union/enum without a tag (but not an anonymous struct/union).
-            auto it = unnamed_decls_.find(decl);
+            decl_usr = as_string(clang_getCursorUSR(decl));
+            auto it = unnamed_decls_.find(decl_usr);
             if (it != unnamed_decls_.end()) {
                 return Type(*it->second, nullability);
             }
@@ -452,8 +457,8 @@ template <CXTypeKind type_kind> Type SourceScanner::get_named_type(const CXType&
                     target.set_nullability(Nullability::Nonnull);
                 }
             } else if (const auto* target_as_alias = dynamic_cast<const TypeAliasSymbol*>(&target_symbol);
-                target_as_alias && target.nullability() == Nullability::Nullable &&
-                target_as_alias->target().nullability() == Nullability::Nullable) {
+                       target_as_alias && target.nullability() == Nullability::Nullable &&
+                       target_as_alias->target().nullability() == Nullability::Nullable) {
                 target.set_nullability(Nullability::Nonnull);
             }
             const auto* target_as_named = dynamic_cast<const NamedTypeSymbol*>(&target_symbol);
@@ -504,8 +509,8 @@ template <CXTypeKind type_kind> Type SourceScanner::get_named_type(const CXType&
                 }
                 if constexpr (type_kind == CXType_Record || type_kind == CXType_Enum) {
                     if (unnamed) {
-                        assert(unnamed_decls_.find(decl) == unnamed_decls_.end());
-                        unnamed_decls_.try_emplace(decl, symbol);
+                        assert(unnamed_decls_.find(decl_usr) == unnamed_decls_.end());
+                        unnamed_decls_.try_emplace(std::move(decl_usr), symbol);
                     }
                 }
                 symbol->set_definition_location(loc);
@@ -593,9 +598,6 @@ struct UndecorateResult {
 
 [[nodiscard]] static PrimitiveTypeSymbol* primitive_type(const CXType& type)
 {
-    assert(type.kind >= CXType_FirstBuiltin && type.kind <= CXType_LastBuiltin && type.kind != CXType_NullPtr &&
-        type.kind != CXType_Overload && type.kind != CXType_Dependent && type.kind != CXType_ObjCId &&
-        type.kind != CXType_ObjCClass && type.kind != CXType_ObjCSel);
     auto& universe = Universe::get();
     switch (type.kind) {
         case CXType_Void:
@@ -906,8 +908,7 @@ void SourceScanner::add_top_level_function(const CXCursor& cursor)
     assert(is_on_top_level());
     set_definition_location(cursor,
         Universe::get().register_top_level_function(as_string(clang_getCursorSpelling(cursor)),
-            type_like_symbol(clang_getCursorResultType(cursor)), get_function_parameters(cursor),
-            clang_getCursorLinkage(cursor) == CXLinkage_Internal ? ModifierInternalLinkage : 0));
+            type_like_symbol(clang_getCursorResultType(cursor)), get_function_parameters(cursor), 0));
 }
 
 Type SourceScanner::get_method_result_type(
@@ -1303,7 +1304,9 @@ void SourceScanner::visit_impl(const CXCursor& cursor, const CXCursor& parent)
                 as_string(clang_getCursorSpelling(cursor)), get_enum_constant_value(cursor));
             break;
         case CXCursor_FunctionDecl:
-            add_top_level_function(cursor);
+            if (clang_getCursorLinkage(cursor) != CXLinkage_Internal) {
+                add_top_level_function(cursor);
+            }
             break;
         case CXCursor_VarDecl:
             // We don't support variables (generic C interop) at the moment.
