@@ -1377,6 +1377,19 @@ const NonTypeSymbol* NonTypeSymbol::find_getter(const TypeDeclarationSymbol& dec
     return nullptr;
 }
 
+[[nodiscard]] static ClosureDepthType calculate_reference_level(
+    ClosureDepthType initial_value, const std::vector<ParameterSymbol>& params) noexcept
+{
+    auto result = initial_value;
+    for (const auto& param : params) {
+        auto rl = param.type().reference_level();
+        if (rl > result) {
+            result = rl;
+        }
+    }
+    return result;
+}
+
 ClosureDepthType NonTypeSymbol::calculate_reference_level(const TypeDeclarationSymbol& decl) const noexcept
 {
     switch (kind_) {
@@ -1385,22 +1398,15 @@ ClosureDepthType NonTypeSymbol::calculate_reference_level(const TypeDeclarationS
             return return_type_.reference_level();
         case Kind::Property:
             return property_type(decl).reference_level();
-        case Kind::ProtocolMethod:
-        case Kind::InterfaceMethod: {
-            auto result = return_type_.reference_level();
-            for (const auto& param : parameters_) {
-                auto rl = param.type().reference_level();
-                if (rl > result) {
-                    result = rl;
-                }
-            }
-            return result;
-        }
-        default:
-            assert(kind_ == Kind::GlobalFunction);
-
+        case Kind::GlobalFunction:
             // Should be calculated already during package marking
             return reference_level_;
+        case Kind::ProtocolMethod:
+        case Kind::InterfaceMethod:
+            return objcgen::calculate_reference_level(return_type_.reference_level(), parameters_);
+        default:
+            assert(kind_ == Kind::ProtocolConstructor || kind_ == Kind::InterfaceConstructor);
+            return objcgen::calculate_reference_level(0, parameters_);
     }
 }
 
