@@ -827,7 +827,8 @@ bool EnumDeclarationSymbol::visit_referenced_types(const FileLevelSymbolScanner&
 }
 
 UnexposedTypeSymbol::UnexposedTypeSymbol(std::string name, size_t size)
-    : NamedTypeSymbol(Kind::Unexposed, std::move(name)), underlying_type_(underlying_unexposed_type(size))
+    : NamedTypeSymbol(Kind::Unexposed, std::move(name), UNLIMITED_CLOSURE_DEPTH),
+      underlying_type_(underlying_unexposed_type(size))
 {
 }
 
@@ -853,8 +854,9 @@ void UnexposedTypeSymbol::print(StructuredString& stream, PrintFormat format) co
     }
 }
 
-TypeDeclarationSymbol::TypeDeclarationSymbol(const Kind kind, std::string name) noexcept
-    : NamedTypeSymbol(kind, std::move(name)),
+TypeDeclarationSymbol::TypeDeclarationSymbol(
+    const Kind kind, std::string name, ClosureDepthType initial_reference_level) noexcept
+    : NamedTypeSymbol(kind, std::move(name), initial_reference_level),
       is_ctype_(is_ctype_by_default(kind, this->name())),
       contains_pointer_or_func_(false),
       transformed_(false)
@@ -1081,7 +1083,7 @@ bool TypeDeclarationSymbol::any_of_members(Pred cond) const noexcept(noexcept(co
 }
 
 TypeAliasSymbol::TypeAliasSymbol(std::string name, Type target) noexcept
-    : NamedTypeSymbol(Kind::TypeDef, std::move(name)), target_(std::move(target))
+    : NamedTypeSymbol(Kind::TypeDef, std::move(name), UNLIMITED_CLOSURE_DEPTH), target_(std::move(target))
 {
 }
 
@@ -1185,7 +1187,7 @@ static void selector_to_cj_name(NonTypeSymbol& member)
 
 [[nodiscard]] NonTypeSymbol::NonTypeSymbol(std::string name, Kind kind, Type return_type,
     std::vector<ParameterSymbol> parameters, Modifiers modifiers) noexcept
-    : FileLevelSymbol(std::move(name)),
+    : FileLevelSymbol(std::move(name), UNLIMITED_CLOSURE_DEPTH),
       kind_(kind),
       modifiers_(modifiers),
       return_type_(std::move(return_type)),
@@ -1201,7 +1203,7 @@ static void selector_to_cj_name(NonTypeSymbol& member)
 
 [[nodiscard]] NonTypeSymbol::NonTypeSymbol(
     std::string name, std::string getter, std::string setter, Modifiers modifiers) noexcept
-    : FileLevelSymbol(std::move(name)),
+    : FileLevelSymbol(std::move(name), UNLIMITED_CLOSURE_DEPTH),
       kind_(Kind::Property),
       modifiers_(modifiers),
       getter_(getter == this->name() ? std::string() : std::move(getter)),
@@ -1400,7 +1402,7 @@ ClosureDepthType NonTypeSymbol::calculate_reference_level(const TypeDeclarationS
             return property_type(decl).reference_level();
         case Kind::GlobalFunction:
             // Should be calculated already during package marking
-            return reference_level_;
+            return reference_level();
         case Kind::ProtocolMethod:
         case Kind::InterfaceMethod:
             return objcgen::calculate_reference_level(return_type_.reference_level(), parameters_);

@@ -237,11 +237,10 @@ public:
     }
 
 protected:
-    explicit FileLevelSymbol(std::string name) noexcept : Symbol(std::move(name))
+    explicit FileLevelSymbol(std::string name, ClosureDepthType initial_reference_level) noexcept
+        : Symbol(std::move(name)), reference_level_(initial_reference_level)
     {
     }
-
-    ClosureDepthType reference_level_ = UNLIMITED_CLOSURE_DEPTH;
 
 private:
     virtual bool visit_referenced_types([[maybe_unused]] const FileLevelSymbolVisitor& visitor)
@@ -256,6 +255,8 @@ private:
 
     // Applicable only for symbols with the same defining file
     friend bool operator<(const FileLevelSymbol& symbol1, const FileLevelSymbol& symbol2) noexcept;
+
+    ClosureDepthType reference_level_;
 
     InputFile* input_file_ = nullptr; // Stage 1
     LineCol location_{};
@@ -295,7 +296,8 @@ public:
     [[nodiscard]] virtual bool is_objc_compatible() const noexcept = 0;
 
 protected:
-    explicit TypeLikeSymbol(std::string name) noexcept : FileLevelSymbol(std::move(name))
+    explicit TypeLikeSymbol(std::string name, ClosureDepthType initial_reference_level) noexcept
+        : FileLevelSymbol(std::move(name), initial_reference_level)
     {
     }
 
@@ -490,7 +492,8 @@ public:
     [[nodiscard]] bool is_objc_compatible() const noexcept override;
 
 protected:
-    explicit NamedTypeSymbol(const Kind kind, std::string name) noexcept : TypeLikeSymbol(std::move(name)), kind_(kind)
+    explicit NamedTypeSymbol(const Kind kind, std::string name, ClosureDepthType initial_reference_level) noexcept
+        : TypeLikeSymbol(std::move(name), initial_reference_level), kind_(kind)
     {
     }
 
@@ -515,7 +518,7 @@ private:
  */
 class BuiltInTypeSymbol final : public NamedTypeSymbol {
 public:
-    explicit BuiltInTypeSymbol(std::string name) : NamedTypeSymbol(Kind::BuiltIn, std::move(name))
+    explicit BuiltInTypeSymbol(std::string name) noexcept : NamedTypeSymbol(Kind::BuiltIn, std::move(name), 0)
     {
     }
 
@@ -529,7 +532,7 @@ private:
 class EnumConstantSymbol final : public FileLevelSymbol {
 public:
     explicit EnumConstantSymbol(std::string name, const std::array<uint64_t, 2>& value) noexcept
-        : FileLevelSymbol(std::move(name)), value_{value[0], value[1]}
+        : FileLevelSymbol(std::move(name), UNLIMITED_CLOSURE_DEPTH), value_{value[0], value[1]}
     {
     }
 
@@ -561,7 +564,8 @@ private:
 class EnumDeclarationSymbol final : public NamedTypeSymbol {
 public:
     explicit EnumDeclarationSymbol(std::string name, NamedTypeSymbol& underlying_type) noexcept
-        : NamedTypeSymbol(NamedTypeSymbol::Kind::Enum, std::move(name)), underlying_type_(&underlying_type)
+        : NamedTypeSymbol(NamedTypeSymbol::Kind::Enum, std::move(name), UNLIMITED_CLOSURE_DEPTH),
+          underlying_type_(&underlying_type)
     {
     }
 
@@ -610,9 +614,8 @@ enum class PrimitiveSize : uint8_t { Zero = 0, One = 1, Two = 2, Four = 4, Eight
 class PrimitiveTypeSymbol final : public NamedTypeSymbol {
 public:
     [[nodiscard]] PrimitiveTypeSymbol(std::string name, PrimitiveTypeCategory category, PrimitiveSize size) noexcept
-        : NamedTypeSymbol(NamedTypeSymbol::Kind::Primitive, std::move(name)), category_(category), size_(size)
+        : NamedTypeSymbol(NamedTypeSymbol::Kind::Primitive, std::move(name), 0), category_(category), size_(size)
     {
-        reference_level_ = 0;
     }
 
     [[nodiscard]] PrimitiveTypeCategory category() const noexcept
@@ -698,7 +701,7 @@ constexpr Modifiers ModifierBitField = 1 << 7;
 constexpr Modifiers ModifierHidden = 1 << 8;
 
 /**
- * A type parameter, when using inside a generic body, can be constrainted by
+ * A type parameter, when using inside a generic body, can be constrained by
  * specific protocols.  Like here in the parameter `x`:
  *
  * @interface A<T> : NSObject
@@ -707,7 +710,8 @@ constexpr Modifiers ModifierHidden = 1 << 8;
  */
 class TypeParameterSymbol final : public TypeLikeSymbol {
 public:
-    explicit TypeParameterSymbol(std::string type_parameter) noexcept : TypeLikeSymbol(std::move(type_parameter))
+    explicit TypeParameterSymbol(std::string type_parameter) noexcept
+        : TypeLikeSymbol(std::move(type_parameter), UNLIMITED_CLOSURE_DEPTH)
     {
     }
 
@@ -763,7 +767,14 @@ private:
 
 class TypeDeclarationSymbol : public NamedTypeSymbol {
 public:
-    [[nodiscard]] TypeDeclarationSymbol(Kind kind, std::string name) noexcept;
+    /**
+     * 'initial_reference_level' should be specified as 0 for type symbols that
+     * are unconditionally known to the Cangjie compiler (primitives like 'Int32' or
+     * 'Float64') or to the ObjC interop library (ObjC builtins like 'ObjCId' or
+     * 'ObjCClass'), and hence are not a subject for closure depth filtering.
+     **/
+    [[nodiscard]] TypeDeclarationSymbol(
+        Kind kind, std::string name, ClosureDepthType initial_reference_level = UNLIMITED_CLOSURE_DEPTH) noexcept;
 
     [[nodiscard]] bool is_ctype() const noexcept override
     {

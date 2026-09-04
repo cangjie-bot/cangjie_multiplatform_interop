@@ -489,7 +489,7 @@ template <CXTypeKind type_kind> Type SourceScanner::get_named_type(const CXType&
                     // symbol.  References to it will be commented out in the normal mode (but not
                     // in experimental).
                     if (name == "Protocol") {
-                        symbol = new TypeDeclarationSymbol(symbol_kind, std::move(name));
+                        symbol = new TypeDeclarationSymbol(symbol_kind, std::move(name), 0);
                     } else {
                         // A built-in declaration that has no file location.  Represent it as unexposed.
                         symbol = &create_unexposed_type_symbol(type, std::move(name));
