@@ -37,9 +37,9 @@ Universe::Universe()
       float16_("Float16", PrimitiveTypeCategory::FloatingPoint, PrimitiveSize::Two),
       float32_("Float32", PrimitiveTypeCategory::FloatingPoint, PrimitiveSize::Four),
       float64_("Float64", PrimitiveTypeCategory::FloatingPoint, PrimitiveSize::Eight),
-      class_(NamedTypeSymbol::Kind::Interface, "ObjCClass", 0),
-      id_(NamedTypeSymbol::Kind::Protocol, "ObjCId", 0),
-      sel_(NamedTypeSymbol::Kind::Interface, "SEL" /* "ObjCSelector" */, 0),
+      class_(NamedTypeSymbol::Kind::Interface, "ObjCClass"),
+      id_(NamedTypeSymbol::Kind::Protocol, "ObjCId"),
+      sel_(NamedTypeSymbol::Kind::Interface, "SEL" /* "ObjCSelector" */),
 
       // `pointer_` and `func_` do not have fixed names.  They can be "CPointer/CFunc"
       // or "ObjCPointer/ObjCFunc", depending on the parameter types.
@@ -69,6 +69,12 @@ Universe::Universe()
     register_type(class_);
     register_type(id_);
     register_type(sel_);
+
+    // These types are ObjC built-ins.  They are not subjects for closure-depth
+    // filtering, their reference levels must be initially zero.
+    class_.set_zero_reference_level();
+    id_.set_zero_reference_level();
+    sel_.set_zero_reference_level();
 }
 
 NonTypeSymbol& Universe::register_top_level_function(

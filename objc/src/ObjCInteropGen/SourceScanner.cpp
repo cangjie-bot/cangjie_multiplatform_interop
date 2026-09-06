@@ -483,13 +483,15 @@ template <CXTypeKind type_kind> Type SourceScanner::get_named_type(const CXType&
             auto loc = get_location(decl);
             if (loc.is_null()) {
                 if constexpr (type_kind == CXType_ObjCInterface) {
-                    // The only class without a declaration in a source file must be the built-in
-                    // class Protocol.  Currently it is not supported by interop and has no
-                    // declaration at the Cangjie side either.  However, we create the corresponding
-                    // symbol.  References to it will be commented out in the normal mode (but not
-                    // in experimental).
+                    // The only CXType_ObjCInterface type without a declaration in a source file
+                    // must be the built-in class Protocol.  Currently it is not supported by
+                    // interop and has no declaration at the Cangjie side either.  However, we
+                    // create the corresponding symbol.  References to it will be commented out in
+                    // the normal mode (but not in experimental).  Also, it is not a subject for
+                    // closure-depth filtering, so its reference level is initially zero.
                     if (name == "Protocol") {
-                        symbol = new TypeDeclarationSymbol(symbol_kind, std::move(name), 0);
+                        symbol = new TypeDeclarationSymbol(symbol_kind, std::move(name));
+                        symbol->set_zero_reference_level();
                     } else {
                         // A built-in declaration that has no file location.  Represent it as unexposed.
                         symbol = &create_unexposed_type_symbol(type, std::move(name));
