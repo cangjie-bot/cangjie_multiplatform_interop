@@ -69,6 +69,12 @@ Universe::Universe()
     register_type(class_);
     register_type(id_);
     register_type(sel_);
+
+    // These types are ObjC built-ins.  They are not subjects for closure-depth
+    // filtering, their reference levels must be initially zero.
+    class_.set_zero_reference_level();
+    id_.set_zero_reference_level();
+    sel_.set_zero_reference_level();
 }
 
 NonTypeSymbol& Universe::register_top_level_function(

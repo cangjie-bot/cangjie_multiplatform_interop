@@ -150,6 +150,11 @@ public:
 
     virtual bool set_reference_level(unsigned new_reference_level) noexcept;
 
+    void set_zero_reference_level() noexcept
+    {
+        reference_level_ = 0;
+    }
+
     /**
      * Searches for a named type explicitly referenced by this symbol for which the
      * 'pred' call returns true.  Returns true if such a symbol is found.  'pred'
