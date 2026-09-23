@@ -999,13 +999,13 @@ public:
      * conflicts with the name of any member of 'owner' or one of its base
      * classes/interfaces, mangle 'new_base_name' to make it unique.
      */
-    void rename_uniquely(std::string new_base_name, const TypeDeclarationSymbol& owner);
+    void rename_uniquely_to(std::string new_base_name, const TypeDeclarationSymbol& owner);
 
     /**
      * If the current name conflicts with the name of any member of 'owner' or one
      * of its base classes/interfaces, mangle the name to make it unique.
      */
-    void make_unique_name(const TypeDeclarationSymbol& owner);
+    void make_name_unique(const TypeDeclarationSymbol& owner);
 
     [[nodiscard]] bool is_ctype() const noexcept override;
 

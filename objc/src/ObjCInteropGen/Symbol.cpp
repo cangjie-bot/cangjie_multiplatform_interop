@@ -1267,7 +1267,7 @@ static bool is_unique_name(const std::string& name, const TypeDeclarationSymbol&
         is_unique_name_against_bases(name, owner);
 }
 
-void NonTypeSymbol::rename_uniquely(std::string new_base_name, const TypeDeclarationSymbol& owner)
+void NonTypeSymbol::rename_uniquely_to(std::string new_base_name, const TypeDeclarationSymbol& owner)
 {
     for (;; new_base_name = name() + '_') {
         rename(std::move(new_base_name));
@@ -1277,10 +1277,10 @@ void NonTypeSymbol::rename_uniquely(std::string new_base_name, const TypeDeclara
     }
 }
 
-void NonTypeSymbol::make_unique_name(const TypeDeclarationSymbol& owner)
+void NonTypeSymbol::make_name_unique(const TypeDeclarationSymbol& owner)
 {
     while (!has_unique_name(*this, owner)) {
-        rename_uniquely(name() + '_', owner);
+        rename_uniquely_to(name() + '_', owner);
     }
 }
 

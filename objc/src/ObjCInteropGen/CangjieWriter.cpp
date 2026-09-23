@@ -311,7 +311,8 @@ static void print_getter_setter_names(StructuredString& output, const NonTypeSym
     }
 }
 
-[[nodiscard]] static bool has_name_clash_through_type_aliases(const NonTypeSymbol& symbol, const std::string& name, PrintFormat format)
+[[nodiscard]] static bool has_name_clash_through_type_aliases(
+    const NonTypeSymbol& symbol, const std::string& name, PrintFormat format)
 {
     class Scanner : public FileLevelSymbolScanner {
     public:
@@ -620,19 +621,69 @@ void TypeDeclarationWriter::write_field(const NonTypeSymbol& field)
     output_ << '\n';
 }
 
-template <class It> static void write_tail_base_protocols(StructuredString& output, It begin, It end)
+template <class It>
+static void write_base_protocols(StructuredString& output, It begin, It end, bool& visible_base_written)
 {
+    bool hidden_comment_open = false;
+    bool hidden_base_written = false;
+
     for (; begin != end; ++begin) {
-        output << ' ';
         const auto& base_protocol = *begin;
         if (base_protocol.hidden) {
-            output << push_block_comment;
+            if (hidden_comment_open) {
+                output << ' ';
+            } else {
+                if (visible_base_written) {
+                    output << ' ';
+                }
+                output << push_block_comment;
+                hidden_comment_open = true;
+                hidden_base_written = false;
+            }
+
+            if (visible_base_written || hidden_base_written) {
+                output << "& ";
+            }
+            output << emit_cangjie(base_protocol.get());
+            hidden_base_written = true;
+            continue;
         }
-        output << "& " << emit_cangjie(base_protocol.get());
-        if (base_protocol.hidden) {
+
+        if (hidden_comment_open) {
             output << pop_block_comment;
+            hidden_comment_open = false;
+            if (!visible_base_written) {
+                output << ' ';
+            }
         }
+
+        if (visible_base_written) {
+            output << " & ";
+        }
+        output << emit_cangjie(base_protocol.get());
+        visible_base_written = true;
     }
+
+    if (hidden_comment_open) {
+        output << pop_block_comment;
+    }
+}
+
+static void write_bases(StructuredString& output, const TypeDeclarationSymbol& decl)
+{
+    const auto* base_class = decl.base_class();
+    auto base_protocols = decl.base_protocols();
+    if (!base_class && base_protocols.empty()) {
+        return;
+    }
+
+    output << " <: ";
+    bool visible_base_written = false;
+    if (base_class) {
+        output << emit_cangjie(*base_class);
+        visible_base_written = true;
+    }
+    write_base_protocols(output, base_protocols.begin(), base_protocols.end(), visible_base_written);
 }
 
 void TypeDeclarationWriter::write()
@@ -688,25 +739,7 @@ void TypeDeclarationWriter::write()
         print_list(output_, parameters, [](auto& output, const auto& parameter) { output << emit_cangjie(parameter); });
         output_ << '>' << pop_block_comment;
     }
-    const auto* base_class = decl_.base_class();
-    auto base_protocols = decl_.base_protocols();
-    auto p_b = base_protocols.begin();
-    auto p_e = base_protocols.end();
-    if (base_class) {
-        output_ << " <: " << emit_cangjie(*base_class);
-        write_tail_base_protocols(output_, p_b, p_e);
-    } else if (!base_protocols.empty()) {
-        output_ << " <: ";
-        const auto& base_protocol = *p_b;
-        if (base_protocol.hidden) {
-            output_ << push_block_comment;
-        }
-        output_ << emit_cangjie(base_protocol.get());
-        if (base_protocol.hidden) {
-            output_ << pop_block_comment;
-        }
-        write_tail_base_protocols(output_, std::next(p_b), p_e);
-    }
+    write_bases(output_, decl_);
     {
         BraceScope scope(output_);
         for (auto&& member : decl_.members()) {

@@ -56,13 +56,13 @@ static void replace_instancetype(TypeDeclarationSymbol& decl)
 
 static void resolve_static_instance_clash(NonTypeSymbol& method, const TypeDeclarationSymbol& owner)
 {
-    method.rename_uniquely(method.name() + (method.is_static() ? "Static" : "Instance"), owner);
+    method.rename_uniquely_to(method.name() + (method.is_static() ? "Static" : "Instance"), owner);
 }
 
 static void resolve_prop_ivar_clash(NonTypeSymbol& member, const TypeDeclarationSymbol& owner)
 {
     assert(member.kind() == NonTypeSymbol::Kind::Property || member.kind() == NonTypeSymbol::Kind::InstanceVariable);
-    member.rename_uniquely(
+    member.rename_uniquely_to(
         member.name() + (member.kind() == NonTypeSymbol::Kind::InstanceVariable ? "Var" : "Prop"), owner);
 }
 
@@ -539,7 +539,7 @@ static void transform_type(TypeDeclarationSymbol& decl)
             const auto& name = m1.name();
             for (auto& m2 : members) {
                 if (m2.is_member_method() && !m2.is_hidden() && m2.name() == name) {
-                    m2.make_unique_name(decl);
+                    m2.make_name_unique(decl);
                 }
             }
         }
@@ -567,7 +567,7 @@ static void resolve_base_derived_name_clash_by_renaming(
     NonTypeSymbol& derived, const TypeDeclarationSymbol& derived_owner, const char* what)
 {
     const auto& original_name = derived.name();
-    derived.make_unique_name(derived_owner);
+    derived.make_name_unique(derived_owner);
     if (verbosity >= LogLevel::INFO) {
         std::cerr << '`' << derived_owner.name() << ' ' << original_name << "` conflicts by " << what
                   << " with a base.  Renaming it to `" << derived.name() << "`\n";

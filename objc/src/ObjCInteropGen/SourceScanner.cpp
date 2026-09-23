@@ -1237,9 +1237,10 @@ void SourceScanner::visit_impl(const CXCursor& cursor, const CXCursor& parent)
                                                          String(clang_getCursorSpelling(referenced)).string_view())
                                                      ->as<TypeDeclarationSymbol>();
                     auto base_protocols = type_decl.base_protocols();
-                    if (!std::any_of(base_protocols.begin(), base_protocols.end(),
-                            [&base_protocol_to_add](
-                                const auto& base_protocol) { return &base_protocol.get() == &base_protocol_to_add; })) {
+                    const bool already_has_base = std::any_of(base_protocols.begin(), base_protocols.end(),
+                        [&base_protocol_to_add](
+                            const auto& base_protocol) { return &base_protocol.get() == &base_protocol_to_add; });
+                    if (!already_has_base) {
                         type_decl.add_base_protocol(base_protocol_to_add);
                     }
                     break;
