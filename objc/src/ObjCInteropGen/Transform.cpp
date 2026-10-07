@@ -329,7 +329,12 @@ static void print_horizontal_conflict_warning(const TypeDeclarationSymbol& clazz
                                                                  : NonTypeSymbol::Kind::ProtocolMethod;
     auto clash = false;
     for (const auto& c_m : decl.members()) {
-        if (c_m.kind() == method_kind || c_m.is_property()) {
+        // Do not process property getters/setters as separate methods
+        if (c_m.is_hidden()) {
+            continue;
+        }
+        // Only methods can be mirrored into @ObjCOptional
+        if (c_m.kind() == method_kind && c_m.is_member_method()) {
             const auto& name = c_m.name();
             auto is_optional = c_m.is_objc_optional();
             for (const auto& p_m : protocol.members()) {
@@ -363,6 +368,9 @@ static void print_horizontal_conflict_warning(const TypeDeclarationSymbol& clazz
             clash = true;
         }
         for (const auto& base_protocol : protocol.base_protocols()) {
+            if (base_protocol.hidden) {
+                continue;
+            }
             if (fix_horizontal_clashes(*p_decl, base_protocol)) {
                 clash = true;
             }
@@ -384,9 +392,6 @@ static void fix_horizontal_clashes(TypeDeclarationSymbol& decl) noexcept
     // * Optionality. Between both base classes and protocols/interfaces.
     //   Objective-C: @optional/not @optional
     //   Cangjie: @ObjCOptional/not @ObjCOptional
-    // * Foreign name attribute.  When methods have different Objective-C selectors
-    //   (hence not overrides), but only one of them has @ForeignName.  The compiler
-    //   issues an error in this case (bug?).
     auto base_protocols = decl.base_protocols();
     const auto* base_class = decl.base_class();
     if (base_class) {
@@ -400,6 +405,9 @@ static void fix_horizontal_clashes(TypeDeclarationSymbol& decl) noexcept
     auto e = base_protocols.end();
     for (auto it1 = base_protocols.begin(); it1 != e; ++it1) {
         const auto& base_protocol1 = *it1;
+        if (base_protocol1.hidden) {
+            continue;
+        }
         for (auto it2 = std::next(it1); it2 != e; ++it2) {
             auto& base_protocol2 = *it2;
             if (fix_horizontal_clashes(base_protocol1, base_protocol2)) {
