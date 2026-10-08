@@ -1074,21 +1074,17 @@ void SourceScanner::visit_impl(const CXCursor& cursor, const CXCursor& parent)
         return;
     }
 
-    // Ignore declarations with the `unavailable` attribute. For example:
-    //
-    // NS_AUTOMATED_REFCOUNT_UNAVAILABLE
-    // @interface NSAutoreleasePool : NSObject {
-    //
-    // where the macro `NS_AUTOMATED_REFCOUNT_UNAVAILABLE` is defined as
-    //
-    // #define NS_AUTOMATED_REFCOUNT_UNAVAILABLE
-    //     __attribute__((unavailable("not available in automatic reference counting mode")))
-    //
-    // It would make sense to take into account particular platform.
-    int always_unavailable;
-    clang_getCursorPlatformAvailability(cursor, nullptr, nullptr, &always_unavailable, nullptr, nullptr, 0);
-    if (always_unavailable) {
-        return;
+    // Ignore "unavailable" declarations.  Those include:
+    //    * Unconditionally unavailable (__attribute__((unavailable)))
+    //    * Unavailable on certain platforms and certain platform versions (__attribute__((availability)))
+    // For correct processing, the target triple (either the default one or the one set through compiler arguments in
+    // the .toml file) is expected to be correct.
+    switch (clang_getCursorAvailability(cursor)) {
+        case CXAvailability_Available:
+        case CXAvailability_Deprecated:
+            break;
+        default:
+            return;
     }
 
     switch (cursor_kind) {
