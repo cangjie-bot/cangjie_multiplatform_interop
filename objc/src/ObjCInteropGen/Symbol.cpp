@@ -336,9 +336,10 @@ bool Type::is_ctype() const noexcept
     }
 }
 
-// Currently in the NORMAL mode, Objective-C compatible types are primitives,
-// @C structures, ObjCPointer, ObjCFunc, ObjCBlock, and classes/interfaces.
-// But not CPointer, CFunc, or VArray.
+// Objective-C compatible types are primitives (except Unit),
+// classes/interfaces, @C structures, ObjCPointer/ObjCFunc/ObjCBlock,
+// CPointer/CFunc to Objective-C compatible.  But not CPointer/CFunc to not
+// Objective-C compatible or VArray.
 bool Type::is_objc_compatible() const noexcept
 {
     assert(normal_mode());
@@ -505,28 +506,17 @@ void Type::print(StructuredString& stream, PrintFormat format) const
             }
             break;
         }
-        case Kind::Pointer: {
+        case Kind::Pointer:
             assert(parameters().size() == 1);
-            const auto& pointee = parameters().front();
-            if (!is_ctype() || format == PrintFormat::EmitCangjieStrict) {
-                stream << "ObjCPointer<";
-                pointee.print(stream, PrintFormat::EmitCangjieStrict);
-            } else {
-                stream << "CPointer<";
-                pointee.print(stream, format);
-            }
+            stream << (is_ctype() ? "CPointer<" : "ObjCPointer<");
+            parameters().front().print(stream, format);
             stream << '>';
             break;
-        }
         case Kind::Function:
-            if (!is_ctype() || format == PrintFormat::EmitCangjieStrict) {
-                print_func_like(stream, "ObjCFunc", PrintFormat::EmitCangjieStrict);
-            } else {
-                print_func_like(stream, "CFunc", format);
-            }
+            print_func_like(stream, is_ctype() ? "CFunc" : "ObjCFunc", format);
             break;
         case Kind::Block:
-            print_func_like(stream, "ObjCBlock", PrintFormat::EmitCangjieStrict);
+            print_func_like(stream, "ObjCBlock", format);
             break;
         case Kind::VArray:
             stream << Universe::get().varray().name() << '<';
@@ -558,7 +548,7 @@ static void print_tricky_default_value(StructuredString& stream, std::string_vie
     stream << "Option<" << type_name << ">.None.getOrThrow()";
 }
 
-void Type::print_default_value(StructuredString& stream, PrintFormat format) const
+void Type::print_default_value(StructuredString& stream) const
 {
     if (is_cj_option()) {
         stream << "None";
@@ -571,28 +561,24 @@ void Type::print_default_value(StructuredString& stream, PrintFormat format) con
     }
     switch (kind_) {
         case Kind::Pointer:
-            print(stream, format);
-            stream << (!is_ctype() || format == PrintFormat::EmitCangjieStrict ? "(CPointer<Unit>())" : "()");
+            stream << emit_cangjie(*this) << (is_ctype() ? "()" : "(CPointer<Unit>())");
             return;
         case Type::Kind::Function:
-            print(stream, format);
-            stream << (!is_ctype() || format == PrintFormat::EmitCangjieStrict ? "(CPointer<CFunc<() -> Unit>>())"
-                                                                               : "(CPointer<Unit>())");
+            stream << emit_cangjie(*this) << (is_ctype() ? "(CPointer<Unit>())" : "(CPointer<CFunc<() -> Unit>>())");
             return;
         case Type::Kind::Block:
-            print(stream, format);
-            stream << "(unsafe { ";
-            print_func_like(stream, "zeroValue", format);
+            stream << emit_cangjie(*this) << "(unsafe { ";
+            print_func_like(stream, "zeroValue", PrintFormat::EmitCangjie);
             stream << "() })";
             return;
         case Type::Kind::VArray:
             stream << '[';
             if (varray_size_) {
                 const auto& element_type = varray_element_type();
-                element_type.print_default_value(stream, format);
+                element_type.print_default_value(stream);
                 for (size_t i = 1; i < varray_size_; ++i) {
                     stream << ", ";
-                    element_type.print_default_value(stream, format);
+                    element_type.print_default_value(stream);
                 }
             }
             stream << ']';
@@ -628,14 +614,14 @@ void Type::print_default_value(StructuredString& stream, PrintFormat format) con
                 break;
             case NamedTypeSymbol::Kind::TypeDef: {
                 assert(type_symbol.is<TypeAliasSymbol>());
-                this->canonical_type().print_default_value(stream, format);
+                this->canonical_type().print_default_value(stream);
                 return;
             }
             case NamedTypeSymbol::Kind::Unexposed:
-                named_type->as<UnexposedTypeSymbol>().underlying_type().print_default_value(stream, format);
+                named_type->as<UnexposedTypeSymbol>().underlying_type().print_default_value(stream);
                 return;
             case NamedTypeSymbol::Kind::Enum:
-                Type(named_type->as<EnumDeclarationSymbol>().underlying_type()).print_default_value(stream, format);
+                Type(named_type->as<EnumDeclarationSymbol>().underlying_type()).print_default_value(stream);
                 return;
             case NamedTypeSymbol::Kind::Interface:
             case NamedTypeSymbol::Kind::Protocol:
@@ -844,7 +830,7 @@ void UnexposedTypeSymbol::print(StructuredString& stream, PrintFormat format) co
     stream << ' ' << push_block_comment << name() << pop_block_comment;
 }
 
-[[nodiscard]] static bool is_ctype_by_default(NamedTypeSymbol::Kind kind, std::string_view name) noexcept
+[[nodiscard]] static bool is_ctype_by_default(NamedTypeSymbol::Kind kind) noexcept
 {
     switch (kind) {
         case NamedTypeSymbol::Kind::Primitive:
@@ -854,7 +840,7 @@ void UnexposedTypeSymbol::print(StructuredString& stream, PrintFormat format) co
         // `is_ctype_` will be set to `false`.
         case NamedTypeSymbol::Kind::Struct:
         case NamedTypeSymbol::Kind::Union:
-            return name != "ObjCPointer" && name != "ObjCFunc" && name != "ObjCBlock";
+            return true;
         default:
             return false;
     }
@@ -862,7 +848,7 @@ void UnexposedTypeSymbol::print(StructuredString& stream, PrintFormat format) co
 
 TypeDeclarationSymbol::TypeDeclarationSymbol(const Kind kind, std::string name) noexcept
     : NamedTypeSymbol(kind, std::move(name)),
-      is_ctype_(is_ctype_by_default(kind, this->name())),
+      is_ctype_(is_ctype_by_default(kind)),
       contains_pointer_or_func_(false),
       transformed_(false)
 {
@@ -1132,40 +1118,11 @@ TypeAliasSymbol::TypeAliasSymbol(std::string name, Type target) noexcept
 
 void TypeAliasSymbol::print(StructuredString& stream, PrintFormat format) const
 {
-    const auto& target = this->target();
-    if (mode != Mode::EXPERIMENTAL && format == PrintFormat::EmitCangjieStrict) {
-        auto canonical_type = this->canonical_type();
-        if (canonical_type.is_ctype() && canonical_type.contains_pointer_or_func()) {
-            // Printing in the context where only ObjC-compatible types are allowed.  That
-            // is, CPointer and CFunc must be replaced by ObjCPointer and ObjCFunc in the
-            // whole typedef sequence.  For example, having the following declarations:
-            //
-            //     typedef int* P1;
-            //     typedef P1 P2;
-            //     @interface M {
-            //         P2 x;
-            //     }
-            //     @end
-            //
-            // we cannot convert the field 'x' to
-            //
-            //      var x: P2;
-            //
-            // as using CPointer in the pure ObjC context is forbidden.  We have to expand
-            // the 'P2' macro and replace CPointer by ObjCPointer:
-            //
-            //      var x: ObjCPointer<Int32> /*P2*/
-            stream << emit_cangjie_strict(target) << ' ' << push_block_comment;
-            NamedTypeSymbol::print(stream, format);
-            stream << pop_block_comment;
-            return;
-        }
-    }
     if (defining_file()) {
         NamedTypeSymbol::print(stream, format);
     } else {
         // This must be a built-in typedef without any declaration in a file.
-        target.print(stream, format);
+        target().print(stream, format);
         stream << ' ' << push_block_comment;
         NamedTypeSymbol::print(stream, format);
         stream << pop_block_comment;
@@ -1392,43 +1349,16 @@ bool NonTypeSymbol::is_supported(const TypeDeclarationSymbol* owner) const noexc
 
 bool NonTypeSymbol::has_name_clash(const TypeDeclarationSymbol* owner) const noexcept
 {
-    // Properties store their referenced type on the synthesized getter.
-    const auto& symbol = is_property() ? *find_getter(*owner) : *this;
-    const auto name = this->name();
     if (!normal_mode()) {
         return false;
     }
 
-    const auto uses_strict_format = is_global_function()
-        ? !is_ctype()
-        : owner && owner->kind() != NamedTypeSymbol::Kind::Struct && owner->kind() != NamedTypeSymbol::Kind::Union;
-    if (!uses_strict_format) {
-        return any_of_referenced_types([&name](const auto& s) { return name == s.name(); });
-    }
+    const auto& name = this->name();
 
-    class Scanner : public FileLevelSymbolScanner {
-    public:
-        explicit Scanner(const std::string& name) noexcept : name_(name) {}
-
-        [[nodiscard]] bool operator()(const FileLevelSymbol& referenced) const override
-        {
-            if (auto* alias = dynamic_cast<const TypeAliasSymbol*>(&referenced)) {
-                if (auto& target = alias->target(); target.has_symbol_assigned()) {
-                    const auto& canonical = alias->canonical_type();
-                    if (canonical.is_ctype() && canonical.contains_pointer_or_func()) {
-                        return (*this)(target);
-                    }
-                }
-            }
-            return name_ == referenced.name();
-        }
-
-        using FileLevelSymbolScanner::operator();
-
-    private:
-        const std::string& name_;
-    };
-    return symbol.any_of_referenced_types(Scanner(name));
+    // Properties store their referenced type on the synthesized getter.
+    return (is_property() ? find_getter(*owner) : this)->any_of_referenced_types([&name](const auto& s) {
+        return name == s.name();
+    });
 }
 
 bool NonTypeSymbol::visit_referenced_types(const FileLevelSymbolVisitor& visitor)

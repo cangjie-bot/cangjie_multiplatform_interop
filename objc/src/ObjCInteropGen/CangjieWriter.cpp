@@ -42,24 +42,24 @@ static StructuredString& operator<<(StructuredString& stream, const DefaultValue
 
 class DefaultValuePrinter {
 public:
-    explicit DefaultValuePrinter(Printer<Type> type_printer) noexcept : type_printer_(type_printer)
+    explicit DefaultValuePrinter(const Type& type) noexcept : type_(type)
     {
     }
 
     friend StructuredString& operator<<(StructuredString& stream, const DefaultValuePrinter& op);
 
 private:
-    const Printer<Type> type_printer_;
+    const Type& type_;
 };
 
-[[nodiscard]] static DefaultValuePrinter default_value(const Type& type, PrintFormat format)
+[[nodiscard]] static DefaultValuePrinter default_value(const Type& type)
 {
-    return DefaultValuePrinter(Printer(type, format));
+    return DefaultValuePrinter(type);
 }
 
 static StructuredString& operator<<(StructuredString& stream, const DefaultValuePrinter& op)
 {
-    op.type_printer_.obj().print_default_value(stream, op.type_printer_.format());
+    op.type_.print_default_value(stream);
     return stream;
 }
 
@@ -128,18 +128,18 @@ static void print_enum_constant_value(
     output << ']';
 }
 
-static void write_type(StructuredString& output, const Type& type, PrintFormat format)
+static void write_type(StructuredString& output, const Type& type)
 {
-    output << ": " << Printer(type, format);
+    output << ": " << emit_cangjie(type);
 }
 
-static void write_method_parameters(StructuredString& output, const NonTypeSymbol& method, PrintFormat format)
+static void write_method_parameters(StructuredString& output, const NonTypeSymbol& method)
 {
     output << '(';
-    print_list(output, method.parameters(), [format](auto& output, const auto& parameter) {
+    print_list(output, method.parameters(), [](auto& output, const auto& parameter) {
         output << escape_keyword(parameter.name());
         const auto& parameter_type = parameter.type();
-        write_type(output, parameter_type, format);
+        write_type(output, parameter_type);
     });
     output << ')';
 }
@@ -311,14 +311,11 @@ static void print_getter_setter_names(StructuredString& output, const NonTypeSym
     }
 }
 
-static void write_function(
-    StructuredString& output, const TypeDeclarationSymbol* decl, const NonTypeSymbol& function, PrintFormat format)
+static void write_function(StructuredString& output, const TypeDeclarationSymbol* decl, const NonTypeSymbol& function)
 {
     if (function.is_hidden()) {
         return;
     }
-    const auto& return_type = function.return_type();
-    const auto& name = function.name();
     auto supported = function.is_supported(decl);
     if (!supported) {
         output << push_line_comment;
@@ -332,7 +329,6 @@ static void write_function(
         } else {
             if (!generate_definitions_mode()) {
                 output << "@ObjCMirror\n";
-                format = PrintFormat::EmitCangjieStrict;
             }
             const auto& selector_attribute = function.selector_attribute();
             if (!selector_attribute.empty()) {
@@ -375,14 +371,15 @@ static void write_function(
             }
         }
     }
-    output << "func " << escape_keyword(name);
-    write_method_parameters(output, function, format);
-    write_type(output, return_type, format);
+    output << "func " << escape_keyword(function.name());
+    write_method_parameters(output, function);
+    const auto& return_type = function.return_type();
+    write_type(output, return_type);
     if (generate_definitions_mode() && !is_ctype) {
         if (return_type.is_unit()) {
             output << " { }";
         } else {
-            output << " { " << default_value(return_type, format) << " }";
+            output << " { " << default_value(return_type) << " }";
         }
     }
     if (!supported) {
@@ -427,7 +424,6 @@ private:
 
     StructuredString& output_;
     TypeDeclarationSymbol& decl_;
-    PrintFormat format_;
     bool any_constructor_exists_ = false;
     bool default_constructor_exists_ = false;
 };
@@ -440,7 +436,6 @@ TypeDeclarationWriter::TypeDeclarationWriter(StructuredString& output, TypeDecla
 void TypeDeclarationWriter::write_property(const NonTypeSymbol& prop)
 {
     assert(prop.is_property());
-    auto is_static = prop.is_static();
     auto supported = prop.is_supported(&decl_);
     if (!supported) {
         output_ << push_line_comment;
@@ -456,7 +451,7 @@ void TypeDeclarationWriter::write_property(const NonTypeSymbol& prop)
     if (!is_interface()) {
         output_ << "public ";
     }
-    if (is_static) {
+    if (prop.is_static()) {
         output_ << "static ";
     } else if (!is_interface()) {
         output_ << "open ";
@@ -468,10 +463,10 @@ void TypeDeclarationWriter::write_property(const NonTypeSymbol& prop)
     ;
     assert(!return_type.is_unit());
     output_ << "prop " << escape_keyword(prop.name());
-    write_type(output_, return_type, format_);
+    write_type(output_, return_type);
     if (generate_definitions_mode()) {
         BraceScope scope(output_);
-        output_ << "get() { " << default_value(return_type, format_) << " }\n";
+        output_ << "get() { " << default_value(return_type) << " }\n";
         if (!prop.is_readonly()) {
             output_ << "set(v) { }\n";
         }
@@ -506,12 +501,12 @@ void TypeDeclarationWriter::write_constructor(NonTypeSymbol& constructor)
             output_ << "public ";
         }
         output_ << "static func " << escape_keyword(constructor.name());
-        write_method_parameters(output_, constructor, format_);
+        write_method_parameters(output_, constructor);
 
         const auto& return_type = constructor.return_type();
-        write_type(output_, return_type, format_);
+        write_type(output_, return_type);
         if (generate_definitions_mode() && !is_interface()) {
-            output_ << " { " << default_value(return_type, format_) << " }";
+            output_ << " { " << default_value(return_type) << " }";
         }
     } else {
         // The constructor will be written with the name 'init'.
@@ -526,7 +521,7 @@ void TypeDeclarationWriter::write_constructor(NonTypeSymbol& constructor)
             output_ << "public ";
         }
         output_ << default_constructor_name;
-        write_method_parameters(output_, constructor, format_);
+        write_method_parameters(output_, constructor);
         if (generate_definitions_mode() && !is_interface()) {
             output_ << " { }";
         }
@@ -542,7 +537,6 @@ void TypeDeclarationWriter::write_instance_variable(NonTypeSymbol& ivar)
     assert(ivar.is_instance_variable());
     assert(ivar.is_instance());
     assert(ivar.is_public() || ivar.is_protected());
-    const auto& name = ivar.name();
     auto supported = ivar.is_supported(&decl_);
     if (!supported) {
         output_ << push_line_comment;
@@ -551,12 +545,12 @@ void TypeDeclarationWriter::write_instance_variable(NonTypeSymbol& ivar)
     if (!selector_attribute.empty()) {
         write_foreign_name(output_, foreign_name_attribute, selector_attribute);
     }
-    output_ << (ivar.is_public() ? "public" : "protected") << " var " << escape_keyword(name);
+    output_ << (ivar.is_public() ? "public" : "protected") << " var " << escape_keyword(ivar.name());
     const auto& return_type = ivar.return_type();
     assert(!return_type.is_unit());
-    write_type(output_, return_type, format_);
+    write_type(output_, return_type);
     if (generate_definitions_mode()) {
-        output_ << " = " << default_value(return_type, format_);
+        output_ << " = " << default_value(return_type);
     }
     if (!supported) {
         output_ << pop_line_comment;
@@ -578,9 +572,9 @@ void TypeDeclarationWriter::write_field(const NonTypeSymbol& field)
     output_ << "public var " << escape_keyword(field.name());
     const auto& return_type = field.return_type();
     assert(!return_type.is_unit());
-    write_type(output_, return_type, format_);
+    write_type(output_, return_type);
     if (mode != Mode::EXPERIMENTAL) {
-        output_ << " = " << default_value(return_type, format_);
+        output_ << " = " << default_value(return_type);
     }
     if (!supported) {
         output_ << pop_line_comment;
@@ -667,21 +661,16 @@ void TypeDeclarationWriter::write()
     switch (decl_.kind()) {
         case NamedTypeSymbol::Kind::Protocol:
         case NamedTypeSymbol::Kind::Interface:
-            format_ = PrintFormat::EmitCangjieStrict;
             print_objcmirror_attribute(output_, decl_, !generate_definitions_mode());
             break;
-        case NamedTypeSymbol::Kind::Struct:
-        case NamedTypeSymbol::Kind::Union:
-            format_ = PrintFormat::EmitCangjie;
+        default:
+            assert(decl_.is(NamedTypeSymbol::Kind::Struct) || decl_.is(NamedTypeSymbol::Kind::Union));
             if (decl_.is_ctype()) {
                 output_ << "@C\n";
             } else {
                 print_objcmirror_attribute(output_, decl_, mode == Mode::EXPERIMENTAL);
             }
             break;
-        default:
-            assert(false);
-            return;
     }
     output_ << "public ";
     switch (decl_.kind()) {
@@ -722,7 +711,7 @@ void TypeDeclarationWriter::write()
             } else if (member.is_constructor()) {
                 write_constructor(member);
             } else if (member.is_member_method()) {
-                write_function(output_, &decl_, member, format_);
+                write_function(output_, &decl_, member);
             } else if (member.is_instance_variable()) {
                 write_instance_variable(member);
             } else if (member.is_field()) {
@@ -746,7 +735,6 @@ void TypeDeclarationWriter::write()
 
 static void write_enum_declaration(StructuredString& output, const EnumDeclarationSymbol& enum_decl)
 {
-    // Can be emit_cangjie_strict, does not matter here
     auto enum_decl_printer = emit_cangjie(enum_decl);
 
     const auto& underlying_type = enum_decl.underlying_type();
@@ -797,7 +785,7 @@ void write_cangjie()
                 } else {
                     auto& top_level = symbol->as<NonTypeSymbol>();
                     assert(top_level.is_global_function());
-                    write_function(output, nullptr, top_level, PrintFormat::EmitCangjie);
+                    write_function(output, nullptr, top_level);
                 }
                 output << '\n';
             }

@@ -43,12 +43,7 @@ enum class PrintFormat {
     //           - (ElementT) firstObject;
     //       is printed as
     //           - (ObjCId /*ElementT*/) firstObject;
-    EmitCangjie,
-
-    // Same as EmitCangjie plus the following additional formatting is applied:
-    //     - ObjCPointer is printed instead of CPointer
-    //     - ObjCFunc is printed instead of CFunc
-    EmitCangjieStrict,
+    EmitCangjie
 };
 
 class NonCopyable {
@@ -459,7 +454,7 @@ public:
 
     void print(StructuredString& stream, PrintFormat format) const;
 
-    void print_default_value(StructuredString& stream, PrintFormat format) const;
+    void print_default_value(StructuredString& stream) const;
 
     [[nodiscard]] ClosureDepthType reference_level() const noexcept;
 
@@ -1307,11 +1302,6 @@ template <class T> [[nodiscard]] Printer<T> raw(const T& obj) noexcept
 template <class T> [[nodiscard]] Printer<T> emit_cangjie(const T& obj) noexcept
 {
     return {obj, PrintFormat::EmitCangjie};
-}
-
-template <class T> [[nodiscard]] Printer<T> emit_cangjie_strict(const T& obj) noexcept
-{
-    return {obj, PrintFormat::EmitCangjieStrict};
 }
 
 template <class T> StructuredString& operator<<(StructuredString& stream, const Printer<T>& printer)
