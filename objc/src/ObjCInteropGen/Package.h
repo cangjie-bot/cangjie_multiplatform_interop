@@ -8,6 +8,7 @@
 #ifndef SCOPE_H
 #define SCOPE_H
 
+#include <algorithm>
 #include <cassert>
 #include <filesystem>
 #include <string>
@@ -43,6 +44,30 @@ private:
     const Package& package_;
 };
 
+class RootFilter {
+    const std::string pattern_;
+    Package* package_ = nullptr;
+
+public:
+    explicit RootFilter(std::string pattern) : pattern_(std::move(pattern))
+    {
+    }
+
+    [[nodiscard]] const std::string& pattern() const noexcept
+    {
+        return pattern_;
+    }
+
+    [[nodiscard]] Package* package() const noexcept
+    {
+        return package_;
+    }
+
+    bool set_package(Package* package);
+
+    [[nodiscard]] const PackageFilter& as_filter() const noexcept;
+};
+
 class PackageFile final {
     std::filesystem::path output_path_;
     Package* const package_;
@@ -65,6 +90,11 @@ public:
     {
         assert(symbol.defining_file());
         symbols_.push_back(&symbol);
+    }
+
+    template <class Pred> void erase_symbols_if(Pred pred)
+    {
+        symbols_.erase(std::remove_if(symbols_.begin(), symbols_.end(), pred), symbols_.end());
     }
 
     [[nodiscard]] auto begin() const noexcept
@@ -105,10 +135,14 @@ public:
     }
 };
 
+// `filters` defines which entities may belong to a package. When `root-filters` is set,
+// only `root-filters` matches become closure roots; filter-only members join the package
+// only when reached via reference closure.
 class Package final : NonCopyable {
     const std::string cangjie_name_;
     const std::string output_path_;
     const PackageFilter* filters_ = nullptr;
+    const PackageFilter* root_filters_ = nullptr;
     package_file_map_t files_;
     std::unordered_set<Package*> depends_on_;
 
@@ -135,6 +169,11 @@ public:
         return filters_;
     }
 
+    [[nodiscard]] const PackageFilter* root_filters() const noexcept
+    {
+        return root_filters_;
+    }
+
     [[nodiscard]] const std::unordered_set<Package*>& depends_on() const noexcept
     {
         return depends_on_;
@@ -144,6 +183,12 @@ public:
     {
         assert(!filters_);
         filters_ = &filters;
+    }
+
+    void set_root_filters(const PackageFilter& root_filters) noexcept
+    {
+        assert(!root_filters_);
+        root_filters_ = &root_filters;
     }
 
     [[nodiscard]] PackageFile& add_file(std::string file_name)
@@ -250,6 +295,48 @@ private:
 extern Packages packages;
 
 void create_packages();
+
+class Roots final {
+public:
+    void register_from_value(std::string value)
+    {
+        roots.emplace_back(std::move(value));
+    }
+
+    ~Roots() = default;
+
+    [[nodiscard]] std::size_t size() const noexcept
+    {
+        return roots.size();
+    }
+
+    [[nodiscard]] bool empty() const noexcept
+    {
+        return roots.empty();
+    }
+
+    [[nodiscard]] auto begin() noexcept
+    {
+        return roots.begin();
+    }
+    [[nodiscard]] auto begin() const noexcept
+    {
+        return roots.begin();
+    }
+    [[nodiscard]] auto end() noexcept
+    {
+        return roots.end();
+    }
+    [[nodiscard]] auto end() const noexcept
+    {
+        return roots.end();
+    }
+
+private:
+    std::vector<RootFilter> roots;
+};
+
+extern Roots roots;
 
 } // namespace objcgen
 

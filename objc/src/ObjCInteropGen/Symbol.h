@@ -10,6 +10,7 @@
 
 #include <array>
 #include <functional>
+#include <optional>
 
 #include "Config.h"
 #include "InputFile.h"
@@ -82,7 +83,7 @@ private:
     std::string name_;
 };
 
-enum class OutputStatus { Undefined, Root, Referenced, ReferencedMarked, MultiReferenced };
+enum class OutputStatus { Undefined, Root, Referenced };
 
 class FileLevelSymbolVisitor {
 public:
@@ -148,6 +149,11 @@ public:
         return false;
     }
 
+    [[nodiscard]] virtual const std::string& objc_name() const noexcept
+    {
+        return name();
+    }
+
     virtual bool set_reference_level(unsigned new_reference_level) noexcept;
 
     void set_zero_reference_level() noexcept
@@ -187,7 +193,9 @@ public:
         return references_symbols_;
     }
 
-    void collect_referenced_symbols();
+    [[nodiscard]] const std::unordered_set<FileLevelSymbol*>& referenced_by_symbols() const noexcept;
+
+    bool add_reference(FileLevelSymbol& symbol);
 
     [[nodiscard]] InputFile* defining_file() const noexcept
     {
@@ -201,7 +209,19 @@ public:
 
     void register_for_package(Package& package);
 
-    void add_referencing_package(const Package& package);
+    [[nodiscard]] bool add_candidate_package(Package& package);
+
+    [[nodiscard]] bool matches_some_filter() const noexcept
+    {
+        assert(matches_some_filter_.has_value());
+        return *matches_some_filter_;
+    }
+
+    void set_matches_some_filter(bool flag) noexcept
+    {
+        assert(!matches_some_filter_.has_value());
+        matches_some_filter_ = flag;
+    }
 
     [[nodiscard]] Package* package() const noexcept;
 
@@ -210,19 +230,30 @@ public:
         return output_status_;
     }
 
-    void set_output_status(OutputStatus output_status) noexcept
+    void mark_root() noexcept
     {
-        output_status_ = output_status;
+        assert(output_status_ == OutputStatus::Undefined);
+        output_status_ = OutputStatus::Root;
     }
+
+    [[nodiscard]] bool add_referencing_symbol(FileLevelSymbol& symbol);
 
     [[nodiscard]] ClosureDepthType reference_level() const noexcept
     {
         return reference_level_;
     }
 
-    [[nodiscard]] size_t number_of_referencing_packages() const noexcept;
+    [[nodiscard]] const std::unordered_set<Package*>& candidate_packages() const noexcept
+    {
+        return candidate_packages_;
+    }
 
-    void print_referencing_packages_info() const;
+    /**
+     * Collect every source-defined FileLevelSymbol that appears in emitted code for
+     * this declaration.  References that occur only inside commented-out
+     * (unsupported) members, aliases, or global functions are omitted.
+     */
+    virtual void collect_referenced_symbols(std::unordered_set<FileLevelSymbol*>& out);
 
     template <class To> [[nodiscard]] bool is() const noexcept
     {
@@ -262,19 +293,23 @@ private:
     // Applicable only for symbols with the same defining file
     friend bool operator<(const FileLevelSymbol& symbol1, const FileLevelSymbol& symbol2) noexcept;
 
-    InputFile* input_file_ = nullptr; // Stage 1
-    LineCol location_{};
-    std::unordered_set<FileLevelSymbol*> references_symbols_; // Stage 2
-
-    std::string cangjie_package_name_;
-    PackageFile* output_file_ = nullptr; // Stage 3
-
+    // Pipeline of assigning the output Cangjie file:
     OutputStatus output_status_ = OutputStatus::Undefined;
 
-    size_t number_of_referencing_packages_ = 0;
+    // Stage 1: the declaration location in the input sources
+    InputFile* input_file_ = nullptr;
+    LineCol location_{};
 
-    // Used only for debug print when verbosity > LogLevel::WARNING
-    std::unordered_set<const Package*> referencing_packages_;
+    // Stage 2: all references from this symbol
+    std::unordered_set<FileLevelSymbol*> references_symbols_;
+    std::unordered_set<FileLevelSymbol*> referenced_by_symbols_; // filled only on non-default verbosity
+
+    // Stage 3: all owner package candidates
+    std::optional<bool> matches_some_filter_;
+    std::unordered_set<Package*> candidate_packages_;
+
+    // Stage 4: the assigned output Cangjie file
+    PackageFile* output_file_ = nullptr;
 };
 
 class TypeLikeSymbol : public FileLevelSymbol {
@@ -294,8 +329,6 @@ public:
     {
         return false;
     }
-
-    [[nodiscard]] virtual TypeLikeSymbol& map() = 0;
 
     [[nodiscard]] virtual bool is_objc_compatible() const noexcept = 0;
 
@@ -487,12 +520,14 @@ public:
         return objc_name_;
     }
 
-    [[nodiscard]] const std::string& objc_name() const noexcept
+    [[nodiscard]] const std::string& objc_name() const noexcept override
     {
         return objc_name_.empty() ? name() : objc_name_;
     }
 
     [[nodiscard]] bool is_objc_compatible() const noexcept override;
+
+    [[nodiscard]] virtual std::optional<Type> map();
 
 protected:
     explicit NamedTypeSymbol(const Kind kind, std::string name) noexcept : TypeLikeSymbol(std::move(name)), kind_(kind)
@@ -500,8 +535,6 @@ protected:
     }
 
 private:
-    [[nodiscard]] TypeLikeSymbol& map() override;
-
     void rename(std::string new_name) noexcept;
 
     [[nodiscard]] bool is_optionable_reference() const noexcept override;
@@ -524,10 +557,9 @@ public:
     {
     }
 
-private:
-    [[nodiscard]] TypeLikeSymbol& map() override
+    [[nodiscard]] std::optional<Type> map() override
     {
-        return *this;
+        return std::nullopt;
     }
 };
 
@@ -598,7 +630,7 @@ private:
         return constants_.empty();
     }
 
-    NamedTypeSymbol* const underlying_type_;
+    NamedTypeSymbol* underlying_type_;
     std::vector<EnumConstantSymbol> constants_;
 };
 
@@ -698,9 +730,12 @@ constexpr Modifiers ModifierOverride = 1 << 5;
 constexpr Modifiers ModifierOptional = 1 << 6;
 constexpr Modifiers ModifierBitField = 1 << 7;
 
-// Not printed at all to output Cangjie files, ignored by CangjieWriter.  For
-// example, getter method sharing the same name with its property.
+// Should be completely ignored by CangjieWriter.
+// For example, getter method sharing the same name with its property.
 constexpr Modifiers ModifierHidden = 1 << 8;
+// Should be commented out by CangjieWriter.
+// For example, name clashing symbols, for which automatic resolution failed.
+constexpr Modifiers ModifierNameClashing = 1 << 9;
 
 /**
  * A type parameter, when using inside a generic body, can be constrainted by
@@ -723,11 +758,6 @@ public:
     }
 
 private:
-    [[nodiscard]] TypeParameterSymbol& map() override
-    {
-        return *this;
-    }
-
     [[nodiscard]] bool is_optionable_reference() const noexcept override
     {
         return true;
@@ -882,6 +912,8 @@ private:
     [[nodiscard]] bool visit_referenced_types(const FileLevelSymbolVisitor& visitor) override;
     [[nodiscard]] bool visit_referenced_types(const FileLevelSymbolScanner& visitor) const override;
 
+    void collect_referenced_symbols(std::unordered_set<FileLevelSymbol*>& out) override;
+
     [[nodiscard]] bool contains_pointer_or_func() const noexcept override
     {
         return contains_pointer_or_func_;
@@ -930,6 +962,12 @@ public:
         return target_;
     }
 
+    void set_target(Type target) noexcept
+    {
+        // It could makes sense to check the underlying type is identical
+        target_ = std::move(target);
+    }
+
     /**
      * Return the canonical type for `this`, in the sense of the
      * `clang_getCanonicalType` API.  That is, either the type itself, or its
@@ -963,6 +1001,8 @@ private:
 
     [[nodiscard]] bool visit_referenced_types(const FileLevelSymbolVisitor& visitor) override;
     [[nodiscard]] bool visit_referenced_types(const FileLevelSymbolScanner& visitor) const override;
+
+    void collect_referenced_symbols(std::unordered_set<FileLevelSymbol*>& out) override;
 
     [[nodiscard]] bool contains_pointer_or_func() const noexcept override
     {
@@ -1017,6 +1057,10 @@ public:
      * @param owner owner type symbol, if any
      */
     [[nodiscard]] bool is_supported(const TypeDeclarationSymbol* owner) const noexcept;
+
+    [[nodiscard]] bool has_name_clash(const TypeDeclarationSymbol* owner) const noexcept;
+
+    void collect_referenced_symbols(std::unordered_set<FileLevelSymbol*>& out) override;
 
     [[nodiscard]] Kind kind() const noexcept
     {
@@ -1088,6 +1132,11 @@ public:
     [[nodiscard]] const std::string& selector() const noexcept
     {
         return selector_attribute_.empty() ? name() : selector_attribute_;
+    }
+
+    const std::string& objc_name() const noexcept override
+    {
+        return selector();
     }
 
     [[nodiscard]] const Type& return_type() const noexcept;
@@ -1194,6 +1243,16 @@ public:
     void set_hidden() noexcept
     {
         modifiers_ |= ModifierHidden;
+    }
+
+    [[nodiscard]] bool is_marked_clashing() const noexcept
+    {
+        return modifiers_ & ModifierNameClashing;
+    }
+
+    void mark_clashing() noexcept
+    {
+        modifiers_ |= ModifierNameClashing;
     }
 
     [[nodiscard]] ClosureDepthType calculate_reference_level(const TypeDeclarationSymbol& decl) const noexcept;

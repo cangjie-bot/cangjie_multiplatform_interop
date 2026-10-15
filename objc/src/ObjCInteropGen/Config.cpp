@@ -12,6 +12,7 @@
 #include "ExpandString.h"
 #include "FatalException.h"
 #include "Logging.h"
+#include "Mode.h"
 #include "TomlParseError.h"
 
 namespace objcgen {
@@ -162,14 +163,26 @@ toml::Value TomlFileParser::parse(const ImportEntry& path)
 
             const std::filesystem::path import_path_original = expand_string(import_path_original_string);
             std::filesystem::path import_path_modified;
+
+            const auto& import_path_from_root_toml_dir = import_path_root / import_path_original;
+            const auto& import_path_from_pwd = std::filesystem::current_path() / import_path_original;
             if (import_path_original.is_absolute()) {
                 import_path_modified = import_path_original;
-            } else {
-                import_path_modified = import_path_root / import_path_original;
-
-                if (!std::filesystem::exists(import_path_modified) && std::filesystem::exists(import_path_original)) {
+            } else if (resolving_paths_from_root_toml_dir()) {
+                import_path_modified = import_path_from_root_toml_dir;
+                if (!std::filesystem::exists(import_path_modified) && std::filesystem::exists(import_path_from_pwd)) {
                     std::cerr << "Consider using $PWD to reference TOML file `" << import_path_original_string
                               << "` from " << path.to_string() << std::endl;
+                    std::cerr << "You set the `--cd` option, all relative paths are resolved from the parent "
+                                 "directory of the passed TOML file."
+                              << std::endl;
+                }
+            } else if (resolving_paths_from_pwd()) {
+                import_path_modified = import_path_from_pwd;
+                if (!std::filesystem::exists(import_path_modified) &&
+                    std::filesystem::exists(import_path_from_root_toml_dir)) {
+                    std::cerr << "Consider using $ROOT_TOML_DIR to reference TOML file `" << import_path_original_string
+                              << "` from " << path.to_string() << " or set the `--cd` option." << std::endl;
                 }
             }
 

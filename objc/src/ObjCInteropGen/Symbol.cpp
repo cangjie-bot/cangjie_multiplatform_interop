@@ -174,13 +174,16 @@ void FileLevelSymbol::set_definition_location(const Location& location)
     input_file_->add_symbol(*this);
 }
 
-void FileLevelSymbol::collect_referenced_symbols()
+const std::unordered_set<FileLevelSymbol*>& FileLevelSymbol::referenced_by_symbols() const noexcept
 {
-    for_each_referenced_type([this](FileLevelSymbol& symbol) {
-        if (symbol.input_file_ && references_symbols_.insert(&symbol).second && verbosity >= LogLevel::TRACE) {
-            std::cerr << "Entity `" << name() << "` references `" << symbol.name() << "`\n";
-        }
-    });
+    assert(verbosity > LogLevel::WARNING);
+    return referenced_by_symbols_;
+}
+
+bool FileLevelSymbol::add_reference(FileLevelSymbol& symbol)
+{
+    assert(&symbol != this);
+    return references_symbols_.insert(&symbol).second;
 }
 
 void FileLevelSymbol::register_for_package(Package& package)
@@ -193,17 +196,9 @@ void FileLevelSymbol::register_for_package(Package& package)
     output_file_ = file ? file : &package.add_file(file_name);
 }
 
-[[nodiscard]] static bool referencing_packages_detailed_info() noexcept
+bool FileLevelSymbol::add_candidate_package(Package& package)
 {
-    return verbosity > LogLevel::WARNING;
-}
-
-void FileLevelSymbol::add_referencing_package(const Package& package)
-{
-    ++number_of_referencing_packages_;
-    if (referencing_packages_detailed_info()) {
-        referencing_packages_.insert(&package);
-    }
+    return candidate_packages_.insert(&package).second;
 }
 
 Package* FileLevelSymbol::package() const noexcept
@@ -212,21 +207,24 @@ Package* FileLevelSymbol::package() const noexcept
     return file ? &file->package() : nullptr;
 }
 
-size_t FileLevelSymbol::number_of_referencing_packages() const noexcept
+bool FileLevelSymbol::add_referencing_symbol(FileLevelSymbol& symbol)
 {
-    return referencing_packages_detailed_info() ? referencing_packages_.size() : number_of_referencing_packages_;
+    bool changed = output_status_ == OutputStatus::Undefined;
+    if (changed) {
+        output_status_ = OutputStatus::Referenced;
+    }
+    if (verbosity > LogLevel::WARNING) {
+        if (referenced_by_symbols_.insert(&symbol).second) {
+            changed = true;
+        }
+    }
+    return changed;
 }
 
-void FileLevelSymbol::print_referencing_packages_info() const
+void FileLevelSymbol::collect_referenced_symbols(std::unordered_set<FileLevelSymbol*>& out)
 {
-    if (referencing_packages_detailed_info()) {
-        std::cerr << ":\n";
-        for (const auto* package : referencing_packages_) {
-            std::cerr << "* " << package->cangjie_name() << std::endl;
-        }
-    } else {
-        std::cerr << ". Specify -v for more detailed information" << std::endl;
-    }
+    auto collect = [&out](FileLevelSymbol& symbol) { out.insert(&symbol); };
+    for_each_referenced_type(collect);
 }
 
 // Applicable only for symbols with the same defining file
@@ -441,10 +439,17 @@ void Type::map()
         case Kind::Unit:
             break;
         case Kind::Named:
+            assert(symbol_);
+            if (const auto mapped = symbol_->as<NamedTypeSymbol>().map()) {
+                *this = *mapped;
+            } else {
+                for (auto& parameter : parameters_) {
+                    parameter.map();
+                }
+            }
+            break;
         case Kind::Function:
         case Kind::Block:
-            assert(symbol_);
-            symbol_ = &symbol_->map();
             for (auto& parameter : parameters_) {
                 parameter.map();
             }
@@ -454,9 +459,11 @@ void Type::map()
             assert(parameters_.size() == 1);
             parameters_.front().map();
             break;
-        default:
+        case Kind::TypeParam:
             assert(symbol_);
-            symbol_ = &symbol_->map();
+            break;
+        default:
+            assert(false);
             break;
     }
 }
@@ -749,13 +756,13 @@ bool NamedTypeSymbol::is_objc_compatible() const noexcept
     }
 }
 
-TypeLikeSymbol& NamedTypeSymbol::map()
+std::optional<Type> NamedTypeSymbol::map()
 {
     if (auto* mapping = this->mapping()) {
         assert(mapping->can_map(*this));
         return mapping->map(*this);
     }
-    return *this;
+    return std::nullopt;
 }
 
 [[nodiscard]] bool NamedTypeSymbol::is_optionable_reference() const noexcept
@@ -1060,6 +1067,27 @@ bool TypeDeclarationSymbol::visit_referenced_types(const FileLevelSymbolScanner&
     return false;
 }
 
+void TypeDeclarationSymbol::collect_referenced_symbols(std::unordered_set<FileLevelSymbol*>& out)
+{
+    if (auto* base_class = this->base_class()) {
+        out.insert(base_class);
+    }
+    for (auto& base_protocol : this->base_protocols()) {
+        out.insert(&base_protocol.get());
+    }
+    // Only members that will actually be emitted contribute references.  Unsupported
+    // members are commented out in the output and must not pull in their types.
+    for (auto& member : this->members()) {
+        if (member.is_supported(this) && !member.is_hidden()) {
+            if (member.is_property()) {
+                get_getter(member).collect_referenced_symbols(out);
+            } else {
+                member.collect_referenced_symbols(out);
+            }
+        }
+    }
+}
+
 bool TypeDeclarationSymbol::set_reference_level(unsigned new_reference_level) noexcept
 {
     auto set = FileLevelSymbol::set_reference_level(new_reference_level);
@@ -1174,6 +1202,15 @@ bool TypeAliasSymbol::visit_referenced_types(const FileLevelSymbolScanner& visit
 {
     const auto& target = this->target();
     return target.has_symbol_assigned() && visitor(target);
+}
+
+void TypeAliasSymbol::collect_referenced_symbols(std::unordered_set<FileLevelSymbol*>& out)
+{
+    // Unsupported aliases are commented out; their target types must not count.
+    if (!is_supported()) {
+        return;
+    }
+    FileLevelSymbol::collect_referenced_symbols(out);
 }
 
 static void selector_to_cj_name(NonTypeSymbol& member)
@@ -1303,15 +1340,6 @@ bool NonTypeSymbol::is_objc_compatible_signature() const noexcept
     return is_constructor() || return_type().is_objc_compatible();
 }
 
-// The current FE issues a compiler error on functions, properties, as well as
-// fields in @ObjCMirror classes, if their definitions reference a type which
-// name coincides with the name of the function/property/field itself.  As a
-// workaround, comment out such objects.
-[[nodiscard]] static bool has_name_clash_with_referenced_types(const NonTypeSymbol& symbol, const std::string& name)
-{
-    return symbol.any_of_referenced_types([&name](const auto& s) { return name == s.name(); });
-}
-
 bool NonTypeSymbol::is_supported(const TypeDeclarationSymbol* owner) const noexcept
 {
     assert(owner || is_global_function());
@@ -1326,7 +1354,7 @@ bool NonTypeSymbol::is_supported(const TypeDeclarationSymbol* owner) const noexc
     }
 
     if (is_method()) {
-        return is_objc_compatible_signature() && !has_name_clash_with_referenced_types(*this, name());
+        return is_objc_compatible_signature() && !is_marked_clashing();
     }
 
     if (is_field() || is_property() || is_instance_variable()) {
@@ -1351,13 +1379,7 @@ bool NonTypeSymbol::is_supported(const TypeDeclarationSymbol* owner) const noexc
                 // Current FE fails to process a field or property of an @ObjCMirror class if
                 // the field and its type have the same name (no such problem in non-@ObjCMirror
                 // declarations).  As a workaround, comment out such fields.
-                return name() != type.name() &&
-                    type.is_objc_compatible()
-                    // For properties, not the property itself but its getter is passed to
-                    // 'has_name_clash_with_referenced_types'.  That is because
-                    // NonTypeSymbol::visit_referenced_types still cannot properly visit all types.
-                    // Should be fixed later.
-                    && !has_name_clash_with_referenced_types(is_property() ? *find_getter(*owner) : *this, name());
+                return name() != type.name() && type.is_objc_compatible() && !is_marked_clashing();
             default:
                 assert(false);
                 return false;
@@ -1366,6 +1388,47 @@ bool NonTypeSymbol::is_supported(const TypeDeclarationSymbol* owner) const noexc
 
     assert(false);
     return false;
+}
+
+bool NonTypeSymbol::has_name_clash(const TypeDeclarationSymbol* owner) const noexcept
+{
+    // Properties store their referenced type on the synthesized getter.
+    const auto& symbol = is_property() ? *find_getter(*owner) : *this;
+    const auto name = this->name();
+    if (!normal_mode()) {
+        return false;
+    }
+
+    const auto uses_strict_format = is_global_function()
+        ? !is_ctype()
+        : owner && owner->kind() != NamedTypeSymbol::Kind::Struct && owner->kind() != NamedTypeSymbol::Kind::Union;
+    if (!uses_strict_format) {
+        return any_of_referenced_types([&name](const auto& s) { return name == s.name(); });
+    }
+
+    class Scanner : public FileLevelSymbolScanner {
+    public:
+        explicit Scanner(const std::string& name) noexcept : name_(name) {}
+
+        [[nodiscard]] bool operator()(const FileLevelSymbol& referenced) const override
+        {
+            if (auto* alias = dynamic_cast<const TypeAliasSymbol*>(&referenced)) {
+                if (auto& target = alias->target(); target.has_symbol_assigned()) {
+                    const auto& canonical = alias->canonical_type();
+                    if (canonical.is_ctype() && canonical.contains_pointer_or_func()) {
+                        return (*this)(target);
+                    }
+                }
+            }
+            return name_ == referenced.name();
+        }
+
+        using FileLevelSymbolScanner::operator();
+
+    private:
+        const std::string& name_;
+    };
+    return symbol.any_of_referenced_types(Scanner(name));
 }
 
 bool NonTypeSymbol::visit_referenced_types(const FileLevelSymbolVisitor& visitor)
@@ -1388,6 +1451,15 @@ bool NonTypeSymbol::visit_referenced_types(const FileLevelSymbolScanner& visitor
     }
 
     return kind_ != Kind::Property && visitor(return_type());
+}
+
+void NonTypeSymbol::collect_referenced_symbols(std::unordered_set<FileLevelSymbol*>& out)
+{
+    // Global functions at file level: only supported ones are emitted.
+    if (is_global_function() && (!is_supported(nullptr) || is_hidden())) {
+        return;
+    }
+    FileLevelSymbol::collect_referenced_symbols(out);
 }
 
 const Type& NonTypeSymbol::return_type() const noexcept

@@ -784,6 +784,48 @@ static void transform_visit()
     transform_types();
 }
 
+/** Given the N-dimensional VArray, get the type of its element */
+[[nodiscard]] static const Type& get_element_type(const Type& varray) noexcept
+{
+    assert(varray.kind() == Type::Kind::VArray);
+    const auto& element_type = varray.varray_element_type();
+    return element_type.kind() == Type::Kind::VArray ? get_element_type(element_type) : element_type;
+}
+
+/**
+ * For each function parameter, if the type of the parameter is array, convert
+ * it to pointer to its element
+ */
+static void decay_parameter_types(NonTypeSymbol& function)
+{
+    for (auto& parameter : function.parameters()) {
+        auto type = parameter.type().canonical_type();
+        if (type.kind() == Type::Kind::VArray) {
+            parameter.set_type(Type(Universe::get().pointer(), {get_element_type(type)}));
+        }
+    }
+}
+
+/**
+ * For each function parameter, if the type of the parameter is array, convert
+ * it to pointer to its element
+ */
+static void decay_parameter_types()
+{
+    auto& universe = Universe::get();
+    for (auto& top_level : universe.top_level()) {
+        decay_parameter_types(top_level);
+    }
+    for (auto& type : universe.types()) {
+        auto* decl = dynamic_cast<TypeDeclarationSymbol*>(&type);
+        if (decl) {
+            for (auto& member : decl->members()) {
+                decay_parameter_types(member);
+            }
+        }
+    }
+}
+
 static void set_type_mappings() noexcept
 {
     for (auto&& type : Universe::get().types()) {
@@ -816,6 +858,9 @@ static void do_map()
         do_map(top_level);
     }
     for (auto&& decl : universe.types()) {
+        // Not handled: TypeDeclarationSymbol::bases
+        // Not handled: CategoryDeclarationSymbol::interface
+        // Not handled: EnumDeclarationSymbol::underlying_type
         if (auto* type = dynamic_cast<TypeDeclarationSymbol*>(&decl)) {
             for (auto&& member : type->members()) {
                 if (!member.is_property()) {
@@ -823,9 +868,29 @@ static void do_map()
                 }
             }
         } else if (auto* alias = dynamic_cast<TypeAliasSymbol*>(&decl)) {
-            auto& target = alias->target();
-            if (target.has_symbol_assigned()) {
-                target.map();
+            if (auto mapped_opt = alias->map()) {
+                alias->set_target(*mapped_opt);
+            } else {
+                alias->target().map();
+            }
+        }
+    }
+}
+
+static void mark_clashing()
+{
+    auto& universe = Universe::get();
+    for (auto& top_level : universe.top_level()) {
+        if (top_level.has_name_clash(nullptr)) {
+            top_level.mark_clashing();
+        }
+    }
+    for (auto& type : universe.types()) {
+        if (auto* decl = dynamic_cast<TypeDeclarationSymbol*>(&type)) {
+            for (auto& member : decl->members()) {
+                if (member.has_name_clash(decl)) {
+                    member.mark_clashing();
+                }
             }
         }
     }
@@ -833,9 +898,31 @@ static void do_map()
 
 void apply_transforms()
 {
+    // 1) Replace `instancetype` by the declaring class type.
+    // 2) Replace the constructor return type by the strictly nonnull declaring
+    //    class type (that is a cjc frontend requirement).
+    // 3) Resolve contravariance and nullability clashes in return types of override
+    //    methods.
+    // 4) Set ModifierOverride where needed.
+    // 5) Resolve class/protocol name clashes.
+    // 6) Resolve propery/ivar name clashes.
+    // 7) Resolve static/instance name clashes.
+    // 8) Resolve parameter name clashes.
+    // 9) Rename methods in accordance with their Objective-C selectors.
+    // 10) Resolve global function - class/protocol/structure name clashes.
     transform_visit();
 
-    // Apply mappings
+    // For each function parameter, if the type of the parameter is array,
+    // convert it to pointer to its element
+    decay_parameter_types();
+
+    // After all name clashes have been resolved, mark failed ones as clashing
+    // to comment them out in CangjieWriter.
+    mark_clashing();
+}
+
+void apply_mappings()
+{
     set_type_mappings();
     do_map();
 }

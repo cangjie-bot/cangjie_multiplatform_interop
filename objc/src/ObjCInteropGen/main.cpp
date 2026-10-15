@@ -16,6 +16,7 @@
 #include "Mode.h"
 #include "Package.h"
 #include "SourceScannerConfig.h"
+#include "Stage.h"
 #include "Strings.h"
 #include "TomlParseError.h"
 #include "Transform.h"
@@ -27,9 +28,13 @@ using namespace objcgen;
 static void show_help(const char* executable)
 {
     std::cout << "Usage: " << (executable ? std::filesystem::path(executable).filename().string() : "ObjCInteropGen")
-              << " [-v] config-file.toml\n";
+              << " [-v] [-D<macro>=<value>] [--cd] config-file.toml\n";
     std::cout << "    -v\n";
     std::cout << "        increase logging verbosity level (can be applied multiple times)\n";
+    std::cout << "    -D<macro>=<value>\n";
+    std::cout << "        add macro definition with the following value\n";
+    std::cout << "    --cd\n";
+    std::cout << "        resolve all relative paths from the directory where the passed toml config file is located\n";
 }
 
 static std::optional<std::string_view> get_arg_value(const char* const argv[], int& arg_index, std::string_view name)
@@ -54,8 +59,7 @@ static std::optional<std::string_view> get_arg_value(const char* const argv[], i
 
 int main(int argc, char* argv[])
 {
-    std::string_view stage = "Parsing command line options";
-
+    stage = Stage::PARSE_CMD;
     try {
         if (argc <= 1) {
             show_help(argv[0]);
@@ -128,6 +132,11 @@ int main(int argc, char* argv[])
                 continue;
             }
 
+            if (arg == "--cd") {
+                root_dir_mode = RootDirMode::FROM_ROOT_TOML_DIR;
+                continue;
+            }
+
             if (ends_with(arg, ".toml")) {
                 if (config_specified) {
                     std::cerr << "Multiple .toml files specified" << std::endl;
@@ -137,10 +146,14 @@ int main(int argc, char* argv[])
                 Config::parse_from_toml_file(std::string(arg));
                 config_specified = true;
 
-                // All paths should now be relative to the config file
                 std::filesystem::path arg_fs = std::filesystem::absolute(arg);
                 assert(arg_fs.has_parent_path());
-                std::filesystem::current_path(arg_fs.parent_path());
+                const auto& root_toml_dir = arg_fs.parent_path();
+                add_constant("ROOT_TOML_DIR", root_toml_dir.u8string());
+                // If the `--cd` flag is set, all paths should be relative to the config file
+                if (resolving_paths_from_root_toml_dir()) {
+                    std::filesystem::current_path(root_toml_dir);
+                }
                 continue;
             }
 
@@ -154,23 +167,31 @@ int main(int argc, char* argv[])
             return 1;
         }
 
-        stage = "Parsing Objective-C sources";
+        stage = Stage::PREPARE_MAPPINGS;
+        initialize_mappings();
+
+        stage = Stage::PARSE_OBJC;
         parse_sources();
 
-        stage = "Creating Cangjie packages";
+        stage = Stage::CREATE_CJ_PACKAGES;
         create_packages();
+
+        stage = Stage::FILL_CJ_PACKAGES;
         if (!mark_package()) {
             return 1;
         }
 
-        stage = "Transforming sources";
+        stage = Stage::TRANSFORM;
+        apply_transforms();
+        filter_name_clashing_symbols();
+
+        stage = Stage::APPLY_MAPPINGS;
+        apply_mappings();
+
+        stage = Stage::CHECK_SOURCES;
         check_marked_symbols();
 
-        initialize_mappings();
-
-        apply_transforms();
-
-        stage = "Writing Cangjie outputs";
+        stage = Stage::WRITE_CJ_OUTPUTS;
         write_cangjie();
     } catch (const TomlParseError& e) {
         std::cerr << e.path() << ": " << e.what() << std::endl;
@@ -179,10 +200,10 @@ int main(int argc, char* argv[])
         // FatalException is assumed to print the error message before throwing
         return 1;
     } catch (const std::exception& e) {
-        std::cerr << stage << ":\n" << e.what() << std::endl;
+        std::cerr << stage_to_description[stage] << ":\n" << e.what() << std::endl;
         return 1;
     } catch (...) {
-        std::cerr << stage << ":\n"
+        std::cerr << stage_to_description[stage] << ":\n"
                   << "Unknown exception" << std::endl;
         return 1;
     }
