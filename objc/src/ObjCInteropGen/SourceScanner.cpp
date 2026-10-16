@@ -1216,8 +1216,17 @@ void SourceScanner::visit_impl(const CXCursor& cursor, const CXCursor& parent)
                 type_like_symbol(clang_getCursorType(cursor)).symbol().as<TypeDeclarationSymbol>());
             break;
         case CXCursor_ObjCProtocolRef:
-            // CXCursor_ObjCProtocolRef can mean a @protocol forward declaration (at the top
-            // file level) or a reference to a protocol implemented by the current class,
+            // CXCursor_ObjCProtocolRef can mean a @protocol forward declaration
+            // (at the top file level)
+            if (parent.kind == CXCursor_TranslationUnit || is_on_top_level()) {
+                assert(!current_type());
+                // Protocols are not types, as well as categories.
+                assert(!is_valid(clang_getCursorType(cursor)));
+                visit(cursor, get_type_declaration(cursor, NamedTypeSymbol::Kind::Protocol));
+                break;
+            }
+
+            // Or a reference to a protocol implemented by the current class,
             // category, or protocol declaration.  We only care about the latter case, that
             // is, CXCursor_ObjCProtocolRef inside CXCursor_ObjCInterfaceDecl,
             // CXCursor_ObjCCategoryDecl, or CXCursor_ObjCProtocolDecl.
