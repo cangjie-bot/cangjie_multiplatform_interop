@@ -570,9 +570,15 @@ public:
     {
     }
 
-    template <class T> [[nodiscard]] std::enable_if_t<sizeof(T) <= 64, T> value() const noexcept
+    template <class T>
+    [[nodiscard]] std::enable_if_t<!std::is_same_v<T, bool> && sizeof(T) <= 64, T> value() const noexcept
     {
         return static_cast<T>(value_[0]);
+    }
+
+    template <class T> [[nodiscard]] std::enable_if_t<std::is_same_v<T, bool>, bool> value() const noexcept
+    {
+        return value_[0] != 0;
     }
 
     template <class T> [[nodiscard]] std::enable_if_t<sizeof(T) <= 64, T> value128_lo() const noexcept
