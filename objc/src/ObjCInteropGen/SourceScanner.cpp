@@ -93,11 +93,7 @@ private:
 
     void add_property(std::string name, std::string getter, std::string setter, Modifiers modifiers);
 
-    [[nodiscard]] Type get_method_result_type(
-        TypeDeclarationSymbol& decl, const CXType& cx_result_type, Nullability nullability);
-
-    [[nodiscard]] Type get_method_result_type(
-        TypeDeclarationSymbol& decl, const CXCursor& method_cursor, Nullability nullability = Nullability::Unspecified);
+    [[nodiscard]] Type get_method_result_type(const CXCursor& method_cursor);
 
     void add_member_method(const CXCursor& cursor, Modifiers modifiers);
 
@@ -740,6 +736,43 @@ Type SourceScanner::get_type_parameter(const CXType& type, Nullability nullabili
     return {};
 }
 
+struct ModifiedType {
+    CXType modified_cxtype;
+    Nullability nullability;
+};
+
+// If 'cxtype' is attributed, "unpack" the modified type and return a structure with the following two fields:
+//   - modified_type - the original type the attributes are applied to.
+//   - nullability - the nullability of 'cxtype'.  That is attributed type is needed for.  Attributes other than
+//     nullability are ignored so far.
+// If 'cxtype' is not attributed, return std::nullopt.
+[[nodiscard]] static std::optional<ModifiedType> get_possibly_modified_type(const CXType& cxtype)
+{
+    switch (cxtype.kind) {
+        case CXType_Unexposed: {
+            // Libclang bug?  Sometimes the kind of actually CXType_Attributed types is unexpectedly reported as
+            // CXType_Unexposed. Try to call clang_Type_getModifiedType.  If it returns a valid value, assume the type
+            // is indeed CXType_Attributed.
+            ModifiedType modified_cxtype;
+            modified_cxtype.modified_cxtype = clang_Type_getModifiedType(cxtype);
+            if (modified_cxtype.modified_cxtype.kind == CXType_Invalid) {
+                return std::nullopt;
+            }
+            modified_cxtype.nullability = get_nullability(cxtype);
+            return modified_cxtype;
+        }
+        case CXType_Attributed: {
+            ModifiedType modified_cxtype;
+            modified_cxtype.modified_cxtype = clang_Type_getModifiedType(cxtype);
+            assert(modified_cxtype.modified_cxtype.kind != CXType_Invalid);
+            modified_cxtype.nullability = get_nullability(cxtype);
+            return modified_cxtype;
+        }
+        default:
+            return std::nullopt;
+    }
+}
+
 Type SourceScanner::type_like_symbol(const CXType& type, Nullability nullability)
 {
     assert(type.kind != CXType_Invalid);
@@ -753,6 +786,11 @@ Type SourceScanner::type_like_symbol(const CXType& type, Nullability nullability
         return type_like_symbol(clang_getUnqualifiedType(type), nullability);
     }
 #endif
+
+    auto modified_cxtype = get_possibly_modified_type(type);
+    if (modified_cxtype) {
+        return type_like_symbol(modified_cxtype->modified_cxtype, modified_cxtype->nullability);
+    }
 
     switch (type.kind) {
         case CXType_ObjCObject: {
@@ -805,28 +843,18 @@ Type SourceScanner::type_like_symbol(const CXType& type, Nullability nullability
             return pointee.kind() == Type::Kind::Function ? pointee : Type(Universe::get().pointer(), {pointee});
         }
 
-        case CXType_BlockPointer:
-            return create_func_like_type(Universe::get().block(), clang_getPointeeType(type));
+        case CXType_BlockPointer: {
+            auto pointee_cxtype = clang_getPointeeType(type);
+            modified_cxtype = get_possibly_modified_type(pointee_cxtype);
+            return create_func_like_type(
+                Universe::get().block(), modified_cxtype ? modified_cxtype->modified_cxtype : pointee_cxtype);
+        }
 
         case CXType_Elaborated:
             return type_like_symbol(clang_Type_getNamedType(type), nullability);
 
-        case CXType_Unexposed: {
-            // Libclang bug?  When CXTranslationUnit_IncludeAttributedTypes is specified,
-            // the type kind of some objects is unexpectedly and incorrectly reported as
-            // CXType_Unexposed rather than CXType_Attributed.  Try to call
-            // clang_Type_getModifiedType.  If it returns a valid type, assume it is
-            // actually CXType_Attributed.
-            auto modified_type = clang_Type_getModifiedType(type);
-            return modified_type.kind == CXType_Invalid ? get_named_type<CXType_Unexposed>(type, nullability)
-                                                        : type_like_symbol(modified_type, get_nullability(type));
-        }
-
-        case CXType_Attributed: {
-            auto modified_type = clang_Type_getModifiedType(type);
-            assert(modified_type.kind != CXType_Invalid);
-            return type_like_symbol(modified_type, get_nullability(type));
-        }
+        case CXType_Unexposed:
+            return get_named_type<CXType_Unexposed>(type, nullability);
 
         case CXType_ObjCTypeParam:
             return get_type_parameter(type, nullability);
@@ -874,6 +902,10 @@ Type SourceScanner::type_like_symbol(const CXType& type, Nullability nullability
             return get_named_type<CXType_Enum>(type, nullability);
 
         default: {
+            // CXType_Attributed should have been processed in the beginning of
+            // the function (inside the 'get_possibly_modified_type' call).
+            assert(type.kind != CXType_Attributed);
+
             auto* primitive_type_symbol = primitive_type(type);
             return primitive_type_symbol ? Type(*primitive_type_symbol)
                                          : get_named_type<CXType_Unexposed>(type, nullability);
@@ -922,52 +954,27 @@ void SourceScanner::add_top_level_function(const CXCursor& cursor)
             type_like_symbol(clang_getCursorResultType(cursor)), get_function_parameters(cursor), 0));
 }
 
-Type SourceScanner::get_method_result_type(
-    TypeDeclarationSymbol& decl, const CXType& cx_result_type, Nullability nullability)
+Type SourceScanner::get_method_result_type(const CXCursor& method_cursor)
 {
-    switch (cx_result_type.kind) {
-        // Libclang bug? When CXTranslationUnit_IncludeAttributedTypes is specified, the
-        // type kind of some objects is unexpectedly and incorrectly reported as
-        // CXType_Unexposed rather than CXType_Attributed.
-        case CXType_Unexposed: {
-            auto modified_cx_result_type = clang_Type_getModifiedType(cx_result_type);
-            if (modified_cx_result_type.kind != CXType_Invalid) {
-                return get_method_result_type(decl, modified_cx_result_type, get_nullability(cx_result_type));
-            }
-            break;
-        }
-
-        case CXType_Attributed: {
-            auto modified_cx_result_type = clang_Type_getModifiedType(cx_result_type);
-            assert(modified_cx_result_type.kind != CXType_Invalid);
-            return get_method_result_type(decl, modified_cx_result_type, get_nullability(cx_result_type));
-        }
-        default:
-            break;
-    }
-    return type_like_symbol(cx_result_type, nullability);
-}
-
-Type SourceScanner::get_method_result_type(
-    TypeDeclarationSymbol& decl, const CXCursor& method_cursor, Nullability nullability)
-{
-    return get_method_result_type(decl, clang_getCursorResultType(method_cursor), nullability);
+    auto cx_result_type = clang_getCursorResultType(method_cursor);
+    auto modified_cx_result_type = get_possibly_modified_type(cx_result_type);
+    return modified_cx_result_type
+        ? type_like_symbol(modified_cx_result_type->modified_cxtype, modified_cx_result_type->nullability)
+        : type_like_symbol(cx_result_type, Nullability::Unspecified);
 }
 
 void SourceScanner::add_member_method(const CXCursor& cursor, Modifiers modifiers)
 {
     assert(!is_on_top_level());
-    auto& decl = get_target_type_declaration();
-    decl.add_member_method(as_string(clang_getCursorSpelling(cursor)), get_method_result_type(decl, cursor),
-        get_function_parameters(cursor), modifiers);
+    get_target_type_declaration().add_member_method(as_string(clang_getCursorSpelling(cursor)),
+        get_method_result_type(cursor), get_function_parameters(cursor), modifiers);
 }
 
 void SourceScanner::add_constructor(const CXCursor& cursor)
 {
     assert(!is_on_top_level());
-    auto& decl = get_target_type_declaration();
-    decl.add_constructor(as_string(clang_getCursorSpelling(cursor)), get_method_result_type(decl, cursor),
-        get_function_parameters(cursor));
+    get_target_type_declaration().add_constructor(
+        as_string(clang_getCursorSpelling(cursor)), get_method_result_type(cursor), get_function_parameters(cursor));
 }
 
 [[nodiscard]] static std::array<uint64_t, 2> get_enum_constant_value(const CXCursor& cursor)
