@@ -768,6 +768,12 @@ NamedTypeSymbol& EnumDeclarationSymbol::underlying_type() const noexcept
     return *underlying_type_;
 }
 
+void EnumDeclarationSymbol::set_underlying_type(NamedTypeSymbol* underlying_type) noexcept
+{
+    underlying_type_ = underlying_type;
+    mapping_ = nullptr;
+}
+
 void EnumDeclarationSymbol::add_constant(std::string name, const std::array<uint64_t, 2>& value)
 {
     assert(std::all_of(

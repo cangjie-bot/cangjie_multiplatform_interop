@@ -25,6 +25,7 @@ struct PrimitiveMapping final : TypeMapping {
 
     [[nodiscard]] bool can_map(const NamedTypeSymbol& type) const noexcept override
     {
+        const std::string* target_type_name = nullptr;
         if (type.is(NamedTypeSymbol::Kind::TypeDef)) {
             const auto canonical_type = type.as<TypeAliasSymbol>().canonical_type();
             if (canonical_type.kind() == Type::Kind::Named && canonical_type.symbol().is<PrimitiveTypeSymbol>()) {
@@ -33,11 +34,14 @@ struct PrimitiveMapping final : TypeMapping {
                     return false;
                 }
 
-                const auto& name = type.name();
-                return std::regex_match(name.begin(), name.end(), primitive_regex);
+                target_type_name = &type.name();
             }
+        } else if (type.is(NamedTypeSymbol::Kind::Enum)) {
+            return can_map(type.as<EnumDeclarationSymbol>().underlying_type());
         }
-        return false;
+        return target_type_name
+        ? std::regex_match(target_type_name->begin(), target_type_name->end(), primitive_regex)
+        : false;
     }
 
     [[nodiscard]] Type map(const NamedTypeSymbol& type) const override;
@@ -64,6 +68,9 @@ private:
 Type PrimitiveMapping::map(const NamedTypeSymbol& type) const
 {
     assert(can_map(type));
+    if (type.is(NamedTypeSymbol::Kind::Enum)) {
+        return map(type.as<EnumDeclarationSymbol>().underlying_type());
+    }
     return Type(type.as<TypeAliasSymbol>().canonical_type().symbol());
 }
 

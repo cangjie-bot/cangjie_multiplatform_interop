@@ -529,12 +529,12 @@ protected:
     {
     }
 
+    const TypeMapping* mapping_ = nullptr;
+
 private:
     void rename(std::string new_name) noexcept;
 
     [[nodiscard]] bool is_optionable_reference() const noexcept override;
-
-    const TypeMapping* mapping_ = nullptr;
 
     const Kind kind_;
 
@@ -604,6 +604,8 @@ public:
     }
 
     [[nodiscard]] NamedTypeSymbol& underlying_type() const noexcept;
+
+    void set_underlying_type(NamedTypeSymbol* underlying_type) noexcept;
 
     void add_constant(std::string name, const std::array<uint64_t, 2>& value);
 
