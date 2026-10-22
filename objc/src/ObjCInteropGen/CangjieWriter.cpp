@@ -328,13 +328,13 @@ static void write_function(StructuredString& output, const TypeDeclarationSymbol
             output << "foreign ";
         } else {
             if (!generate_definitions_mode()) {
-                output << "@ObjC\n";
+                output << "@ObjCMirror\n";
             }
             const auto& selector_attribute = function.selector_attribute();
             if (!selector_attribute.empty()) {
                 write_foreign_name(output, foreign_name_attribute, selector_attribute);
             }
-            output << "public foreign ";
+            output << "public ";
         }
     } else if (function.is_protocol_method()) {
         is_ctype = false;
