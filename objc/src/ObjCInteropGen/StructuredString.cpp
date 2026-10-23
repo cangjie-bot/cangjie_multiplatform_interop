@@ -116,6 +116,12 @@ StructuredString& operator<<(StructuredString& stream, const char ch)
     return stream;
 }
 
+StructuredString& operator<<(StructuredString& stream, bool b)
+{
+    stream.push_string(b ? "true" : "false");
+    return stream;
+}
+
 StructuredString& operator<<(StructuredString& stream, const FileLevelSymbol& symbol)
 {
     stream.push_event(StructuredString::EventKind::SymbolReference, &symbol);

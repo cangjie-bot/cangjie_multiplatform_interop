@@ -102,40 +102,18 @@ private:
 
     friend StructuredString& operator<<(StructuredString& stream, char ch);
 
+    friend StructuredString& operator<<(StructuredString& stream, bool b);
+
     friend StructuredString& operator<<(StructuredString& stream, const FileLevelSymbol& symbol);
 
     friend StructuredString& operator<<(StructuredString& stream, const StructuredString& other);
 };
-
-StructuredString& operator<<(StructuredString& stream, PushLineCommentTag);
-
-StructuredString& operator<<(StructuredString& stream, PopLineCommentTag);
-
-StructuredString& operator<<(StructuredString& stream, PushBlockCommentTag);
-
-StructuredString& operator<<(StructuredString& stream, PopBlockCommentTag);
-
-StructuredString& operator<<(StructuredString& stream, IndentTag);
-
-StructuredString& operator<<(StructuredString& stream, DedentTag);
-
-StructuredString& operator<<(StructuredString& stream, std::string_view text);
-
-StructuredString& operator<<(StructuredString& stream, const char* text);
-
-StructuredString& operator<<(StructuredString& stream, const std::string& text);
-
-StructuredString& operator<<(StructuredString& stream, char ch);
 
 template <class T>
 std::enable_if_t<std::is_arithmetic_v<T>, StructuredString&> operator<<(StructuredString& stream, T value)
 {
     return stream << std::to_string(value);
 }
-
-StructuredString& operator<<(StructuredString& stream, const FileLevelSymbol& symbol);
-
-StructuredString& operator<<(StructuredString& stream, const StructuredString& other);
 
 } // namespace objcgen
 

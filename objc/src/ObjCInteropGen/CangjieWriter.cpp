@@ -75,39 +75,47 @@ static void print_enum_constant_value(
         // printing the value in a type-specific way.
         auto category = primitive_type.category();
         auto size = primitive_type.size();
-        if (category == PrimitiveTypeCategory::SignedInteger) {
-            switch (size) {
-                case PrimitiveSize::One:
-                    output << static_cast<int>(constant.value<int8_t>());
-                    return;
-                case PrimitiveSize::Two:
-                    output << constant.value<int16_t>();
-                    return;
-                case PrimitiveSize::Four:
-                    output << constant.value<int32_t>();
-                    return;
-                default:
-                    assert(size == PrimitiveSize::Eight);
-                    output << constant.value<int64_t>();
-                    return;
-            }
-        }
-        assert(category == PrimitiveTypeCategory::UnsignedInteger);
-        switch (size) {
-            case PrimitiveSize::One:
-                output << static_cast<uint32_t>(constant.value<uint8_t>());
-                return;
-            case PrimitiveSize::Two:
-                output << constant.value<uint16_t>();
-                return;
-            case PrimitiveSize::Four:
-                output << constant.value<uint32_t>();
-                return;
+        switch (category) {
+            case PrimitiveTypeCategory::SignedInteger:
+                switch (size) {
+                    case PrimitiveSize::One:
+                        output << static_cast<int>(constant.value<int8_t>());
+                        break;
+                    case PrimitiveSize::Two:
+                        output << constant.value<int16_t>();
+                        break;
+                    case PrimitiveSize::Four:
+                        output << constant.value<int32_t>();
+                        break;
+                    default:
+                        assert(size == PrimitiveSize::Eight);
+                        output << constant.value<int64_t>();
+                        break;
+                }
+                break;
+            case PrimitiveTypeCategory::UnsignedInteger:
+                switch (size) {
+                    case PrimitiveSize::One:
+                        output << static_cast<uint32_t>(constant.value<uint8_t>());
+                        break;
+                    case PrimitiveSize::Two:
+                        output << constant.value<uint16_t>();
+                        break;
+                    case PrimitiveSize::Four:
+                        output << constant.value<uint32_t>();
+                        break;
+                    default:
+                        assert(size == PrimitiveSize::Eight);
+                        output << constant.value<uint64_t>();
+                        break;
+                }
+                break;
             default:
-                assert(size == PrimitiveSize::Eight);
-                output << constant.value<uint64_t>();
-                return;
+                assert(category == PrimitiveTypeCategory::Boolean);
+                output << constant.value<bool>();
+                break;
         }
+        return;
     }
 
     // This is _int128 or unsigned _int128 represented respectively as
