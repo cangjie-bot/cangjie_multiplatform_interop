@@ -115,6 +115,11 @@ std::enable_if_t<std::is_arithmetic_v<T>, StructuredString&> operator<<(Structur
     return stream << std::to_string(value);
 }
 
+inline StructuredString& operator<<(StructuredString& stream, StructuredString& (*manipulator)(StructuredString&))
+{
+    return manipulator(stream);
+}
+
 } // namespace objcgen
 
 #endif // STRUCTUREDSTRING_H

@@ -655,11 +655,6 @@ static void write_bases(StructuredString& output, const TypeDeclarationSymbol& d
     write_base_protocols(output, base_protocols.begin(), base_protocols.end(), visible_base_written);
 }
 
-static StructuredString& operator<<(StructuredString& output, StructuredString& (*manipulator)(StructuredString&))
-{
-    return manipulator(output);
-}
-
 static StructuredString& conditional_foreign(StructuredString& output)
 {
     if (generate_definitions_mode()) {
