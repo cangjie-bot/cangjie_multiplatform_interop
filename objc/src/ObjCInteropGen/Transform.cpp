@@ -854,24 +854,31 @@ static void do_map(NonTypeSymbol& symbol)
 static void do_map()
 {
     auto& universe = Universe::get();
+    for (auto&& decl : universe.types()) {
+        if (auto* alias = dynamic_cast<TypeAliasSymbol*>(&decl)) {
+            if (auto mapped_opt = alias->map()) {
+                alias->set_target(*mapped_opt);
+            } else {
+                alias->target().map();
+            }
+        } else if (auto* enum_decl = dynamic_cast<EnumDeclarationSymbol*>(&decl)) {
+            if (auto mapped_opt = enum_decl->underlying_type().map()) {
+                auto& mapped_symbol = mapped_opt->symbol().as<NamedTypeSymbol>();
+                enum_decl->set_underlying_type(mapped_symbol);
+            }
+        }
+    }
     for (auto& top_level : universe.top_level()) {
         do_map(top_level);
     }
     for (auto&& decl : universe.types()) {
         // Not handled: TypeDeclarationSymbol::bases
         // Not handled: CategoryDeclarationSymbol::interface
-        // Not handled: EnumDeclarationSymbol::underlying_type
         if (auto* type = dynamic_cast<TypeDeclarationSymbol*>(&decl)) {
             for (auto&& member : type->members()) {
                 if (!member.is_property()) {
                     do_map(member);
                 }
-            }
-        } else if (auto* alias = dynamic_cast<TypeAliasSymbol*>(&decl)) {
-            if (auto mapped_opt = alias->map()) {
-                alias->set_target(*mapped_opt);
-            } else {
-                alias->target().map();
             }
         }
     }
