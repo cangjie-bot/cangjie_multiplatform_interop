@@ -97,6 +97,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Stream;
 
 /**
  * The actual implementation of Cangjie mirror generation.
@@ -1211,8 +1212,15 @@ public final class EmitMirrorVisitor {
         String identifier = getSymbolsToMangle().contains(curSymbol)
                 ? mangleClassName(curSymbol)
                 : addUnderscoresIfNeeded(getFlatNameWithoutPackage(curSymbol));
-        String qualifiedName = QualifiedName.get(userPackageName, identifier).toString();
-        importsOutputStream.write(curSymbol.flatname.toString() + " " + qualifiedName + "\n");
+        final var parsedUserPackageName = QualifiedName.parse(userPackageName);
+        if (parsedUserPackageName.isPresent()) {
+            final var qualifiedNameParts = Stream.concat(
+                    Arrays.stream(parsedUserPackageName.get().parts(true, true)),
+                    Stream.of(identifier)
+            ).toArray(String[]::new);
+            final var qualifiedName = QualifiedName.get(qualifiedNameParts).toString();
+            importsOutputStream.write(curSymbol.flatname.toString() + " " + qualifiedName + "\n");
+        }
     }
 
     /**
