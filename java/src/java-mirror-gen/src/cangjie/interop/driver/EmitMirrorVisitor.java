@@ -869,7 +869,7 @@ public final class EmitMirrorVisitor {
 
         unit.wildcardImports.add(QualifiedName.get("java", "lang"));
         for (final var wildcardImport : getWildcardImports()) {
-            unit.wildcardImports.add(QualifiedName.get(wildcardImport));
+            QualifiedName.parse(wildcardImport).ifPresent(unit.wildcardImports::add);
         }
 
         unit.types.add(tree);
