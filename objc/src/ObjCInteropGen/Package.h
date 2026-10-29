@@ -260,6 +260,8 @@ public:
 
 class Packages final {
 public:
+    [[nodiscard]] static const Packages& get() noexcept;
+
     void insert(Package& package)
     {
         const auto& cangjie_name = package.cangjie_name();
@@ -297,12 +299,12 @@ private:
     package_map_t by_cangjie_name_;
 };
 
-extern Packages packages;
-
 void create_packages();
 
 class Roots final {
 public:
+    [[nodiscard]] static const Roots& get() noexcept;
+
     void register_from_value(std::string value)
     {
         roots.emplace_back(std::move(value));
@@ -340,8 +342,6 @@ public:
 private:
     std::vector<RootFilter> roots;
 };
-
-extern Roots roots;
 
 } // namespace objcgen
 

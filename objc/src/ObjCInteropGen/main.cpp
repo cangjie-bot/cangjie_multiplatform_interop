@@ -16,7 +16,6 @@
 #include "Mode.h"
 #include "Package.h"
 #include "SourceScannerConfig.h"
-#include "Stage.h"
 #include "Strings.h"
 #include "TomlParseError.h"
 #include "Transform.h"
@@ -35,6 +34,31 @@ static void show_help(const char* executable)
     std::cout << "        add macro definition with the following value\n";
     std::cout << "    --cd\n";
     std::cout << "        resolve all relative paths from the directory where the passed toml config file is located\n";
+}
+
+[[nodiscard]] bool parse_macro_definition(const char* const argv[], int& arg_index)
+{
+    std::string_view arg = argv[arg_index];
+    std::string_view definition;
+    if (arg.length() == 2) {
+        if (argv[++arg_index]) {
+            definition = argv[arg_index];
+        } else {
+            return false;
+        }
+    } else {
+        definition = arg.substr(2);
+    }
+
+    const auto equals = definition.find('=');
+    if (equals == std::string_view::npos) {
+        return false;
+    }
+
+    const std::string_view macro = definition.substr(0, equals);
+    const std::string_view value = definition.substr(equals + 1);
+    add_constant(macro, value);
+    return true;
 }
 
 static std::optional<std::string_view> get_arg_value(const char* const argv[], int& arg_index, std::string_view name)
@@ -59,7 +83,7 @@ static std::optional<std::string_view> get_arg_value(const char* const argv[], i
 
 int main(int argc, char* argv[])
 {
-    stage = Stage::PARSE_CMD;
+    auto stage = "Parsing command line options";
     try {
         if (argc <= 1) {
             show_help(argv[0]);
@@ -86,29 +110,11 @@ int main(int argc, char* argv[])
             }
 
             if (starts_with(arg, "-D")) {
-                std::string_view definition;
-                if (arg.length() == 2) {
-                    if (++i < argc) {
-                        definition = argv[i];
-                    } else {
-                        std::cerr << "Macro definition of the <macro>=<value> form is expected" << std::endl;
-                        show_help(argv[0]);
-                        return 1;
-                    }
-                } else {
-                    definition = arg.substr(2);
-                }
-
-                const auto equals = definition.find('=');
-                if (equals == std::string_view::npos) {
+                if (!parse_macro_definition(argv, i)) {
                     std::cerr << "Macro definition of the <macro>=<value> form is expected" << std::endl;
                     show_help(argv[0]);
                     return 1;
                 }
-
-                const std::string_view macro = definition.substr(0, equals);
-                const std::string_view value = definition.substr(equals + 1);
-                add_constant(macro, value);
                 continue;
             }
 
@@ -167,31 +173,31 @@ int main(int argc, char* argv[])
             return 1;
         }
 
-        stage = Stage::PREPARE_MAPPINGS;
+        stage = "Preparing mappings";
         initialize_mappings();
 
-        stage = Stage::PARSE_OBJC;
+        stage = "Parsing Objective-C sources";
         parse_sources();
 
-        stage = Stage::CREATE_CJ_PACKAGES;
+        stage = "Creating Cangjie packages";
         create_packages();
 
-        stage = Stage::FILL_CJ_PACKAGES;
+        stage = "Filling Cangjie packages";
         if (!mark_package()) {
             return 1;
         }
 
-        stage = Stage::TRANSFORM;
+        stage = "Transforming sources";
         apply_transforms();
 
-        stage = Stage::APPLY_MAPPINGS;
+        stage = "Applying mappings";
         apply_mappings();
         filter_name_clashing_symbols();
 
-        stage = Stage::CHECK_SOURCES;
+        stage = "Checking sources";
         check_marked_symbols();
 
-        stage = Stage::WRITE_CJ_OUTPUTS;
+        stage = "Writing Cangjie outputs";
         write_cangjie();
     } catch (const TomlParseError& e) {
         std::cerr << e.path() << ": " << e.what() << std::endl;
@@ -200,10 +206,10 @@ int main(int argc, char* argv[])
         // FatalException is assumed to print the error message before throwing
         return 1;
     } catch (const std::exception& e) {
-        std::cerr << stage_to_description[stage] << ":\n" << e.what() << std::endl;
+        std::cerr << stage << ":\n" << e.what() << std::endl;
         return 1;
     } catch (...) {
-        std::cerr << stage_to_description[stage] << ":\n"
+        std::cerr << stage << ":\n"
                   << "Unknown exception" << std::endl;
         return 1;
     }

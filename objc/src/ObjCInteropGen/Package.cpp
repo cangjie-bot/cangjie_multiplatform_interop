@@ -14,8 +14,8 @@
 
 namespace objcgen {
 
-Packages packages;
-Roots roots;
+static Packages packages;
+static Roots roots;
 
 const std::string& PackageFilter::package_name() const noexcept
 {
@@ -41,6 +41,11 @@ PackageFile::PackageFile(std::string file_name, Package& package)
     : output_path_(std::filesystem::u8path(package.output_path() + '/' + file_name + ".cj")), package_(&package)
 {
     assert(!file_name.empty());
+}
+
+const Packages& Packages::get() noexcept
+{
+    return packages;
 }
 
 static void create_package(std::size_t package_index, const toml::Table& config)
@@ -96,9 +101,9 @@ void create_packages()
     }
 
     // Create packages
-    if (const auto* packages = Config::find("packages")) {
+    if (const auto* package_entries = Config::find("packages")) {
         std::size_t i = 0;
-        for (auto&& package_any : packages->as<toml::Array>()) {
+        for (auto&& package_any : package_entries->as<toml::Array>()) {
             if (!package_any.is<toml::Table>()) {
                 fatal("`packages` entry #", i, " is not a TOML table");
             }
@@ -131,6 +136,11 @@ void create_packages()
     if (!success) {
         fatal("Every root should have a package. See the detailed error message above.");
     }
+}
+
+const Roots& Roots::get() noexcept
+{
+    return objcgen::roots;
 }
 
 } // namespace objcgen

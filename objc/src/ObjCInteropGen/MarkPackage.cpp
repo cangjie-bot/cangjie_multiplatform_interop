@@ -55,7 +55,7 @@ enum class ReferenceKind { None, Likely, True };
         return filter->apply(name);
     }
     // If there are global roots, other filter properties cannot act as roots.
-    if (!roots.empty()) {
+    if (!Roots::get().empty()) {
         return false;
     }
 
@@ -87,7 +87,7 @@ static void set_package(FileLevelSymbol& symbol)
     // If not set, the output Cangjie package will be controlled by the packages that reference this symbol.
     bool symbol_matches_some_filter = false;
 
-    for (auto&& package : packages) {
+    for (auto&& package : Packages::get()) {
         if (is_root(package, symbol) && symbol.output_status() != OutputStatus::Root) {
             symbol.mark_root();
         }
@@ -477,7 +477,7 @@ void filter_name_clashing_symbols()
     }
 
     // Remove dead
-    for (auto& package : packages) {
+    for (auto& package : Packages::get()) {
         for (auto& package_file : package) {
             package_file.erase_symbols_if(
                 [&live_symbols](FileLevelSymbol* symbol) { return live_symbols.count(symbol) == 0; });
