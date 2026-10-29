@@ -118,6 +118,11 @@ int main(int argc, char* argv[])
                 continue;
             }
 
+            if (arg == "--generate-definitions") {
+                mode = Mode::GENERATE_DEFINITIONS;
+                continue;
+            }
+
             auto mode_string = get_arg_value(argv, i, "--mode");
             if (mode_string) {
                 if (mode_string == "normal") {
