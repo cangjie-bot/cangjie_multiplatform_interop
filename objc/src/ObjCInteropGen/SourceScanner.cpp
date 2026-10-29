@@ -521,7 +521,7 @@ template <CXTypeKind type_kind> Type SourceScanner::get_named_type(const CXType&
     return Type(*symbol, nullability);
 }
 
-[[nodiscard]] static TypeDeclarationSymbol& get_type_declaration(const CXCursor& cursor, NamedTypeSymbol::Kind kind)
+static TypeDeclarationSymbol& get_type_declaration(const CXCursor& cursor, NamedTypeSymbol::Kind kind)
 {
     auto& universe = Universe::get();
     String name(clang_getCursorSpelling(cursor));
@@ -1218,11 +1218,11 @@ void SourceScanner::visit_impl(const CXCursor& cursor, const CXCursor& parent)
         case CXCursor_ObjCProtocolRef:
             // CXCursor_ObjCProtocolRef can mean a @protocol forward declaration
             // (at the top file level)
-            if (parent.kind == CXCursor_TranslationUnit || is_on_top_level()) {
-                assert(!current_type());
+            if (parent.kind == CXCursor_TranslationUnit) {
+                assert(is_on_top_level());
                 // Protocols are not types, as well as categories.
                 assert(!is_valid(clang_getCursorType(cursor)));
-                visit(cursor, get_type_declaration(cursor, NamedTypeSymbol::Kind::Protocol));
+                get_type_declaration(cursor, NamedTypeSymbol::Kind::Protocol);
                 break;
             }
 
