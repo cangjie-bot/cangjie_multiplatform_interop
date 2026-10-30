@@ -36,7 +36,7 @@ static void show_help(const char* executable)
     std::cout << "        resolve all relative paths from the directory where the passed toml config file is located\n";
 }
 
-[[nodiscard]] bool parse_macro_definition(const char* const argv[], int& arg_index)
+[[nodiscard]] static bool parse_macro_definition(const char* const argv[], int& arg_index)
 {
     std::string_view arg = argv[arg_index];
     std::string_view definition;
@@ -61,7 +61,7 @@ static void show_help(const char* executable)
     return true;
 }
 
-static std::optional<std::string_view> get_arg_value(const char* const argv[], int& arg_index, std::string_view name)
+[[nodiscard]] static std::optional<std::string_view> get_arg_value(const char* const argv[], int& arg_index, std::string_view name)
 {
     std::string_view arg = argv[arg_index];
     if (starts_with(arg, name)) {
