@@ -40,7 +40,7 @@ public final class QualifiedName {
     // These names will not require module and package qualification
     private static final Map<String, QualifiedName> names = new HashMap<>();
 
-    private final String [] parts;
+    private final String[] parts;
     private final String string;
 
     private QualifiedName(String [] parts, String string) {

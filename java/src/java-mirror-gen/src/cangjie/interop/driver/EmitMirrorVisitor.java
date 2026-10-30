@@ -869,7 +869,7 @@ public final class EmitMirrorVisitor {
 
         unit.wildcardImports.add(QualifiedName.get("java", "lang"));
         for (final var wildcardImport : getWildcardImports()) {
-            unit.wildcardImports.add(QualifiedName.get(wildcardImport));
+            QualifiedName.parse(wildcardImport).ifPresent(unit.wildcardImports::add);
         }
 
         unit.types.add(tree);
@@ -1211,8 +1211,11 @@ public final class EmitMirrorVisitor {
         String identifier = getSymbolsToMangle().contains(curSymbol)
                 ? mangleClassName(curSymbol)
                 : addUnderscoresIfNeeded(getFlatNameWithoutPackage(curSymbol));
-        String qualifiedName = QualifiedName.get(userPackageName, identifier).toString();
-        importsOutputStream.write(curSymbol.flatname.toString() + " " + qualifiedName + "\n");
+        final var parsedUserPackageName = QualifiedName.parse(userPackageName);
+        if (parsedUserPackageName.isPresent()) {
+            final var qualifiedName = parsedUserPackageName.get().member(identifier).toString();
+            importsOutputStream.write(curSymbol.flatname.toString() + " " + qualifiedName + "\n");
+        }
     }
 
     /**
