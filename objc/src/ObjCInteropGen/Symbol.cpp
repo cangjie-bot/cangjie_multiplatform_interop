@@ -1251,8 +1251,8 @@ void NonTypeSymbol::rename(std::string new_name) noexcept
 static bool is_unique_name(const std::string& name, const TypeDeclarationSymbol& owner) noexcept
 {
     auto members = owner.members();
-    return std::none_of(
-               members.begin(), members.end(), [&name](const auto& member) { return member.name() == name; }) &&
+    return std::none_of(members.begin(), members.end(),
+               [&name](const auto& member) { return !member.is_hidden() && member.name() == name; }) &&
         is_unique_name_against_bases(name, owner);
 }
 
@@ -1261,7 +1261,7 @@ static bool is_unique_name(const std::string& name, const TypeDeclarationSymbol&
     auto members = owner.members();
     const auto& name = member.name();
     return std::none_of(members.begin(), members.end(),
-               [&member, &name](const auto& m) { return &m != &member && m.name() == name; }) &&
+               [&member, &name](const auto& m) { return &m != &member && !m.is_hidden() && m.name() == name; }) &&
         is_unique_name_against_bases(name, owner);
 }
 

@@ -12,6 +12,8 @@
 #include "Mappings.h"
 #include "Universe.h"
 
+using namespace std::string_view_literals;
+
 namespace objcgen {
 
 [[nodiscard]] static bool is_instancetype(const Type& type)
@@ -59,11 +61,26 @@ static void resolve_static_instance_clash(NonTypeSymbol& method, const TypeDecla
     method.rename_uniquely_to(method.name() + (method.is_static() ? "Static" : "Instance"), owner);
 }
 
+constexpr auto rename_suffix = "_"sv;
+constexpr auto var_rename_suffix = "Var"sv;
+constexpr auto prop_rename_suffix = "Prop"sv;
+
+[[nodiscard]] static std::string operator+(std::string_view s1, const std::string& s2)
+{
+    return std::string(s1) + s2;
+}
+
+[[nodiscard]] static std::string operator+(const std::string& s1, std::string_view s2)
+{
+    auto s = s1;
+    return s.append(s2.begin(), s2.end());
+}
+
 static void resolve_prop_ivar_clash(NonTypeSymbol& member, const TypeDeclarationSymbol& owner)
 {
-    assert(member.kind() == NonTypeSymbol::Kind::Property || member.kind() == NonTypeSymbol::Kind::InstanceVariable);
+    assert(member.is_property() || member.is_instance_variable());
     member.rename_uniquely_to(
-        member.name() + (member.kind() == NonTypeSymbol::Kind::InstanceVariable ? "Var" : "Prop"), owner);
+        member.name() + (member.is_instance_variable() ? var_rename_suffix : prop_rename_suffix), owner);
 }
 
 struct StaticInstancePair {
@@ -209,7 +226,7 @@ template <class Params> [[nodiscard]] static bool contains_name(Params params, s
 }
 
 template <class Params>
-static unsigned rename_param(Params params, ParameterSymbol& param, const std::string& base_name, unsigned i)
+static unsigned rename_param(Params params, ParameterSymbol& param, std::string_view base_name, unsigned i)
 {
     assert(i);
     auto new_name = base_name + std::to_string(i);
@@ -245,18 +262,19 @@ template <class Params> static void resolve_parameter_name_clashes(Params params
     }
 }
 
+constexpr auto unnamed_param_base_name = "_"sv;
+
 template <class Params> static unsigned rename_unnamed_param(Params params, ParameterSymbol& param, unsigned i)
 {
-    return rename_param(params, param, "_", i);
+    return rename_param(params, param, unnamed_param_base_name, i);
 }
 
 template <class Params> static void rename_unnamed_param(Params params, ParameterSymbol& param)
 {
-    auto new_name = "_";
-    if (contains_name(params, new_name)) {
+    if (contains_name(params, unnamed_param_base_name)) {
         rename_unnamed_param(params, param, 1);
     } else {
-        param.rename(new_name);
+        param.rename(std::string(unnamed_param_base_name));
     }
 }
 
@@ -417,6 +435,18 @@ static void fix_horizontal_clashes(TypeDeclarationSymbol& decl) noexcept
     }
 }
 
+[[nodiscard]] static std::string_view rename_suffix_by_member_kind(const NonTypeSymbol& member) noexcept
+{
+    switch (member.kind()) {
+        case NonTypeSymbol::Kind::Property:
+            return prop_rename_suffix;
+        case NonTypeSymbol::Kind::InstanceVariable:
+            return var_rename_suffix;
+        default:
+            return rename_suffix;
+    }
+}
+
 static void transform_type(TypeDeclarationSymbol& decl)
 {
     switch (decl.kind()) {
@@ -473,6 +503,22 @@ static void transform_type(TypeDeclarationSymbol& decl)
             // In Objective-C methods, all parameters have names, but the names can be
             // non-unique.
             resolve_parameter_name_clashes(member.parameters());
+        }
+    }
+
+    // Rename 'toString' members.  The NSObject Cangjie class has a built-in
+    // non-open parameterless method 'toString'.  Members of this name (other than
+    // methods with parameters) will conflict with it.
+    for (auto& member : members) {
+        if (!member.is_hidden() && (!member.is_member_method() || !member.parameter_count())) {
+            static const std::string to_string = "toString";
+            if (member.name() == to_string) {
+                member.rename_uniquely_to(
+                    (member.is_property() ? member.property_type(decl) : member.return_type()).name() == "NSString"
+                        ? "toNSString"
+                        : to_string + rename_suffix_by_member_kind(member),
+                    decl);
+            }
         }
     }
 
@@ -603,13 +649,6 @@ static void transform_base_derived(const TypeDeclarationSymbol& base, TypeDeclar
     auto base_members = base.members();
     auto derived_members = derived.members();
     for (auto& derived_member : derived_members) {
-        // The NSObject Cangjie class has a built-in non-open method 'toString'.
-        // Members of this name will conflict with it.
-        constexpr std::string_view to_string = "toString";
-        if (derived_member.name() == to_string) {
-            derived_member.rename_uniquely_to(std::string(to_string) + '_', derived);
-        }
-
         if (derived_member.is_property()) {
             for (const auto& base_member : base_members) {
                 if (base_member.is_property() || base_member.is_member_method()) {
