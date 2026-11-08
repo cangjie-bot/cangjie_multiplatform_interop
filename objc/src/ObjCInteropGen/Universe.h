@@ -91,8 +91,36 @@ public:
     [[nodiscard]] NonTypeSymbol& add_function(
         std::string name, Type return_type, std::vector<ParameterSymbol> parameters, Modifiers modifiers);
 
+    /**
+     * Provide global symbol name uniqueness by renaming overloadable functions.  Do
+     * nothing if they have been renamed already.
+     */
+    void make_unique();
+
+    const NonTypeSymbol* find_function(std::string_view name) const noexcept;
+
 private:
+    struct Comparator {
+        using is_transparent = void;
+
+        bool operator()(const NonTypeSymbol* symbol1, const NonTypeSymbol* symbol2) const noexcept
+        {
+            return symbol1->name() < symbol2->name();
+        }
+
+        bool operator()(std::string_view name, const NonTypeSymbol* symbol) const noexcept
+        {
+            return name < symbol->name();
+        }
+
+        bool operator()(const NonTypeSymbol* symbol, std::string_view name) const noexcept
+        {
+            return symbol->name() < name;
+        }
+    };
+
     std::deque<NonTypeSymbol> members_;
+    std::set<NonTypeSymbol*, Comparator> member_set_;
 };
 
 class Universe final : NonCopyable {
@@ -272,9 +300,11 @@ public:
         return top_level_.members();
     }
 
+    void make_global_symbols_unique();
+
     // Find a global non-type symbol by its name.  Return nullptr if no such symbol
     // has been registered.
-    [[nodiscard]] const NonTypeSymbol* global_non_type_symbol(std::string_view name) const;
+    [[nodiscard]] const NonTypeSymbol* global_non_type_symbol(std::string_view name) const noexcept;
 
     [[nodiscard]] auto types() const noexcept
     {

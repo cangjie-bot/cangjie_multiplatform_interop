@@ -779,7 +779,9 @@ static void transform_visit(TypeDeclarationSymbol& decl)
 
 static void transform_global_functions()
 {
-    for (auto& func : Universe::get().top_level()) {
+    auto& universe = Universe::get();
+    universe.make_global_symbols_unique();
+    for (auto& func : universe.top_level()) {
         assert(func.is_global_function());
 
         // In standalone functions, all parameter names are unique, but some of the

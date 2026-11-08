@@ -740,6 +740,9 @@ constexpr Modifiers ModifierHidden = 1 << 8;
 // For example, name clashing symbols, for which automatic resolution failed.
 constexpr Modifiers ModifierNameClashing = 1 << 9;
 
+/** __attribute__((overloadable)) */
+constexpr Modifiers ModifierOverloadable = 1 << 10;
+
 /**
  * A type parameter, when using inside a generic body, can be constrainted by
  * specific protocols.  Like here in the parameter `x`:
@@ -1256,6 +1259,11 @@ public:
     void mark_clashing() noexcept
     {
         modifiers_ |= ModifierNameClashing;
+    }
+
+    [[nodiscard]] bool is_overloadable() const noexcept
+    {
+        return modifiers_ & ModifierOverloadable;
     }
 
     [[nodiscard]] ClosureDepthType calculate_reference_level(const TypeDeclarationSymbol& decl) const noexcept;

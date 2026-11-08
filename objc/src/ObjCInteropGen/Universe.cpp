@@ -19,8 +19,79 @@ Universe& Universe::get()
 NonTypeSymbol& TopLevel::add_function(
     std::string name, Type return_type, std::vector<ParameterSymbol> parameters, Modifiers modifiers)
 {
+    assert(member_set_.empty() && "Calling TopLevel::add_function after TopLevel::make_unique");
     return members_.emplace_back(
         std::move(name), NonTypeSymbol::Kind::GlobalFunction, std::move(return_type), std::move(parameters), modifiers);
+}
+
+struct SymbolPointerComparator final {
+    using is_transparent = void;
+
+    bool operator()(const NonTypeSymbol* symbol1, const NonTypeSymbol* symbol2) const noexcept
+    {
+        return symbol1->name() < symbol2->name();
+    }
+
+    bool operator()(std::string_view name, const NonTypeSymbol* symbol) const noexcept
+    {
+        return name < symbol->name();
+    }
+
+    bool operator()(const NonTypeSymbol* symbol, std::string_view name) const noexcept
+    {
+        return symbol->name() < name;
+    }
+};
+
+template <class Set, class It> static void rename_set_element(Set& set, It it)
+{
+    auto new_name = (*it)->name() + '_';
+    auto node = set.extract(it);
+    assert(node);
+    auto e = set.end();
+    while (set.find(new_name) != e) {
+        new_name += '_';
+    }
+    node.value()->rename(std::move(new_name));
+    set.insert(std::move(node));
+}
+
+void TopLevel::make_unique()
+{
+    if (members_.empty() || !member_set_.empty()) {
+        return;
+    }
+    std::multiset<NonTypeSymbol*, SymbolPointerComparator> multiset;
+    for (auto& func : members_) {
+        multiset.insert(&func);
+    }
+    auto e = multiset.cend();
+    auto it = multiset.cbegin();
+    for (auto next_it = std::next(it); next_it != e; next_it = std::next(it)) {
+        const auto& func = **it;
+        const auto& next_func = **next_it;
+        if (next_func.name() == func.name()) {
+            if (func.is_overloadable()) {
+                rename_set_element(multiset, it);
+                it = next_it;
+            } else {
+                assert(next_func.is_overloadable());
+                rename_set_element(multiset, next_it);
+            }
+        } else {
+            it = next_it;
+        }
+    }
+    member_set_.merge(multiset);
+    assert(multiset.empty());
+}
+
+const NonTypeSymbol* TopLevel::find_function(std::string_view name) const noexcept
+{
+    assert(
+        (members_.empty() || !member_set_.empty()) && "Calling TopLevel::find_function without TopLevel::make_unique");
+    auto it = member_set_.find(name);
+    return it == member_set_.end() ? nullptr : *it;
 }
 
 Universe::Universe()
@@ -156,15 +227,14 @@ void Universe::rename_type(NamedTypeSymbol& symbol, std::string new_name)
     type_order_it->name = new_name_view;
 }
 
-const NonTypeSymbol* Universe::global_non_type_symbol(std::string_view name) const
+void Universe::make_global_symbols_unique()
 {
-    auto top_level = this->top_level();
-    auto top_level_end = top_level.end();
-    auto it = std::find_if(top_level.begin(), top_level_end, [name](const auto& global_func) {
-        assert(global_func.is_global_function());
-        return global_func.name() == name;
-    });
-    return it == top_level_end ? nullptr : &*it;
+    top_level_.make_unique();
+}
+
+const NonTypeSymbol* Universe::global_non_type_symbol(std::string_view name) const noexcept
+{
+    return top_level_.find_function(name);
 }
 
 } // namespace objcgen

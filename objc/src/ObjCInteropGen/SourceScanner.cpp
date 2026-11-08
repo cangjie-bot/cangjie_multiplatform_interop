@@ -949,9 +949,17 @@ std::vector<ParameterSymbol> SourceScanner::get_function_parameters(const CXCurs
 void SourceScanner::add_top_level_function(const CXCursor& cursor)
 {
     assert(is_on_top_level());
+    String name(clang_getCursorSpelling(cursor));
     set_definition_location(cursor,
-        Universe::get().register_top_level_function(as_string(clang_getCursorSpelling(cursor)),
-            type_like_symbol(clang_getCursorResultType(cursor)), get_function_parameters(cursor), 0));
+        Universe::get().register_top_level_function(name.string(), type_like_symbol(clang_getCursorResultType(cursor)),
+            get_function_parameters(cursor),
+
+            // libclang does not provide a straightforward method for detecting
+            // __attribute__((overloadable)).  But it can be reliably detected by examining
+            // the mangled name of the function.  In C, only overloadable functions are
+            // mangled.  For non-overloadable ones, clang_getCursorSpelling and
+            // clang_Cursor_getMangling return the same string.
+            strcmp(name.c_str(), String(clang_Cursor_getMangling(cursor)).c_str()) ? ModifierOverloadable : 0));
 }
 
 Type SourceScanner::get_method_result_type(const CXCursor& method_cursor)
@@ -1024,7 +1032,7 @@ bool SourceScanner::is_fully_processed(const CXCursor& cursor)
         case CXCursor_ObjCInstanceMethodDecl:
         case CXCursor_ObjCClassMethodDecl:
         case CXCursor_TypedefDecl: {
-            // For nterfaces, categories, and protocols, there can be only one cursor of
+            // For interfaces, categories, and protocols, there can be only one cursor of
             // this kind and USR.  For functions, properties, and typedefs, there can be
             // multiple cursors.  In both cases, the symbol is considered fully processed
             // after the first processed cursor.
