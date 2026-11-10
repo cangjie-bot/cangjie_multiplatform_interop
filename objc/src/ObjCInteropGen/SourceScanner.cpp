@@ -946,20 +946,108 @@ std::vector<ParameterSymbol> SourceScanner::get_function_parameters(const CXCurs
     return parameters;
 }
 
+class Token {
+public:
+    Token(CXTranslationUnit tu, const CXToken& token) noexcept : tu_(tu), token_(token)
+    {
+    }
+
+    [[nodiscard]] String spelling() const noexcept
+    {
+        return String(clang_getTokenSpelling(tu_, token_));
+    }
+
+    [[nodiscard]] CXTokenKind kind() const noexcept
+    {
+        return clang_getTokenKind(token_);
+    }
+
+private:
+    const CXTranslationUnit tu_;
+    const CXToken& token_;
+};
+
+class Tokens {
+public:
+    class Iterator {
+    public:
+        Iterator(CXTranslationUnit tu, CXToken* token) noexcept : tu_(tu), token_(token)
+        {
+        }
+
+        [[nodiscard]] Token operator*() const noexcept
+        {
+            return Token(tu_, *token_);
+        }
+
+        Iterator& operator++() noexcept
+        {
+            ++token_;
+            return *this;
+        }
+
+        [[nodiscard]] friend bool operator!=(const Iterator& it1, const Iterator& it2) noexcept
+        {
+            return it1.token_ != it2.token_;
+        }
+
+    private:
+        const CXTranslationUnit tu_;
+        CXToken* token_;
+    };
+
+    explicit Tokens(const CXCursor& cursor) noexcept : tu_(clang_Cursor_getTranslationUnit(cursor))
+    {
+        clang_tokenize(tu_, clang_getCursorExtent(cursor), &tokens_, &num_tokens_);
+    }
+
+    ~Tokens()
+    {
+        clang_disposeTokens(tu_, tokens_, num_tokens_);
+    }
+
+    [[nodiscard]] Iterator begin() const noexcept
+    {
+        return Iterator(tu_, tokens_);
+    }
+
+    [[nodiscard]] Iterator end() const noexcept
+    {
+        return Iterator(tu_, tokens_ + num_tokens_);
+    }
+
+private:
+    const CXTranslationUnit tu_;
+    CXToken* tokens_;
+    unsigned num_tokens_;
+};
+
+[[nodiscard]] bool has_overloadable_attribute(const CXCursor& cursor)
+{
+    assert(clang_getCursorKind(cursor) == CXCursor_FunctionDecl);
+    return clang_Cursor_hasAttrs(cursor) &&
+        clang_visitChildren(
+            cursor,
+            [](CXCursor child, CXCursor, CXClientData) {
+                if (clang_isAttribute(clang_getCursorKind(child))) {
+                    for (auto token : Tokens(child)) {
+                        if (!strcmp(token.spelling().c_str(), "overloadable")) {
+                            return CXChildVisit_Break;
+                        }
+                    }
+                }
+                return CXChildVisit_Continue;
+            },
+            nullptr);
+}
+
 void SourceScanner::add_top_level_function(const CXCursor& cursor)
 {
     assert(is_on_top_level());
-    String name(clang_getCursorSpelling(cursor));
     set_definition_location(cursor,
-        Universe::get().register_top_level_function(name.string(), type_like_symbol(clang_getCursorResultType(cursor)),
-            get_function_parameters(cursor),
-
-            // libclang does not provide a straightforward method for detecting
-            // __attribute__((overloadable)).  But it can be reliably detected by examining
-            // the mangled name of the function.  In C, only overloadable functions are
-            // mangled.  For non-overloadable ones, clang_getCursorSpelling and
-            // clang_Cursor_getMangling return the same string.
-            strcmp(name.c_str(), String(clang_Cursor_getMangling(cursor)).c_str()) ? ModifierOverloadable : 0));
+        Universe::get().register_top_level_function(String(clang_getCursorSpelling(cursor)).string(),
+            type_like_symbol(clang_getCursorResultType(cursor)), get_function_parameters(cursor),
+            has_overloadable_attribute(cursor) ? ModifierOverloadable : 0));
 }
 
 Type SourceScanner::get_method_result_type(const CXCursor& method_cursor)

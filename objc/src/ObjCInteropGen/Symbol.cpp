@@ -1309,6 +1309,11 @@ bool NonTypeSymbol::is_supported(const TypeDeclarationSymbol* owner) const noexc
         return false;
     }
 
+    if (is_overloadable()) {
+        assert(is_global_function());
+        return false;
+    }
+
     if (!normal_mode()) {
         // In the EXPERIMENTAL and GENERATE_DEFINITIONS modes, everything is supported.
         return true;

@@ -19,79 +19,38 @@ Universe& Universe::get()
 NonTypeSymbol& TopLevel::add_function(
     std::string name, Type return_type, std::vector<ParameterSymbol> parameters, Modifiers modifiers)
 {
-    assert(member_set_.empty() && "Calling TopLevel::add_function after TopLevel::make_unique");
-    return members_.emplace_back(
+    auto& func = members_.emplace_back(
         std::move(name), NonTypeSymbol::Kind::GlobalFunction, std::move(return_type), std::move(parameters), modifiers);
+    member_set_.insert(&func);
+    return func;
 }
 
-struct SymbolPointerComparator final {
-    using is_transparent = void;
-
-    bool operator()(const NonTypeSymbol* symbol1, const NonTypeSymbol* symbol2) const noexcept
-    {
-        return symbol1->name() < symbol2->name();
-    }
-
-    bool operator()(std::string_view name, const NonTypeSymbol* symbol) const noexcept
-    {
-        return name < symbol->name();
-    }
-
-    bool operator()(const NonTypeSymbol* symbol, std::string_view name) const noexcept
-    {
-        return symbol->name() < name;
-    }
-};
-
-template <class Set, class It> static void rename_set_element(Set& set, It it)
+bool TopLevel::Comparator::operator()(const NonTypeSymbol* symbol1, const NonTypeSymbol* symbol2) const noexcept
 {
-    auto new_name = (*it)->name() + '_';
-    auto node = set.extract(it);
-    assert(node);
-    auto e = set.end();
-    while (set.find(new_name) != e) {
-        new_name += '_';
-    }
-    node.value()->rename(std::move(new_name));
-    set.insert(std::move(node));
+    const auto& name1 = symbol1->name();
+    const auto& name2 = symbol2->name();
+    return name1 == name2 ? !symbol1->is_overloadable() && symbol2->is_overloadable() : name1 < name2;
 }
 
-void TopLevel::make_unique()
+bool TopLevel::Comparator::operator()(std::string_view name, const NonTypeSymbol* symbol) const noexcept
 {
-    if (members_.empty() || !member_set_.empty()) {
-        return;
-    }
-    std::multiset<NonTypeSymbol*, SymbolPointerComparator> multiset;
-    for (auto& func : members_) {
-        multiset.insert(&func);
-    }
-    auto e = multiset.cend();
-    auto it = multiset.cbegin();
-    for (auto next_it = std::next(it); next_it != e; next_it = std::next(it)) {
-        const auto& func = **it;
-        const auto& next_func = **next_it;
-        if (next_func.name() == func.name()) {
-            if (func.is_overloadable()) {
-                rename_set_element(multiset, it);
-                it = next_it;
-            } else {
-                assert(next_func.is_overloadable());
-                rename_set_element(multiset, next_it);
-            }
-        } else {
-            it = next_it;
-        }
-    }
-    member_set_.merge(multiset);
-    assert(multiset.empty());
+    return name < symbol->name();
+}
+
+bool TopLevel::Comparator::operator()(const NonTypeSymbol* symbol, std::string_view name) const noexcept
+{
+    return symbol->name() < name;
 }
 
 const NonTypeSymbol* TopLevel::find_function(std::string_view name) const noexcept
 {
-    assert(
-        (members_.empty() || !member_set_.empty()) && "Calling TopLevel::find_function without TopLevel::make_unique");
-    auto it = member_set_.find(name);
-    return it == member_set_.end() ? nullptr : *it;
+    auto [lower_bound, upper_bound] = member_set_.equal_range(name);
+    if (lower_bound == upper_bound) {
+        return nullptr;
+    }
+    const auto* func = *lower_bound;
+    assert(func->name() == name);
+    return func->is_overloadable() ? nullptr : func;
 }
 
 Universe::Universe()
@@ -225,11 +184,6 @@ void Universe::rename_type(NamedTypeSymbol& symbol, std::string new_name)
     node.key() = new_name_view;
     types_map.insert(std::move(node));
     type_order_it->name = new_name_view;
-}
-
-void Universe::make_global_symbols_unique()
-{
-    top_level_.make_unique();
 }
 
 const NonTypeSymbol* Universe::global_non_type_symbol(std::string_view name) const noexcept
