@@ -10,6 +10,7 @@
 #include <stack>
 
 #include <clang-c/Index.h>
+#include <clang/AST/Attr.h>
 #include <clang/AST/DeclObjC.h>
 #include <clang/Basic/Version.h>
 
@@ -17,6 +18,12 @@
 #include "Logging.h"
 #include "Strings.h"
 #include "Universe.h"
+
+#ifdef _MSC_VER
+namespace clang {
+extern template __declspec(noinline) bool Decl::hasAttr<OverloadableAttr>() const;
+} // namespace clang
+#endif
 
 [[nodiscard]] static bool operator==(const CXType& lhs, const CXType& rhs) noexcept
 {
@@ -946,99 +953,9 @@ std::vector<ParameterSymbol> SourceScanner::get_function_parameters(const CXCurs
     return parameters;
 }
 
-class Token {
-public:
-    Token(CXTranslationUnit tu, const CXToken& token) noexcept : tu_(tu), token_(token)
-    {
-    }
-
-    [[nodiscard]] String spelling() const noexcept
-    {
-        return String(clang_getTokenSpelling(tu_, token_));
-    }
-
-    [[nodiscard]] CXTokenKind kind() const noexcept
-    {
-        return clang_getTokenKind(token_);
-    }
-
-private:
-    const CXTranslationUnit tu_;
-    const CXToken& token_;
-};
-
-class Tokens {
-public:
-    class Iterator {
-    public:
-        Iterator(CXTranslationUnit tu, CXToken* token) noexcept : tu_(tu), token_(token)
-        {
-        }
-
-        [[nodiscard]] Token operator*() const noexcept
-        {
-            return Token(tu_, *token_);
-        }
-
-        Iterator& operator++() noexcept
-        {
-            ++token_;
-            return *this;
-        }
-
-        [[nodiscard]] friend bool operator!=(const Iterator& it1, const Iterator& it2) noexcept
-        {
-            return it1.token_ != it2.token_;
-        }
-
-    private:
-        const CXTranslationUnit tu_;
-        CXToken* token_;
-    };
-
-    explicit Tokens(const CXCursor& cursor) noexcept : tu_(clang_Cursor_getTranslationUnit(cursor))
-    {
-        clang_tokenize(tu_, clang_getCursorExtent(cursor), &tokens_, &num_tokens_);
-    }
-
-    ~Tokens()
-    {
-        clang_disposeTokens(tu_, tokens_, num_tokens_);
-    }
-
-    [[nodiscard]] Iterator begin() const noexcept
-    {
-        return Iterator(tu_, tokens_);
-    }
-
-    [[nodiscard]] Iterator end() const noexcept
-    {
-        return Iterator(tu_, tokens_ + num_tokens_);
-    }
-
-private:
-    const CXTranslationUnit tu_;
-    CXToken* tokens_;
-    unsigned num_tokens_;
-};
-
-[[nodiscard]] bool has_overloadable_attribute(const CXCursor& cursor)
+[[nodiscard]] static bool has_overloadable_attribute(const CXCursor& cursor)
 {
-    assert(clang_getCursorKind(cursor) == CXCursor_FunctionDecl);
-    return clang_Cursor_hasAttrs(cursor) &&
-        clang_visitChildren(
-            cursor,
-            [](CXCursor child, CXCursor, CXClientData) {
-                if (clang_isAttribute(clang_getCursorKind(child))) {
-                    for (auto token : Tokens(child)) {
-                        if (!strcmp(token.spelling().c_str(), "overloadable")) {
-                            return CXChildVisit_Break;
-                        }
-                    }
-                }
-                return CXChildVisit_Continue;
-            },
-            nullptr);
+    return cursor_to_decl<clang::FunctionDecl>(cursor).hasAttr<clang::OverloadableAttr>();
 }
 
 void SourceScanner::add_top_level_function(const CXCursor& cursor)
