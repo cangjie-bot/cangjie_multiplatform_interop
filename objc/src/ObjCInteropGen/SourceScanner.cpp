@@ -961,10 +961,13 @@ std::vector<ParameterSymbol> SourceScanner::get_function_parameters(const CXCurs
 void SourceScanner::add_top_level_function(const CXCursor& cursor)
 {
     assert(is_on_top_level());
-    set_definition_location(cursor,
-        Universe::get().register_top_level_function(String(clang_getCursorSpelling(cursor)).string(),
-            type_like_symbol(clang_getCursorResultType(cursor)), get_function_parameters(cursor),
-            has_overloadable_attribute(cursor) ? ModifierOverloadable : 0));
+    String name(clang_getCursorSpelling(cursor));
+    auto return_type = type_like_symbol(clang_getCursorResultType(cursor));
+    auto params = get_function_parameters(cursor);
+    Modifiers modifiers = has_overloadable_attribute(cursor) ? ModifierOverloadable : 0;
+    auto& symbol = Universe::get().register_top_level_function(
+        name.string(), std::move(return_type), std::move(params), modifiers);
+    set_definition_location(cursor, symbol);
 }
 
 Type SourceScanner::get_method_result_type(const CXCursor& method_cursor)
