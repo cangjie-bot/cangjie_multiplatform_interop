@@ -19,12 +19,6 @@
 #include "Strings.h"
 #include "Universe.h"
 
-#ifdef _MSC_VER
-namespace clang {
-extern template __declspec(noinline) bool Decl::hasAttr<OverloadableAttr>() const;
-} // namespace clang
-#endif
-
 [[nodiscard]] static bool operator==(const CXType& lhs, const CXType& rhs) noexcept
 {
     return !!clang_equalTypes(lhs, rhs);
@@ -955,7 +949,13 @@ std::vector<ParameterSymbol> SourceScanner::get_function_parameters(const CXCurs
 
 [[nodiscard]] static bool has_overloadable_attribute(const CXCursor& cursor)
 {
-    return cursor_to_decl<clang::FunctionDecl>(cursor).hasAttr<clang::OverloadableAttr>();
+    const auto& decl = cursor_to_decl<clang::FunctionDecl>(cursor);
+    if (!decl.hasAttrs()) {
+        return false;
+    }
+    const auto& attrs = decl.getAttrs();
+    return std::any_of(
+        attrs.begin(), attrs.end(), [](const auto* attr) { return attr->getKind() == clang::attr::Overloadable; });
 }
 
 void SourceScanner::add_top_level_function(const CXCursor& cursor)
