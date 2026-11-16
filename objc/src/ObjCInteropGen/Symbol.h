@@ -802,15 +802,6 @@ private:
     Type type_;
 };
 
-class BaseProtocolRef final : public std::reference_wrapper<TypeDeclarationSymbol> {
-public:
-    explicit BaseProtocolRef(TypeDeclarationSymbol& protocol) : std::reference_wrapper<TypeDeclarationSymbol>(protocol)
-    {
-    }
-
-    bool hidden = false;
-};
-
 class TypeDeclarationSymbol : public NamedTypeSymbol {
 public:
     [[nodiscard]] TypeDeclarationSymbol(Kind kind, std::string name) noexcept;
@@ -915,6 +906,16 @@ public:
     void mark_transformed() noexcept;
 
 private:
+    class BaseProtocolRef final : public std::reference_wrapper<TypeDeclarationSymbol> {
+    public:
+        explicit BaseProtocolRef(TypeDeclarationSymbol& protocol)
+            : std::reference_wrapper<TypeDeclarationSymbol>(protocol)
+        {
+        }
+
+        bool hidden = false;
+    };
+
     [[nodiscard]] bool visit_referenced_types(const FileLevelSymbolVisitor& visitor) override;
     [[nodiscard]] bool visit_referenced_types(const FileLevelSymbolScanner& visitor) const override;
 
