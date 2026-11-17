@@ -91,8 +91,21 @@ public:
     [[nodiscard]] NonTypeSymbol& add_function(
         std::string name, Type return_type, std::vector<ParameterSymbol> parameters, Modifiers modifiers);
 
+    const NonTypeSymbol* find_function(std::string_view name) const noexcept;
+
 private:
+    struct Comparator {
+        using is_transparent = void;
+
+        bool operator()(const NonTypeSymbol* symbol1, const NonTypeSymbol* symbol2) const noexcept;
+
+        bool operator()(std::string_view name, const NonTypeSymbol* symbol) const noexcept;
+
+        bool operator()(const NonTypeSymbol* symbol, std::string_view name) const noexcept;
+    };
+
     std::deque<NonTypeSymbol> members_;
+    std::multiset<NonTypeSymbol*, Comparator> member_set_;
 };
 
 class Universe final : NonCopyable {
@@ -274,7 +287,7 @@ public:
 
     // Find a global non-type symbol by its name.  Return nullptr if no such symbol
     // has been registered.
-    [[nodiscard]] const NonTypeSymbol* global_non_type_symbol(std::string_view name) const;
+    [[nodiscard]] const NonTypeSymbol* global_non_type_symbol(std::string_view name) const noexcept;
 
     [[nodiscard]] auto types() const noexcept
     {

@@ -19,8 +19,38 @@ Universe& Universe::get()
 NonTypeSymbol& TopLevel::add_function(
     std::string name, Type return_type, std::vector<ParameterSymbol> parameters, Modifiers modifiers)
 {
-    return members_.emplace_back(
+    auto& func = members_.emplace_back(
         std::move(name), NonTypeSymbol::Kind::GlobalFunction, std::move(return_type), std::move(parameters), modifiers);
+    member_set_.insert(&func);
+    return func;
+}
+
+bool TopLevel::Comparator::operator()(const NonTypeSymbol* symbol1, const NonTypeSymbol* symbol2) const noexcept
+{
+    const auto& name1 = symbol1->name();
+    const auto& name2 = symbol2->name();
+    return name1 == name2 ? !symbol1->is_overloadable() && symbol2->is_overloadable() : name1 < name2;
+}
+
+bool TopLevel::Comparator::operator()(std::string_view name, const NonTypeSymbol* symbol) const noexcept
+{
+    return name < symbol->name();
+}
+
+bool TopLevel::Comparator::operator()(const NonTypeSymbol* symbol, std::string_view name) const noexcept
+{
+    return symbol->name() < name;
+}
+
+const NonTypeSymbol* TopLevel::find_function(std::string_view name) const noexcept
+{
+    auto [lower_bound, upper_bound] = member_set_.equal_range(name);
+    if (lower_bound == upper_bound) {
+        return nullptr;
+    }
+    const auto* func = *lower_bound;
+    assert(func->name() == name);
+    return func->is_overloadable() ? nullptr : func;
 }
 
 Universe::Universe()
@@ -156,15 +186,9 @@ void Universe::rename_type(NamedTypeSymbol& symbol, std::string new_name)
     type_order_it->name = new_name_view;
 }
 
-const NonTypeSymbol* Universe::global_non_type_symbol(std::string_view name) const
+const NonTypeSymbol* Universe::global_non_type_symbol(std::string_view name) const noexcept
 {
-    auto top_level = this->top_level();
-    auto top_level_end = top_level.end();
-    auto it = std::find_if(top_level.begin(), top_level_end, [name](const auto& global_func) {
-        assert(global_func.is_global_function());
-        return global_func.name() == name;
-    });
-    return it == top_level_end ? nullptr : &*it;
+    return top_level_.find_function(name);
 }
 
 } // namespace objcgen

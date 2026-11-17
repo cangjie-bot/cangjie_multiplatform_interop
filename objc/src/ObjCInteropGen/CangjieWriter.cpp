@@ -337,6 +337,10 @@ static void write_function(StructuredString& output, const TypeDeclarationSymbol
     }
     bool is_ctype;
     if (function.is_global_function()) {
+        if (function.is_overloadable()) {
+            assert(!supported);
+            output << "[overloadable] ";
+        }
         is_ctype = function.is_ctype();
 
         if (is_ctype) {

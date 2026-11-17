@@ -10,6 +10,7 @@
 #include <stack>
 
 #include <clang-c/Index.h>
+#include <clang/AST/Attr.h>
 #include <clang/AST/DeclObjC.h>
 #include <clang/Basic/Version.h>
 
@@ -946,12 +947,27 @@ std::vector<ParameterSymbol> SourceScanner::get_function_parameters(const CXCurs
     return parameters;
 }
 
+[[nodiscard]] static bool has_overloadable_attribute(const CXCursor& cursor)
+{
+    const auto& decl = cursor_to_decl<clang::FunctionDecl>(cursor);
+    if (!decl.hasAttrs()) {
+        return false;
+    }
+    const auto& attrs = decl.getAttrs();
+    return std::any_of(
+        attrs.begin(), attrs.end(), [](const auto* attr) { return attr->getKind() == clang::attr::Overloadable; });
+}
+
 void SourceScanner::add_top_level_function(const CXCursor& cursor)
 {
     assert(is_on_top_level());
-    set_definition_location(cursor,
-        Universe::get().register_top_level_function(as_string(clang_getCursorSpelling(cursor)),
-            type_like_symbol(clang_getCursorResultType(cursor)), get_function_parameters(cursor), 0));
+    String name(clang_getCursorSpelling(cursor));
+    auto return_type = type_like_symbol(clang_getCursorResultType(cursor));
+    auto params = get_function_parameters(cursor);
+    Modifiers modifiers = has_overloadable_attribute(cursor) ? ModifierOverloadable : 0;
+    auto& symbol = Universe::get().register_top_level_function(
+        name.string(), std::move(return_type), std::move(params), modifiers);
+    set_definition_location(cursor, symbol);
 }
 
 Type SourceScanner::get_method_result_type(const CXCursor& method_cursor)
@@ -1024,7 +1040,7 @@ bool SourceScanner::is_fully_processed(const CXCursor& cursor)
         case CXCursor_ObjCInstanceMethodDecl:
         case CXCursor_ObjCClassMethodDecl:
         case CXCursor_TypedefDecl: {
-            // For nterfaces, categories, and protocols, there can be only one cursor of
+            // For interfaces, categories, and protocols, there can be only one cursor of
             // this kind and USR.  For functions, properties, and typedefs, there can be
             // multiple cursors.  In both cases, the symbol is considered fully processed
             // after the first processed cursor.

@@ -740,6 +740,9 @@ constexpr Modifiers ModifierHidden = 1 << 8;
 // For example, name clashing symbols, for which automatic resolution failed.
 constexpr Modifiers ModifierNameClashing = 1 << 9;
 
+/** __attribute__((overloadable)) */
+constexpr Modifiers ModifierOverloadable = 1 << 10;
+
 /**
  * A type parameter, when using inside a generic body, can be constrainted by
  * specific protocols.  Like here in the parameter `x`:
@@ -797,15 +800,6 @@ public:
 
 private:
     Type type_;
-};
-
-class BaseProtocolRef final : public std::reference_wrapper<TypeDeclarationSymbol> {
-public:
-    explicit BaseProtocolRef(TypeDeclarationSymbol& protocol) : std::reference_wrapper<TypeDeclarationSymbol>(protocol)
-    {
-    }
-
-    bool hidden = false;
 };
 
 class TypeDeclarationSymbol : public NamedTypeSymbol {
@@ -912,6 +906,16 @@ public:
     void mark_transformed() noexcept;
 
 private:
+    class BaseProtocolRef final : public std::reference_wrapper<TypeDeclarationSymbol> {
+    public:
+        explicit BaseProtocolRef(TypeDeclarationSymbol& protocol)
+            : std::reference_wrapper<TypeDeclarationSymbol>(protocol)
+        {
+        }
+
+        bool hidden = false;
+    };
+
     [[nodiscard]] bool visit_referenced_types(const FileLevelSymbolVisitor& visitor) override;
     [[nodiscard]] bool visit_referenced_types(const FileLevelSymbolScanner& visitor) const override;
 
@@ -1256,6 +1260,11 @@ public:
     void mark_clashing() noexcept
     {
         modifiers_ |= ModifierNameClashing;
+    }
+
+    [[nodiscard]] bool is_overloadable() const noexcept
+    {
+        return modifiers_ & ModifierOverloadable;
     }
 
     [[nodiscard]] ClosureDepthType calculate_reference_level(const TypeDeclarationSymbol& decl) const noexcept;
