@@ -466,7 +466,11 @@ template <CXTypeKind type_kind> Type SourceScanner::get_named_type(const CXType&
                 // typedef struct MyStruct { ... } MyStruct;
                 // typedef int Int32;
                 //
-                // Do not create such typedef at all.  Use directly its target everywhere.
+                // Do not create such typedef at all.  Use directly its target everywhere.  But
+                // set nullability if it is explicitly specified.
+                if (nullability != Nullability::Unspecified) {
+                    target.set_nullability(nullability);
+                }
                 return target;
             }
             symbol = new TypeAliasSymbol(std::move(name), std::move(target));
@@ -743,7 +747,7 @@ struct ModifiedType {
 };
 
 // If 'cxtype' is attributed, "unpack" the modified type and return a structure with the following two fields:
-//   - modified_type - the original type the attributes are applied to.
+//   - modified_cxtype - the original type the attributes are applied to.
 //   - nullability - the nullability of 'cxtype'.  That is attributed type is needed for.  Attributes other than
 //     nullability are ignored so far.
 // If 'cxtype' is not attributed, return std::nullopt.
