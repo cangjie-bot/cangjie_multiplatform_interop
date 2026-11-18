@@ -761,6 +761,11 @@ bool same_cj_types(const Type& type1, const Type& type2) noexcept
     }
 }
 
+[[nodiscard]] static bool same_cj_types(const ParameterSymbol& param1, const ParameterSymbol& param2) noexcept
+{
+    return same_cj_types(param1.type(), param2.type());
+}
+
 void NamedTypeSymbol::rename(std::string new_name) noexcept
 {
     assert(!new_name.empty());
@@ -1522,10 +1527,7 @@ bool same_cj_signature(const NonTypeSymbol& method1, const NonTypeSymbol& method
 {
     assert((method1.is_member_method() && method2.is_member_method()) ||
         (method1.is_constructor() && method2.is_constructor()));
-    auto params1 = method1.parameters();
-    auto params2 = method2.parameters();
-    return std::equal(params1.begin(), params1.end(), params2.begin(), params2.end(),
-        [](const auto& param1, const auto& param2) noexcept { return same_cj_types(param1.type(), param2.type()); });
+    return same_cj_params(method1.parameters(), method2.parameters());
 }
 
 [[nodiscard]] static ClosureDepthType calculate_reference_level(
