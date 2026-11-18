@@ -305,9 +305,24 @@ template <class Decl>
     return clang::QualType::getFromOpaquePtr(type.data[0]);
 }
 
+[[nodiscard]] bool is_actually_function_type(const CXType& type) noexcept
+{
+    switch (clang_getCanonicalType(type).kind) {
+        case CXType_FunctionNoProto:
+        case CXType_FunctionProto:
+            return true;
+        default:
+            return false;
+    }
+}
+
 Type SourceScanner::create_func_like_type(BuiltInTypeSymbol& func_like_symbol, const CXType& type)
 {
-    assert(type.kind == CXType_FunctionProto || type.kind == CXType_FunctionNoProto);
+    assert(type.kind == CXType_FunctionProto || type.kind == CXType_FunctionNoProto || type.kind == CXType_Typedef);
+    assert(is_actually_function_type(type));
+
+    // clang_getNumArgTypes, clang_getResultType, and clang_getArgType work for type
+    // aliases of function types as well
     int num_arg_types = clang_getNumArgTypes(type);
     assert(num_arg_types >= 0);
     std::vector<Type> parameters;
@@ -316,7 +331,7 @@ Type SourceScanner::create_func_like_type(BuiltInTypeSymbol& func_like_symbol, c
     for (int i = 0; i < num_arg_types; ++i) {
         parameters.emplace_back(type_like_symbol(clang_getArgType(type, static_cast<unsigned>(i))));
     }
-    return Type(func_like_symbol, std::move(parameters));
+    return {func_like_symbol, std::move(parameters)};
 }
 
 std::string SourceScanner::new_anonymous_name(const CXCursor& decl)
@@ -844,8 +859,13 @@ Type SourceScanner::type_like_symbol(const CXType& type, Nullability nullability
             return type_like_symbol(clang_getPointeeType(type), nullability);
 
         case CXType_Pointer: {
-            auto pointee = type_like_symbol(clang_getPointeeType(type));
-            return pointee.kind() == Type::Kind::Function ? pointee : Type(Universe::get().pointer(), {pointee});
+            auto pointee_cxtype = clang_getPointeeType(type);
+            auto pointee = type_like_symbol(pointee_cxtype);
+            if (is_actually_function_type(pointee_cxtype)) {
+                assert(pointee.canonical_type().kind() == Type::Kind::Function);
+                return pointee;
+            }
+            return {Universe::get().pointer(), {std::move(pointee)}};
         }
 
         case CXType_BlockPointer: {
@@ -980,7 +1000,7 @@ Type SourceScanner::get_method_result_type(const CXCursor& method_cursor)
     auto modified_cx_result_type = get_possibly_modified_type(cx_result_type);
     return modified_cx_result_type
         ? type_like_symbol(modified_cx_result_type->modified_cxtype, modified_cx_result_type->nullability)
-        : type_like_symbol(cx_result_type, Nullability::Unspecified);
+        : type_like_symbol(cx_result_type);
 }
 
 void SourceScanner::add_member_method(const CXCursor& cursor, Modifiers modifiers)
