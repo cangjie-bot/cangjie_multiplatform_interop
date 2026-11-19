@@ -696,6 +696,76 @@ void Type::print_func_like(StructuredString& stream, std::string_view name, Prin
     }
 }
 
+[[nodiscard]] static Type get_underlying_type(const Type& type) noexcept
+{
+    const auto* named_symbol = dynamic_cast<const NamedTypeSymbol*>(&type.symbol());
+    if (named_symbol) {
+        switch (named_symbol->kind()) {
+            case NamedTypeSymbol::Kind::TypeDef:
+                return named_symbol->as<TypeAliasSymbol>().canonical_type();
+            case NamedTypeSymbol::Kind::Enum:
+                return Type(named_symbol->as<EnumDeclarationSymbol>().underlying_type());
+            default:
+                break;
+        }
+    }
+    return type;
+}
+
+template <class Params> [[nodiscard]] static bool same_cj_params(const Params& params1, const Params& params2) noexcept
+{
+    return std::equal(params1.begin(), params1.end(), params2.begin(), params2.end(),
+        [](const auto& param1, const auto& param2) noexcept { return same_cj_types(param1, param2); });
+}
+
+[[nodiscard]] static bool same_function_like_types(const Type& type1, const Type& type2) noexcept
+{
+    auto kind = type1.kind();
+    assert(kind == Type::Kind::Function || kind == Type::Kind::Block);
+    return type2.kind() == kind && same_cj_params(type1.parameters(), type2.parameters());
+}
+
+bool same_cj_types(const Type& type1, const Type& type2) noexcept
+{
+    auto t1 = get_underlying_type(type1);
+    auto t2 = get_underlying_type(type2);
+
+    if (t1.is_cj_direct_option() != t2.is_cj_direct_option()) {
+        return false;
+    }
+
+    switch (t1.kind()) {
+        case Type::Kind::Pointer:
+            if (t2.kind() != Type::Kind::Pointer) {
+                return false;
+            }
+            assert(t1.parameters().size() == 1);
+            assert(t2.parameters().size() == 1);
+            return same_cj_types(*t1.parameters().begin(), *t2.parameters().begin());
+        case Type::Kind::Function:
+        case Type::Kind::Block:
+            return same_function_like_types(t1, t2);
+        case Type::Kind::VArray:
+            return t2.kind() == Type::Kind::VArray && t1.varray_size() == t2.varray_size() &&
+                same_cj_types(t1.varray_element_type(), t2.varray_element_type());
+        case Type::Kind::TypeParam:
+            if (t2.kind() == Type::Kind::TypeParam) {
+                return &t1.actual_protocol() == &t2.actual_protocol();
+            }
+            return t2.kind() == Type::Kind::Named && &t1.actual_protocol() == &t2.symbol();
+        case Type::Kind::Named: {
+            return &t1.symbol() == (t2.kind() == Type::Kind::TypeParam ? &t2.actual_protocol() : &t2.symbol());
+        }
+        default:
+            return &t1.symbol() == &t2.symbol();
+    }
+}
+
+[[nodiscard]] static bool same_cj_types(const ParameterSymbol& param1, const ParameterSymbol& param2) noexcept
+{
+    return same_cj_types(param1.type(), param2.type());
+}
+
 void NamedTypeSymbol::rename(std::string new_name) noexcept
 {
     assert(!new_name.empty());
@@ -1451,6 +1521,13 @@ const NonTypeSymbol* NonTypeSymbol::find_getter(const TypeDeclarationSymbol& dec
         }
     }
     return nullptr;
+}
+
+bool same_cj_signature(const NonTypeSymbol& method1, const NonTypeSymbol& method2) noexcept
+{
+    assert((method1.is_member_method() && method2.is_member_method()) ||
+        (method1.is_constructor() && method2.is_constructor()));
+    return same_cj_params(method1.parameters(), method2.parameters());
 }
 
 [[nodiscard]] static ClosureDepthType calculate_reference_level(

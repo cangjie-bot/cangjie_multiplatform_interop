@@ -187,89 +187,17 @@ static void write_foreign_name(StructuredString& output, const NonTypeSymbol& me
     }
 }
 
-[[nodiscard]] static bool same_function_like_types(const Type& type1, const Type& type2) noexcept
-{
-    auto kind = type1.kind();
-    assert(kind == Type::Kind::Function || kind == Type::Kind::Block);
-    if (type2.kind() != kind) {
-        return false;
-    }
-    const auto& parameters1 = type1.parameters();
-    const auto& parameters2 = type2.parameters();
-    return std::equal(parameters1.begin(), parameters1.end(), parameters2.begin(), parameters2.end(),
-        [](const auto& param1, const auto& param2) { return same_types(param1, param2); });
-}
-
-[[nodiscard]] static Type get_underlying_type(const Type& type) noexcept
-{
-    const auto* named_symbol = dynamic_cast<const NamedTypeSymbol*>(&type.symbol());
-    if (named_symbol) {
-        switch (named_symbol->kind()) {
-            case NamedTypeSymbol::Kind::TypeDef:
-                return named_symbol->as<TypeAliasSymbol>().canonical_type();
-            case NamedTypeSymbol::Kind::Enum:
-                return Type(named_symbol->as<EnumDeclarationSymbol>().underlying_type());
-            default:
-                break;
-        }
-    }
-    return type;
-}
-
-[[nodiscard]] static bool same_types(const Type& type1, const Type& type2) noexcept
-{
-    auto t1 = get_underlying_type(type1);
-    auto t2 = get_underlying_type(type2);
-
-    if (t1.is_cj_direct_option() != t2.is_cj_direct_option()) {
-        return false;
-    }
-
-    switch (t1.kind()) {
-        case Type::Kind::Pointer:
-            if (t2.kind() != Type::Kind::Pointer) {
-                return false;
-            }
-            assert(t1.parameters().size() == 1);
-            assert(t2.parameters().size() == 1);
-            return same_types(*t1.parameters().begin(), *t2.parameters().begin());
-        case Type::Kind::Function:
-        case Type::Kind::Block:
-            return same_function_like_types(t1, t2);
-        case Type::Kind::VArray:
-            return t2.kind() == Type::Kind::VArray && t1.varray_size() == t2.varray_size() &&
-                same_types(t1.varray_element_type(), t2.varray_element_type());
-        case Type::Kind::TypeParam:
-            if (t2.kind() == Type::Kind::TypeParam) {
-                return &t1.actual_protocol() == &t2.actual_protocol();
-            }
-            return t2.kind() == Type::Kind::Named && &t1.actual_protocol() == &t2.symbol();
-        default:
-            return &t1.symbol() == &t2.symbol();
-    }
-}
-
-[[nodiscard]] static bool is_overloading_constructor(
-    const TypeDeclarationSymbol& type, const NonTypeSymbol& constructor)
+/**
+ * Check if 'type' has other constructors of the same signature as 'constructor'
+ **/
+[[nodiscard]] static bool has_conflicting_constructor(
+    const TypeDeclarationSymbol& type, const NonTypeSymbol& constructor) noexcept
 {
     assert(constructor.is_constructor());
-    auto parameter_count = constructor.parameter_count();
-    for (const auto& member : type.members()) {
-        if (&member == &constructor || !member.is_constructor() || member.parameter_count() != parameter_count) {
-            continue;
-        }
-        auto overloading = true;
-        for (size_t i = 0; i < parameter_count; ++i) {
-            if (!same_types(member.parameter(i).type(), constructor.parameter(i).type())) {
-                overloading = false;
-                break;
-            }
-        }
-        if (overloading) {
-            return true;
-        }
-    }
-    return false;
+    auto members = type.members();
+    return std::any_of(members.begin(), members.end(), [&constructor](const auto& member) noexcept {
+        return &member != &constructor && member.is_constructor() && same_cj_signature(member, constructor);
+    });
 }
 
 static void print_objc_optional(StructuredString& output, const NonTypeSymbol& member)
@@ -368,26 +296,16 @@ static void write_function(StructuredString& output, const TypeDeclarationSymbol
         return;
     }
     if (function.is_static()) {
-        // In Objective-C, the overridden static method can have different parameter
-        // types (co/contra-variant pointers).  In Cangjie, the types must strictly
-        // match.  Consider printing "redef" at least when it is allowed in Cangjie.
-        if constexpr ((false)) {
-            if (function.is_override()) {
-                output << "redef ";
-            }
+        if (!normal_mode() && function.is_override()) {
+            output << "redef ";
         }
         output << "static ";
     } else {
         if (function.is_interface_method()) {
             output << "open ";
         }
-        // In Objective-C, the overridden method can have different parameter types
-        // (co/contra-variant pointers).  In Cangjie, the types must strictly coincide.
-        // Consider printing "override" at least when it is allowed in Cangjie.
-        if constexpr ((false)) {
-            if (function.is_override()) {
-                output << "override ";
-            }
+        if (!normal_mode() && function.is_override()) {
+            output << "override ";
         }
     }
     output << "func " << escape_keyword(function.name());
@@ -508,7 +426,7 @@ void TypeDeclarationWriter::write_constructor(NonTypeSymbol& constructor)
     } else {
         output_ << push_line_comment;
     }
-    if (is_overloading_constructor(decl_, constructor)) {
+    if (has_conflicting_constructor(decl_, constructor)) {
         if (!generate_definitions_mode()) {
             output_ << "@ObjCInit ";
         }

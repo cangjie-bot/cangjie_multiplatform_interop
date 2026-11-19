@@ -679,7 +679,9 @@ static void transform_base_derived(const TypeDeclarationSymbol& base, TypeDeclar
                     //   return type as 'base_member'.
                     // - In Objective-C, contravariant return types are allowed.  That will not
                     //   compile in Cangjie. Change the return type of 'derived_member' accordingly.
-                    derived_member.set_override();
+                    if (same_cj_signature(base_member, derived_member)) {
+                        derived_member.set_override();
+                    }
                     const auto& base_member_type = base_member.return_type();
                     auto& derived_member_type = derived_member.return_type();
                     if (base_member_type.nullability() != Nullability::Nonnull) {
@@ -716,7 +718,8 @@ static void transform_base_derived(const TypeDeclarationSymbol& base, TypeDeclar
             }
         } else if (derived_member.is_constructor()) {
             for (const auto& base_member : base_members) {
-                if (base_member.is_constructor() && base_member.selector() == derived_member.selector()) {
+                if (base_member.is_constructor() && base_member.selector() == derived_member.selector() &&
+                    same_cj_signature(base_member, derived_member)) {
                     derived_member.set_override();
                 }
             }

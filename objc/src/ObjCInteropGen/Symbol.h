@@ -472,6 +472,9 @@ private:
     };
 };
 
+/** Check if these types are identical in terms of Cangjie */
+[[nodiscard]] bool same_cj_types(const Type& type1, const Type& type2) noexcept;
+
 class NamedTypeSymbol : public TypeLikeSymbol {
     friend class Universe;
 
@@ -1289,6 +1292,12 @@ private:
     std::vector<ParameterSymbol> parameters_;
     std::string selector_attribute_;
 };
+
+/**
+ * Check if these methods have the same signature (number of parameters and
+ * their types) in terms of Cangjie
+ */
+[[nodiscard]] bool same_cj_signature(const NonTypeSymbol& method1, const NonTypeSymbol& method2) noexcept;
 
 template <class T> class Printer {
 public:
